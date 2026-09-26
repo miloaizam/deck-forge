@@ -783,6 +783,21 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    asume su forma. Al decodificar una baraja desde la URL: parsear a la
    defensiva, acotar tamaños y descartar ids desconocidos sin reventar la app.
 
+   **El archivo de respaldo es la entrada más expuesta**: te lo puede pasar
+   cualquiera. Exportar no tiene riesgo —se arma con un `Blob` y no sale del
+   navegador—, pero la auditoría de importar encontró dos fallos, y las
+   reglas que dejaron son de la validación, no de un componente:
+   - **Acotar también los números, no solo los textos.** `actualizado:
+     2**53 - 1` pasaba `.int()` y hacía lanzar a `Intl.DateTimeFormat`; como
+     la baraja quedaba guardada, `/barajas` se caía en cada carga. Las fechas
+     se recortan a la mayor fecha válida (`fechaSchema`, `types.ts`).
+   - **Importar nunca desplaza.** `saveDecks` recorta a 50 quedándose con las
+     primeras, así que un archivo con 50 barajas borraba las del usuario.
+     `mergeImported()` solo suma lo que cabe, y el aviso dice cuántas no
+     cupieron.
+   - Nombre y nota pierden los caracteres de control y de dirección de texto
+     al leerse (un `U+202E` deja escribir un nombre que se lee como otro).
+
 5. **Cero terceros.** Sin analytics, sin CDNs, sin fuentes remotas, sin
    hotlinking de imágenes, sin píxeles de seguimiento. Todo se sirve desde
    nuestro origen. La telemetría de Next.js está desactivada.

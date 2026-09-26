@@ -239,3 +239,28 @@ test("importFile no lanza con basura", () => {
   }
   assert.equal(importFile("no es json"), null);
 });
+
+test("un archivo con __proto__ no contamina los objetos del sitio", () => {
+  const archivo = `{"app":"deckforge","v":1,"__proto__":{"infectado":true},"mazos":[${JSON.stringify(
+    createDeck("Normal"),
+  ).replace("{", '{"__proto__":{"infectado":true},')}]}`;
+  const resultado = importFile(archivo);
+  assert.equal(resultado?.barajas.length, 1);
+  assert.equal(({} as Record<string, unknown>).infectado, undefined);
+  assert.equal(Object.hasOwn(resultado!.barajas[0], "__proto__"), false);
+});
+
+test("un archivo con fechas imposibles importa sin romper el formato de fecha", () => {
+  const rota = { ...createDeck("Futuro"), actualizado: 2 ** 53 - 1 };
+  const resultado = importFile(exportFile([rota]));
+  assert.equal(resultado?.barajas.length, 1);
+  const fmt = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
+  assert.doesNotThrow(() => fmt.format(new Date(resultado!.barajas[0].actualizado)));
+});
+
+test("un nombre con cambio de direccion llega limpio por el enlace", () => {
+  const trucada = { ...mazoDePrueba(), nombre: "Mia‮gnp" };
+  const r = decodeDeck(encodeDeck(trucada));
+  assert.ok(r.ok);
+  assert.equal(r.ok && r.deck.nombre, "Miagnp");
+});

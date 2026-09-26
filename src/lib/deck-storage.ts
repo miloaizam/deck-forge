@@ -142,6 +142,33 @@ export function saveDecks(decks: Deck[]): boolean {
   }
 }
 
+export interface MergeResult {
+  lista: Deck[];
+  /** Cuantas de las importadas entraron. */
+  entraron: number;
+  /** Cuantas no cupieron bajo MAX_BARAJAS. */
+  sobraron: number;
+}
+
+/**
+ * Suma barajas importadas a las que ya hay, SIN desplazar ninguna.
+ *
+ * `saveDecks` recorta a MAX_BARAJAS quedandose con las primeras, asi que poner
+ * las importadas delante y guardar tal cual dejaba que un archivo con 50
+ * barajas borrara todas las del usuario, mientras la interfaz decia
+ * "Importaste 50". Ahora entra solo lo que cabe, y quien llama dice cuantas
+ * quedaron fuera.
+ */
+export function mergeImported(existentes: Deck[], nuevas: Deck[]): MergeResult {
+  const hueco = Math.max(0, MAX_BARAJAS - existentes.length);
+  const entran = nuevas.slice(0, hueco);
+  return {
+    lista: [...entran, ...existentes],
+    entraron: entran.length,
+    sobraron: nuevas.length - entran.length,
+  };
+}
+
 /** Inserta o reemplaza una baraja, dejando el mas reciente primero. */
 export function saveDeck(deck: Deck): boolean {
   const resto = readDecks().filter((d) => d.id !== deck.id);

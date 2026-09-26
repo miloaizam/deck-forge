@@ -237,6 +237,36 @@ const MAX_NOMBRE_LEIBLE = 200;
 const MAX_DESCRIPCION_LEIBLE = 600;
 
 /**
+ * La mayor fecha que JavaScript sabe representar: 8.64e15 ms desde 1970.
+ *
+ * Un entero mas grande pasa `.int()` y rompe `Intl.DateTimeFormat` con un
+ * RangeError. Un archivo importado con `actualizado: 2**53 - 1` dejaba
+ * `/barajas` caida en cada carga, porque la baraja quedaba guardada. Se
+ * recorta en vez de rechazar para no perder barajas ya guardadas.
+ */
+const MAX_FECHA = 8_640_000_000_000_000;
+
+const fechaSchema = z
+  .number()
+  .int()
+  .nonnegative()
+  .transform((n) => Math.min(n, MAX_FECHA));
+
+/**
+ * Caracteres de control y de direccion de texto.
+ *
+ * No ejecutan nada, pero viajan en archivos y enlaces `?d=`: un U+202E invierte
+ * lo que sigue y deja escribir un nombre que se lee como otro. Se quitan al
+ * leer. Los saltos de linea y tabuladores pasan a espacio, para no pegar dos
+ * palabras; la interfaz los pinta como espacio de todos modos. El U+200D
+ * (unidor de ancho cero) se queda: lo usan los emojis.
+ */
+const SEPARADORES = /[\t\n\r]+/g;
+const CONTROLES = /[\p{Cc}\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu;
+
+const sinControles = (t: string) => t.replace(SEPARADORES, " ").replace(CONTROLES, "");
+
+/**
  * Cotas de forma, deliberadamente mas anchas que las reglas del formato.
  *
  * El esquema describe lo que se puede REPRESENTAR, no lo que es legal. Si
@@ -283,7 +313,7 @@ export const deckSchema = z.object({
   nombre: z
     .string()
     .max(MAX_NOMBRE_LEIBLE)
-    .transform((t) => t.slice(0, MAX_NOMBRE_BARAJA)),
+    .transform((t) => sinControles(t).slice(0, MAX_NOMBRE_BARAJA)),
   /**
    * Nota corta del autor sobre la baraja. Opcional: casi siempre viene vacia.
    * Con `.default("")` las barajas ya guardados se siguen leyendo.
@@ -291,7 +321,7 @@ export const deckSchema = z.object({
   descripcion: z
     .string()
     .max(MAX_DESCRIPCION_LEIBLE)
-    .transform((t) => t.slice(0, MAX_DESCRIPCION_BARAJA))
+    .transform((t) => sinControles(t).slice(0, MAX_DESCRIPCION_BARAJA))
     .default(""),
   /**
    * Que carta de la baraja hace de oro inicial. Es un PUNTERO a una entrada de
@@ -313,8 +343,8 @@ export const deckSchema = z.object({
    * cartas que lleva, nunca por este campo.
    */
   afinidadFijada: deckAffinitySchema.nullable().default(null),
-  creado: z.number().int().nonnegative(),
-  actualizado: z.number().int().nonnegative(),
+  creado: fechaSchema,
+  actualizado: fechaSchema,
 });
 
 export type DeckEntry = z.infer<typeof deckEntrySchema>;

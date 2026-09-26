@@ -27,7 +27,7 @@ import {
   resolveDeck,
   validateDeck,
 } from "@/lib/deck-rules";
-import { deleteDeck, saveDeck, saveDecks } from "@/lib/deck-storage";
+import { deleteDeck, mergeImported, saveDeck, saveDecks } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CARD_RATIO } from "../CardTile";
@@ -37,6 +37,15 @@ interface DeckListViewProps {
 }
 
 const FECHA = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
+
+/**
+ * El esquema ya acota la fecha, pero `format` lanza RangeError con una fecha
+ * invalida y eso tumba la lista entera. Una fecha rara no vale ese precio.
+ */
+function formatFecha(ms: number): string {
+  const fecha = new Date(ms);
+  return Number.isFinite(fecha.getTime()) ? FECHA.format(fecha) : "—";
+}
 
 /**
  * Los botones de una tarjeta, mas compactos que los de una pagina.
@@ -76,7 +85,13 @@ export function DeckListView({ cards }: DeckListViewProps) {
 
   const duplicar = (deck: Deck) => saveDeck(duplicateDeck(deck));
 
-  const importar = (nuevos: Deck[]) => saveDecks([...nuevos, ...decks]);
+  const importar = (nuevos: Deck[]) => {
+    const merge = mergeImported(decks, nuevos);
+    // Si no entro ninguna no hay nada que escribir: guardar igual solo
+    // reescribiria la misma lista.
+    const guardado = merge.entraron === 0 || saveDecks(merge.lista);
+    return { ...merge, guardado };
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -175,7 +190,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                         {stats.totalPrincipal} cartas
                         {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
                         {" · "}
-                        {FECHA.format(new Date(deck.actualizado))}
+                        {formatFecha(deck.actualizado)}
                       </p>
                       {/* Dos lineas como mucho: la tarjeta tiene que seguir
                           midiendo lo mismo lleve nota o no. */}

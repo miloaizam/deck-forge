@@ -4,12 +4,41 @@ import { useRef, useState } from "react";
 import { Download, Upload } from "lucide-react";
 
 import { exportFile, importFile } from "@/lib/deck-code";
+import { MAX_BARAJAS, type MergeResult } from "@/lib/deck-storage";
 import type { Deck } from "@/lib/types";
+
+/** Lo que paso al importar: cuantas entraron y si se pudo escribir. */
+export interface ImportOutcome extends MergeResult {
+  guardado: boolean;
+}
 
 interface DeckTransferProps {
   decks: Deck[];
-  onImport: (barajas: Deck[]) => void;
+  onImport: (barajas: Deck[]) => ImportOutcome;
   onMessage: (mensaje: string) => void;
+}
+
+const contarBarajas = (n: number) => `${n} ${n === 1 ? "baraja" : "barajas"}`;
+
+/**
+ * Se dice la verdad completa: cuantas entraron, cuantas se cayeron por estar rotas
+ * y cuantas no cupieron. Antes decia "Importaste 50" aunque esas 50 hubieran
+ * desplazado a las que ya tenias.
+ */
+function mensajeImportacion(r: ImportOutcome, descartados: number): string {
+  if (!r.guardado) {
+    return "No pude guardar las barajas. Puede que el navegador no tenga espacio.";
+  }
+  if (r.entraron === 0) {
+    return `No cabe ninguna: ya tienes ${MAX_BARAJAS} barajas, el máximo. Borra alguna para importar.`;
+  }
+  const partes = [`Importaste ${contarBarajas(r.entraron)}.`];
+  if (descartados > 0) partes.push(`Descarté ${descartados} por estar dañadas.`);
+  if (r.sobraron > 0) {
+    const verbo = r.sobraron === 1 ? "no cupo" : "no cupieron";
+    partes.push(`${contarBarajas(r.sobraron)} ${verbo}: el máximo es ${MAX_BARAJAS}.`);
+  }
+  return partes.join(" ");
 }
 
 const BOTON =
@@ -57,13 +86,7 @@ export function DeckTransfer({ decks, onImport, onMessage }: DeckTransferProps) 
         return;
       }
 
-      onImport(resultado.barajas);
-      // Se dice la verdad completa: cuantos entraron y cuantos se cayeron.
-      onMessage(
-        resultado.descartados === 0
-          ? `Importaste ${resultado.barajas.length} ${resultado.barajas.length === 1 ? "baraja" : "barajas"}.`
-          : `Importaste ${resultado.barajas.length} y descarté ${resultado.descartados} por estar dañadas.`,
-      );
+      onMessage(mensajeImportacion(onImport(resultado.barajas), resultado.descartados));
     } catch {
       onMessage("No pude leer ese archivo.");
     } finally {

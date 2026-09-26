@@ -47,6 +47,21 @@ Ordenadas de más a menos importante.
 - **Arreglado cuando:** la CSP no lleva `'unsafe-inline'` en `script-src`, todas
   las páginas de `out/` hidratan en un navegador real y `pnpm run audit` pasa.
 
+## Nada comprueba el código antes de publicar
+
+- **Qué pasa:** los cambios se suben directo a `main` y no hay CI: que corran
+  `pnpm run check`, `build` y `audit` depende de acordarse. Un error de tipos o
+  una cabecera de seguridad perdida llegaría a producción.
+- **Arreglo propuesto:** un workflow de GitHub Actions que corra los tres en
+  cada push a `main` (y en los PR), más el hook de pre-commit que ya está en
+  [TODO.md](TODO.md).
+- **De paso, cadena de suministro:**
+  - `requirements.txt` usa `>=` sin versión fija. Son herramientas de
+    desarrollo, pero corren sobre imágenes bajadas de internet (Pillow).
+  - Valorar `minimumReleaseAge` en `pnpm-workspace.yaml`, para no instalar una
+    versión recién publicada, que es donde caen los paquetes secuestrados.
+- **Arreglado cuando:** un push con `check` en rojo queda marcado en GitHub.
+
 ## Un mazo compartido pasa por los logs de Cloudflare
 
 - **Qué pasa:** el enlace `/mazo/?d=…` lleva el mazo en la query string, que
