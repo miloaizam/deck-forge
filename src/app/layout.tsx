@@ -1,21 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 
+import { spaceGrotesk } from "@/lib/fonts";
 import { THEME_KEY } from "@/lib/theme";
 import "./globals.css";
-
-/**
- * Space Grotesk es la tipografia de marca. `next/font` la descarga en tiempo
- * de build y la auto-hospeda: en produccion no se pide nada a Google, lo que
- * mantiene la CSP cerrada a `font-src 'self'`.
- */
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {

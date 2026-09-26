@@ -16,6 +16,17 @@ Todo corre en el navegador del usuario.
 
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
+**Lo que falta y lo que está roto tiene su lista**, en la raíz:
+
+- [`PENDIENTES.md`](PENDIENTES.md): funcionalidades por hacer.
+- [`ISSUES.md`](ISSUES.md): errores, bugs y mejoras de lo que ya existe.
+
+Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
+arreglar algo de esas listas, su entrada se borra en el mismo commit** (no se
+tacha: lo hecho queda en git). Si queda a medias, se reescribe con lo que
+falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
+`ISSUES.md` en vez de perderse.
+
 ---
 
 ## 2. Stack
@@ -75,6 +86,8 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 ## 4. Estructura
 
 ```
+PENDIENTES.md  funcionalidades por hacer (se borra la entrada al hacerla)
+ISSUES.md      errores y mejoras abiertas (se borra la entrada al arreglarla)
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
                extras.json con las cartas sueltas de fuera del formato
@@ -862,6 +875,25 @@ Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` (placeholder) · `/barajas` (placeholder) · `/erratas` (placeholder).
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
+
+**Las páginas de error son una sola pantalla, `ErrorScreen`, y solo cambia el
+código.** El texto de cada uno vive en el mapa `ERRORES` del componente, así
+que agregar otro es agregar una entrada. Tienen el aire de la portada —sin
+navbar, fondo de forja, el número en grande con el gradiente de marca— y el
+logotipo como salida a casa. En un sitio estático **solo ocurren dos**:
+
+- **404**, `src/app/not-found.tsx`. El export la escribe en `out/404.html` y
+  Cloudflare la sirve para cualquier ruta que no exista
+  (`not_found_handling` en `wrangler.jsonc`).
+- **500**, `src/app/error.tsx`: algo revienta al pintar en el navegador.
+  Ofrece "Reintentar" con el `retry()` de Next 16 (ya no es `reset()`). Y
+  `src/app/global-error.tsx` cubre el caso de que falle el propio layout raíz:
+  reemplaza el documento entero, así que trae su `<html>`, `globals.css`, la
+  fuente (por eso vive en `src/lib/fonts.ts`) y aplica el tema guardado al
+  montar, porque el script inline del layout no llega hasta ahí.
+
+No hay servidor que devuelva un 403 o un 503: no se inventan páginas para
+códigos que no pueden salir.
 
 La navbar es una fila plana de cuatro enlaces (sin desplegable). Bajo `md` se
 pliegan detrás de un botón de menú: no caben junto al logotipo en un teléfono.
