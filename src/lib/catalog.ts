@@ -130,20 +130,35 @@ export function buildFacets(cards: Card[]): Facets {
   };
 }
 
+/** Minusculas y sin tildes: "samurai" encuentra Samurái y "tugarin", Tugarín. */
+function normalizeTerm(term: string): string {
+  return term
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
 /**
  * Indice de busqueda por nombre y habilidad.
  *
- * `prefix` deja que "kyu" encuentre "Kyubi"; `fuzzy` tolera una letra mal
- * escrita, que con nombres japoneses transliterados pasa seguido.
+ * Todas las palabras tienen que estar (`AND`): con el `OR` por defecto, cada
+ * palabra de "Thor el Poderoso" sumaba sus propias cartas y la busqueda
+ * devolvia media coleccion. `prefix` solo va en la ULTIMA palabra, la que se
+ * esta escribiendo, para que "kyu" encuentre Kyubi sin que "el" encuentre
+ * "elegir". Y `fuzzy` (una letra mal escrita, que con nombres japoneses
+ * transliterados pasa seguido) solo desde cuatro letras: en una palabra corta
+ * una letra de diferencia ya es otra palabra.
  */
 export function buildSearchIndex(cards: Card[]): MiniSearch<Card> {
   const index = new MiniSearch<Card>({
     idField: "id",
     fields: ["nombre", "habilidad", "raza", "codigo"],
     storeFields: ["id"],
+    processTerm: normalizeTerm,
     searchOptions: {
-      prefix: true,
-      fuzzy: 0.2,
+      combineWith: "AND",
+      prefix: (_term, i, terms) => i === terms.length - 1,
+      fuzzy: (term) => (term.length >= 4 ? 0.2 : false),
       boost: { nombre: 3, codigo: 2 },
     },
   });

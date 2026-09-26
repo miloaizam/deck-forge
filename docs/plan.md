@@ -476,7 +476,8 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
 
 **Fase 1 — Catálogo completo del formato** — hecha.
 - Las diez ediciones cargadas y revisadas contra el arte (2159 cartas), más las
-  31 reimpresiones de los mazos especiales del formato.
+  22 reimpresiones de los mazos especiales del formato, con su
+  impresión de pack.
 - Filtros: edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
   El atributo se filtra desde habilidad; la **legalidad** espera a la banlist.
 - Buscador por nombre y habilidad (MiniSearch).

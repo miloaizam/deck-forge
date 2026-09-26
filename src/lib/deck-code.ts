@@ -78,7 +78,8 @@ const SLUG = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
  * Prefijo de id -> numero con el que la edicion viaja en el enlace.
  *
  * Espejo en minusculas de `EDITION_CODES` en scripts/fetch_edition.py, con las
- * seis ediciones de fuera del formato que aportan cartas sueltas.
+ * ediciones de fuera del formato y los mazos especiales que aportan cartas
+ * sueltas.
  *
  * **LA POSICION ES EL CODIGO.** Solo se AGREGA al final: reordenar o borrar una
  * entrada cambia lo que significan los enlaces ya compartidos. Caben 32; si
@@ -102,14 +103,20 @@ const PREFIJOS: readonly string[] = [
   "dr",
   "cr",
   "fu",
-  // Ediciones de origen de las reimpresiones de los productos especiales.
+  // Reservados, sin edicion: se publicaron unas horas para cartas que luego
+  // se cambiaron por su impresion de pack. No se quitan porque correrian los
+  // codigos de las entradas siguientes.
   "su",
   "re",
   "cm",
   "te",
   "as",
   "mi",
+  // Los mazos del formato: Pack de Batalla: Dominio, Pack America y Dominio
+  // de Totems (este ultimo reservado hasta que tenga cartas).
   "pb",
+  "pa",
+  "dt",
 ];
 
 const ANCHO_VERSION = 8;

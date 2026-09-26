@@ -28,10 +28,10 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
     tipo: "Novedad",
-    titulo: "31 cartas nuevas: las de los mazos especiales del formato",
+    titulo: "22 cartas nuevas: las de los mazos especiales del formato",
     texto: [
-      "El catálogo suma las cartas que traen el Pack de Batalla: Dominio, el Pack América y Dominio de Tótems y que faltaban, como Tiamat, Thor el Poderoso, Devastador, Lou Carcolh, Balaur o Árbol del Grito. Salen con su edición de origen (Templarios, Asgard, Sumeria…) y se pueden agregar a cualquier baraja.",
-      "Las erratas oficiales de algunas de ellas, como la raza Dragón de Devastador, todavía no se aplican: igual que el resto de la Fe de Erratas, están en Documentos.",
+      "El catálogo suma las cartas que traen el Pack de Batalla: Dominio y el Pack América y que no están en ninguna de las diez ediciones, como Tiamat, Thor el Poderoso, Lahmu, Dante o Devastador. Salen con el arte de su mazo, y en el filtro de edición se encuentran por el nombre del mazo.",
+      'Ocho cartas de Pack América y Árbol del Grito de Dominio de Tótems llegarán cuando consigamos la imagen de su impresión. El buscador ahora exige todas las palabras: "Thor el Poderoso" encuentra a Thor y no a cada carta que diga "el".',
     ],
   },
   {

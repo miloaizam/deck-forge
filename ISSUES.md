@@ -14,6 +14,28 @@ Ordenadas de más a menos importante.
 
 ---
 
+## Nueve cartas de los mazos del formato, sin arte de su impresión de pack
+
+- **Qué pasa:** el formato admite la reimpresión de Pack América y Dominio de
+  Tótems, que tiene otro diseño que la impresión original, y de estas nueve no
+  se encontró esa imagen en ninguna fuente que se pueda bajar. Quedaron
+  **fuera del catálogo** (CLAUDE.md, "Los mazos especiales del formato"):
+  - **Pack América (SD1):** Lou Carcolh (SD1-04), Dama Dragón (SD1-11),
+    Balaur (SD1-14), Ataque de Dragón (SD1-16), Nube Incendiaria (SD1-19),
+    Guadaña Dragón (SD1-20), Kyrenia (SD1-21) y Tugarín (SD1-23).
+  - **Dominio de Tótems (SD2):** Árbol del Grito.
+- **Dónde se buscó:** el fandom solo tiene páginas `(SD)` de Devastador,
+  Dragón de Magma, Lambton Worm, Cristalino Amarillo y Máscara de Oro; La
+  Guarida no vende los SD; la API no tiene los mazos. La página de Facebook
+  **Cartoteca MyL** publica cada carta con su código (`SD1-04-39 Lou
+  Carcolh`), pero no se puede bajar sin sesión.
+- **Por dónde:** conseguir las imágenes (escaneo propio o Cartoteca MyL),
+  ponerlas en `images-src/pa-0NN.png` / `dt-0NN.png`, cargar la carta en
+  `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems` a
+  `editions.ts` con la primera, y sacarlas de `SIN_ARTE` en
+  `productos.test.ts` (y Ataque de Dragón de `documentos.test.ts`).
+- **Arreglado cuando:** están las nueve, con la impresión del mazo.
+
 ## Cartas en observación de la Banlist, sin cargar
 
 - **Qué pasa:** la Banlist pone **en observación** nueve cartas de ediciones

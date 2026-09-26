@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { buildFacets } from "./catalog";
+import { buildFacets, buildSearchIndex } from "./catalog";
 import { EDITIONS } from "./editions";
 import { esClaseDeOro } from "./oros";
 import { catalogSchema, FRECUENCIAS, type Card } from "./types";
@@ -60,4 +60,22 @@ test("tipo, raza, escuela y habilidad van en orden alfabetico, tildes incluidas"
 
 test("la frecuencia conserva su orden natural, de la mas rara a la mas comun", () => {
   assert.deepEqual(facets.frecuencias, [...FRECUENCIAS]);
+});
+
+const index = buildSearchIndex(CATALOGO);
+const nombres = (q: string) => [
+  ...new Set(index.search(q).map((r) => CATALOGO.find((c) => c.id === r.id)!.nombre)),
+];
+
+test("el buscador exige todas las palabras", () => {
+  // Con OR, "Thor el Poderoso" devolvia cada carta que dijera "el".
+  assert.deepEqual(nombres("Thor el Poderoso"), ["Thor el Poderoso"]);
+  assert.deepEqual(nombres("Gólem de Praga"), ["Gólem de Praga"]);
+  assert.ok(nombres("Lambton Worm").every((n) => n === "Lambton Worm"));
+});
+
+test("el buscador completa la palabra que se esta escribiendo, sin tildes", () => {
+  assert.ok(nombres("kyu").some((n) => n.startsWith("Kyubi")));
+  assert.deepEqual(nombres("golem de praga"), nombres("Gólem de Praga"));
+  assert.ok(nombres("Thor el Pode").includes("Thor el Poderoso"));
 });

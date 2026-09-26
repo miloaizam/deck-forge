@@ -19,9 +19,10 @@ export interface Edition {
   titulo: string;
   cargada: boolean;
   /**
-   * La edicion no es del formato, pero aporta unas pocas cartas sueltas que si
-   * se juegan en el formato: las reimpresiones de sus mazos especiales (Pack
-   * de Batalla: Dominio, Pack America, Dominio de Totems). Viven en
+   * No es una de las diez ediciones, pero aporta cartas sueltas que se juegan
+   * en el formato. Hoy son los mazos especiales (Pack de Batalla: Dominio,
+   * Pack America): sus cartas van con la impresion del mazo y el mazo como
+   * edicion, nunca con la edicion vieja de donde salieron. Viven en
    * `data-src/extras.json`; ver CLAUDE.md.
    *
    * Aparece en el filtro de edicion del catalogo, para que su nombre se lea
@@ -51,18 +52,13 @@ export const EDITIONS: Edition[] = [
   { slug: "dominios-de-ra", titulo: "Dominios de Ra", cargada: true, parcial: true },
   { slug: "cruzadas", titulo: "Cruzadas", cargada: true, parcial: true },
   { slug: "furia", titulo: "Furia", cargada: true, parcial: true },
-  { slug: "sumeria", titulo: "Sumeria", cargada: true, parcial: true },
-  { slug: "rebelion", titulo: "Rebelión", cargada: true, parcial: true },
-  { slug: "camelot", titulo: "Camelot", cargada: true, parcial: true },
-  { slug: "templarios", titulo: "Templarios", cargada: true, parcial: true },
-  { slug: "asgard", titulo: "Asgard", cargada: true, parcial: true },
-  { slug: "midgard", titulo: "Midgard", cargada: true, parcial: true },
   {
     slug: "pack-de-batalla-dominio",
     titulo: "Pack de Batalla: Dominio",
     cargada: true,
     parcial: true,
   },
+  { slug: "pack-america", titulo: "Pack América", cargada: true, parcial: true },
 ];
 
 /**

@@ -32,7 +32,7 @@ Gratis, sin cuenta y sin instalar nada. Abres el sitio y armas.
 ## Qué encuentras
 
 **El catálogo completo del formato.** Las 2159 cartas de las diez ediciones y las
-31 de sus mazos especiales, con
+22 de sus mazos especiales, con
 su arte y su texto. Buscas por nombre o por lo que dice la carta, y filtras por
 edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
 
