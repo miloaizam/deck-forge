@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { applyFilters, buildFacets, buildSearchIndex, EMPTY_FILTERS } from "./catalog";
 import { buildCardIndex } from "./deck-rules";
-import { claseDeOro, CLASES_DE_ORO, subtituloDeCarta } from "./oros";
+import { claseDeOro, etiquetaDeTipo, subtituloDeCarta } from "./oros";
 import { catalogSchema, type Card } from "./types";
 
 /** Los tres tipos de Oro, contra el catalogo real. */
@@ -36,25 +36,43 @@ test("los iniciales de edicion funcionan como los sin habilidad", () => {
   for (const c of deClase("inicial-edicion")) assert.match(c.nombre, /^Oro Inicial /);
 });
 
-test("el filtro de Oro ofrece las tres clases y devuelve cada una", () => {
-  assert.deepEqual(buildFacets(CATALOGO).oros, [...CLASES_DE_ORO]);
+test("el filtro Tipo ofrece los tres tipos de Oro bajo Oro, y devuelve cada uno", () => {
+  assert.deepEqual(buildFacets(CATALOGO).tipos, [
+    "Aliado",
+    "Arma",
+    "Oro",
+    "con-habilidad",
+    "sin-habilidad",
+    "inicial-edicion",
+    "Talismán",
+    "Tótem",
+  ]);
   const indice = buildSearchIndex(CATALOGO);
   for (const [k, n] of [
+    ["Oro", 224],
     ["con-habilidad", 104],
     ["sin-habilidad", 111],
     ["inicial-edicion", 9],
   ] as const) {
     assert.equal(
-      applyFilters(CATALOGO, { ...EMPTY_FILTERS, oro: k }, indice).length,
+      applyFilters(CATALOGO, { ...EMPTY_FILTERS, tipo: k }, indice).length,
       n,
       k,
     );
   }
+  assert.equal(etiquetaDeTipo("inicial-edicion"), "Oro inicial de edición");
+  assert.equal(etiquetaDeTipo("Arma"), "Arma");
 });
 
-test("en una edicion sin Oro inicial de edicion, esa opcion no se ofrece", () => {
+test("un tipo de Oro que la edicion no tiene no se ofrece", () => {
+  // Escuelas Elementales solo trae Oros con habilidad (34): ni sin habilidad
+  // ni inicial de edicion. "Oro" si sale, que es un tipo de carta.
   const ee = CATALOGO.filter((c) => c.edicion === "escuelas-elementales");
-  assert.ok(!buildFacets(ee).oros.includes("inicial-edicion"));
+  const tipos = buildFacets(ee).tipos;
+  assert.ok(tipos.includes("Oro"));
+  assert.ok(tipos.includes("con-habilidad"));
+  assert.ok(!tipos.includes("sin-habilidad"));
+  assert.ok(!tipos.includes("inicial-edicion"));
 });
 
 test("el subtitulo de un Oro dice su clase; el de un Aliado, su raza", () => {

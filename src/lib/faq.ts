@@ -101,7 +101,9 @@ export const FAQ: FaqSection[] = [
       },
       {
         pregunta: "¿Qué tipos de Oro hay?",
-        respuesta: ["Tres, y se filtran por separado desde **Filtros → Oro**:"],
+        respuesta: [
+          "Tres, y cada uno tiene su opción en **Filtros → Tipo**, bajo «Oro» (que los muestra todos):",
+        ],
         lista: [
           "**Con habilidad:** cartas como cualquier otra. Hasta **3 copias**, o **1** si es Única.",
           "**Sin habilidad:** los Oros con que se paga todo. **Sin tope** de copias, y cualquiera puede ser el **oro inicial** de la baraja.",

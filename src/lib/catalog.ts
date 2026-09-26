@@ -2,15 +2,8 @@ import MiniSearch from "minisearch";
 
 import { compareEditions } from "./card-order";
 import { EDITIONS } from "./editions";
-import { claseDeOro, CLASES_DE_ORO } from "./oros";
-import {
-  ESCUELAS,
-  FRECUENCIAS,
-  KEYWORDS_IMPRESAS,
-  RAZAS,
-  TIPOS,
-  type Card,
-} from "./types";
+import { coincideTipo, esClaseDeOro, OPCIONES_DE_TIPO } from "./oros";
+import { ESCUELAS, FRECUENCIAS, KEYWORDS_IMPRESAS, RAZAS, type Card } from "./types";
 
 /**
  * Cuantas cartas por pagina.
@@ -27,8 +20,6 @@ export interface CatalogFilters {
   edicion: string;
   habilidad: string;
   tipo: string;
-  /** Una de CLASES_DE_ORO (`oros.ts`): con habilidad, sin ella o inicial de edicion. */
-  oro: string;
   raza: string;
   escuela: string;
   frecuencia: string;
@@ -41,7 +32,6 @@ export const EMPTY_FILTERS: CatalogFilters = {
   edicion: "",
   habilidad: "",
   tipo: "",
-  oro: "",
   raza: "",
   escuela: "",
   frecuencia: "",
@@ -85,8 +75,6 @@ export interface Facets {
   ediciones: string[];
   habilidades: string[];
   tipos: string[];
-  /** Las clases de Oro presentes, en el orden de CLASES_DE_ORO. */
-  oros: string[];
   razas: string[];
   escuelas: string[];
   frecuencias: string[];
@@ -129,10 +117,11 @@ export function buildFacets(cards: Card[]): Facets {
   return {
     ediciones: ediciones.length > 1 ? ediciones : [],
     habilidades: alfabetico(KEYWORDS_IMPRESAS.filter((k) => declaradas.has(k))),
-    tipos: alfabetico(TIPOS),
-    // Solo las que hay: en una edicion sin Oros iniciales de edicion (Escuelas
-    // Elementales) esa opcion no devolveria nada.
-    oros: CLASES_DE_ORO.filter((k) => cards.some((c) => claseDeOro(c) === k)),
+    // Los tipos y, bajo "Oro", sus tres clases (`oros.ts`). Las clases solo si
+    // hay cartas: en Escuelas Elementales no hay Oro inicial de edicion.
+    tipos: OPCIONES_DE_TIPO.filter(
+      (t) => !esClaseDeOro(t) || cards.some((c) => coincideTipo(c, t)),
+    ),
     razas: alfabetico(RAZAS),
     escuelas: alfabetico(ESCUELAS),
     frecuencias: [...FRECUENCIAS],
@@ -185,8 +174,7 @@ export function applyFilters(
     (c) =>
       matches(c.edicion, filters.edicion) &&
       (filters.habilidad === "" || c.keywords.includes(filters.habilidad)) &&
-      matches(c.tipo, filters.tipo) &&
-      (filters.oro === "" || claseDeOro(c) === filters.oro) &&
+      coincideTipo(c, filters.tipo) &&
       matches(c.raza, filters.raza) &&
       matches(c.escuela, filters.escuela) &&
       matches(c.frecuencia, filters.frecuencia) &&

@@ -1,5 +1,5 @@
 import { esOroInicial } from "./card-order";
-import type { Card } from "./types";
+import { TIPOS, type Card } from "./types";
 
 /**
  * Los tres tipos de Oro, que el catalogo y el constructor distinguen:
@@ -34,13 +34,6 @@ export const ETIQUETA_ORO: Record<ClaseDeOro, string> = {
   "inicial-edicion": "Oro inicial de edición",
 };
 
-/** La etiqueta en el filtro, donde "Oro" ya lo dice el nombre del selector. */
-export const ETIQUETA_ORO_CORTA: Record<ClaseDeOro, string> = {
-  "con-habilidad": "Con habilidad",
-  "sin-habilidad": "Sin habilidad",
-  "inicial-edicion": "Inicial de edición",
-};
-
 export function esClaseDeOro(v: string): v is ClaseDeOro {
   return (CLASES_DE_ORO as readonly string[]).includes(v);
 }
@@ -63,4 +56,26 @@ export function subtituloDeCarta(card: Card): string {
 export function tipoDeCarta(card: Card): string {
   const clase = claseDeOro(card);
   return clase ? ETIQUETA_ORO[clase] : card.tipo;
+}
+
+/**
+ * Las opciones del filtro Tipo: los tipos de carta en orden alfabetico, con
+ * los tres tipos de Oro justo debajo de "Oro" (que sigue ofreciendo todos).
+ * Para el jugador los tres son tipos de carta, asi que no llevan filtro
+ * aparte.
+ */
+const COLLATOR = new Intl.Collator("es");
+export const OPCIONES_DE_TIPO: readonly string[] = [...TIPOS]
+  .sort(COLLATOR.compare)
+  .flatMap((t) => (t === "Oro" ? [t, ...CLASES_DE_ORO] : [t]));
+
+/** Si la carta cae en esa opcion del filtro Tipo: un tipo o una clase de Oro. */
+export function coincideTipo(card: Card, valor: string): boolean {
+  if (valor === "") return true;
+  return esClaseDeOro(valor) ? claseDeOro(card) === valor : card.tipo === valor;
+}
+
+/** Como se lee una opcion del filtro Tipo. */
+export function etiquetaDeTipo(valor: string): string {
+  return esClaseDeOro(valor) ? ETIQUETA_ORO[valor] : valor;
 }

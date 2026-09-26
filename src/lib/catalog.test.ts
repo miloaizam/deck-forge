@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { buildFacets } from "./catalog";
 import { EDITIONS } from "./editions";
+import { esClaseDeOro } from "./oros";
 import { catalogSchema, FRECUENCIAS, type Card } from "./types";
 
 /**
@@ -37,8 +38,11 @@ test("las ediciones van de la mas nueva a la mas vieja, y las parciales al final
 
 test("tipo, raza, escuela y habilidad van en orden alfabetico, tildes incluidas", () => {
   const collator = new Intl.Collator("es");
+  // En tipos, los tres tipos de Oro van bajo "Oro" (oros.test.ts): el orden
+  // alfabetico es el de los tipos de carta.
+  const tiposDeCarta = facets.tipos.filter((t) => !esClaseDeOro(t));
   for (const [nombre, lista] of Object.entries({
-    tipos: facets.tipos,
+    tipos: tiposDeCarta,
     razas: facets.razas,
     escuelas: facets.escuelas,
     habilidades: facets.habilidades,
@@ -50,7 +54,7 @@ test("tipo, raza, escuela y habilidad van en orden alfabetico, tildes incluidas"
     );
   }
   // Un sort() a secas pondria las palabras con tilde detras de la Z.
-  assert.deepEqual(facets.tipos, ["Aliado", "Arma", "Oro", "Talismán", "Tótem"]);
+  assert.deepEqual(tiposDeCarta, ["Aliado", "Arma", "Oro", "Talismán", "Tótem"]);
   assert.ok(facets.razas.indexOf("Bárbaro") < facets.razas.indexOf("Bestia"));
 });
 
