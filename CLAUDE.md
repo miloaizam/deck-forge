@@ -1022,7 +1022,11 @@ en el mismo commit que el cambio que los afecta:**
   (`HelpButton.tsx`, un `<dialog>` lateral con `<details>`). Describen lo que
   la interfaz hace **hoy**, con los nombres que muestra: si cambia un botón o
   una regla, se cambia la respuesta. Una ayuda que contradice al sitio es peor
-  que no tenerla.
+  que no tenerla. Las palabras clave van entre `**` y se pintan en
+  negrita violeta (`text-accent`) con nodos de texto y `<strong>`, sin HTML;
+  un test vigila que no quede un `**` suelto. Todas las preguntas comparten
+  `name` en su `<details>`, lo que las vuelve un acordeón exclusivo: el
+  navegador cierra la abierta al abrir otra, sin código propio.
 - **`src/lib/novedades.ts`**, la línea de tiempo de `/novedades`. Entra solo lo
   que al usuario le cambia algo, contado para quien juega: nada de seguridad
   interna, herramientas de desarrollo ni refactors. La fecha es la del commit,

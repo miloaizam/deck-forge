@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { FAQ } from "./faq";
+import { FAQ, segmentos } from "./faq";
 import { NOVEDADES, TIPOS_NOVEDAD } from "./novedades";
 
 /**
@@ -40,4 +40,22 @@ test("dos entradas no comparten titulo, que es su clave al pintarlas", () => {
     preguntas.length,
     "preguntas repetidas en la ayuda",
   );
+});
+
+test("la ayuda no deja asteriscos sueltos ni resaltados vacios", () => {
+  const textos = FAQ.flatMap((sec) =>
+    sec.items.flatMap((i) => [...i.respuesta, ...(i.lista ?? [])]),
+  );
+  for (const t of textos) {
+    // Un ** sin pareja se veria tal cual en pantalla.
+    assert.ok(
+      !segmentos(t).some((s) => s.texto.includes("**")),
+      `asteriscos sueltos: ${t}`,
+    );
+  }
+  assert.deepEqual(segmentos("Ve a **Mis barajas** ya"), [
+    { texto: "Ve a ", destacado: false },
+    { texto: "Mis barajas", destacado: true },
+    { texto: " ya", destacado: false },
+  ]);
 });

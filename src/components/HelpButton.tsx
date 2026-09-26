@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ChevronDown, CircleHelp, Sparkles, X } from "lucide-react";
 
-import { FAQ } from "@/lib/faq";
+import { FAQ, segmentos } from "@/lib/faq";
 
 /**
  * Ayuda del sitio: un signo de pregunta en la navbar que abre un panel lateral
@@ -13,10 +13,30 @@ import { FAQ } from "@/lib/faq";
  * El panel es un <dialog> nativo, como CardModal y ConfirmDialog: trae foco
  * atrapado, cierre con Esc y devolucion del foco al boton que lo abrio, sin
  * librerias. Cada pregunta es un <details>, que se despliega con teclado y
- * lector de pantalla sin codigo propio.
+ * lector de pantalla sin codigo propio. Todas comparten `name`, y eso las
+ * vuelve un acordeon exclusivo: al abrir una, el navegador cierra la que
+ * estuviera abierta. Tampoco hace falta codigo para eso.
  *
  * Solo esta en la navbar: la portada no la lleva, a proposito.
  */
+/**
+ * Un texto de la ayuda con sus palabras clave (`**asi**` en faq.ts) en negrita
+ * violeta. Se arma con nodos de texto y <strong>: nada de HTML crudo. El
+ * violeta es `text-accent`, el mismo de las keywords de las cartas, que en el
+ * tema claro se oscurece para seguir siendo legible.
+ */
+function Marcado({ texto }: { texto: string }) {
+  return segmentos(texto).map((s, i) =>
+    s.destacado ? (
+      <strong key={i} className="text-accent font-semibold">
+        {s.texto}
+      </strong>
+    ) : (
+      s.texto
+    ),
+  );
+}
+
 export function HelpButton() {
   const ref = useRef<HTMLDialogElement>(null);
   const cerrar = () => ref.current?.close();
@@ -74,7 +94,7 @@ export function HelpButton() {
                 </h3>
                 <div className="divide-line divide-y">
                   {seccion.items.map((item) => (
-                    <details key={item.pregunta} className="group">
+                    <details key={item.pregunta} name="faq" className="group">
                       <summary className="focus-visible:outline-brand-500 hover:text-accent flex cursor-pointer list-none items-center justify-between gap-3 rounded py-3 text-[15px] font-medium transition-colors [&::-webkit-details-marker]:hidden">
                         {item.pregunta}
                         <ChevronDown
@@ -85,12 +105,16 @@ export function HelpButton() {
                       </summary>
                       <div className="text-muted flex flex-col gap-2 pb-4 text-[14px] leading-relaxed">
                         {item.respuesta.map((parrafo) => (
-                          <p key={parrafo}>{parrafo}</p>
+                          <p key={parrafo}>
+                            <Marcado texto={parrafo} />
+                          </p>
                         ))}
                         {item.lista && (
                           <ul className="flex list-disc flex-col gap-1 pl-5">
                             {item.lista.map((linea) => (
-                              <li key={linea}>{linea}</li>
+                              <li key={linea}>
+                                <Marcado texto={linea} />
+                              </li>
                             ))}
                           </ul>
                         )}
