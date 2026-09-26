@@ -40,21 +40,6 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 
 ## Constructor y barajas
 
-### Distinguir los tres tipos de Oro
-
-- **Qué:** que el catálogo y el constructor distingan los Oros **sin
-  habilidad**, los **iniciales** y los **con habilidad**. Hoy son todos "Oro".
-- **Ya existe:** `esOroInicial()` en `src/lib/card-order.ts` (reconoce la carta
-  a arte completo de cada edición por su nombre, "Oro Inicial <edición>") y el
-  criterio `oroSinHabilidad` de `src/lib/deck-rules.ts`
-  (`tipo === "Oro" && habilidad === ""`).
-- **Ojo con el nombre:** para las reglas, *el oro inicial de una baraja* es
-  cualquier Oro sin habilidad que se aparta antes de empezar, no solo las
-  cartas "Oro Inicial <edición>". La interfaz no puede mezclar los dos
-  significados.
-- **Terminado cuando:** se puede filtrar por cada tipo de Oro y se ven
-  distintos en la grilla y en el panel de la baraja.
-
 ## Catálogo y cartas
 
 ### Reimpresiones de otras ediciones

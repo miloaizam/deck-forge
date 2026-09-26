@@ -7,6 +7,7 @@ import { Minus, Plus, X } from "lucide-react";
 import { AbilityText } from "./AbilityText";
 import { CARD_RATIO, marcarCargada } from "./CardTile";
 import { editionTitle } from "@/lib/editions";
+import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -112,7 +113,7 @@ export function CardModal({
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="border-line bg-accent-soft text-accent rounded-chip border px-2.5 py-1 text-xs">
-                    {mostrada.tipo}
+                    {tipoDeCarta(mostrada)}
                   </span>
                   {mostrada.raza && (
                     <span className="border-line bg-panel text-muted rounded-chip border px-2.5 py-1 text-xs">

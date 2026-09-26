@@ -1125,9 +1125,26 @@ páginas usan el mismo `<main>` de 1480 px.
 
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
-ocho facetas: edición (solo en `/catalogo`, porque en la página de una edición
-no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
-y fuerza.
+nueve facetas: edición (solo en `/catalogo`, porque en la página de una edición
+no tendría nada que elegir), habilidad, tipo, **Oro**, raza, escuela,
+frecuencia, coste y fuerza. La de Oro y la de tipo van de la mano en
+`Filters.tsx`: elegir un tipo de Oro pone el tipo en Oro, y elegir otro tipo
+quita el de Oro, para que no salga una grilla vacía sin explicación.
+
+**Los Oros son de tres tipos** (`src/lib/oros.ts`), y cada uno cae en uno
+solo: **con habilidad** (104: cartas como cualquier otra, tope de 3 o 1 si es
+Única), **sin habilidad** (111: sin tope, y cualquiera puede ser el oro
+inicial de la baraja) y **Oro inicial de edición** (9: las cartas «Oro Inicial
+<edición>» a arte completo, que reconoce `esOroInicial()`). Los de edición
+funcionan exactamente como los sin habilidad; se separan para filtrarlos y
+lucirlos, y en la grilla llevan una pastilla «Inicial de edición». **Ojo con el
+nombre**: «oro inicial» a secas es el ROL en la baraja (`Deck.oroInicial`, la
+moneda del panel), que cumple cualquiera de los dos últimos tipos; por eso el
+tercero se dice siempre «de edición», y en el panel el rol manda sobre la
+clase («Oro inicial · de edición»). Las reglas no miran la clase:
+`oroSinHabilidad` cubre a los dos. `RuleCard` lleva `claseOro` solo para
+mostrarla. Escuelas Elementales no tiene Oro inicial de edición, y el filtro no
+ofrece esa opción en su página.
 
 **Cada filtro ofrece sus opciones en un orden decidido**, en `buildFacets()`
 (`src/lib/catalog.ts`):

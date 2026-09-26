@@ -50,7 +50,7 @@ export function compareEditions(a: string, b: string): number {
  * La API le pone el numero mas alto de la edicion, asi que por codigo caeria
  * al final de los Oros; en la practica es el primero que se busca.
  */
-export function esOroInicial(card: Card): boolean {
+export function esOroInicial(card: Pick<Card, "tipo" | "nombre">): boolean {
   return card.tipo === "Oro" && card.nombre.startsWith("Oro Inicial");
 }
 

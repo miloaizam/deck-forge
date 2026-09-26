@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
     tipo: "Novedad",
+    titulo: "Tres tipos de Oro, y un filtro para cada uno",
+    texto: [
+      "El catálogo y el constructor distinguen ahora los Oros con habilidad, los sin habilidad y los Oros iniciales de edición: las cartas «Oro Inicial» de cada edición, a arte completo, marcadas en la grilla.",
+      "Se filtran desde Filtros → Oro. Los iniciales de edición funcionan igual que los sin habilidad: sirven de oro inicial de la baraja y no tienen tope de copias.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Novedad",
     titulo: "La baraja en curso ya no se pierde",
     texto: [
       "El constructor guarda solo un borrador de la baraja que estás armando. Si recargas la página, cambias de sección o cierras la pestaña, al volver se retoma donde quedó.",

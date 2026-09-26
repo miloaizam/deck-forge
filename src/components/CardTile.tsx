@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 
+import { claseDeOro, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -44,23 +45,37 @@ export function CardTile({
         aria-label={`Ver detalle de ${card.nombre}`}
         className="focus-visible:outline-brand-500 block w-full text-left"
       >
-        <Image
-          src={card.thumb}
-          alt={`Carta: ${card.nombre}`}
-          width={200}
-          height={286}
-          loading="lazy"
-          // Mientras baja la imagen, su hueco late (`.imagen-carga`).
-          onLoad={marcarCargada}
-          className="imagen-carga w-full"
-          style={{ aspectRatio: CARD_RATIO }}
-        />
+        <span className="relative block">
+          <Image
+            src={card.thumb}
+            alt={`Carta: ${card.nombre}`}
+            width={200}
+            height={286}
+            loading="lazy"
+            // Mientras baja la imagen, su hueco late (`.imagen-carga`).
+            onLoad={marcarCargada}
+            className="imagen-carga w-full"
+            style={{ aspectRatio: CARD_RATIO }}
+          />
+          {/* Los nueve Oros iniciales de edicion se lucen: son la carta que
+              se elige por gusto. La pastilla es adorno; el texto de abajo ya
+              dice la clase para el lector de pantalla. */}
+          {claseDeOro(card) === "inicial-edicion" && (
+            <span
+              aria-hidden="true"
+              className="bg-surface/85 text-accent rounded-chip absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium backdrop-blur"
+            >
+              <Sparkles size={12} />
+              Inicial de edición
+            </span>
+          )}
+        </span>
         <span className="block px-2.5 py-2">
           <span className="text-ink group-hover:text-accent block truncate text-[13px] leading-tight font-medium transition-colors">
             {card.nombre}
           </span>
           <span className="text-muted mt-0.5 block truncate text-[11px]">
-            {card.raza ?? card.tipo}
+            {subtituloDeCarta(card)}
           </span>
         </span>
       </button>

@@ -5,6 +5,7 @@ import { Funnel, Search, X } from "lucide-react";
 
 import { Select } from "./Select";
 import type { CatalogFilters, Facets } from "@/lib/catalog";
+import { esClaseDeOro, ETIQUETA_ORO_CORTA } from "@/lib/oros";
 import { countActiveFilters } from "@/lib/catalog";
 import { editionTitle } from "@/lib/editions";
 import { TEXT_FIELD } from "@/lib/ui";
@@ -24,12 +25,23 @@ interface FiltersProps {
  * pantalla, sobre todo en el telefono; plegados, la primera cosa que se ve al
  * entrar al catalogo son las cartas.
  */
+/**
+ * El tipo de Oro y el tipo de carta van de la mano: elegir un tipo de Oro
+ * pone el tipo en Oro, y elegir otro tipo quita el de Oro. Si no, "Aliado" y
+ * "Sin habilidad" juntos darian una grilla vacia sin explicar por que.
+ */
+function conOro(f: CatalogFilters, cambio: keyof CatalogFilters): CatalogFilters {
+  if (cambio === "oro" && f.oro !== "") return { ...f, tipo: "Oro" };
+  if (cambio === "tipo" && f.tipo !== "Oro" && f.tipo !== "") return { ...f, oro: "" };
+  return f;
+}
+
 export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
   const set = (key: keyof CatalogFilters) => (value: string) =>
-    onChange({ ...filters, [key]: value });
+    onChange(conOro({ ...filters, [key]: value }, key));
 
   const activos = countActiveFilters(filters);
 
@@ -101,8 +113,9 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
           <div className="pt-4">
             <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {/* Dos filas de cuatro en pantalla ancha, en el orden en que se
-                suele filtrar. La edicion solo aparece en /catalogo: en la
+                {/* En pantalla ancha, filas de cuatro en el orden en que se
+                suele filtrar; el tipo de Oro va junto al tipo. La edicion
+                solo aparece en /catalogo: en la
                 pagina de una edicion la faceta viene vacia y el Select no se
                 dibuja. Luz y Oscuridad no tienen selector propio: son
                 keywords impresas y salen en Habilidad. */}
@@ -130,6 +143,13 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
                   value={filters.tipo}
                   options={facets.tipos}
                   onChange={set("tipo")}
+                />
+                <Select
+                  label="Oro"
+                  value={filters.oro}
+                  options={facets.oros}
+                  onChange={set("oro")}
+                  format={(k) => (esClaseDeOro(k) ? ETIQUETA_ORO_CORTA[k] : k)}
                 />
                 <Select
                   label="Raza"

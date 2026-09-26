@@ -1,3 +1,4 @@
+import { claseDeOro, type ClaseDeOro } from "./oros";
 import { sortCards } from "./card-order";
 import { copiesOf, totalCards, type DeckZone } from "./deck";
 import {
@@ -70,6 +71,12 @@ export interface RuleCard {
    */
   mercenario: boolean;
   /**
+   * Con habilidad, sin ella o inicial de edicion (`oros.ts`), o `null` si no es
+   * Oro. Es solo para mostrarla: las reglas miran `oroSinHabilidad`, que cubre
+   * a las dos ultimas.
+   */
+  claseOro: ClaseDeOro | null;
+  /**
    * Lugar de la carta en el orden del catalogo (`compareCards`), ya resuelto:
    * la baraja se pinta en ese mismo orden y aqui no queda mas que restar. Lo pone
    * `buildCardIndex`, que es quien ve el catalogo entero.
@@ -92,6 +99,7 @@ export function toRuleCard(c: Card, orden = 0): RuleCard {
     unica: c.keywords.includes("Única"),
     oroSinHabilidad: c.tipo === "Oro" && c.habilidad.trim() === "",
     mercenario: c.keywords.includes("Mercenario"),
+    claseOro: claseDeOro(c),
   };
 }
 

@@ -100,9 +100,18 @@ export const FAQ: FaqSection[] = [
         ],
       },
       {
+        pregunta: "¿Qué tipos de Oro hay?",
+        respuesta: ["Tres, y se filtran por separado desde **Filtros → Oro**:"],
+        lista: [
+          "**Con habilidad:** cartas como cualquier otra. Hasta **3 copias**, o **1** si es Única.",
+          "**Sin habilidad:** los Oros con que se paga todo. **Sin tope** de copias, y cualquiera puede ser el **oro inicial** de la baraja.",
+          "**Oro inicial de edición:** los «Oro Inicial» de cada edición, a arte completo. Funcionan **igual** que los sin habilidad; están aparte para elegir un oro inicial vistoso.",
+        ],
+      },
+      {
         pregunta: "¿Cómo elijo el oro inicial?",
         respuesta: [
-          "En el panel de la baraja, cada **Oro sin habilidad** de la baraja (no del side deck) lleva un **botón con una moneda**: tócalo y ese Oro pasa a ser el inicial. Tiene que ser un Oro del que lleves **una sola copia**.",
+          "En el panel de la baraja, cada **Oro sin habilidad** o **Oro inicial de edición** de la baraja (no del side deck) lleva un **botón con una moneda**: tócalo y ese Oro pasa a ser el inicial. Tiene que ser un Oro del que lleves **una sola copia**.",
         ],
       },
       {

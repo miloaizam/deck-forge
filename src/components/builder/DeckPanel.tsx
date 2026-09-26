@@ -18,6 +18,7 @@ import {
   DECK_TOTAL,
 } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Deck, type Tipo } from "@/lib/types";
+import { ETIQUETA_ORO } from "@/lib/oros";
 import { cn } from "@/lib/utils";
 
 interface DeckPanelProps {
@@ -142,7 +143,14 @@ function Fila({
             {entry.card.nombre}
           </span>
           <span className="text-muted block truncate text-[11px]">
-            {esOroInicial ? "Oro inicial" : (entry.card.raza ?? entry.card.tipo)}
+            {/* El rol en la baraja manda sobre la clase de la carta. */}
+            {esOroInicial
+              ? entry.card.claseOro === "inicial-edicion"
+                ? "Oro inicial · de edición"
+                : "Oro inicial"
+              : entry.card.claseOro
+                ? ETIQUETA_ORO[entry.card.claseOro]
+                : (entry.card.raza ?? entry.card.tipo)}
             {entry.card.unica && " · Única"}
           </span>
         </span>
