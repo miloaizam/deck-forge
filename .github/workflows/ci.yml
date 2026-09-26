@@ -1,0 +1,58 @@
+# Comprueba cada push a main y cada PR: los hooks de pre-commit sobre todo el
+# repo (formato, lint, tipos, tests e higiene), el build y la auditoria de
+# seguridad del sitio construido. El pre-commit local se puede saltar con
+# --no-verify; esto no.
+#
+# Las actions van fijadas por SHA y no por tag, que se puede mover. El
+# comentario dice a que version corresponde cada una.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Toma la version de pnpm del campo packageManager de package.json.
+      - uses: pnpm/action-setup@d9184bf108216479bc5a137cc391f4d7b14c870b # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Dependencias
+        run: |
+          pnpm install --frozen-lockfile
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Hooks de pre-commit (formato, lint, tipos, tests, higiene)
+        run: .venv/bin/pre-commit run --all-files --show-diff-on-failure
+
+      - name: Build (incluye los hashes de la CSP)
+        run: pnpm run build
+
+      - name: Auditoria de seguridad del build
+        run: pnpm run audit

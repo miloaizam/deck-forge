@@ -1,0 +1,61 @@
+# Hooks de pre-commit (https://pre-commit.com). Se activan con `pnpm install`
+# si el venv ya tiene pre-commit (ver scripts/install-hooks.mjs), o a mano:
+#
+#   .venv/bin/pip install -r requirements.txt
+#   .venv/bin/pre-commit install
+#
+# pre-commit guarda aparte lo que no esta en el stage antes de correr, asi
+# que se revisa exactamente lo que va a entrar en el commit.
+#
+# El CI corre lo mismo con `pre-commit run --all-files` (.github/workflows).
+
+minimum_pre_commit_version: "4.0.0"
+
+repos:
+  # Higiene general. Fijado por SHA y no por tag: un tag se puede mover.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: detect-private-key
+      # Los originales de las cartas van en images-src/ (git-ignorado): una
+      # imagen grande que se cuele es casi siempre uno de esos.
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+
+  # Lo del proyecto: los mismos scripts de package.json, sin duplicar su
+  # configuracion aqui.
+  - repo: local
+    hooks:
+      - id: prettier
+        name: formato (prettier)
+        entry: pnpm exec prettier --check --ignore-unknown
+        language: system
+        types: [text]
+
+      - id: eslint
+        name: lint (eslint)
+        entry: pnpm exec eslint --no-warn-ignored
+        language: system
+        files: \.(ts|tsx|js|mjs)$
+
+      # Tipos y tests miran el proyecto entero: un cambio en un archivo
+      # rompe a otro que no se toco. Por eso no reciben la lista de archivos.
+      - id: typecheck
+        name: tipos (next typegen + tsc)
+        entry: pnpm run typecheck
+        language: system
+        pass_filenames: false
+        files: ^(.*\.(ts|tsx|js|mjs)|tsconfig\.json|package\.json)$
+
+      # Los tests van contra el catalogo real, asi que tambien corren cuando
+      # cambia public/data/cards.json.
+      - id: tests
+        name: tests (node --test)
+        entry: pnpm run test
+        language: system
+        pass_filenames: false
+        files: ^(src/.*|public/data/cards\.json|scripts/ts-imports\.mjs|package\.json)$

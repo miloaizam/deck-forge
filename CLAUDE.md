@@ -71,19 +71,32 @@ y no a secas—. Y los argumentos de un script van **sin el `--` de npm**: pnpm 
 pasaría literal al programa (`pnpm run data:fetch bushido --force`, no
 `-- --force`).
 
-**Hay pre-commit, y se activa solo.** `pnpm install` corre el script `prepare`,
-que apunta `core.hooksPath` a `.githooks/`: desde ahí, cada `git commit` corre
-`pnpm run check` y se rechaza si falla. Sin dependencias nuevas (ni husky ni
-lint-staged): es un script de shell en el repo. Dos cosas que conviene saber:
+**Hay pre-commit ([pre-commit.com](https://pre-commit.com)) y CI.** La
+configuración vive en `.pre-commit-config.yaml` y corre en cada `git commit`:
 
-- Revisa el **árbol de trabajo**, no solo el stage. Un archivo a medio agregar
-  se juzga como está en disco.
-- `typecheck` es **`next typegen && tsc --noEmit`**, no `tsc` a secas. Los
-  tipos `PageProps` y `LayoutProps` los genera Next en `.next/types/`: en un
-  clon recién hecho no existen, y tras renombrar una ruta quedan apuntando a la
-  vieja. Con `tsc` solo, el hook fallaba por eso y no por el código.
+- Higiene de `pre-commit-hooks`: marcas de conflicto, JSON y YAML válidos,
+  claves privadas y archivos de más de 1 MB (los originales de las cartas se
+  quedan en `images-src/`, que está git-ignorado).
+- Los scripts del proyecto: prettier y ESLint sobre los archivos del commit;
+  tipos y tests sobre el proyecto entero, porque un cambio rompe a otro
+  archivo que no se tocó. Cada uno corre solo si cambió algo que le importa:
+  un commit que solo toca Markdown no espera al typecheck.
+- **Revisa lo que está en el stage**, no el disco: pre-commit aparta lo que no
+  se agregó antes de correr.
 
-En una urgencia, `git commit --no-verify` lo salta; después, `pnpm run check`.
+Se instala solo: `pnpm install` corre `scripts/install-hooks.mjs`, que hace
+`pre-commit install` si el venv lo tiene y, si no, dice cómo. Ese script
+también quita el `core.hooksPath` del hook en bash que hubo antes, porque con
+esa opción puesta `pre-commit install` se niega a instalar.
+
+`typecheck` es **`next typegen && tsc --noEmit`**, no `tsc` a secas. Los tipos
+`PageProps` y `LayoutProps` los genera Next en `.next/types/`: en un clon recién
+hecho no existen, y tras renombrar una ruta quedan apuntando a la vieja.
+
+El hook se puede saltar con `git commit --no-verify`; **el CI no**.
+`.github/workflows/ci.yml` corre en cada push a `main` y en cada PR:
+`pre-commit run --all-files`, el build y `pnpm run audit`. Las actions van
+fijadas por SHA, no por tag, que se puede mover.
 
 Los scripts de Python corren en el venv del repo (`.venv/`). Si no existe:
 
@@ -91,6 +104,7 @@ Los scripts de Python corren en el venv del repo (`.venv/`). Si no existe:
 python3 -m venv --without-pip .venv
 curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 .venv/bin/pip install -r requirements.txt
+.venv/bin/pre-commit install
 ```
 
 ---
@@ -106,7 +120,8 @@ data-src/      FUENTE editable del catálogo: un JSON por edición, más
 images-src/    originales pesados de las cartas (git-ignorado; su .gitkeep
                es el único que queda, para que la carpeta exista en el repo)
 scripts/       herramientas Python: validan datos y convierten imágenes
-.githooks/     pre-commit (corre `pnpm run check`; lo activa `pnpm install`)
+.github/       CI: pre-commit, build y auditoría en cada push a main
+.pre-commit-config.yaml  hooks de cada commit (los activa `pnpm install`)
 public/        se sirve tal cual
   brand/       logos e isotipos SVG
   reglas/      PDFs descargables (se sirven tal cual, ver seguridad #12)
@@ -827,6 +842,13 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    dependencia opcional del propio paquete, así que no hay nada que preparar y
    nadie descarga nada durante el install. Si alguna dependencia nueva reclama
    su build, la respuesta por defecto es `false` hasta haber leído qué hace.
+
+   Dos márgenes más: `minimumReleaseAge: 1440` en `pnpm-workspace.yaml` impide
+   instalar una versión publicada hace menos de un día, que es el rato en que
+   un paquete secuestrado suele seguir disponible; y `requirements.txt` fija
+   versiones exactas (`==`), porque Pillow abre imágenes bajadas de internet y
+   pre-commit ejecuta hooks. Las GitHub Actions y los hooks de pre-commit van
+   por SHA.
 
 7. **Privacidad.** Las barajas no se guardan en ningún servidor: viven en el
    `localStorage` del usuario. No hay cuentas, ni datos personales, ni banner de

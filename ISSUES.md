@@ -34,22 +34,6 @@ Ordenadas de más a menos importante.
   diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
   dorada de Sarras.
 
-## Nada comprueba el código antes de publicar
-
-- **Qué pasa:** los cambios se suben directo a `main` y no hay CI. El
-  pre-commit (`.githooks/`) ya corre `pnpm run check` en cada commit, pero se
-  salta con `--no-verify`, no existe en un clon sin `pnpm install` y **no**
-  corre `build` ni `audit`, que tardan demasiado para cada commit. Una cabecera
-  de seguridad perdida llegaría igual a producción.
-- **Arreglo propuesto:** un workflow de GitHub Actions que corra `check`,
-  `build` y `audit` en cada push a `main` (y en los PR).
-- **De paso, cadena de suministro:**
-  - `requirements.txt` usa `>=` sin versión fija. Son herramientas de
-    desarrollo, pero corren sobre imágenes bajadas de internet (Pillow).
-  - Valorar `minimumReleaseAge` en `pnpm-workspace.yaml`, para no instalar una
-    versión recién publicada, que es donde caen los paquetes secuestrados.
-- **Arreglado cuando:** un push con `check` en rojo queda marcado en GitHub.
-
 ## Un mazo compartido pasa por los logs de Cloudflare
 
 - **Qué pasa:** el enlace `/mazo/?d=…` lleva el mazo en la query string, que

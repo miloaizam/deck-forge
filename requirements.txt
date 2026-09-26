@@ -1,5 +1,9 @@
 # Herramientas de desarrollo (no se publican con el sitio).
 #   python3 -m venv .venv && source .venv/bin/activate
 #   pip install -r requirements.txt
-pillow>=11.0
-pydantic>=2.9
+# Versiones fijas: son herramientas de desarrollo, pero Pillow abre imagenes
+# bajadas de internet y pre-commit ejecuta hooks. Subirlas es un cambio a
+# conciencia, no algo que pase solo en el proximo install.
+pillow==12.3.0
+pydantic==2.13.5
+pre-commit==4.6.2

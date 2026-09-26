@@ -134,6 +134,7 @@ Solo si vas a tocar el catálogo. El entorno de Python vive en el repo, sin
 python3 -m venv --without-pip .venv
 curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 .venv/bin/pip install -r requirements.txt
+.venv/bin/pre-commit install   # hooks de cada commit (pnpm install ya lo intenta)
 ```
 
 La cadena completa:
@@ -165,8 +166,9 @@ nueva. Vale la pena leerla antes de cargar la undécima.
 pnpm run check
 ```
 
-Tiene que pasar entero: typecheck, lint, formato y los tests. El pre-commit lo
-corre solo en cada `git commit` (lo activa `pnpm install`; ver CLAUDE.md, §3).
+Tiene que pasar entero: typecheck, lint, formato y los tests. El pre-commit
+(pre-commit.com) lo corre en cada `git commit`, y el CI de GitHub lo repite
+junto con el build y la auditoría en cada push (ver CLAUDE.md, §3).
 Además:
 
 - **Una rama por cambio**, y que el PR haga una sola cosa.

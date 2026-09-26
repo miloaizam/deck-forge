@@ -13,3 +13,8 @@
 # nadie baja nada durante el install.
 allowBuilds:
   unrs-resolver: false
+
+# No instalar versiones publicadas hace menos de un dia. Los paquetes
+# secuestrados suelen detectarse y retirarse en horas; este margen hace que
+# un `pnpm update` no se los traiga justo en ese rato. En minutos.
+minimumReleaseAge: 1440
