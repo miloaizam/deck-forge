@@ -135,17 +135,6 @@ terminada.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
 
-## Hook de pre-commit
-
-- **Qué:** que `git commit` corra las comprobaciones antes de aceptar el
-  commit, para no depender de acordarse de `pnpm run check`.
-- **Por dónde:** sin dependencias nuevas si se puede (CLAUDE.md, §7): un
-  script en el repo (por ejemplo `.githooks/pre-commit`) activado con
-  `git config core.hooksPath`. Decidir si corre el `check` completo o solo lo
-  rápido (formato y lint), porque los tests van contra el catálogo real.
-- **Terminado cuando:** un commit con errores de formato, lint o tipos se
-  rechaza, y CLAUDE.md explica cómo activarlo.
-
 ## Exportar la baraja como imagen
 
 Del roadmap, Fase 3 (`docs/plan.md`).

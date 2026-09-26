@@ -55,7 +55,7 @@ pnpm install         # instalar dependencias (respeta pnpm-lock.yaml)
 pnpm run dev         # desarrollo en http://localhost:3000
 pnpm run build       # export estático a out/
 pnpm run preview     # sirve out/ en http://localhost:4173
-pnpm run check       # typecheck + lint + formato + tests (correr antes de commitear)
+pnpm run check       # typecheck + lint + formato + tests (lo corre el pre-commit)
 pnpm run test        # tests de las reglas de baraja (corredor de Node, sin dependencias)
 pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
@@ -71,7 +71,19 @@ y no a secas—. Y los argumentos de un script van **sin el `--` de npm**: pnpm 
 pasaría literal al programa (`pnpm run data:fetch bushido --force`, no
 `-- --force`).
 
-```
+**Hay pre-commit, y se activa solo.** `pnpm install` corre el script `prepare`,
+que apunta `core.hooksPath` a `.githooks/`: desde ahí, cada `git commit` corre
+`pnpm run check` y se rechaza si falla. Sin dependencias nuevas (ni husky ni
+lint-staged): es un script de shell en el repo. Dos cosas que conviene saber:
+
+- Revisa el **árbol de trabajo**, no solo el stage. Un archivo a medio agregar
+  se juzga como está en disco.
+- `typecheck` es **`next typegen && tsc --noEmit`**, no `tsc` a secas. Los
+  tipos `PageProps` y `LayoutProps` los genera Next en `.next/types/`: en un
+  clon recién hecho no existen, y tras renombrar una ruta quedan apuntando a la
+  vieja. Con `tsc` solo, el hook fallaba por eso y no por el código.
+
+En una urgencia, `git commit --no-verify` lo salta; después, `pnpm run check`.
 
 Los scripts de Python corren en el venv del repo (`.venv/`). Si no existe:
 
@@ -94,6 +106,7 @@ data-src/      FUENTE editable del catálogo: un JSON por edición, más
 images-src/    originales pesados de las cartas (git-ignorado; su .gitkeep
                es el único que queda, para que la carpeta exista en el repo)
 scripts/       herramientas Python: validan datos y convierten imágenes
+.githooks/     pre-commit (corre `pnpm run check`; lo activa `pnpm install`)
 public/        se sirve tal cual
   brand/       logos e isotipos SVG
   reglas/      PDFs descargables (se sirven tal cual, ver seguridad #12)

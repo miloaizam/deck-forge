@@ -165,7 +165,9 @@ nueva. Vale la pena leerla antes de cargar la undécima.
 pnpm run check
 ```
 
-Tiene que pasar entero: typecheck, lint, formato y los 78 tests. Además:
+Tiene que pasar entero: typecheck, lint, formato y los tests. El pre-commit lo
+corre solo en cada `git commit` (lo activa `pnpm install`; ver CLAUDE.md, §3).
+Además:
 
 - **Una rama por cambio**, y que el PR haga una sola cosa.
 - **Mensajes de commit en español y sin tildes**, en presente y describiendo el

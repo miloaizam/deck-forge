@@ -49,12 +49,13 @@ Ordenadas de más a menos importante.
 
 ## Nada comprueba el código antes de publicar
 
-- **Qué pasa:** los cambios se suben directo a `main` y no hay CI: que corran
-  `pnpm run check`, `build` y `audit` depende de acordarse. Un error de tipos o
-  una cabecera de seguridad perdida llegaría a producción.
-- **Arreglo propuesto:** un workflow de GitHub Actions que corra los tres en
-  cada push a `main` (y en los PR), más el hook de pre-commit que ya está en
-  [TODO.md](TODO.md).
+- **Qué pasa:** los cambios se suben directo a `main` y no hay CI. El
+  pre-commit (`.githooks/`) ya corre `pnpm run check` en cada commit, pero se
+  salta con `--no-verify`, no existe en un clon sin `pnpm install` y **no**
+  corre `build` ni `audit`, que tardan demasiado para cada commit. Una cabecera
+  de seguridad perdida llegaría igual a producción.
+- **Arreglo propuesto:** un workflow de GitHub Actions que corra `check`,
+  `build` y `audit` en cada push a `main` (y en los PR).
 - **De paso, cadena de suministro:**
   - `requirements.txt` usa `>=` sin versión fija. Son herramientas de
     desarrollo, pero corren sobre imágenes bajadas de internet (Pillow).
