@@ -876,6 +876,25 @@ Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
+**Las páginas de error son una sola pantalla, `ErrorScreen`, y solo cambia el
+código.** El texto de cada uno vive en el mapa `ERRORES` del componente, así
+que agregar otro es agregar una entrada. Tienen el aire de la portada —sin
+navbar, fondo de forja, el número en grande con el gradiente de marca— y el
+logotipo como salida a casa. En un sitio estático **solo ocurren dos**:
+
+- **404**, `src/app/not-found.tsx`. El export la escribe en `out/404.html` y
+  Cloudflare la sirve para cualquier ruta que no exista
+  (`not_found_handling` en `wrangler.jsonc`).
+- **500**, `src/app/error.tsx`: algo revienta al pintar en el navegador.
+  Ofrece "Reintentar" con el `retry()` de Next 16 (ya no es `reset()`). Y
+  `src/app/global-error.tsx` cubre el caso de que falle el propio layout raíz:
+  reemplaza el documento entero, así que trae su `<html>`, `globals.css`, la
+  fuente (por eso vive en `src/lib/fonts.ts`) y aplica el tema guardado al
+  montar, porque el script inline del layout no llega hasta ahí.
+
+No hay servidor que devuelva un 403 o un 503: no se inventan páginas para
+códigos que no pueden salir.
+
 La navbar es una fila plana de cuatro enlaces (sin desplegable). Bajo `md` se
 pliegan detrás de un botón de menú: no caben junto al logotipo en un teléfono.
 

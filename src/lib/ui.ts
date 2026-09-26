@@ -46,3 +46,17 @@ export const DECK_NOTE_FIELD = cn(
   TEXT_FIELD,
   "h-auto shrink-0 resize-none rounded-md py-2 text-[13px] leading-snug",
 );
+
+/**
+ * Boton principal de una pantalla suelta (portada, errores): alto, violeta y
+ * con brillo, porque es la unica salida que se le ofrece al usuario.
+ */
+export const PRIMARY_BUTTON =
+  "bg-brand-600 hover:bg-brand-500 shadow-glow focus-visible:outline-brand-300 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 px-8 text-[17px] font-medium text-white transition duration-200 hover:-translate-y-0.5";
+
+/**
+ * Su acompanante: mismo tamano y sin color, para que al lado del principal
+ * quede claro cual es la salida recomendada.
+ */
+export const SECONDARY_BUTTON =
+  "border-line text-ink hover:border-brand-500 focus-visible:outline-brand-500 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 border px-8 text-[17px] font-medium transition duration-200";
