@@ -28,7 +28,7 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 | Tipografía | Space Grotesk vía `next/font/google` (auto-hospedada en build) |
 | Iconos | `lucide-react` |
 | Búsqueda | `minisearch` *(instalado, aún sin usar)* |
-| Compartir mazo | `lz-string` *(instalado, aún sin usar)* |
+| Compartir mazo | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -993,6 +993,42 @@ Rutas: `/builder` arma y edita · `/mazos` la lista · `/mazo` el detalle.
 compartido) porque `output: "export"` no admite una ruta dinámica `/mazos/[id]`
 para datos del usuario: `generateStaticParams` no puede conocer ids que se
 inventan en el navegador.
+
+**El enlace compartido lleva el mazo en binario, no en JSON comprimido.** El
+primer formato armaba una tupla, la pasaba a JSON y lo comprimía con lz-string,
+y salía largo por un motivo de fondo: un mazo es una lista de números pequeños y
+en JSON cada uno se escribe como texto (`["hs-040",3],`, catorce caracteres)
+para que después un compresor de propósito general tenga que volver a adivinar
+qué hay debajo. Escribirlos como números de una vez sale más corto que comprimir
+su forma de texto: un mazo de 50 cartas bajó de **~300 caracteres de URL a
+~127**, y el peor caso representable (60 entradas, side de 20, nombre de 30) de
+468 a 203. Las piezas:
+
+- Una referencia a una impresión son **15 bits**: 5 de edición —la posición de
+  su prefijo en `PREFIJOS`, espejo en minúsculas de `EDITION_CODES` de
+  `fetch_edition.py`— y 10 del número dentro de la edición. **La posición ES el
+  código**, así que a esa tabla solo se le agrega al final: reordenarla cambia
+  lo que significan los enlaces ya compartidos.
+- Dentro de cada zona las entradas se **agrupan por edición y se ordenan**, así
+  que de la segunda en adelante basta el **salto** respecto de la anterior (6
+  bits) y no el número entero. Las copias son 2 bits, porque casi siempre son 1,
+  2 o 3; los Oros sin habilidad, que no tienen tope, se escapan a 6. La entrada
+  típica ocupa **un byte**.
+- El código va en **base64url**, que no lleva ningún carácter que la URL tenga
+  que escapar —`encodeURIComponent` lo deja igual— al contrario que el alfabeto
+  de lz-string, que usa `+` y `$`.
+- Lo que el formato binario **no sabe escribir** —un id que no sea dos letras y
+  tres dígitos, una edición que no esté en la tabla, un número sobre 1023— no se
+  pierde: ese enlace sale en el **formato 1**, que admite cualquier id. Y los
+  enlaces del formato 1 ya compartidos se siguen leyendo, que es lo único para
+  lo que queda `lz-string` en el proyecto.
+- El primer byte es la versión, y el rango 2–31 queda **reservado** para este
+  formato: así un enlace de una versión futura se puede rechazar diciendo que es
+  de otra versión en vez de "no pude leerlo", mientras que un código cualquiera
+  cae fuera del rango y se prueba como formato 1.
+- El nombre del mazo viaja en UTF-8 con un byte de largo, y es lo que más ocupa:
+  la mitad del código de un mazo típico. Fuera quedan el id local, las fechas,
+  la descripción, la portada y la afinidad fijada.
 
 Reglas del formato, en `src/lib/deck-rules.ts`: 50 cartas, un oro inicial (un
 Oro sin habilidad, señalado con un puntero a una carta de `principal` porque

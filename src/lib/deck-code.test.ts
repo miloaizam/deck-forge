@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import lzString from "lz-string";
 
 import { createDeck, setQuantity, setStartingGold } from "./deck";
@@ -62,6 +64,100 @@ test("un mazo lleno cabe comodo en una URL", () => {
   assert.match(url, /\/mazo\/\?d=/, "la ruta lleva barra final antes del parametro");
 });
 
+test("el codigo no lleva nada que la URL tenga que escapar", () => {
+  // base64url: si se colara un +, un / o un =, el enlace se rompe al pegarlo.
+  const codigo = encodeDeck(mazoDePrueba());
+  assert.match(codigo, /^[A-Za-z0-9_-]+$/);
+  assert.equal(encodeURIComponent(codigo), codigo);
+});
+
+test("el codigo binario es bastante mas corto que el JSON comprimido", () => {
+  // El motivo de existir de la version 2. Si algun dia empata, no vale la pena.
+  let deck = setStartingGold(createDeck("Comparacion"), "hs-040");
+  for (let i = 1; i <= 20; i++) {
+    deck = setQuantity(deck, `hs-${String(i).padStart(3, "0")}`, "principal", 3);
+  }
+  const binario = encodeDeck(deck).length;
+  const lz = lzString.compressToEncodedURIComponent(
+    JSON.stringify([
+      1,
+      deck.nombre,
+      deck.oroInicial,
+      deck.principal.map((e) => [e.id, e.n]),
+      [],
+    ]),
+  ).length;
+  assert.ok(
+    binario * 2 < lz,
+    `binario ${binario}, lz ${lz}: deberia ser menos de la mitad`,
+  );
+});
+
+test("las copias sin tope de los Oros viajan enteras", () => {
+  // Un Oro sin habilidad puede ir 35 veces: no cabe en los dos bits de siempre.
+  let deck = setQuantity(createDeck("Oros"), "bu-237", "principal", 35);
+  deck = setQuantity(deck, "bu-001", "principal", 1);
+  const r = decodeDeck(encodeDeck(deck));
+  assert.ok(r.ok);
+  assert.equal(r.deck.principal.find((e) => e.id === "bu-237")?.n, 35);
+});
+
+test("todos los prefijos del catalogo estan en la tabla del enlace", () => {
+  // Si una edicion nueva no esta, su enlace cae al formato 1 y se alarga sin
+  // que nada falle. Este test es el que avisa.
+  const catalogo: { id: string }[] = JSON.parse(
+    readFileSync(path.join(process.cwd(), "public/data/cards.json"), "utf8"),
+  );
+  const faltan = new Set<string>();
+  for (const carta of catalogo) {
+    const deck = setQuantity(createDeck("Prefijos"), carta.id, "principal", 1);
+    // El formato 1 empieza siempre por el JSON `[1,` comprimido; el binario, no.
+    if (!/^[A-Za-z0-9_-]+$/.test(encodeDeck(deck))) faltan.add(carta.id);
+  }
+  assert.deepEqual([...faltan], []);
+
+  // Y la vuelta: el id de cada carta vuelve tal cual del codigo.
+  const muestra = ["bu-001", "sn-141", "do-256", "ee-326", "sp-071"];
+  for (const id of muestra) {
+    const r = decodeDeck(encodeDeck(setQuantity(createDeck(""), id, "principal", 2)));
+    assert.ok(r.ok, id);
+    assert.deepEqual(r.deck.principal, [{ id, n: 2 }]);
+  }
+});
+
+test("un id que el formato binario no sabe escribir cae al formato 1", () => {
+  // `he-042` es de Helenica, que si esta en la tabla; `xx-001` no es de nadie.
+  // Lo que no puede pasar es que la carta se pierda por el camino.
+  for (const id of ["xx-001", "bu-0001"]) {
+    const deck = setQuantity(createDeck("Rara"), id, "principal", 1);
+    const r = decodeDeck(encodeDeck(deck));
+    assert.ok(r.ok, id);
+    assert.deepEqual(r.deck.principal, [{ id, n: 1 }]);
+  }
+});
+
+test("un enlace del formato 1 se sigue leyendo", () => {
+  // Codigo tal cual lo escribia la version anterior. Los que ya se compartieron
+  // tienen que seguir abriendose.
+  const v1 = lzString.compressToEncodedURIComponent(
+    JSON.stringify([
+      1,
+      "Dragones de prueba",
+      "bu-225",
+      [
+        ["bu-001", 1],
+        ["bu-058", 3],
+      ],
+      [["bu-045", 2]],
+    ]),
+  );
+  const r = decodeDeck(v1);
+  assert.ok(r.ok);
+  assert.equal(r.deck.nombre, "Dragones de prueba");
+  assert.equal(r.deck.oroInicial, "bu-225");
+  assert.deepEqual(r.deck.side, [{ id: "bu-045", n: 2 }]);
+});
+
 test("decodeDeck no lanza con basura", () => {
   const basura = [
     null,
@@ -95,6 +191,12 @@ test("un codigo de otra version se distingue de uno ilegible", () => {
   const r = decodeDeck(deOtraVersion);
   assert.equal(r.ok, false);
   assert.equal(r.ok === false ? r.motivo : "", "version");
+
+  // Lo mismo con un codigo binario de una version futura: el primer byte es 7.
+  const binarioDelFuturo = Buffer.from([7, 0, 0, 0]).toString("base64url");
+  const rb = decodeDeck(binarioDelFuturo);
+  assert.equal(rb.ok, false);
+  assert.equal(rb.ok === false ? rb.motivo : "", "version");
 
   // Y la version actual si se lee.
   assert.ok(decodeDeck(encodeDeck(mazoDePrueba())).ok);
