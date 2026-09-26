@@ -209,7 +209,13 @@ No es opcional. Un mazo mal etiquetado es un mazo que alguien no puede armar.
   2 px de offset (ya global en `globals.css`). Nunca `outline: none` sin
   reemplazo.
 - **Objetivos táctiles** ≥ 44×44 px. Los botones de +/− cantidad son el punto
-  donde esto más se rompe: cuídalos.
+  donde esto más se rompe: cuídalos. Ojo con una trampa: el área que se pulsa y
+  la caja que se **ve** no tienen por qué medir lo mismo. En las filas del mazo
+  el `<button>` mide 44 y es transparente, y dentro lleva un círculo de 28 que
+  solo se pinta al apuntarlo (`BOTON_FILA` y `CAJA_FILA` en
+  `QuantityStepper.tsx`). Tres cajas con borde de 44 px por fila pesaban más que
+  la carta que acompañan; encoger el botón para arreglarlo sería romper la
+  regla, no cumplirla.
 - **Teclado**: todo se puede usar sin mouse. Los modales atrapan el foco, se
   cierran con `Esc` y devuelven el foco al elemento que los abrió.
 - **Imágenes**: `alt` con el nombre de la carta (`alt="Carta: {nombre}"`), no

@@ -872,6 +872,32 @@ ocho facetas: edición (solo en `/catalogo`, porque en la página de una edició
 no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
 y fuerza.
 
+**El orden del catálogo vive en `src/lib/card-order.ts` y lo comparten las
+cuatro vistas** que listan cartas: `/catalogo`, `/catalogo/<edicion>`, la
+grilla del constructor y el contenido de un mazo. Si cada una ordenara a su
+manera, una carta cambiaría de sitio al pasar de una a otra y habría que
+volver a buscarla. Manda la **edición, de la última en salir a la primera**
+—Escuelas Elementales arriba, Bushido al fondo, o sea al revés que
+`EDITIONS`—, y dentro de cada una la **frecuencia** en el orden de
+`FRECUENCIAS`, de la más rara a la más común. Desempata el número impreso.
+
+Dos decisiones dentro de ese orden. El **tramo de Oros** lleva el suyo propio:
+primero el **oro inicial** de la edición (se reconoce por el nombre, `Oro
+Inicial <edición>`, porque la API le pone el número más alto de la edición y
+por código caería al final), después los Oros **con** habilidad, que son cartas
+como cualquier otra, y al final los normales, que son el montón con que se paga
+todo. Y las ediciones **`parcial`** —las de fuera del formato, que solo aportan
+cartas sueltas— se quedan al final: son cuatro cartas y encabezar el catálogo
+con ellas mentiría sobre lo que es el formato.
+
+`card-order.test.ts` corre contra el catálogo real y vigila cuatro cosas: que
+cada edición salga una sola vez y en ese orden, que las frecuencias formen
+tramos contiguos en las dieciséis ediciones, que el tramo de Oros abra y cierre
+donde debe, y que **no queden dos cartas empatadas** —un empate deja el
+desempate en manos del `sort` y de ahí salen los saltos de posición—. Comprueba
+además que ordenar el catálogo al revés dé el mismo resultado: un comparador no
+transitivo pondría la misma carta en distinto sitio en cada vista.
+
 **Los selectores con muchas opciones abren con buscador** (`Select.tsx`, a
 partir de ocho opciones: habilidad, raza, edición, frecuencia y los rangos de
 coste y fuerza). Con cinco opciones a la vista —tipo, escuela elemental— el
@@ -1054,6 +1080,25 @@ Reglas del formato, en `src/lib/deck-rules.ts`: 50 cartas, un oro inicial (un
 Oro sin habilidad, señalado con un puntero a una carta de `principal` porque
 cuenta dentro de las 50), mínimo 15 Aliados **o** 15 Tótems, máximo 3 copias por
 carta (1 si es Única), una sola afinidad y side de hasta 10 cartas.
+
+**El oro inicial tiene que ser un Oro con UNA sola copia en el principal.** Es
+una carta concreta que se aparta antes de empezar: con dos copias iguales en el
+mazo no se sabría cuál quedó fuera del montón. La regla vive en `validateDeck` y
+el botón de la fila la respeta, pero **sigue activo cuando esa carta ya es el
+oro inicial**, para poder soltarlo si el mazo llegó a ese estado agregando
+copias después; si se escondiera, quedaría un error sin forma de arreglarlo
+desde ahí. El oro inicial **no tiene caja propia** en el panel: se elige con un
+botón de moneda en la fila de su Oro, junto al `−/+`. Antes era una sección
+punteada que repetía los nombres de Oros que ya estaban listados dos centímetros
+más abajo.
+
+**El mazo se pinta en el orden del catálogo, y por eso las filas no saltan.**
+`RuleCard` lleva un campo `orden` que reparte `buildCardIndex` —que es quien ve
+el catálogo entero y lo ordena con `compareCards`— y `resolveDeck` ordena por
+él. La clave es que `orden` sale **solo de la carta** y nunca de cuántas copias
+lleve el mazo: si la lista se ordenara por copias, bajar una carta de 3 a 2 la
+mandaría hacia abajo justo bajo el cursor. En `/mazo` la mesa conserva el corte
+por tipo (`ORDEN_EN_MESA`) y dentro de cada tipo usa ese mismo `orden`.
 
 **El side deck es una extensión del mazo, no un mazo aparte**: lleva las cartas
 que quiera entre 0 y 10 —no hay mínimo ni tamaño exacto—, pero comparte con el

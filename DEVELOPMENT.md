@@ -104,7 +104,7 @@ Están completas en **[CLAUDE.md](CLAUDE.md)** (código, datos y seguridad) y
 pnpm run test
 ```
 
-Son 72, en cinco archivos de `src/lib/*.test.ts`, y corren con el corredor de
+Son 78, en seis archivos de `src/lib/*.test.ts`, y corren con el corredor de
 Node: **cero dependencias de testing**. Van **contra el catálogo real** y no
 contra fixtures, a propósito — los bordes que duelen salen de los datos, y así
 es como aparecieron cosas como las cinco cartas de ContraAtaque a las que no les
@@ -120,6 +120,8 @@ Lo que cubren, por si tocas esa zona:
   extensión pueden haber editado.
 - `ability.test.ts` y `keywords.test.ts` — el texto de las cartas y sus
   keywords.
+- `card-order.test.ts` — el orden en que se listan las cartas, que comparten el
+  catálogo, el constructor y el detalle de un mazo.
 
 Si arreglas un bug de datos o de reglas, deja un test que falle sin tu arreglo.
 
@@ -163,7 +165,7 @@ nueva. Vale la pena leerla antes de cargar la undécima.
 pnpm run check
 ```
 
-Tiene que pasar entero: typecheck, lint, formato y los 72 tests. Además:
+Tiene que pasar entero: typecheck, lint, formato y los 78 tests. Además:
 
 - **Una rama por cambio**, y que el PR haga una sola cosa.
 - **Mensajes de commit en español y sin tildes**, en presente y describiendo el
