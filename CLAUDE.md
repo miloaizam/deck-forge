@@ -1352,6 +1352,13 @@ Tótems** (SD2). Se revisaron el 26-09-2026:
   la página del mazo **no** siempre coincide con el pie de la carta
   (Grindylow es `DO-RP-018` aunque el archivo se llame `DO-RP-017`): manda el
   pie.
+- **Una URL de imagen publicada no se reutiliza para otra carta.**
+  `/cards/*` va con 7 días de caché (`_headers`), así que el navegador y el
+  borde de Cloudflare siguen sirviendo la imagen vieja aunque el archivo
+  cambie. Pasó con `pb-002`: fue Dante unas horas y después Tiamat, y Tiamat
+  se veía con el arte de Dante. Tiamat lleva ahora `pb-002-tiamat.webp` (el
+  campo `imagen` no tiene por qué ser el id), y **`/cards/pb-002.webp` y
+  `/cards/pb-003.webp` quedan retiradas**: no se vuelven a usar.
 - **`su`, `re`, `cm`, `te`, `as` y `mi` quedan en `PREFIJOS` sin edición.** Se
   publicaron unas horas con aquel primer intento y quitarlos correría el
   código de `pb` y los que vengan detrás. Un enlace de esas horas con una de
