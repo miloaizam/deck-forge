@@ -50,6 +50,13 @@ function mensajeImportacion(r: ImportOutcome, descartados: number): [string, Toa
         : `${descartados} se descartaron por estar dañadas.`,
     );
   }
+  if (r.renombradas > 0) {
+    partes.push(
+      r.renombradas === 1
+        ? '1 se renombró con "(copia)" porque su nombre ya existía.'
+        : `${r.renombradas} se renombraron con "(copia)" porque su nombre ya existía.`,
+    );
+  }
   if (r.sobraron > 0) {
     partes.push(
       `${contarBarajas(r.sobraron)} no ${r.sobraron === 1 ? "se importó" : "se importaron"}: el máximo es ${MAX_BARAJAS}.`,

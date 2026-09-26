@@ -2,6 +2,7 @@
 
 import { CardTile } from "./CardTile";
 import { COLUMNAS_GRILLA } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 import type { Card } from "@/lib/types";
 
 interface CardGridProps {
@@ -54,7 +55,10 @@ export function CardGrid({
   return (
     <ul className="flex flex-wrap justify-center gap-4">
       {cards.map((card) => (
-        <li key={card.id} className={COLUMNAS_GRILLA[variante]}>
+        // `aparece`: las cartas que llegan (al entrar, al cambiar de pagina o de
+        // filtro) entran con un fundido. Las que ya estaban conservan su clave
+        // y no se vuelven a animar.
+        <li key={card.id} className={cn("aparece", COLUMNAS_GRILLA[variante])}>
           <CardTile
             card={card}
             onSelect={onSelect}

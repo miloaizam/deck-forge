@@ -14,11 +14,16 @@
   <a href="https://deckforge-myl.pages.dev"><strong>deckforge-myl.pages.dev</strong></a>
 </p>
 
+## Autor
+
+**Miguel Loaiza Machuca** · [miloaizam@gmail.com](mailto:miloaizam@gmail.com)
+
 ---
 
 Escuelas Elementales es un formato con sus propias reglas de construcción: 50
 cartas, un oro inicial, un mínimo de 15 Aliados **o** 15 Tótems, hasta tres
-copias de cada carta (una sola si es Única), una única afinidad y un side de
+copias de cada carta (una sola si es Única; sin tope los Oros sin habilidad y
+los Mercenarios), una única afinidad y un side de
 hasta 10 cartas. Llevar la cuenta de todo eso a mano, mientras buscas cartas en
 diez ediciones distintas, es justo el trabajo que hace esta página.
 

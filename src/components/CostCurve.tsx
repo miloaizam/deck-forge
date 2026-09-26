@@ -12,6 +12,11 @@ interface CostCurveProps {
    * arriba como los demas; en el detalle de la baraja va en su propia tarjeta.
    */
   className?: string;
+  /**
+   * Alto del carril de las barras. En el detalle va `flex-1` con un minimo, y
+   * el carril llena la tarjeta.
+   */
+  barras?: string;
 }
 
 const cartas = (n: number) => `${n} ${n === 1 ? "carta" : "cartas"}`;
@@ -32,6 +37,7 @@ export function CostCurve({
   curva,
   oros,
   className = "border-line border-t pt-3",
+  barras = "h-14",
 }: CostCurveProps) {
   // El panel se pinta dos veces (al costado en escritorio y en la hoja del
   // telefono): un id fijo saldria repetido.
@@ -53,7 +59,9 @@ export function CostCurve({
         )}
       </h3>
 
-      <ul className="grid grid-cols-7 gap-1.5">
+      {/* `flex-1`: dentro de una tarjeta flex (el detalle de la baraja) la
+          curva ocupa todo el alto que sobra y las barras crecen con ella. */}
+      <ul className="grid flex-1 grid-cols-7 gap-1.5">
         {puntos.map((p) => (
           <li key={p.etiqueta} className="flex flex-col items-center gap-1">
             <span className="sr-only">
@@ -70,7 +78,7 @@ export function CostCurve({
             </span>
             {/* El carril fija la altura maxima y la barra crece desde abajo. La
                 transicion acompana el cambio al sumar o quitar una copia. */}
-            <span aria-hidden="true" className="flex h-14 w-full items-end">
+            <span aria-hidden="true" className={cn("flex w-full items-end", barras)}>
               <span
                 className={cn(
                   "w-full rounded-t-[4px] transition-[height] duration-200 ease-(--ease-out-soft)",

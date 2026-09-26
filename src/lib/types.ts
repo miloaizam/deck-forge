@@ -217,11 +217,19 @@ export const ESCUELA_POR_RAZA: Partial<Record<Raza, Escuela>> = Object.fromEntri
 
 export const DECK_VERSION = 1;
 
-/** Tope del nombre que el usuario le pone a la baraja. */
-export const MAX_NOMBRE_BARAJA = 30;
+/**
+ * Tope del nombre que el usuario le pone a la baraja. Era 30, y no alcanzaba
+ * para un nombre descriptivo mas un " (copia 2)". El enlace lo aguanta: el
+ * nombre viaja con un byte de largo (hasta 255 bytes de UTF-8), y 60
+ * caracteres son 240 bytes aun si todos fueran emojis.
+ */
+export const MAX_NOMBRE_BARAJA = 60;
 
-/** Tope de la descripcion de la baraja. Es una nota corta, no un articulo. */
-export const MAX_DESCRIPCION_BARAJA = 50;
+/**
+ * Tope de la descripcion. Era 50, que no daba ni para una frase sobre como se
+ * juega la baraja; 280 es un parrafo corto. No viaja en el enlace.
+ */
+export const MAX_DESCRIPCION_BARAJA = 280;
 
 /**
  * Lo que el esquema admite LEER, que es mas de lo que la interfaz deja

@@ -488,9 +488,10 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
 - Curva de coste del principal en el panel.
 - **Pendiente:** la banlist (TODO.md).
 
-**Fase 3 — Compartir** — a medias.
+**Fase 3 — Compartir** — hecha.
 - Hecho: la baraja viaja en el enlace, en binario y en el fragmento (`#d=`).
-- **Pendiente:** imagen de la baraja para redes (TODO.md).
+- Hecho: la baraja se descarga como imagen PNG para redes, dibujada en un
+  canvas del navegador (`deck-image.ts`).
 
 **Fase futura — Cuentas**
 - En TODO.md, con la advertencia de que cambia premisas del proyecto (sin

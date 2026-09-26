@@ -70,19 +70,6 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 - **Terminado cuando:** salir y volver al constructor no pierde la baraja en
   curso, y guardar o descartar borra el borrador.
 
-### Testeador de barajas en `/baraja`
-
-- **Qué:** sacar al azar una **mano inicial de 8 cartas** del principal, para
-  ver qué puede salir.
-- **Reglas:** el **oro inicial no entra** en el mazo que se baraja. Un botón de
-  **mulligan** vuelve a barajar y saca **una carta menos** cada vez (8, 7, 6…),
-  y otro vuelve a empezar desde 8.
-- **Por dónde:** barajado Fisher–Yates sobre las copias del principal. La
-  lógica pura va en `src/lib/` con su test; la isla interactiva, lo más abajo
-  posible en la página.
-- **Terminado cuando:** desde `/baraja` se roba una mano, se hacen mulligans y
-  la mano nunca incluye el oro inicial.
-
 ### Distinguir los tres tipos de Oro
 
 - **Qué:** que el catálogo y el constructor distingan los Oros **sin
@@ -97,17 +84,6 @@ terminada. Van agrupadas por la parte del sitio que tocan.
   significados.
 - **Terminado cuando:** se puede filtrar por cada tipo de Oro y se ven
   distintos en la grilla y en el panel de la baraja.
-
-### Exportar la baraja como imagen
-
-Del roadmap, Fase 3 (`docs/plan.md`).
-
-- **Por qué:** para compartir la baraja en redes sociales, donde un enlace dice
-  menos que una imagen.
-- **Ojo:** sin servidor y sin dependencias nuevas si se puede (canvas del
-  navegador), y respetando la CSP: nada de recursos externos.
-- **Terminado cuando:** desde `/baraja` se puede descargar una imagen de la
-  baraja.
 
 ## Catálogo y cartas
 

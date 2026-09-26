@@ -7,6 +7,7 @@ import {
   Copy,
   Download,
   Hammer,
+  ImageDown,
   Layers,
   Link2,
   Save,
@@ -18,6 +19,8 @@ import { DeckSections } from "./DeckSections";
 import { CardModal } from "../CardModal";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { CostCurve } from "../CostCurve";
+import { HandTester } from "./HandTester";
+import { downloadDeckImage } from "./deck-image";
 import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
@@ -26,6 +29,7 @@ import { useSharedCode } from "./use-shared-code";
 import { deckTitle, duplicateDeck, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
+  affinityLabel,
   buildCardIndex,
   deckStats,
   isLegal,
@@ -33,7 +37,7 @@ import {
   validateDeck,
   DECK_TOTAL,
 } from "@/lib/deck-rules";
-import { deleteDeck, saveDeck } from "@/lib/deck-storage";
+import { deleteDeck, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
 
 interface DeckDetailViewProps {
@@ -42,6 +46,9 @@ interface DeckDetailViewProps {
 
 const BOTON =
   "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+/** Las dos tarjetas de analisis del final: mano de prueba y curva. */
+const PANEL_ANALISIS =
+  "border-line bg-panel rounded-panel flex flex-col border p-5 sm:p-6";
 const ICONO =
   "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
@@ -100,8 +107,15 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
   const guardar = () => {
     if (!deck) return;
-    if (saveDeck(deck)) {
-      toast(`Baraja "${deckTitle(deck)}" guardada en Mis barajas.`, "success");
+    // Una compartida puede llamarse como una tuya: entra como "X (copia)". Se
+    // excluye la propia, por si ya se habia guardado desde esta misma pagina.
+    const nombre = nombreLibre(
+      deck.nombre,
+      decks.filter((x) => x.id !== deck.id),
+    );
+    const aGuardar = nombre === deck.nombre ? deck : { ...deck, nombre };
+    if (saveDeck(aGuardar)) {
+      toast(`Baraja "${deckTitle(aGuardar)}" guardada en Mis barajas.`, "success");
     } else
       toast("No se pudo guardar: el almacenamiento del navegador está lleno.", "warning");
   };
@@ -135,6 +149,8 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const issues = validateDeck(deck, index);
   const legal = isLegal(issues);
   const compartido = Boolean(d);
+  const verCarta = (cardId: string) =>
+    setVista(cards.find((c) => c.id === cardId) ?? null);
 
   return (
     <div className="flex flex-col gap-5">
@@ -188,6 +204,27 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             >
               <Download size={14} aria-hidden="true" />
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                void downloadDeckImage({
+                  deck,
+                  res,
+                  total: stats.totalPrincipal,
+                  legal,
+                  afinidad: stats.afinidad.vacio ? "" : affinityLabel(stats.afinidad),
+                })
+                  .then(() => toast(`Imagen de "${deckTitle(deck)}" descargada.`, "info"))
+                  .catch(() =>
+                    toast("No se pudo generar la imagen de la baraja.", "warning"),
+                  )
+              }
+              aria-label="Descargar la baraja como imagen"
+              title="Descargar como imagen"
+              className={ICONO}
+            >
+              <ImageDown size={14} aria-hidden="true" />
+            </button>
 
             {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
             {!compartido && (
@@ -195,9 +232,10 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    if (saveDeck(duplicateDeck(deck))) {
+                    const copia = duplicateDeck(deck, nombreLibre(deck.nombre, decks));
+                    if (saveDeck(copia)) {
                       toast(
-                        `Baraja "${deckTitle(deck)}" duplicada. La copia está en Mis barajas.`,
+                        `Baraja duplicada como "${deckTitle(copia)}". La copia está en Mis barajas.`,
                         "success",
                       );
                     } else {
@@ -244,23 +282,34 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         </div>
       )}
 
-      {/* La curva, como en el constructor: solo del principal. En su tarjeta y
-          sin estirarse, que siete columnas a lo ancho de la pagina no se leen. */}
-      {res.principal.length > 0 && (
-        <CostCurve
-          curva={stats.curva}
-          oros={stats.porTipo.Oro}
-          className="border-line bg-panel rounded-panel w-full border p-5 sm:max-w-md"
-        />
-      )}
-
       <DeckSections
         res={res}
         oroInicial={deck.oroInicial}
         portada={deck.portada}
         onPortada={compartido ? undefined : elegirPortada}
-        onVer={(cardId) => setVista(cards.find((c) => c.id === cardId) ?? null)}
+        onVer={verCarta}
       />
+
+      {/* Al final, la vista partida en dos: probar una mano y la curva. Van
+          aqui y no arriba porque son analisis de la baraja, no la baraja; y en
+          dos tarjetas iguales, que la curva sola en una tarjeta angosta
+          quedaba descolgada de todo lo demas. */}
+      {res.principal.length > 0 && (
+        <div className="grid gap-5 lg:grid-cols-2">
+          <HandTester
+            res={res}
+            oroInicial={deck.oroInicial}
+            onVer={verCarta}
+            className={PANEL_ANALISIS}
+          />
+          <CostCurve
+            curva={stats.curva}
+            oros={stats.porTipo.Oro}
+            barras="min-h-44 flex-1"
+            className={PANEL_ANALISIS}
+          />
+        </div>
+      )}
 
       {/* El mismo modal del catalogo, sin el boton de agregar: aqui la baraja ya
           esta armado y se viene a mirar la carta, no a cambiarla. */}

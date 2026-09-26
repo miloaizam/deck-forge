@@ -27,6 +27,24 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Novedad",
+    titulo: "Prueba manos y descarga tu baraja como imagen",
+    texto: [
+      "Al final de la página de cada baraja puedes robar una mano inicial de 8 cartas al azar, sin el oro inicial, y hacer mulligan: cada uno vuelve a barajar y roba una carta menos. Al lado está la curva de coste.",
+      "Un botón nuevo en la página de la baraja la descarga como imagen, con todas sus cartas y copias, lista para compartir en redes o en un chat.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Mejora",
+    titulo: "Nombres de baraja únicos y más largos",
+    texto: [
+      "Dos barajas ya no pueden llamarse igual. Si importas, duplicas o guardas una compartida con un nombre que ya tienes, se le agrega «(copia)».",
+      "El nombre de una baraja admite ahora hasta 60 caracteres y la descripción hasta 280.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Arreglo",
     titulo: "Los Mercenarios ya admiten cualquier cantidad de copias",
     texto: [

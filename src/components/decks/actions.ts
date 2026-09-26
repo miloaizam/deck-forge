@@ -35,7 +35,8 @@ export function downloadDeck(deck: Deck): void {
   toast(`Baraja "${deckTitle(deck)}" exportada a un archivo.`, "info");
 }
 
-function slugNombre(deck: Deck): string {
+/** El nombre de la baraja apto para un archivo: "Dragón Control" -> "dragon-control". */
+export function slugNombre(deck: Deck): string {
   const base = deckTitle(deck)
     .toLowerCase()
     .normalize("NFKD")

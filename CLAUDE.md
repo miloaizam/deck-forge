@@ -1486,6 +1486,34 @@ baraja que ya se pasó ("lleva 4 copias") y `canAdd` una que está en el tope
 ("ya lleva 3 copias, el máximo"). Con una sola frase, el "+" bloqueado decía
 "ya tiene 4 copias" teniendo 3.
 
+**Dos barajas no pueden llamarse igual.** Se comparan sin mayúsculas, sin
+espacios de más y en la misma forma Unicode (`nombreOcupado`,
+`deck-storage.ts`). Donde el nombre lo eligió el usuario —crear o renombrar en
+el constructor— se **rechaza**: aviso en línea bajo el campo y un `warning`
+al guardar. Donde no lo eligió —duplicar, importar, guardar una compartida— se
+**resuelve solo** con `nombreLibre`: "X (copia)", "X (copia 2)"…, quitando
+antes el sufijo que ya traiga para no apilar "(copia) (copia)". Importar
+compara cada baraja también con las del mismo archivo, y el aviso dice cuántas
+se renombraron. Por el sufijo, los topes subieron: **60 caracteres el nombre y
+280 la descripción** (eran 30 y 50). El enlace aguanta el nombre: viaja con un
+byte de largo y 60 caracteres son como mucho 240 bytes.
+
+**El detalle de una baraja termina en dos tarjetas de análisis**, partido a la
+mitad en escritorio: **probar una mano** (`HandTester.tsx`) y la **curva de
+coste**, que llena su tarjeta. La mano sale de `src/lib/hand-test.ts`, lógica
+pura con el azar inyectado y su test: 8 cartas del principal —el side no se
+juega de salida—, **sin una copia del oro inicial**, que se aparta antes de
+empezar; cada mulligan baraja de nuevo y roba una menos, hasta 1. Barajar es
+Fisher–Yates: el `sort` con un random que se ve por ahí no es uniforme.
+
+**La baraja se descarga como imagen** (`deck-image.ts`): un PNG de 1600 px de
+ancho dibujado en un `<canvas>`, con el nombre, la nota, el resumen, las cartas
+por tipo con sus copias y el oro inicial marcado. Sin servidor ni
+dependencias: las miniaturas son del propio origen, así que el canvas se puede
+exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
+colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee
+clases: si cambia la paleta, se cambia ahí también.
+
 El modal de una carta, abierto desde el constructor, suma y **quita** copias.
 Quitar sale de la zona elegida en "Agregar a" si la carta está ahí y, si no,
 de la otra: el modal cuenta las dos juntas.

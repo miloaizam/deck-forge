@@ -2,7 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { createDeck, setQuantity } from "./deck";
-import { mergeImported, parseDecks, MAX_BARAJAS } from "./deck-storage";
+import {
+  mergeImported,
+  nombreLibre,
+  nombreOcupado,
+  parseDecks,
+  MAX_BARAJAS,
+} from "./deck-storage";
+import { MAX_NOMBRE_BARAJA } from "./types";
 
 /**
  * `localStorage` lo puede editar el usuario o cualquier extension del
@@ -115,4 +122,40 @@ test("los emojis compuestos no se rompen al limpiar", () => {
   const familia = "\u{1F468}‍\u{1F469}‍\u{1F467}";
   const [leida] = parseDecks(sobre([{ ...createDeck(), nombre: `Mesa ${familia}` }]));
   assert.equal(leida.nombre, `Mesa ${familia}`);
+});
+
+test("dos barajas no comparten nombre: mayusculas y espacios no cuentan", () => {
+  const mias = [createDeck("Dragón Control")];
+  assert.equal(nombreOcupado("dragón  control ", mias), true);
+  assert.equal(
+    nombreOcupado("Dragón Control", mias, mias[0].id),
+    false,
+    "la propia no choca",
+  );
+  assert.equal(nombreOcupado("Otra", mias), false);
+  assert.equal(nombreOcupado("  ", mias), false);
+});
+
+test("nombreLibre agrega (copia) y cuenta, sin apilar sufijos", () => {
+  const mias = [createDeck("Dragón"), createDeck("Dragón (copia)")];
+  assert.equal(nombreLibre("Nueva", mias), "Nueva");
+  assert.equal(nombreLibre("Dragón", mias), "Dragón (copia 2)");
+  assert.equal(nombreLibre("Dragón (copia)", mias), "Dragón (copia 2)");
+  const largo = "x".repeat(MAX_NOMBRE_BARAJA);
+  const libre = nombreLibre(largo, [createDeck(largo)]);
+  assert.ok(libre.length <= MAX_NOMBRE_BARAJA && libre.endsWith(" (copia)"), libre);
+});
+
+test("importar renombra lo que choca, tambien dentro del mismo archivo", () => {
+  const mias = [createDeck("Dragón")];
+  const r = mergeImported(mias, [
+    createDeck("Dragón"),
+    createDeck("Sombra"),
+    createDeck("sombra"),
+  ]);
+  assert.deepEqual(
+    r.lista.slice(0, 3).map((d) => d.nombre),
+    ["Dragón (copia)", "Sombra", "sombra (copia)"],
+  );
+  assert.equal(r.renombradas, 2);
 });

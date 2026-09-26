@@ -202,7 +202,7 @@ superficies, no de la sombra.
   | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido, y los de abajo suben |
   | Panel y hoja de la baraja | `AutoHeight` (componente) | crece al agregar | se encoge al quitar |
   | Fila nueva del panel | `fila-entra` | fundido desde la izquierda | — |
-  | Baraja nueva, avisos del panel | `aparece` | fundido y sube 4 px | — |
+  | Cartas de las grillas (catálogo, edición, constructor), cartas del detalle de una baraja, barajas de Mis barajas, novedades, mano de prueba | `aparece` | fundido y sube 4 px | — |
   | Imagen de carta que baja | `imagen-carga` | su hueco late hasta que llega | — |
 
   La entrada dura algo más que la salida (220 contra 160 ms en los modales):

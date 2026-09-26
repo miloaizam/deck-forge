@@ -29,7 +29,13 @@ import {
   resolveDeck,
   validateDeck,
 } from "@/lib/deck-rules";
-import { deleteDeck, mergeImported, saveDeck, saveDecks } from "@/lib/deck-storage";
+import {
+  deleteDeck,
+  mergeImported,
+  nombreLibre,
+  saveDeck,
+  saveDecks,
+} from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CARD_RATIO } from "../CardTile";
@@ -80,13 +86,16 @@ export function DeckListView({ cards }: DeckListViewProps) {
   };
 
   const duplicar = (deck: Deck) => {
-    if (saveDeck(duplicateDeck(deck))) {
-      toast(`Baraja "${deckTitle(deck)}" duplicada correctamente.`, "success");
-    } else
+    // La copia no puede llamarse igual que otra: sale "X (copia)", "X (copia 2)"…
+    const copia = duplicateDeck(deck, nombreLibre(deck.nombre, decks));
+    if (saveDeck(copia)) {
+      toast(`Baraja duplicada como "${deckTitle(copia)}".`, "success");
+    } else {
       toast(
         "No se pudo duplicar: el almacenamiento del navegador está lleno.",
         "warning",
       );
+    }
   };
 
   const importar = (nuevos: Deck[]) => {

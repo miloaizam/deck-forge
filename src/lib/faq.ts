@@ -125,7 +125,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué es la curva de coste?",
         respuesta: [
-          "Las barras que muestran cuántas cartas llevas de cada **coste**, de 0 a 6 o más. Están en el panel del constructor y en la página de la baraja. Sirven para ver de un vistazo si la baraja está cargada de cartas caras. Solo cuentan la baraja, no el side deck, y los **Oros** van aparte porque no tienen coste.",
+          "Las barras que muestran cuántas cartas llevas de cada **coste**, de 0 a 6 o más. Están en el panel del constructor y al final de la página de la baraja. Sirven para ver de un vistazo si la baraja está cargada de cartas caras. Solo cuentan la baraja, no el side deck, y los **Oros** van aparte porque no tienen coste.",
         ],
       },
       {
@@ -150,6 +150,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Cómo guardo una baraja?",
         respuesta: [
           "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**, desde donde puedes editarla, duplicarla, compartirla, exportarla o borrarla.",
+          "Dos barajas **no pueden llamarse igual**: si el nombre ya existe, el constructor te pide otro. Al duplicar, importar o guardar una baraja compartida con un nombre repetido, se le agrega **«(copia)»**.",
         ],
       },
       {
@@ -162,6 +163,18 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Cómo comparto una baraja?",
         respuesta: [
           "Toca el **botón del enlace**, en Mis barajas o en la página de la baraja, y se copia un enlace. Quien lo abra ve tu baraja completa y puede **guardarla en sus barajas**.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo pruebo una mano inicial?",
+        respuesta: [
+          "Al final de la página de la baraja, en **«Probar una mano»**. **«Robar mano»** saca 8 cartas al azar, sin el oro inicial. **«Mulligan»** vuelve a barajar y roba una carta menos cada vez.",
+        ],
+      },
+      {
+        pregunta: "¿Puedo compartir la baraja como imagen?",
+        respuesta: [
+          "Sí. En la página de la baraja, el **botón de la imagen** descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
         ],
       },
       {

@@ -1,4 +1,4 @@
-import { deckSchema, type Deck } from "./types";
+import { deckSchema, MAX_NOMBRE_BARAJA, type Deck } from "./types";
 
 /**
  * Las barajas del usuario, guardados en su navegador.
@@ -142,12 +142,61 @@ export function saveDecks(decks: Deck[]): boolean {
   }
 }
 
+/**
+ * Dos barajas no pueden llamarse igual: en Mis barajas no se sabria cual es
+ * cual. Se comparan sin mayusculas, sin espacios de mas y en la misma forma
+ * Unicode, para que "Dragón  Control" y "dragón control" choquen.
+ */
+function claveNombre(nombre: string): string {
+  return nombre.normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase("es");
+}
+
+/**
+ * Si ya hay otra baraja con ese nombre. `excepto` es la propia baraja: guardar
+ * los cambios de una sin tocarle el nombre no es un choque. Un nombre vacio no
+ * choca con nada (el constructor ya exige uno para guardar).
+ */
+export function nombreOcupado(
+  nombre: string,
+  barajas: Deck[],
+  excepto?: string,
+): boolean {
+  const clave = claveNombre(nombre);
+  if (clave === "") return false;
+  return barajas.some((d) => d.id !== excepto && claveNombre(d.nombre) === clave);
+}
+
+/** " (copia)" o " (copia 3)" al final de un nombre. */
+const SUFIJO_COPIA = / \(copia(?: \d+)?\)$/;
+
+/**
+ * El nombre tal cual si esta libre; si no, con " (copia)", " (copia 2)"… hasta
+ * dar con uno libre. Lo usan importar, duplicar y guardar una baraja
+ * compartida: ahi el usuario no eligio el nombre, asi que se resuelve solo en
+ * vez de rechazar. Crear una en el constructor si rechaza (`nombreOcupado`).
+ *
+ * Duplicar "X (copia)" da "X (copia 2)", no "X (copia) (copia)": el sufijo que
+ * ya traiga se quita antes. Y la base se recorta para que el sufijo quepa en
+ * MAX_NOMBRE_BARAJA.
+ */
+export function nombreLibre(nombre: string, barajas: Deck[]): string {
+  if (!nombreOcupado(nombre, barajas)) return nombre;
+  const base = nombre.trim().replace(SUFIJO_COPIA, "");
+  for (let n = 1; ; n++) {
+    const sufijo = n === 1 ? " (copia)" : ` (copia ${n})`;
+    const candidato = base.slice(0, MAX_NOMBRE_BARAJA - sufijo.length).trimEnd() + sufijo;
+    if (!nombreOcupado(candidato, barajas)) return candidato;
+  }
+}
+
 export interface MergeResult {
   lista: Deck[];
   /** Cuantas de las importadas entraron. */
   entraron: number;
   /** Cuantas no cupieron bajo MAX_BARAJAS. */
   sobraron: number;
+  /** Cuantas entraron con otro nombre, porque el suyo ya estaba tomado. */
+  renombradas: number;
 }
 
 /**
@@ -161,11 +210,22 @@ export interface MergeResult {
  */
 export function mergeImported(existentes: Deck[], nuevas: Deck[]): MergeResult {
   const hueco = Math.max(0, MAX_BARAJAS - existentes.length);
-  const entran = nuevas.slice(0, hueco);
+  // Cada una se compara con las que ya habia y con las que entraron antes que
+  // ella: un archivo con dos barajas del mismo nombre tambien choca consigo.
+  const vistas = [...existentes];
+  let renombradas = 0;
+  const entran = nuevas.slice(0, hueco).map((d) => {
+    const nombre = nombreLibre(d.nombre, vistas);
+    if (nombre !== d.nombre) renombradas++;
+    const deck = nombre === d.nombre ? d : { ...d, nombre };
+    vistas.push(deck);
+    return deck;
+  });
   return {
     lista: [...entran, ...existentes],
     entraron: entran.length,
     sobraron: nuevas.length - entran.length,
+    renombradas,
   };
 }
 

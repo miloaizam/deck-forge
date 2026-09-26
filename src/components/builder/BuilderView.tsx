@@ -13,6 +13,7 @@ import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
 import { Pagination } from "../Pagination";
 import { toast } from "../toast";
+import { useDecks } from "../decks/use-decks";
 import {
   applyFilters,
   buildFacets,
@@ -51,7 +52,7 @@ import {
   DECK_TOTAL,
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
-import { readDeck, saveDeck } from "@/lib/deck-storage";
+import { nombreOcupado, readDeck, readDecks, saveDeck } from "@/lib/deck-storage";
 import {
   MAX_DESCRIPCION_BARAJA,
   MAX_NOMBRE_BARAJA,
@@ -169,6 +170,11 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const issues = useMemo(() => validateDeck(deck, index), [deck, index]);
   const legal = isLegal(issues);
 
+  // El nombre choca con otra baraja guardada: se avisa mientras se escribe, no
+  // recien al pulsar Guardar.
+  const guardadas = useDecks();
+  const nombreRepetido = nombreOcupado(deck.nombre, guardadas, deck.id);
+
   /** Copias por impresion, para el numerito de cada carta de la grilla. */
   const copiasPorId = useMemo(() => {
     const m = new Map<string, number>();
@@ -214,6 +220,14 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const guardar = () => {
     if (deck.nombre.trim() === "") {
       avisarError("La baraja necesita un nombre para poder guardarse.");
+      return;
+    }
+    // Crear no resuelve solo un choque de nombres: el nombre lo eligio quien
+    // arma, asi que se le pide otro en vez de cambiarselo por detras.
+    if (nombreOcupado(deck.nombre, readDecks(), deck.id)) {
+      avisarError(
+        `Ya existe una baraja llamada "${deckTitle(deck)}". Elige otro nombre.`,
+      );
       return;
     }
     // Se mira antes de escribir: despues ya estaria guardada siempre.
@@ -386,8 +400,18 @@ export function BuilderView({ cards }: BuilderViewProps) {
                 placeholder="Nombre de la baraja"
                 maxLength={MAX_NOMBRE_BARAJA}
                 aria-label="Nombre de la baraja"
+                aria-invalid={nombreRepetido || undefined}
+                aria-describedby={nombreRepetido ? "nombre-repetido" : undefined}
                 className={cn(DECK_NAME_FIELD, "bg-surface")}
               />
+              {nombreRepetido && (
+                <p
+                  id="nombre-repetido"
+                  className="aparece text-warning -mt-2 text-[12px]"
+                >
+                  Ya existe una baraja con este nombre.
+                </p>
+              )}
               <textarea
                 value={deck.descripcion}
                 onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}
@@ -420,8 +444,14 @@ export function BuilderView({ cards }: BuilderViewProps) {
           placeholder="Nombre de la baraja"
           maxLength={MAX_NOMBRE_BARAJA}
           aria-label="Nombre de la baraja"
+          aria-invalid={nombreRepetido || undefined}
           className={DECK_NAME_FIELD}
         />
+        {nombreRepetido && (
+          <p className="text-warning mt-1 text-[12px]">
+            Ya existe una baraja con este nombre.
+          </p>
+        )}
         <textarea
           value={deck.descripcion}
           onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}

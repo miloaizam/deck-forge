@@ -67,7 +67,7 @@ export default function NovedadesPage() {
                   <li
                     key={n.titulo}
                     className={cn(
-                      "bg-panel rounded-card border p-4 sm:p-5",
+                      "aparece bg-panel rounded-card border p-4 sm:p-5",
                       ultima ? "border-brand-500 shadow-glow" : "border-line",
                     )}
                   >

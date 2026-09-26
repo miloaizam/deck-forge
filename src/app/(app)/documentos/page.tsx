@@ -13,7 +13,7 @@ export default function DocumentosPage() {
       <p className="eyebrow mb-3">Reglas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Documentos</h1>
 
-      <div className="border-line rounded-panel mt-10 border border-dashed px-6 py-20 text-center">
+      <div className="aparece border-line rounded-panel mt-10 border border-dashed px-6 py-20 text-center">
         <FileText
           size={28}
           aria-hidden="true"

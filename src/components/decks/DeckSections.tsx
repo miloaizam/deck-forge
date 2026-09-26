@@ -146,7 +146,7 @@ function Pila({
   const copias = fila.n === 1 ? "1 copia" : `${fila.n} copias`;
 
   return (
-    <li className="group relative">
+    <li className="aparece group relative">
       <button
         type="button"
         onClick={() => onVer(fila.card.id)}
