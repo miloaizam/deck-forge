@@ -135,6 +135,30 @@ terminada.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
 
+## Recortar el arte de la extensión de Escuelas Elementales
+
+- **Qué pasa:** las 11 cartas de la extensión (`ee-316` a `ee-326`: Visnu,
+  Krisna, Harionna, Siddhattha Gotama, El Dharma, Aryuna, Karna, Loto Sagrado,
+  Otakemaru Kijin, Arjumand Banu Begum y Divina Parashu) se ven con un marco
+  raro en la grilla y en el modal. Su arte no viene de la API sino de La
+  Guarida (534×760), y esas imágenes traen **el borde negro impreso de la
+  carta y las esquinas redondeadas con el fondo de la foto**. Las de la API
+  llegan recortadas a sangre, con esquinas rectas, y el redondeo lo pone la
+  interfaz (`rounded-card`). Resultado: un marco oscuro más grueso que el del
+  resto y restos grises en las esquinas. Revisado a ojo contra el resto del
+  catálogo: solo estas 11 lo tienen.
+- **Por dónde:** recortar esas 11 al mismo encuadre que las cartas de la API.
+  La referencia buena es una carta de Escuelas Elementales con la misma
+  plantilla (por ejemplo `ee-315`): medir en las dos cuánto sobra por lado y
+  recortar en `scripts/convert_images.py` o antes, sobre el original. Ojo:
+  los originales de `images-src/` no están en el repo (git-ignorado), así que
+  hay que volver a bajarlos de La Guarida. Y `data:images` **se salta las
+  WebP que ya existen**: borrar `public/cards/ee-3{16..26}.webp` y sus
+  `thumb/` antes de regenerar.
+- **Terminado cuando:** en una plancha junto a cartas de la API, las 11 se
+  ven con el mismo borde y esquinas, en la grilla y en el modal, y en los dos
+  temas.
+
 ## Curva de coste en el constructor
 
 Del roadmap original, Fase 2 (`docs/plan.md`): nunca se hizo, aunque el README
