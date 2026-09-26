@@ -27,6 +27,14 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Mejora",
+    titulo: "Novedades más cortas de recorrer",
+    texto: [
+      "Esta página muestra ahora las novedades de a seis. El botón «Ver más», al final, carga las seis siguientes.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Novedad",
     titulo: "Prueba manos y descarga tu baraja como imagen",
     texto: [

@@ -1033,7 +1033,10 @@ en el mismo commit que el cambio que los afecta:**
   interna, herramientas de desarrollo ni refactors. La fecha es la del commit,
   y `novedades.test.ts` exige que vayan de la más nueva a la más antigua. La
   primera de la lista es "lo más reciente": la página le pone borde violeta y
-  esa etiqueta.
+  esa etiqueta. La línea de tiempo (`NovedadesTimeline.tsx`) se muestra **por
+  tandas de seis**: "Ver más" suma la siguiente, no el resto de golpe, y lleva
+  el foco a la primera entrada nueva. La primera tanda sale en el HTML
+  estático.
 
 **Volver arriba** (`ScrollTopButton.tsx`, en el layout de `(app)`) aparece tras
 bajar 600 px. En el constructor, bajo `lg`, sube por encima de la barra fija
