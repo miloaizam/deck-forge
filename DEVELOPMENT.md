@@ -63,7 +63,7 @@ out/             build estático (git-ignorado)
 ```
 
 Las rutas: `/` portada · `/catalogo` y `/catalogo/<edicion>` · `/constructor` arma y
-edita · `/barajas` la lista · `/baraja` el detalle · `/documentos` (todavía vacía).
+edita · `/barajas` la lista · `/baraja` el detalle · `/documentos` (la Fe de Erratas y la Banlist).
 
 Dónde tocar según lo que quieras hacer:
 

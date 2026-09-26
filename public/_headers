@@ -32,3 +32,8 @@
 # Las imagenes de carta llevan el codigo en el nombre y no se reescriben.
 /cards/*
   Cache-Control: public, max-age=604800
+
+# Los documentos llevan la fecha en el nombre (FeDeErratas-AAMMDD.pdf): una
+# version nueva es un archivo nuevo. Un dia de cache basta igual.
+/reglas/*
+  Cache-Control: public, max-age=86400

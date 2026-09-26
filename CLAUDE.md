@@ -113,9 +113,9 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 
 ```
 TODO.md        funcionalidades por hacer (se borra la entrada al hacerla)
-documentos/    Fe de Erratas y Banlist transcritas a PDF con el estilo del sitio,
-               más sus datos en fuente/*.json. NO se publican (no están en
-               public/): ver documentos/README.md
+documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
+               fuente/*.json y el generador de los PDF (que quedan en
+               public/reglas/). Ver documentos/README.md
 ISSUES.md      errores y mejoras abiertas (se borra la entrada al arreglarla)
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
@@ -127,7 +127,7 @@ scripts/       herramientas Python: validan datos y convierten imágenes
 .pre-commit-config.yaml  hooks de cada commit (los activa `pnpm install`)
 public/        se sirve tal cual
   brand/       logos e isotipos SVG
-  reglas/      PDFs descargables (se sirven tal cual, ver seguridad #12)
+  reglas/      PDFs descargables (se sirven tal cual, ver seguridad #11)
   data/        cards.json  (GENERADO — no editar a mano)
   cards/       WebP de las cartas + thumb/  (GENERADO — no editar a mano)
   _headers     cabeceras de seguridad de Cloudflare
@@ -887,7 +887,11 @@ cookies, sin datos personales—, pero eso no se deja al azar:
     cual. Se enlazan con `<a href="/reglas/x.pdf" download>`: la CSP lleva
     `object-src 'none'`, asi que **no** se pueden incrustar con `<embed>`,
     `<object>` ni `<iframe>`. Que sean archivos propios, no hotlinkeados, y
-    que no lleven metadatos con datos personales del autor.
+    que no lleven metadatos con datos personales del autor. Para **verlos**
+    en el sitio, la página los dibuja en HTML desde los mismos datos, y "Abrir
+    PDF" los deja al visor del navegador en otra pestaña (`target="_blank"`,
+    probado: sin bloqueos de la CSP). La auditoría falla si un
+    `href="/reglas/…"` no existe, no es PDF o pasa de 1 MB.
 
 12. **`pnpm run audit`** revisa el sitio ya construido y falla si aparece un
     source map, una ruta absoluta de la máquina de build, un recurso externo,
@@ -976,8 +980,8 @@ mal, en [ISSUES.md](ISSUES.md).
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
-`/documentos` (placeholder: ahí irán la Fe de Erratas y la Banlist, para leer y
-descargar) · `/novedades` la línea de tiempo de cambios.
+`/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
+`/documentos/banlist` para leerlas · `/novedades` la línea de tiempo de cambios.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1551,10 +1555,15 @@ contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los
 imports sin extensión que espera el bundler de Next.
 
-**Todavía no hay** banlist ni Fe de Erratas en el sitio: están transcritas en
-`documentos/` (PDF y JSON, sin publicar ni aplicar). Sus JSON se validan con
-los esquemas de `src/lib/documentos.ts`, y `documentos.test.ts` los cruza con
-el catálogo real. Esta última tiene ahora
+**La banlist y la Fe de Erratas se publican pero todavía no se aplican**: se
+leen y se descargan en `/documentos`, pero el catálogo y el validador no las
+usan. Los datos están en `documentos/fuente/*.json`, se validan con los
+esquemas de `src/lib/documentos.ts` y `documentos.test.ts` los cruza con el
+catálogo real; las páginas los leen en el build con `documentos-data.ts`
+(solo Server Components: importa los JSON y `node:fs`), así que un JSON roto
+tumba el build. El diff resaltado (`word-diff.ts`) es la misma lógica que el
+`diff()` del generador de los PDF: si cambia uno, se cambia el otro. La Fe de
+Erratas tiene ahora
 material de sobra: al cargar Escuelas Elementales quedaron **66 cartas cuyo
 texto cambió entre impresiones**, y el catálogo muestra el vigente sin decir en
 ninguna parte que la impresión vieja decía otra cosa.

@@ -32,24 +32,11 @@ terminada. Van agrupadas por la parte del sitio que tocan.
   catálogo y el constructor. La banlist además declara **31 cartas Únicas**
   (una copia) y 37 erratas de reglas, algunas de construcción ("Mazo
   Desafiante y/o Guerrero").
+- **Ya publicadas:** se leen y descargan en `/documentos`. Al aplicarlas, que
+  esas páginas y la ayuda dejen de decir "todavía no se aplican".
 - **Terminado cuando:** el catálogo muestra el texto erratado, el validador
   rechaza o limita las cartas de la banlist y hay tests contra el catálogo
   real que lo comprueban.
-
-### Publicar la Fe de Erratas y la Banlist en DeckForge
-
-- **Qué:** que se puedan **ver** desde la web y **descargar**.
-- **Ya existen los PDF** con el estilo del sitio: `documentos/FeDeErratas-260926.pdf`
-  y `documentos/BanlistEstandar-260926.pdf`. Publicar es copiarlos (o
-  generarlos) a `public/reglas/` y enlazarlos.
-- **Por dónde:** `/documentos` es hoy un placeholder
-  (`src/app/(app)/documentos/page.tsx`). Los descargables van en `public/reglas/`
-  y se enlazan con `<a href="/reglas/x.pdf" download>`: la CSP lleva
-  `object-src 'none'`, así que un PDF **no** se puede incrustar con `<embed>`,
-  `<object>` ni `<iframe>` (CLAUDE.md, §6.11). Para verlos en la página, se
-  pintan desde los datos como HTML.
-- **Terminado cuando:** las dos listas se leen en el sitio, se descargan, y
-  `pnpm run audit` pasa.
 
 ## Constructor y barajas
 

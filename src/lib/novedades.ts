@@ -27,6 +27,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Novedad",
+    titulo: "La Fe de Erratas y la Banlist, en Documentos",
+    texto: [
+      "La sección Documentos ya tiene la Fe de Erratas y la Banlist Estándar, transcritas con el estilo de DeckForge. Se pueden leer en el sitio, con el cambio de cada carta resaltado, o abrir y descargar en PDF.",
+      "Por ahora son de consulta: el catálogo y el constructor todavía no las aplican.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Arreglo",
     titulo: "Ninguna baraja se pierde al llegar a 50",
     texto: [

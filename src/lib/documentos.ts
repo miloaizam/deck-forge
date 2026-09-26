@@ -131,3 +131,59 @@ export function claveDeNombre(nombre: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+/**
+ * Las ediciones de la Fe de Erratas, en el orden del documento original. El
+ * indice y las secciones de la pagina siguen este orden; `documentos.test.ts`
+ * vigila que ninguna entrada caiga fuera.
+ */
+export const EDICIONES_FE_DE_ERRATAS = [
+  "Dominio",
+  "ContraAtaque",
+  "Águila Imperial",
+  "Steampunk",
+  "Axis Mundi",
+  "Hijos del Sol",
+  "Legado Gótico",
+  "Escuelas Elementales",
+  "Otras ediciones",
+] as const;
+
+export const ETIQUETA_CAMBIO: Record<Cambio, string> = {
+  habilidad: "Habilidad",
+  raza: "Raza",
+  nombre: "Nombre",
+  frecuencia: "Frecuencia",
+};
+
+export interface Documento {
+  /** Ruta de su pagina en el sitio. */
+  ruta: string;
+  /** El PDF publicado, en public/reglas/ (seguridad #11 de CLAUDE.md). */
+  pdf: string;
+  /** Paginas del PDF; `documentos.test.ts` las compara con el archivo. */
+  paginas: number;
+}
+
+export const DOCUMENTOS = {
+  feDeErratas: {
+    ruta: "/documentos/fe-de-erratas",
+    pdf: "/reglas/FeDeErratas-260926.pdf",
+    paginas: 24,
+  },
+  banlist: {
+    ruta: "/documentos/banlist",
+    pdf: "/reglas/BanlistEstandar-260926.pdf",
+    paginas: 6,
+  },
+} as const satisfies Record<string, Documento>;
+
+/** "2026-09-26" -> "26 de septiembre de 2026". */
+export function fechaLarga(iso: string): string {
+  return new Intl.DateTimeFormat("es-CL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${iso}T00:00:00Z`));
+}

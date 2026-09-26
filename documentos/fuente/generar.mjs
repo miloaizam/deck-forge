@@ -1,5 +1,5 @@
 /**
- * Genera los PDFs de documentos/ a partir de los datos transcritos de
+ * Genera los PDFs de public/reglas/ a partir de los datos transcritos de
  * documentos/fuente/*.json: la Fe de Erratas y la Banlist con el estilo de
  * DeckForge (tema oscuro, A4 vertical).
  *
@@ -10,8 +10,9 @@
  *   node documentos/fuente/generar.mjs
  *
  * Imprime con Playwright + Chromium, que NO es dependencia del repo: se busca
- * en PLAYWRIGHT_PATH o en la instalacion global. Nada de esto se publica: los
- * PDFs quedan en documentos/, fuera de public/.
+ * en PLAYWRIGHT_PATH o en la instalacion global. Los PDFs quedan en
+ * public/reglas/, que se publica tal cual; la pagina /documentos los enlaza y
+ * pinta los mismos datos como HTML (src/app/(app)/documentos/).
  */
 
 import {
@@ -27,7 +28,7 @@ import { pathToFileURL } from "node:url";
 
 const RAIZ = path.resolve(import.meta.dirname, "..", "..");
 const FUENTE = import.meta.dirname;
-const SALIDA = path.join(RAIZ, "documentos");
+const SALIDA = path.join(RAIZ, "public", "reglas");
 const VERSION = "260926"; // AAMMDD de esta transcripcion, en el nombre del archivo
 
 const PLAYWRIGHT =
@@ -60,6 +61,9 @@ const ancla = (s) =>
  * Diferencia por palabras (LCS) entre dos textos. Devuelve el HTML de los dos
  * lados: en el de antes se tacha lo que se va, en el de despues se resalta lo
  * que llega. La puntuacion va pegada a su palabra, que es como se lee.
+ *
+ * Es la misma logica que `wordDiff()` de src/lib/word-diff.ts, que usa la
+ * version web: si cambia una, se cambia la otra.
  */
 function diff(a, b) {
   const A = a.split(/(\s+)/).filter((t) => t !== "");
@@ -460,7 +464,7 @@ try {
       outline: true,
     });
     await page.close();
-    console.log(`documentos/${archivo}`);
+    console.log(`public/reglas/${archivo}`);
   }
 } finally {
   await browser.close();

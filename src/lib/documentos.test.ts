@@ -6,6 +6,8 @@ import path from "node:path";
 import {
   banlistSchema,
   cartasDeLaBanlist,
+  DOCUMENTOS,
+  EDICIONES_FE_DE_ERRATAS,
   claveDeNombre,
   feDeErratasSchema,
 } from "./documentos";
@@ -119,4 +121,21 @@ test("el tipo de cada carta erratada coincide con el catalogo", () => {
 
 test("las cartas que nombra la regla de Desafiante y Guerrero existen", () => {
   for (const n of ["Shingas", "Karna"]) assert.ok(porNombre.has(claveDeNombre(n)), n);
+});
+
+test("cada entrada de la Fe de Erratas cae en una edicion del indice", () => {
+  const ediciones = new Set<string>(EDICIONES_FE_DE_ERRATAS);
+  for (const e of FE.entradas) assert.ok(ediciones.has(e.edicion), e.edicion);
+});
+
+test("los PDF publicados existen y tienen las paginas que dice la ficha", () => {
+  for (const doc of Object.values(DOCUMENTOS)) {
+    const pdf = readFileSync(path.join(process.cwd(), "public", doc.pdf)).toString(
+      "latin1",
+    );
+    // El arbol de paginas puede tener nodos intermedios: la raiz es el que
+    // cuenta mas.
+    const cuentas = [...pdf.matchAll(/\/Type\s*\/Pages\b[^>]*?\/Count\s+(\d+)/g)];
+    assert.equal(Math.max(...cuentas.map((c) => Number(c[1]))), doc.paginas, doc.pdf);
+  }
 });

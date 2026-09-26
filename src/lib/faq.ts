@@ -201,7 +201,7 @@ export const FAQ: FaqSection[] = [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
           "**Mis barajas:** las barajas que guardaste en este navegador.",
-          "**Documentos:** los documentos oficiales del formato, como la Fe de Erratas y la Banlist, para leer y descargar. Todavía está en preparación.",
+          "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar. Por ahora son de consulta: el catálogo y el constructor todavía no las aplican.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
       },

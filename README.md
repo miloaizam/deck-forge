@@ -72,8 +72,8 @@ formato cargadas: Bushido, Sol Naciente, Dominio, ContraAtaque, Águila Imperial
 Steampunk, Axis Mundi, Hijos del Sol, Legado Gótico y Escuelas Elementales (con
 su extensión).
 
-Quedan pendientes la **banlist** y la **Fe de Erratas**, que se publicarán en
-**Documentos**.
+La **Fe de Erratas** y la **banlist** se pueden leer y descargar en
+**Documentos**; falta aplicarlas al catálogo y al constructor.
 
 ## ¿Quieres ayudar?
 

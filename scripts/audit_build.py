@@ -202,6 +202,27 @@ def revisar_imagenes() -> None:
         fallo(f"imagen referenciada que no existe en el build: {ruta}")
 
 
+def revisar_descargables() -> None:
+    """Los PDF enlazados existen, son PDF de verdad y no pasan de 1 MB.
+
+    Viven en public/reglas/ y se publican tal cual (seguridad #11 de
+    CLAUDE.md). Un enlace roto a un documento no lo ve ningun otro chequeo.
+    """
+    patron = re.compile(r'href="(/reglas/[^"#?]+)"')
+    enlazados = set()
+    for f in OUT.rglob("*.html"):
+        enlazados.update(patron.findall(f.read_text(encoding="utf-8", errors="ignore")))
+    for ruta in sorted(enlazados):
+        archivo = OUT / ruta.lstrip("/")
+        if not archivo.exists():
+            fallo(f"descargable enlazado que no existe en el build: {ruta}")
+            continue
+        if archivo.suffix == ".pdf" and not archivo.read_bytes()[:5] == b"%PDF-":
+            fallo(f"{ruta} no es un PDF")
+        if archivo.stat().st_size > 1024 * 1024:
+            fallo(f"{ruta} pesa mas de 1 MB")
+
+
 def revisar_esquemas() -> None:
     """Los enums de TypeScript y Pydantic tienen que coincidir."""
     ts = (ROOT / "src" / "lib" / "types.ts").read_text(encoding="utf-8")
@@ -241,6 +262,7 @@ def main() -> int:
         revisar_hosts_externos,
         revisar_headers,
         revisar_imagenes,
+        revisar_descargables,
         revisar_esquemas,
     ):
         revision()
