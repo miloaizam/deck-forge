@@ -43,7 +43,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
-| Hosting | **Cloudflare Pages**, conectado al repo: cada push a `main` publica `out/` |
+| Hosting | **Cloudflare Pages**, conectado al repo: cada push a `main` publica `out/`. Se configura desde su panel (build `pnpm run build`, salida `out`); no hay archivo de wrangler |
 | Gestor de paquetes | **pnpm** (fijado en `packageManager`; `pnpm-lock.yaml` commiteado, ajustes en `pnpm-workspace.yaml`) |
 
 ---
