@@ -80,8 +80,12 @@ Se hizo contra los dos originales:
   texto extraído mezclaba la lista de prohibidas con la de observación; la
   imagen dejó claro qué es cada cosa.
 - **Nombres contra el catálogo**:
-  - No están, por ser de ediciones fuera del formato: Devastador, Ataque de
-    Dragón, Dragón de Magma, Lahmu, Wyvern Dorado, Raksasa Sombrío, Jarnvid,
-    Melusina, Wotan, Muhammad Bin Qasim, Bibi Dalair Kaur, Anubis de Inpu y Mut.
-  - Tampoco está **Traer el Terror**, que sí debería ser del formato: queda
-    anotado para la revisión de cartas faltantes (`ISSUES.md`).
+  - No están, por ser de ediciones fuera del formato o una reimpresión que la
+    API no entrega: Devastador, Ataque de Dragón, Dragón de Magma, Lahmu,
+    Wyvern Dorado, Raksasa Sombrío, Jarnvid, Melusina, Wotan, Muhammad Bin
+    Qasim, Bibi Dalair Kaur, Anubis de Inpu y Mut. Como los documentos las
+    nombran, puede que el formato sí las admita: está anotado en `ISSUES.md`.
+  - **«Traer el Terror» no existe**: la Banlist se equivoca de nombre y la
+    carta es **Traer el Horror** (BU-081), que sí está en el catálogo. Se
+    corrigió en `fuente/banlist-estandar.json` y en el PDF, y quedó en las
+    notas de la transcripción.

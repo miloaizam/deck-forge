@@ -32,7 +32,13 @@ for (const c of CATALOGO) {
   porNombre.set(k, [...(porNombre.get(k) ?? []), c]);
 }
 
-/** De ediciones que no son del formato: no se cargan (documentos/README.md). */
+/**
+ * De ediciones que no son del formato, o reimpresiones que la API no entrega,
+ * y que HOY no estan en el catalogo. Las nombran la Fe de Erratas y la
+ * Banlist, asi que puede que el formato si las admita: la revision esta
+ * anotada en ISSUES.md ("Cartas de fuera de las diez ediciones..."). Al
+ * cargar una, se borra de aqui.
+ */
 const FUERA_DEL_FORMATO = [
   "Devastador",
   "Ataque de Dragón",
@@ -50,20 +56,12 @@ const FUERA_DEL_FORMATO = [
 ];
 
 /**
- * Del formato, pero todavia no estan en el catalogo. Es un hueco conocido,
- * anotado en ISSUES.md ("podrian faltar cartas"): al cargarla, se borra de aqui.
- */
-const FALTA_EN_EL_CATALOGO = ["Traer el Terror"];
-
-/**
  * Entradas de la banlist que no son una carta sino una regla de construccion:
  * "Mazo Desafiante y/o Guerrero" dice como se pueden llevar Shingas y Karna.
  */
 const NO_SON_CARTAS = ["Mazo Desafiante y/o Guerrero"];
 
-const EXCEPCIONES = new Set(
-  [...FUERA_DEL_FORMATO, ...FALTA_EN_EL_CATALOGO, ...NO_SON_CARTAS].map(claveDeNombre),
-);
+const EXCEPCIONES = new Set([...FUERA_DEL_FORMATO, ...NO_SON_CARTAS].map(claveDeNombre));
 
 test("los conteos son los de la revision contra los originales", () => {
   assert.equal(FE.entradas.length, 63);
@@ -97,12 +95,12 @@ test("cada carta nombrada esta en el catalogo, o se sabe por que no", () => {
 });
 
 test("las excepciones siguen siendo excepciones", () => {
-  // Si una carta de fuera del formato o faltante llega al catalogo, la lista
-  // miente: hay que sacarla de aqui (y, si era de ISSUES, de alli tambien).
+  // Si una carta de fuera del formato llega al catalogo, la lista miente: hay
+  // que sacarla de aqui (y de ISSUES.md).
   const nombres = new Set(
     [...FE.entradas.map((e) => e.nombre), ...cartasDeLaBanlist(BAN)].map(claveDeNombre),
   );
-  for (const n of [...FUERA_DEL_FORMATO, ...FALTA_EN_EL_CATALOGO, ...NO_SON_CARTAS]) {
+  for (const n of [...FUERA_DEL_FORMATO, ...NO_SON_CARTAS]) {
     assert.ok(!porNombre.has(claveDeNombre(n)), `${n} ya está en el catálogo`);
     assert.ok(nombres.has(claveDeNombre(n)), `${n} ya no sale en ningún documento`);
   }
