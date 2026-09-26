@@ -65,6 +65,11 @@ export interface RuleCard {
    */
   oroSinHabilidad: boolean;
   /**
+   * Lleva la keyword Mercenario: "puedes tener cualquier cantidad de copias de
+   * esta carta". Como los Oros sin habilidad, no tiene tope.
+   */
+  mercenario: boolean;
+  /**
    * Lugar de la carta en el orden del catalogo (`compareCards`), ya resuelto:
    * la baraja se pinta en ese mismo orden y aqui no queda mas que restar. Lo pone
    * `buildCardIndex`, que es quien ve el catalogo entero.
@@ -86,6 +91,7 @@ export function toRuleCard(c: Card, orden = 0): RuleCard {
     legalidad: c.legalidad,
     unica: c.keywords.includes("Única"),
     oroSinHabilidad: c.tipo === "Oro" && c.habilidad.trim() === "",
+    mercenario: c.keywords.includes("Mercenario"),
   };
 }
 
@@ -325,10 +331,15 @@ export function copiasPorIdentidad(res: ResolvedDeck): Map<string, number> {
  * Los Oros sin habilidad no tienen tope: son el recurso con el que se paga
  * todo y la baraja lleva las que necesite. Los que SI traen habilidad son cartas
  * como cualquier otra y van al tope de 3, salvo los que ademas son Únicos.
+ *
+ * Los Mercenarios tampoco tienen tope: la keyword dice exactamente eso. Son
+ * cuatro impresiones de tres cartas (Grifo Dorado, Pincoya y Dodu), todas
+ * Aliados, y ninguna es Única; si alguna vez una lo fuera, manda la Única, que
+ * es la restriccion.
  */
 export function limiteDeCopias(card: RuleCard): number {
   if (card.unica) return MAX_COPIAS_UNICA;
-  if (card.oroSinHabilidad) return Infinity;
+  if (card.oroSinHabilidad || card.mercenario) return Infinity;
   return MAX_COPIAS;
 }
 
@@ -468,20 +479,38 @@ function mensajeDeAfinidad(stats: DeckStats): string {
   return `${base}.`;
 }
 
-/** El mensaje de exceso de copias vive aqui solo, para que no se contradiga. */
-function mensajeDeCopias(card: RuleCard, copias: number): DeckIssue {
+/**
+ * El mensaje de exceso de copias vive aqui solo, para que no se contradiga.
+ *
+ * Lo usan dos preguntas distintas y cada una necesita su frase. El validador
+ * mira una baraja que YA se paso ("lleva 4 copias"); `canAdd`, una que esta
+ * en el tope y quiere una mas. Antes las dos compartian la frase del
+ * validador y `canAdd` le pasaba `copias + 1`: con 3 copias en la baraja, el
+ * "+" bloqueado decia "ya tiene 4 copias", que no era verdad.
+ */
+function mensajeDeCopias(
+  card: RuleCard,
+  copias: number,
+  momento: "lleva" | "al-agregar",
+): DeckIssue {
   if (card.unica) {
     return {
       code: "copias-unica",
       gravedad: "error",
-      mensaje: `${card.nombre} es Única: solo puedes llevar 1 copia y llevas ${copias}.`,
+      mensaje:
+        momento === "al-agregar"
+          ? `${card.nombre} es Única: la baraja ya lleva su única copia.`
+          : `${card.nombre} es Única: se admite 1 copia y la baraja lleva ${copias}.`,
       identidad: card.identidad,
     };
   }
   return {
     code: "copias-exceso",
     gravedad: "error",
-    mensaje: `Esa baraja ya tiene ${copias} copias de ${card.nombre} (el máximo es ${MAX_COPIAS}).`,
+    mensaje:
+      momento === "al-agregar"
+        ? `La baraja ya lleva ${copias} copias de ${card.nombre}, el máximo permitido.`
+        : `La baraja lleva ${copias} copias de ${card.nombre} y el máximo es ${MAX_COPIAS}.`,
     identidad: card.identidad,
   };
 }
@@ -573,7 +602,7 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     if (vistas.has(card.identidad)) continue;
     vistas.add(card.identidad);
     const n = copias.get(card.identidad) ?? 0;
-    if (n > limiteDeCopias(card)) issues.push(mensajeDeCopias(card, n));
+    if (n > limiteDeCopias(card)) issues.push(mensajeDeCopias(card, n, "lleva"));
   }
 
   if (!afinidadValida(stats.afinidad)) {
@@ -649,7 +678,7 @@ export function canAdd(
 
   const copias = copiasPorIdentidad(res).get(card.identidad) ?? 0;
   if (copias + 1 > limiteDeCopias(card)) {
-    return { ok: false, mensaje: mensajeDeCopias(card, copias + 1).mensaje };
+    return { ok: false, mensaje: mensajeDeCopias(card, copias, "al-agregar").mensaje };
   }
 
   if (zone === "principal" && stats.totalPrincipal >= DECK_TOTAL) {

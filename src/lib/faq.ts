@@ -94,7 +94,7 @@ export const FAQ: FaqSection[] = [
           "**50 cartas** justas, contando el oro inicial.",
           "Un **oro inicial**.",
           "Al menos **15 Aliados o 15 Tótems**. Tiene que cumplirlo un tipo solo: 14 y 14 no alcanzan.",
-          "Hasta **3 copias** de cada carta, o **1 si es Única**. Los Oros sin habilidad no tienen tope.",
+          "Hasta **3 copias** de cada carta, o **1 si es Única**. Los **Oros sin habilidad** y los **Mercenarios** no tienen tope.",
           "Una sola **afinidad** para todos tus Aliados.",
           "Un **side deck** de hasta 10 cartas.",
         ],
@@ -117,9 +117,15 @@ export const FAQ: FaqSection[] = [
         ],
       },
       {
+        pregunta: "¿Cómo quito una carta?",
+        respuesta: [
+          "En el panel de la baraja, con el botón **−** de su fila. También desde el detalle de la carta: tócala en el catálogo del constructor y usa **«Quitar una copia»**.",
+        ],
+      },
+      {
         pregunta: "¿Qué es la curva de coste?",
         respuesta: [
-          "Las barras del panel de la baraja: cuántas cartas llevas de cada **coste**, de 0 a 6 o más. Sirve para ver de un vistazo si la baraja está cargada de cartas caras. Solo cuenta la baraja, no el side deck, y los **Oros** van aparte porque no tienen coste.",
+          "Las barras que muestran cuántas cartas llevas de cada **coste**, de 0 a 6 o más. Están en el panel del constructor y en la página de la baraja. Sirven para ver de un vistazo si la baraja está cargada de cartas caras. Solo cuentan la baraja, no el side deck, y los **Oros** van aparte porque no tienen coste.",
         ],
       },
       {
@@ -182,7 +188,7 @@ export const FAQ: FaqSection[] = [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
           "**Mis barajas:** las barajas que guardaste en este navegador.",
-          "**Erratas:** las correcciones oficiales al texto de las cartas. Todavía está en preparación.",
+          "**Documentos:** los documentos oficiales del formato, como la Fe de Erratas y la Banlist, para leer y descargar. Todavía está en preparación.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
       },

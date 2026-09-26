@@ -15,11 +15,11 @@ import type { Deck } from "@/lib/types";
 export async function copyShareLink(deck: Deck): Promise<void> {
   try {
     await navigator.clipboard.writeText(shareUrl(deck, window.location.origin));
-    toast("Enlace copiado.");
+    toast(`Enlace de "${deckTitle(deck)}" copiado al portapapeles.`, "info");
   } catch {
     // Sin permiso de portapapeles (o sin HTTPS) no hay a que recurrir salvo
     // decirlo: el enlace es demasiado largo para pedir que lo copien a mano.
-    toast("No pude copiar el enlace. Revisa los permisos del navegador.", "error");
+    toast("No se pudo copiar el enlace. Revisa los permisos del navegador.", "warning");
   }
 }
 
@@ -32,7 +32,7 @@ export function downloadDeck(deck: Deck): void {
   a.download = `baraja-${slugNombre(deck)}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  toast(`Exporté "${deckTitle(deck)}" a un archivo.`);
+  toast(`Baraja "${deckTitle(deck)}" exportada a un archivo.`, "info");
 }
 
 function slugNombre(deck: Deck): string {

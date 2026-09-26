@@ -3,6 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Check, ChevronUp, TriangleAlert, X } from "lucide-react";
 
+import { AutoHeight } from "../AutoHeight";
 import { DECK_TOTAL } from "@/lib/deck-rules";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +102,7 @@ export function DeckSheet({
             </button>
           </div>
           <div className="scrollbar-slim max-h-[70dvh] overflow-y-auto overscroll-contain px-4 py-4">
-            {children}
+            <AutoHeight>{children}</AutoHeight>
           </div>
         </div>
       </dialog>

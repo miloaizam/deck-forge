@@ -34,6 +34,13 @@
   --color-accent-soft: #241b45; /* fondo suave de acento */
   --color-halo: rgb(109 40 217 / 0.25); /* resplandor decorado de la portada */
 
+  /* Estados: solo para detalles (icono, filete de un aviso), nunca para
+     fondos grandes. El violeta sigue siendo la marca; estos dicen QUE paso.
+     Cada uno pasa AA como texto sobre `panel` en su tema. */
+  --color-success: #34d399; /* se creo o se guardo algo */
+  --color-danger: #f87171; /* se borro algo */
+  --color-warning: #fbbf24; /* algo no se pudo hacer */
+
   /* Superficies claras (uso puntual: hojas de marca, impresion) --- */
   --color-light-bg: #f5f3fb;
   --color-light-line: #e3def2;
@@ -83,6 +90,9 @@
   --color-muted: #5f5880;
   --color-accent: #6d28d9;
   --color-accent-soft: #ede9fe;
+  --color-success: #047857;
+  --color-danger: #b91c1c;
+  --color-warning: #b45309;
 
   --color-halo: rgb(167 139 250 / 0.3);
 
@@ -109,6 +119,12 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* El hueco de la barra de scroll se reserva siempre. Sin esto, las
+       paginas cortas (Mis barajas vacia, Documentos) no tienen barra, quedan
+       ~15 px mas anchas que las largas y la navbar, centrada, salta de lado
+       al pasar de una a otra. Con barras que flotan sobre el contenido
+       (telefonos, macOS por defecto) no cambia nada. */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -204,6 +220,36 @@
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--color-accent);
+}
+
+/* Una imagen de carta que todavia esta bajando: su hueco late con un brillo
+   que cruza. Va en el fondo del propio <img>, asi que el arte lo tapa al
+   llegar; y al llegar se apaga (`data-cargada`, lo pone `marcarCargada` de
+   CardTile) para no seguir repintando detras de una imagen opaca. */
+@keyframes brillo-carga {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@layer components {
+  .imagen-carga {
+    background-color: var(--color-panel);
+    background-image: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-line) 70%, transparent) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: brillo-carga 1.4s ease-in-out infinite;
+  }
+  .imagen-carga[data-cargada] {
+    background-image: none;
+    animation: none;
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -307,19 +353,86 @@
   }
 
   /* Avisos flotantes: fundido al entrar y al salir (la salida la marca
-     `aviso-saliendo`, que dura SALIDA_MS de toast.ts). */
+     `aviso-saliendo`, que dura SALIDA_MS de toast.ts). Ademas el carril se
+     pliega (filas de grilla de 1fr a 0fr): sin eso, al irse uno los de abajo
+     subian de golpe. */
   .aviso {
-    transition-property: opacity, translate;
+    display: grid;
+    grid-template-rows: 1fr;
+    transition-property: opacity, translate, grid-template-rows;
     transition-duration: 200ms;
     transition-timing-function: var(--ease-out-soft);
   }
+  .aviso > * {
+    min-height: 0;
+  }
   .aviso-saliendo {
     opacity: 0;
+    grid-template-rows: 0fr;
+  }
+  .aviso-saliendo > * {
+    overflow: hidden;
   }
   @starting-style {
     .aviso {
       opacity: 0;
       translate: 0 -6px;
+    }
+  }
+
+  /* Un bloque que se despliega hacia abajo y empuja lo que hay debajo (el
+     panel de filtros): la fila de la grilla pasa de 0fr a 1fr. Dentro puede
+     haber desplegables que se salen del bloque, asi que el recorte solo dura
+     lo que dura la apertura: `overflow` pasa a visible al terminar (el
+     retraso de 220 ms) y vuelve a recortar en el acto al cerrar. */
+  .pliegue {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition-property: grid-template-rows, visibility;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-out-soft);
+  }
+  .pliegue.abierto {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+  .pliegue > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .pliegue.abierto > * {
+    overflow: visible;
+    transition: overflow 0s linear 220ms;
+    transition-behavior: allow-discrete;
+  }
+
+  /* Algo que aparece en la pagina ya cargada (una baraja recien duplicada,
+     el aviso de que el constructor esta acotado, un requisito nuevo en el
+     panel): fundido y un desliz corto hacia arriba. */
+  .aparece {
+    transition-property: opacity, translate;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-out-soft);
+  }
+  @starting-style {
+    .aparece {
+      opacity: 0;
+      translate: 0 4px;
+    }
+  }
+
+  /* Una fila nueva en el panel de la baraja: fundido y un desliz corto desde
+     la izquierda, mientras AutoHeight abre su hueco. */
+  .fila-entra {
+    transition-property: opacity, translate;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-out-soft);
+  }
+  @starting-style {
+    .fila-entra {
+      opacity: 0;
+      translate: -8px 0;
     }
   }
 

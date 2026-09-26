@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
-import { CARD_RATIO } from "./CardTile";
+import { CARD_RATIO, marcarCargada } from "./CardTile";
 import { editionTitle } from "@/lib/editions";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,8 @@ interface CardModalProps {
   copies?: number;
   /** Si viene, el modal ofrece agregar la carta a la baraja. */
   onAdd?: () => void;
+  /** Si viene, y hay copias, el modal ofrece quitar una. */
+  onRemove?: () => void;
   /** Por que no se puede agregar, si es que no se puede. */
   addBlocked?: string;
 }
@@ -37,6 +39,7 @@ export function CardModal({
   onClose,
   copies = 0,
   onAdd,
+  onRemove,
   addBlocked,
 }: CardModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -94,7 +97,8 @@ export function CardModal({
                 width={420}
                 height={600}
                 priority
-                className="border-line rounded-card mx-auto w-full max-w-[13rem] border sm:max-w-none"
+                onLoad={marcarCargada}
+                className="imagen-carga border-line rounded-card mx-auto w-full max-w-[13rem] border sm:max-w-none"
                 style={{ aspectRatio: CARD_RATIO }}
               />
 
@@ -168,6 +172,18 @@ export function CardModal({
                       <Plus size={16} aria-hidden="true" />
                       Agregar a la baraja
                     </button>
+                    {/* Quitar sale solo con copias puestas: sin ninguna no
+                        tendria nada que hacer. */}
+                    {onRemove && copies > 0 && (
+                      <button
+                        type="button"
+                        onClick={onRemove}
+                        className="border-line text-muted hover:text-ink hover:border-brand-500 rounded-chip focus-visible:outline-brand-500 inline-flex h-11 items-center gap-2 border px-4 text-sm transition-colors"
+                      >
+                        <Minus size={16} aria-hidden="true" />
+                        Quitar una copia
+                      </button>
+                    )}
                     <span className="text-muted text-[13px] tabular-nums">
                       {copies === 0
                         ? "Todavía no está en la baraja"

@@ -14,7 +14,15 @@ import { useSyncExternalStore } from "react";
  * Lo pinta `Toaster`, montado una sola vez en el layout de (app).
  */
 
-export type ToastTone = "ok" | "error";
+/**
+ * Que paso, y con eso el color y el icono del aviso:
+ * - `success`: se creo, guardo, importo o duplico algo (verde).
+ * - `delete`: se borro o se vacio algo (rojo).
+ * - `info`: algo salio de la baraja sin cambiarla: enlace copiado, archivo
+ *   exportado (violeta, el de la marca).
+ * - `warning`: algo no se pudo hacer, y el aviso dice por que (ambar).
+ */
+export type ToastTone = "success" | "delete" | "info" | "warning";
 
 export interface Toast {
   id: number;
@@ -45,7 +53,7 @@ function emitir(lista: Toast[]): void {
   for (const l of listeners) l();
 }
 
-export function toast(texto: string, tono: ToastTone = "ok"): void {
+export function toast(texto: string, tono: ToastTone): void {
   const igual = toasts.find((t) => !t.saliendo && t.texto === texto);
   if (igual) {
     emitir(toasts.map((t) => (t === igual ? { ...t, vez: t.vez + 1 } : t)));

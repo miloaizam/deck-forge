@@ -7,6 +7,7 @@ import { Check, Save } from "lucide-react";
 import { DeckClearButton, DeckPanel } from "./DeckPanel";
 import { DeckParamLoader } from "./DeckParamLoader";
 import { DeckSheet } from "./DeckSheet";
+import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
@@ -27,9 +28,11 @@ import {
 import {
   addCard,
   clearDeck,
+  copiesOf,
   createDeck,
   deckTitle,
   describeDeck,
+  removeCard,
   renameDeck,
   setQuantity,
   setStartingGold,
@@ -63,11 +66,11 @@ interface BuilderViewProps {
 }
 
 /**
- * Los rechazos del constructor ("ya llevas 3 copias") van como aviso de error.
+ * Los rechazos del constructor ("ya lleva 3 copias") van como aviso `warning`.
  * Vive fuera del componente para ser estable: DeckParamLoader la tiene en las
  * dependencias de su efecto.
  */
-const avisarError = (mensaje: string) => toast(mensaje, "error");
+const avisarError = (mensaje: string) => toast(mensaje, "warning");
 
 function GuardarButton({
   guardado,
@@ -210,21 +213,22 @@ export function BuilderView({ cards }: BuilderViewProps) {
   // localStorage cuando navegamos, y /baraja lo lee de ahi por su id.
   const guardar = () => {
     if (deck.nombre.trim() === "") {
-      avisarError("Ponle un nombre a la baraja antes de guardarla.");
+      avisarError("La baraja necesita un nombre para poder guardarse.");
       return;
     }
     // Se mira antes de escribir: despues ya estaria guardada siempre.
     const yaExistia = readDeck(deck.id) !== null;
     if (!saveDeck(deck)) {
-      avisarError("No pude guardarlo: el almacenamiento del navegador está lleno.");
+      avisarError("No se pudo guardar: el almacenamiento del navegador está lleno.");
       return;
     }
     setGuardado(true);
     // El aviso se pide antes de navegar y se lee ya en la pagina de la baraja.
     toast(
       yaExistia
-        ? `Guardé los cambios de "${deckTitle(deck)}".`
-        : `Creé la baraja "${deckTitle(deck)}".`,
+        ? `Cambios guardados correctamente en "${deckTitle(deck)}".`
+        : `Baraja "${deckTitle(deck)}" creada correctamente.`,
+      "success",
     );
     router.push(`/baraja/?m=${deck.id}`);
   };
@@ -233,7 +237,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
     // Sin confirmacion, porque se rehace a mano; pero que se note que paso.
     if (deck.principal.length === 0 && deck.side.length === 0) return;
     setDeck((d) => clearDeck(d));
-    toast("Vacié la baraja.");
+    toast("Baraja vaciada: se quitaron todas sus cartas.", "delete");
   };
 
   const agregar = (card: Card, zone: DeckZone = zona) => {
@@ -247,6 +251,17 @@ export function BuilderView({ cards }: BuilderViewProps) {
     // addCard cuenta las copias de ESA zona; copiasPorId suma las dos y aqui
     // daria la cuenta equivocada si la carta ya estuviera en el side.
     setDeck((d) => addCard(d, card.id, zone));
+  };
+
+  /**
+   * Quita una copia desde el modal. Sale de la zona elegida en "Agregar a" si
+   * la carta esta ahi, y si no de la otra: el modal cuenta las dos juntas, asi
+   * que tiene que poder quitar de las dos.
+   */
+  const quitar = (card: Card) => {
+    const otra: DeckZone = zona === "principal" ? "side" : "principal";
+    const desde = copiesOf(deck, card.id, zona) > 0 ? zona : otra;
+    setDeck((d) => removeCard(d, card.id, desde));
   };
 
   const bloqueoDe = (card: Card): string | undefined => {
@@ -302,7 +317,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
           {/* Que el catalogo este acotado tiene que verse, o parece que faltan
               cartas. */}
           {acotado && (
-            <p className="text-muted -mt-2 text-[13px]">
+            <p className="aparece text-muted -mt-2 text-[13px]">
               Mostrando solo cartas que caben en esta baraja: Aliados{" "}
               <span className="text-ink">{affinityAdmits(stats.afinidad)}</span>, más
               Talismanes, Armas, Tótems y Oros. Para cambiar de afinidad, quita los
@@ -361,29 +376,33 @@ export function BuilderView({ cards }: BuilderViewProps) {
           <h2 className="text-ink border-line mx-2 mt-1 mb-1 border-b pb-3 text-xl font-semibold tracking-[-0.01em]">
             La baraja
           </h2>
-          <div className="scrollbar-slim flex min-h-0 flex-col gap-4 overflow-y-auto p-2">
-            <input
-              value={deck.nombre}
-              onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}
-              placeholder="Nombre de la baraja"
-              maxLength={MAX_NOMBRE_BARAJA}
-              aria-label="Nombre de la baraja"
-              className={cn(DECK_NAME_FIELD, "bg-surface")}
-            />
-            <textarea
-              value={deck.descripcion}
-              onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}
-              placeholder="Descripción (opcional)"
-              aria-label="Descripción de la baraja"
-              maxLength={MAX_DESCRIPCION_BARAJA}
-              rows={2}
-              className={cn(DECK_NOTE_FIELD, "bg-surface")}
-            />
-            {panel}
-            <div className="border-line flex flex-wrap gap-2 border-t pt-4">
-              <GuardarButton guardado={guardado} onGuardar={guardar} />
-              <DeckClearButton onClear={vaciar} />
-            </div>
+          <div className="scrollbar-slim min-h-0 overflow-y-auto p-2">
+            {/* El panel crece y se encoge con transicion al agregar o quitar
+                cartas, en vez de saltar (AutoHeight). */}
+            <AutoHeight className="flex flex-col gap-4">
+              <input
+                value={deck.nombre}
+                onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}
+                placeholder="Nombre de la baraja"
+                maxLength={MAX_NOMBRE_BARAJA}
+                aria-label="Nombre de la baraja"
+                className={cn(DECK_NAME_FIELD, "bg-surface")}
+              />
+              <textarea
+                value={deck.descripcion}
+                onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}
+                placeholder="Descripción (opcional)"
+                aria-label="Descripción de la baraja"
+                maxLength={MAX_DESCRIPCION_BARAJA}
+                rows={2}
+                className={cn(DECK_NOTE_FIELD, "bg-surface")}
+              />
+              {panel}
+              <div className="border-line flex flex-wrap gap-2 border-t pt-4">
+                <GuardarButton guardado={guardado} onGuardar={guardar} />
+                <DeckClearButton onClear={vaciar} />
+              </div>
+            </AutoHeight>
           </div>
         </aside>
       </div>
@@ -424,6 +443,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
         onClose={() => setSelected(null)}
         copies={selected ? (copiasPorId.get(selected.id) ?? 0) : 0}
         onAdd={selected ? () => agregar(selected) : undefined}
+        onRemove={selected ? () => quitar(selected) : undefined}
         addBlocked={selected ? bloqueoDe(selected) : undefined}
       />
     </>

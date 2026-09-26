@@ -17,6 +17,8 @@ import {
 import { DeckSections } from "./DeckSections";
 import { CardModal } from "../CardModal";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { CostCurve } from "../CostCurve";
+import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
@@ -78,9 +80,9 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       const guardado = decks.find((x) => x.id === m);
       return guardado
         ? { deck: guardado, error: "" }
-        : { deck: null, error: "No encontré esa baraja en este navegador." };
+        : { deck: null, error: "No se encontró esa baraja en este navegador." };
     }
-    return { deck: null, error: "Este enlace no trae ninguna baraja." };
+    return { deck: null, error: "Este enlace no contiene ninguna baraja." };
   }, [m, d, decks]);
 
   /**
@@ -92,24 +94,21 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const elegirPortada = (cardId: string | null) => {
     if (!deck) return;
     if (!saveDeck(setCover(deck, cardId))) {
-      toast("No pude guardarlo: el almacenamiento del navegador está lleno.", "error");
+      toast("No se pudo guardar: el almacenamiento del navegador está lleno.", "warning");
     }
   };
 
   const guardar = () => {
     if (!deck) return;
-    if (saveDeck(deck)) toast(`Guardé "${deckTitle(deck)}" en tus barajas.`);
-    else toast("No pude guardarlo: el almacenamiento del navegador está lleno.", "error");
+    if (saveDeck(deck)) {
+      toast(`Baraja "${deckTitle(deck)}" guardada en Mis barajas.`, "success");
+    } else
+      toast("No se pudo guardar: el almacenamiento del navegador está lleno.", "warning");
   };
 
   if (!cargado) {
     // Esqueleto, no spinner: la baraja sale de la URL o de localStorage al montar.
-    return (
-      <div aria-hidden="true" className="flex flex-col gap-4">
-        <div className="border-line rounded-panel h-24 animate-pulse border" />
-        <div className="border-line rounded-panel h-72 animate-pulse border" />
-      </div>
-    );
+    return <DeckDetailSkeleton />;
   }
 
   if (error || !deck) {
@@ -198,12 +197,13 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                   onClick={() => {
                     if (saveDeck(duplicateDeck(deck))) {
                       toast(
-                        `Dupliqué "${deckTitle(deck)}": la copia está en Mis barajas.`,
+                        `Baraja "${deckTitle(deck)}" duplicada. La copia está en Mis barajas.`,
+                        "success",
                       );
                     } else {
                       toast(
-                        "No pude duplicarla: el almacenamiento del navegador está lleno.",
-                        "error",
+                        "No se pudo duplicar: el almacenamiento del navegador está lleno.",
+                        "warning",
                       );
                     }
                   }}
@@ -244,6 +244,16 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         </div>
       )}
 
+      {/* La curva, como en el constructor: solo del principal. En su tarjeta y
+          sin estirarse, que siete columnas a lo ancho de la pagina no se leen. */}
+      {res.principal.length > 0 && (
+        <CostCurve
+          curva={stats.curva}
+          oros={stats.porTipo.Oro}
+          className="border-line bg-panel rounded-panel w-full border p-5 sm:max-w-md"
+        />
+      )}
+
       <DeckSections
         res={res}
         oroInicial={deck.oroInicial}
@@ -265,7 +275,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
           deleteDeck(deck.id);
           // El aviso vive en el layout y sobrevive al cambio de pagina: se lee
           // al llegar a Mis barajas.
-          toast(`Borré "${deckTitle(deck)}".`);
+          toast(`Baraja "${deckTitle(deck)}" eliminada.`, "delete");
           router.push("/barajas");
         }}
         onCancel={() => setPorBorrar(false)}

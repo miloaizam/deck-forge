@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Check, Coins, Trash2, TriangleAlert } from "lucide-react";
 
-import { CostCurve } from "./CostCurve";
+import { CostCurve } from "../CostCurve";
 import { BOTON_FILA, CAJA_FILA, QuantityStepper } from "./QuantityStepper";
 import { CARD_RATIO } from "../CardTile";
 import type { DeckZone } from "@/lib/deck";
@@ -118,7 +118,8 @@ function Fila({
       : undefined;
 
   return (
-    <li className="flex items-center gap-2 py-1.5">
+    // `fila-entra`: la carta nueva aparece con un fundido (globals.css).
+    <li className="fila-entra flex items-center gap-2 py-1.5">
       {/* La carta se abre desde su nombre y su miniatura, que es lo que el
           usuario ya mira; los botones de la derecha quedan fuera. */}
       <button
@@ -277,7 +278,7 @@ export function DeckPanel({
       {(errores.length > 0 || avisos.length > 0) && (
         <ul className="text-muted flex flex-col gap-1.5 text-[13px] leading-snug">
           {[...errores, ...avisos].map((i, n) => (
-            <li key={`${i.code}-${n}`} className="flex gap-2">
+            <li key={`${i.code}-${n}`} className="aparece flex gap-2">
               <span aria-hidden="true" className="text-muted/60">
                 ·
               </span>

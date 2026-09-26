@@ -27,10 +27,35 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Arreglo",
+    titulo: "Los Mercenarios ya admiten cualquier cantidad de copias",
+    texto: [
+      "Grifo Dorado, Pincoya y Dodu son Mercenarios, y su habilidad permite llevar todas las copias que quieras. El constructor los limitaba a tres por error; ahora no tienen tope.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Arreglo",
+    titulo: "Quitar cartas desde su detalle y copias bien contadas",
+    texto: [
+      "En el constructor, el detalle de una carta ahora tiene «Quitar una copia», además de agregar.",
+      "Con tres copias de una carta, el aviso decía que la baraja tenía cuatro. Ahora dice las que lleva de verdad.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Aviso",
+    titulo: "Erratas ahora se llama Documentos",
+    texto: [
+      "La sección cambia de nombre y de dirección, de /erratas/ a /documentos/, porque ahí estarán los documentos oficiales para leer y descargar: la Fe de Erratas y la Banlist. Si la tenías guardada, actualiza el enlace.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Novedad",
     titulo: "Curva de coste en el constructor",
     texto: [
-      "El panel de la baraja muestra cuántas cartas llevas de cada coste, en barras que se mueven a medida que agregas o quitas cartas. Así se ve de un vistazo si la baraja está cargada de cartas caras.",
+      "El panel de la baraja muestra cuántas cartas llevas de cada coste, en barras que se mueven a medida que agregas o quitas cartas. Así se ve de un vistazo si la baraja está cargada de cartas caras. La página de cada baraja también la muestra.",
     ],
   },
   {
@@ -38,7 +63,8 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Mejora",
     titulo: "Avisos al copiar, exportar, guardar y borrar",
     texto: [
-      "Ahora todo lo importante te avisa con un mensaje arriba a la derecha: enlace copiado, baraja exportada, creada, guardada, duplicada o borrada. Antes, exportar una baraja o borrarla desde su página no decía nada.",
+      "Ahora todo lo importante se confirma con un mensaje arriba a la derecha: enlace copiado, baraja exportada, creada, guardada, duplicada o eliminada. Antes, exportar una baraja o borrarla desde su página no decía nada.",
+      "Cada mensaje lleva un color según lo que pasó: verde lo que se creó o guardó, rojo lo que se eliminó, violeta lo que se copió o exportó y ámbar lo que no se pudo hacer.",
       "Los motivos por los que una carta no entra en la baraja salen en el mismo lugar. Si dejas el cursor encima, el aviso espera a que termines de leerlo.",
     ],
   },
@@ -47,7 +73,8 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Mejora",
     titulo: "Todo se abre y se cierra con suavidad",
     texto: [
-      "El detalle de una carta, la ayuda, los filtros, el menú del teléfono y la hoja de la baraja ya no aparecen de golpe: entran y salen con una animación corta. Si tu equipo tiene activado «reducir movimiento», se respeta y no hay animaciones.",
+      "El detalle de una carta, la ayuda, los filtros, el menú del teléfono y la hoja de la baraja ya no aparecen de golpe: entran y salen con una animación corta. El panel de la baraja crece y se encoge con suavidad al agregar o quitar cartas. Si tu equipo tiene activado «reducir movimiento», se respeta y no hay animaciones.",
+      "Mientras una página o una carta carga, se ve su forma en gris en vez de un hueco vacío.",
     ],
   },
   {

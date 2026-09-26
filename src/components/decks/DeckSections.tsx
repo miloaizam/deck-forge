@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Coins, Star } from "lucide-react";
 
-import { CARD_RATIO } from "../CardTile";
+import { CARD_RATIO, marcarCargada } from "../CardTile";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Tipo } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -172,7 +172,8 @@ function Pila({
               width={200}
               height={286}
               loading="lazy"
-              className="border-line rounded-card shadow-panel absolute inset-x-0 top-0 w-full border"
+              onLoad={marcarCargada}
+              className="imagen-carga border-line rounded-card shadow-panel absolute inset-x-0 top-0 w-full border"
               style={{
                 aspectRatio: CARD_RATIO,
                 transform: `translateY(${i * ASOMO * 100}%)`,

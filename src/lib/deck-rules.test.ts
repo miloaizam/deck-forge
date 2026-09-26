@@ -627,3 +627,42 @@ test("la curva junta los costes altos y no mira el side", () => {
   assert.equal(curva[CURVA_TOPE].n, 2);
   assert.equal(curva[1].n, 0, "el side no entra en la curva");
 });
+
+test("los Mercenarios no tienen tope de copias", () => {
+  const mercenarios = cards.filter((c) => c.keywords.includes("Mercenario"));
+  // Grifo Dorado (dos impresiones), Pincoya y Dodu.
+  assert.ok(mercenarios.length >= 3, "el catalogo trae Mercenarios");
+
+  for (const m of mercenarios) {
+    const card = index.porId.get(m.id)!;
+    let deck = createDeck("Mercenarios");
+    for (let i = 0; i < 6; i++) {
+      const check = canAdd(deck, card, "principal", index);
+      assert.equal(
+        check.ok,
+        true,
+        `${m.nombre} copia ${i + 1}: ${check.ok ? "" : check.mensaje}`,
+      );
+      deck = addCard(deck, m.id, "principal");
+    }
+    assert.ok(
+      !validateDeck(deck, index).some((i) => i.code === "copias-exceso"),
+      `${m.nombre}: seis copias son legales`,
+    );
+  }
+});
+
+test("el + bloqueado dice cuantas copias hay, no cuantas habria", () => {
+  const normal = cards.find(
+    (c) =>
+      c.tipo === "Talismán" &&
+      !c.keywords.includes("Única") &&
+      !c.keywords.includes("Mercenario"),
+  )!;
+  const deck = setQuantity(createDeck(), normal.id, "principal", 3);
+  const check = canAdd(deck, index.porId.get(normal.id)!, "principal", index);
+  assert.equal(check.ok, false);
+  const mensaje = check.ok ? "" : check.mensaje;
+  assert.match(mensaje, /3 copias/);
+  assert.doesNotMatch(mensaje, /4/);
+});

@@ -7,12 +7,18 @@ interface CostCurveProps {
   curva: Map<number, number>;
   /** Oros del principal: no tienen coste y van aparte, bajo el titulo. */
   oros: number;
+  /**
+   * El marco. En el panel del constructor es un tramo mas, con la raya de
+   * arriba como los demas; en el detalle de la baraja va en su propia tarjeta.
+   */
+  className?: string;
 }
 
 const cartas = (n: number) => `${n} ${n === 1 ? "carta" : "cartas"}`;
 
 /**
- * Cuantas cartas del principal hay de cada coste, en barras.
+ * Cuantas cartas del principal hay de cada coste, en barras. La usan el panel
+ * del constructor y el detalle de una baraja.
  *
  * La altura es relativa a la columna mas alta, no a las 50 cartas: una baraja
  * normal no pasa de quince o veinte en un coste, y medido contra 50 todas las
@@ -22,7 +28,11 @@ const cartas = (n: number) => `${n} ${n === 1 ? "carta" : "cartas"}`;
  * dato. Para el lector de pantalla cada columna es una frase ("Coste 2: 12
  * cartas") y lo dibujado queda oculto.
  */
-export function CostCurve({ curva, oros }: CostCurveProps) {
+export function CostCurve({
+  curva,
+  oros,
+  className = "border-line border-t pt-3",
+}: CostCurveProps) {
   // El panel se pinta dos veces (al costado en escritorio y en la hoja del
   // telefono): un id fijo saldria repetido.
   const titulo = useId();
@@ -30,7 +40,7 @@ export function CostCurve({ curva, oros }: CostCurveProps) {
   const max = Math.max(1, ...puntos.map((p) => p.n));
 
   return (
-    <section className="border-line border-t pt-3" aria-labelledby={titulo}>
+    <section className={className} aria-labelledby={titulo}>
       <h3
         id={titulo}
         className="text-ink mb-2 flex items-baseline justify-between gap-2 text-sm font-bold tracking-[0.1em] uppercase"

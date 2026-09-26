@@ -969,7 +969,8 @@ mal, en [ISSUES.md](ISSUES.md).
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
-`/erratas` (placeholder) · `/novedades` la línea de tiempo de cambios.
+`/documentos` (placeholder: ahí irán la Fe de Erratas y la Banlist, para leer y
+descargar) · `/novedades` la línea de tiempo de cambios.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1010,7 +1011,7 @@ regenerarla. Dos límites a saber:
   caduque.
 
 La navbar es una fila plana de cinco enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Erratas y Novedades. Bajo `md` se pliegan detrás de
+Constructor, Mis barajas, Documentos y Novedades. Bajo `md` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **ayuda** (un signo de
 pregunta) y el botón de tema. La portada no tiene navbar, así que tampoco
@@ -1030,7 +1031,9 @@ en el mismo commit que el cambio que los afecta:**
 - **`src/lib/novedades.ts`**, la línea de tiempo de `/novedades`. Entra solo lo
   que al usuario le cambia algo, contado para quien juega: nada de seguridad
   interna, herramientas de desarrollo ni refactors. La fecha es la del commit,
-  y `novedades.test.ts` exige que vayan de la más nueva a la más antigua.
+  y `novedades.test.ts` exige que vayan de la más nueva a la más antigua. La
+  primera de la lista es "lo más reciente": la página le pone borde violeta y
+  esa etiqueta.
 
 **Volver arriba** (`ScrollTopButton.tsx`, en el layout de `(app)`) aparece tras
 bajar 600 px. En el constructor, bajo `lg`, sube por encima de la barra fija
@@ -1039,7 +1042,7 @@ instantáneo, y el foco vuelve al logotipo para que el teclado siga desde
 arriba.
 
 **Los avisos flotantes son uno solo para todo el sitio.** Cualquier vista llama
-a `toast(texto, "ok" | "error")` (`src/components/toast.ts`) y los pinta
+a `toast(texto, tono)` (`src/components/toast.ts`) y los pinta
 `Toaster.tsx`, montado en el layout de `(app)`, arriba a la derecha bajo la
 navbar: abajo a la derecha está volver arriba, y en el constructor del
 teléfono, la barra de la baraja. Antes había tres sistemas —una línea de
@@ -1047,8 +1050,9 @@ texto en Mis barajas, otra en el detalle y un recuadro en el constructor— y
 tres acciones sin aviso. Cuatro cosas que no son obvias:
 
 - **Es un store de módulo, no un contexto.** Así sobrevive a la navegación: un
-  aviso pedido antes de `router.push` se lee en la página de llegada ("Borré…"
-  al volver a Mis barajas, "Creé la baraja…" al llegar a su detalle).
+  aviso pedido antes de `router.push` se lee en la página de llegada ("Baraja
+  … eliminada" al volver a Mis barajas, "… creada correctamente" al llegar a
+  su detalle).
 - **Vive en un popover manual**, que va a la capa superior del navegador. Un
   `<dialog>` modal tapa cualquier `z-index`, y un rechazo que salta con la
   hoja de la baraja abierta tiene que verse encima de ella; si llega un aviso
@@ -1063,17 +1067,47 @@ tres acciones sin aviso. Cuatro cosas que no son obvias:
   veces un "+" bloqueado deja un aviso, no cinco. Y el tiempo se detiene con
   el cursor o el foco encima (WCAG 2.2.1).
 
-Los mensajes van en primera persona, como el resto del sitio ("Exporté…",
-"No pude copiar el enlace…"), y la acción que falla lleva `"error"`, que
-cambia el icono. `copyShareLink` y `downloadDeck` (`decks/actions.ts`) dan su
-propio aviso, para que la lista y el detalle digan lo mismo.
+**El tono dice qué pasó y pinta el aviso**: `success` (verde: creada, guardada,
+importada, duplicada), `delete` (rojo: eliminada, vaciada), `info` (violeta:
+enlace copiado, exportada) y `warning` (ámbar: lo que no se pudo hacer, con el
+motivo). El color va en el icono y en un filete a la izquierda, con los tokens
+`success`, `danger` y `warning` de `globals.css`; cada tono lleva además su
+icono. **Los textos son impersonales**, de una web que informa y no de alguien
+que conversa: "Cambios guardados correctamente en "X".", no "Guardé los
+cambios de "X"." (DESIGN.md, "Escribir en la interfaz"). `copyShareLink` y
+`downloadDeck` (`decks/actions.ts`) dan su propio aviso, para que la lista y el
+detalle digan lo mismo.
 
 **Lo que se abre y se cierra se anima**, con CSS y sin JavaScript: la tabla de
 qué hace cada panel está en DESIGN.md ("Movimiento"). Ojo al tocar un
 componente animado: lo que se anima al cerrar **tiene que seguir montado
 mientras sale**, así que los desplegables se ocultan con `hidden` en vez de
 `{open && …}`, y `CardModal` y `ConfirmDialog` conservan en estado la última
-carta y el último texto.
+carta y el último texto. Los cambios de alto (el panel de la baraja al
+agregar una carta) los anima `AutoHeight.tsx`, porque `height: auto` no tiene
+transición en CSS.
+
+**Mientras algo carga se ve su forma** (`Skeleton.tsx`), nunca un spinner:
+cada ruta de `(app)` tiene su `loading.tsx` con la silueta de su página y el
+mismo `<main>` —mismo ancho y márgenes, para que nada salte al llegar—, las
+vistas que leen `localStorage` usan `DeckListSkeleton` y `DeckDetailSkeleton`
+mientras montan, y las imágenes de cartas laten (`.imagen-carga`) hasta que
+llegan. Las clases de columnas de la grilla viven en `COLUMNAS_GRILLA`
+(`src/lib/ui.ts`) y no en `CardGrid`, que es de cliente: el esqueleto de la
+grilla las necesita desde un Server Component.
+
+Efecto de los `loading.tsx` en el export estático, **a sabiendas**: Next escribe
+cada página de `(app)` en dos tiempos. El HTML trae primero el esqueleto y
+después el contenido en un `<div hidden>`, que un script inline de React pone en
+su sitio al llegar (ese script también va con hash en la CSP; la auditoría lo
+cubre). O sea que el esqueleto se ve mientras baja el HTML —en `/catalogo`, que
+es grande, se nota— y que **sin JavaScript** la página se queda en el
+esqueleto. El sitio ya necesitaba JavaScript para todo lo interactivo.
+
+**La navbar no salta entre páginas** porque `html` lleva `scrollbar-gutter:
+stable`: sin eso, una página corta (Mis barajas vacía, Documentos) no tiene
+barra de scroll, queda ~15 px más ancha y todo lo centrado se corre. Todas las
+páginas usan el mismo `<main>` de 1480 px.
 
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
@@ -1388,7 +1422,7 @@ arquetipo de atributo, aunque sigan entrando en cualquier baraja de su raza.
 `DECK_VERSION`**: el cambio es aditivo y ninguna baraja ya guardado deja de leerse.
 
 **La curva de coste va en el panel del constructor**, bajo el estado de la
-baraja (`CostCurve.tsx`). La cuenta la hace `deckStats` —solo el principal,
+baraja, y en el detalle de la baraja, en su propia tarjeta (`CostCurve.tsx`). La cuenta la hace `deckStats` —solo el principal,
 como los contadores por tipo— y `costCurve()` la pasa a columnas **fijas** de 0
 a 5 más una de "6+": si las columnas aparecieran según la baraja, las barras
 cambiarían de sitio al agregar una carta. Los Oros no tienen coste y se
@@ -1399,8 +1433,13 @@ catálogo real.
 14 Tótems son 28 cartas y la baraja sigue sin cumplir. Por eso `deckStats` lleva
 `aliadosOTotems` con el **mayor** de los dos contadores y no con su suma.
 
-**Los Oros sin habilidad no tienen tope de copias**: son el recurso con que se
-paga todo y la baraja lleva los que necesite. Los 25 que sí traen habilidad son
+**Los Oros sin habilidad y los Mercenarios no tienen tope de copias.** Los
+Oros son el recurso con que se paga todo y la baraja lleva los que necesite;
+los Mercenarios lo dicen en su keyword ("puedes tener cualquier cantidad de
+copias"). Son cuatro impresiones de tres Aliados —Grifo Dorado (DO-038 y
+DO-057), Pincoya (HS-243) y Dodu (LG-177)— y estaban topados a 3 hasta que se
+agregó `mercenario` a `RuleCard`; `limiteDeCopias` los trata como a los Oros.
+ Los 25 que sí traen habilidad son
 cartas como cualquier otra y van al tope de 3; solo seis de ellos (Regalía
 Imperial, Pantano Sagrado, Mon, Chozuya, Biblioteca Eterna y Mochuelo) son
 además Únicos. Ojo: esto **decía "los cuatro Oros con habilidad son todos
@@ -1442,6 +1481,14 @@ dos Kirin Milenaria son cuatro Kirin. Y se suman principal y side.
 
 `canAdd` comparte contadores y mensajes con `validateDeck` a propósito: si
 divergieran, el botón "+" dejaría armar una baraja que el validador rechaza.
+Lo que **no** comparten es la frase del exceso de copias: el validador mira una
+baraja que ya se pasó ("lleva 4 copias") y `canAdd` una que está en el tope
+("ya lleva 3 copias, el máximo"). Con una sola frase, el "+" bloqueado decía
+"ya tiene 4 copias" teniendo 3.
+
+El modal de una carta, abierto desde el constructor, suma y **quita** copias.
+Quitar sale de la zona elegida en "Agregar a" si la carta está ahí y, si no,
+de la otra: el modal cuenta las dos juntas.
 
 Las barajas viven en `localStorage` y se leen con `useSyncExternalStore`, no con
 un efecto que llame a `setState` — el compilador de React bloquea eso y tiene
@@ -1461,7 +1508,7 @@ contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los
 imports sin extensión que espera el bundler de Next.
 
-**Todavía no hay** banlist ni página de erratas. Esta última tiene ahora
+**Todavía no hay** banlist ni Fe de Erratas en `/documentos`. Esta última tiene ahora
 material de sobra: al cargar Escuelas Elementales quedaron **66 cartas cuyo
 texto cambió entre impresiones**, y el catálogo muestra el vigente sin decir en
 ninguna parte que la impresión vieja decía otra cosa.

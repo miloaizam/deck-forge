@@ -22,29 +22,40 @@ const contarBarajas = (n: number) => `${n} ${n === 1 ? "baraja" : "barajas"}`;
 
 /**
  * Se dice la verdad completa: cuantas entraron, cuantas se cayeron por estar rotas
- * y cuantas no cupieron. Antes decia "Importaste 50" aunque esas 50 hubieran
- * desplazado a las que ya tenias.
+ * y cuantas no cupieron. Antes decia que se habian importado 50 aunque esas 50
+ * hubieran desplazado a las que ya habia.
  */
 function mensajeImportacion(r: ImportOutcome, descartados: number): [string, ToastTone] {
   if (!r.guardado) {
     return [
-      "No pude guardar las barajas. Puede que el navegador no tenga espacio.",
-      "error",
+      "No se pudieron guardar las barajas: el almacenamiento del navegador está lleno.",
+      "warning",
     ];
   }
   if (r.entraron === 0) {
     return [
-      `No cabe ninguna: ya tienes ${MAX_BARAJAS} barajas, el máximo. Borra alguna para importar.`,
-      "error",
+      `No se importó ninguna baraja: ya hay ${MAX_BARAJAS}, el máximo. Elimina alguna para importar.`,
+      "warning",
     ];
   }
-  const partes = [`Importaste ${contarBarajas(r.entraron)}.`];
-  if (descartados > 0) partes.push(`Descarté ${descartados} por estar dañadas.`);
-  if (r.sobraron > 0) {
-    const verbo = r.sobraron === 1 ? "no cupo" : "no cupieron";
-    partes.push(`${contarBarajas(r.sobraron)} ${verbo}: el máximo es ${MAX_BARAJAS}.`);
+  const partes = [
+    r.entraron === 1
+      ? "1 baraja importada correctamente."
+      : `${r.entraron} barajas importadas correctamente.`,
+  ];
+  if (descartados > 0) {
+    partes.push(
+      descartados === 1
+        ? "1 se descartó por estar dañada."
+        : `${descartados} se descartaron por estar dañadas.`,
+    );
   }
-  return [partes.join(" "), "ok"];
+  if (r.sobraron > 0) {
+    partes.push(
+      `${contarBarajas(r.sobraron)} no ${r.sobraron === 1 ? "se importó" : "se importaron"}: el máximo es ${MAX_BARAJAS}.`,
+    );
+  }
+  return [partes.join(" "), "success"];
 }
 
 const BOTON =
@@ -72,7 +83,12 @@ export function DeckTransfer({ decks, onImport }: DeckTransferProps) {
     a.download = `deckforge-barajas-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast(`Exporté ${contarBarajas(decks.length)} a un archivo.`);
+    toast(
+      decks.length === 1
+        ? "1 baraja exportada a un archivo."
+        : `${decks.length} barajas exportadas a un archivo.`,
+      "info",
+    );
   };
 
   const importar = async (file: File) => {
@@ -80,25 +96,25 @@ export function DeckTransfer({ decks, onImport }: DeckTransferProps) {
     try {
       if (file.size > MAX_ARCHIVO) {
         toast(
-          "Ese archivo es demasiado grande para ser un respaldo de barajas.",
-          "error",
+          "El archivo es demasiado grande para ser un respaldo de barajas.",
+          "warning",
         );
         return;
       }
 
       const resultado = importFile(await file.text());
       if (!resultado) {
-        toast("Ese archivo no es un respaldo de DeckForge.", "error");
+        toast("El archivo no es un respaldo de DeckForge.", "warning");
         return;
       }
       if (resultado.barajas.length === 0) {
-        toast("No pude leer ninguna baraja de ese archivo.", "error");
+        toast("El archivo no contiene ninguna baraja válida.", "warning");
         return;
       }
 
       toast(...mensajeImportacion(onImport(resultado.barajas), resultado.descartados));
     } catch {
-      toast("No pude leer ese archivo.", "error");
+      toast("No se pudo leer el archivo.", "warning");
     } finally {
       setOcupado(false);
       // Se limpia el input para poder volver a elegir el mismo archivo.

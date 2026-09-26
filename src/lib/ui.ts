@@ -62,3 +62,18 @@ export const PRIMARY_BUTTON =
  */
 export const SECONDARY_BUTTON =
   "border-line text-ink hover:border-brand-500 focus-visible:outline-brand-500 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 border px-8 text-[17px] font-medium transition duration-200";
+
+/**
+ * Las clases van escritas enteras y no armadas con plantillas: Tailwind lee el
+ * codigo tal cual y una clase construida en tiempo de ejecucion no se genera.
+ *
+ * Las usan la grilla (CardGrid) y su esqueleto de carga (Skeleton). Viven aqui y
+ * no en CardGrid porque ese modulo es de cliente: importado desde un Server
+ * Component entregaria una referencia, no el valor (CLAUDE.md, THEME_KEY).
+ */
+export const COLUMNAS_GRILLA: Record<"catalogo" | "constructor", string> = {
+  catalogo:
+    "max-w-[200px] min-w-0 basis-[calc((100%-1rem)/2-0.5px)] sm:basis-[calc((100%-2rem)/3-0.5px)] md:basis-[calc((100%-3rem)/4-0.5px)] lg:basis-[calc((100%-4rem)/5-0.5px)] xl:basis-[calc((100%-6rem)/7-0.5px)]",
+  constructor:
+    "max-w-[200px] min-w-0 basis-[calc((100%-1rem)/2-0.5px)] sm:basis-[calc((100%-2rem)/3-0.5px)] md:basis-[calc((100%-3rem)/4-0.5px)] lg:basis-[calc((100%-3rem)/4-0.5px)] xl:basis-[calc((100%-5rem)/6-0.5px)]",
+};

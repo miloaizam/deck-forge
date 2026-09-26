@@ -19,6 +19,7 @@ import { copyShareLink, downloadDeck } from "./actions";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import { DeckTransfer } from "./DeckTransfer";
+import { DeckListSkeleton } from "../Skeleton";
 import { useDecks, useHydrated } from "./use-decks";
 import { deckTitle, duplicateDeck } from "@/lib/deck";
 import {
@@ -75,13 +76,17 @@ export function DeckListView({ cards }: DeckListViewProps) {
   const borrar = (deck: Deck) => {
     deleteDeck(deck.id);
     setPorBorrar(null);
-    toast(`Borré "${deckTitle(deck)}".`);
+    toast(`Baraja "${deckTitle(deck)}" eliminada.`, "delete");
   };
 
   const duplicar = (deck: Deck) => {
-    if (saveDeck(duplicateDeck(deck))) toast(`Dupliqué "${deckTitle(deck)}".`);
-    else
-      toast("No pude duplicarla: el almacenamiento del navegador está lleno.", "error");
+    if (saveDeck(duplicateDeck(deck))) {
+      toast(`Baraja "${deckTitle(deck)}" duplicada correctamente.`, "success");
+    } else
+      toast(
+        "No se pudo duplicar: el almacenamiento del navegador está lleno.",
+        "warning",
+      );
   };
 
   const importar = (nuevos: Deck[]) => {
@@ -108,15 +113,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
 
       {!cargado ? (
         // Esqueleto, no spinner: la lista sale de localStorage al montar.
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <li
-              key={i}
-              aria-hidden="true"
-              className="border-line rounded-panel h-28 animate-pulse border"
-            />
-          ))}
-        </ul>
+        <DeckListSkeleton />
       ) : decks.length === 0 ? (
         <div className="border-line rounded-panel border border-dashed px-6 py-20 text-center">
           <Layers
@@ -141,7 +138,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
             return (
               <li
                 key={deck.id}
-                className="border-line bg-panel rounded-panel flex gap-3 border p-3.5"
+                className="aparece border-line bg-panel rounded-panel flex gap-3 border p-3.5"
               >
                 {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no

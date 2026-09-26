@@ -1,6 +1,7 @@
 "use client";
 
 import { CardTile } from "./CardTile";
+import { COLUMNAS_GRILLA } from "@/lib/ui";
 import type { Card } from "@/lib/types";
 
 interface CardGridProps {
@@ -17,17 +18,6 @@ interface CardGridProps {
    */
   variante?: "catalogo" | "constructor";
 }
-
-/**
- * Las clases van escritas enteras y no armadas con plantillas: Tailwind lee el
- * codigo tal cual y una clase construida en tiempo de ejecucion no se genera.
- */
-const COLUMNAS: Record<"catalogo" | "constructor", string> = {
-  catalogo:
-    "max-w-[200px] min-w-0 basis-[calc((100%-1rem)/2-0.5px)] sm:basis-[calc((100%-2rem)/3-0.5px)] md:basis-[calc((100%-3rem)/4-0.5px)] lg:basis-[calc((100%-4rem)/5-0.5px)] xl:basis-[calc((100%-6rem)/7-0.5px)]",
-  constructor:
-    "max-w-[200px] min-w-0 basis-[calc((100%-1rem)/2-0.5px)] sm:basis-[calc((100%-2rem)/3-0.5px)] md:basis-[calc((100%-3rem)/4-0.5px)] lg:basis-[calc((100%-3rem)/4-0.5px)] xl:basis-[calc((100%-5rem)/6-0.5px)]",
-};
 
 /**
  * Flex y no grid, para poder centrar las filas.
@@ -64,7 +54,7 @@ export function CardGrid({
   return (
     <ul className="flex flex-wrap justify-center gap-4">
       {cards.map((card) => (
-        <li key={card.id} className={COLUMNAS[variante]}>
+        <li key={card.id} className={COLUMNAS_GRILLA[variante]}>
           <CardTile
             card={card}
             onSelect={onSelect}

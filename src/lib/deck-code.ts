@@ -327,13 +327,13 @@ export type DecodeResult =
 const ILEGIBLE: DecodeResult = {
   ok: false,
   motivo: "ilegible",
-  mensaje: "No pude leer la baraja de ese enlace. Puede que esté cortado.",
+  mensaje: "No se pudo leer la baraja de este enlace. Puede que esté incompleto.",
 };
 
 const DE_OTRA_VERSION: DecodeResult = {
   ok: false,
   motivo: "version",
-  mensaje: "Ese enlace viene de otra versión de DeckForge y no lo puedo leer.",
+  mensaje: "Este enlace viene de otra versión de DeckForge y no se puede leer.",
 };
 
 /** Arma la baraja con id propio y fechas de ahora: para quien la recibe, es suya. */
@@ -478,13 +478,17 @@ function decodeLz(codigo: string): DecodeResult {
  */
 export function decodeDeck(codigo: string | null | undefined): DecodeResult {
   if (!codigo) {
-    return { ok: false, motivo: "vacio", mensaje: "Ese enlace no trae ninguna baraja." };
+    return {
+      ok: false,
+      motivo: "vacio",
+      mensaje: "Este enlace no contiene ninguna baraja.",
+    };
   }
   if (codigo.length > MAX_CODIGO) {
     return {
       ok: false,
       motivo: "largo",
-      mensaje: "Ese enlace es demasiado largo para ser una baraja.",
+      mensaje: "Este enlace es demasiado largo para ser una baraja.",
     };
   }
 

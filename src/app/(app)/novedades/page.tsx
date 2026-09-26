@@ -60,20 +60,33 @@ export default function NovedadesPage() {
             <ul className="mt-4 flex flex-col gap-3">
               {entradas.map((n) => {
                 const { Icon, clase } = ESTILO[n.tipo];
+                // La mas reciente de todas lleva el borde violeta y su
+                // etiqueta: el color solo no puede ser el unico indicador.
+                const ultima = n === NOVEDADES[0];
                 return (
                   <li
                     key={n.titulo}
-                    className="border-line bg-panel rounded-card border p-4 sm:p-5"
+                    className={cn(
+                      "bg-panel rounded-card border p-4 sm:p-5",
+                      ultima ? "border-brand-500 shadow-glow" : "border-line",
+                    )}
                   >
-                    <span
-                      className={cn(
-                        "rounded-chip inline-flex items-center gap-1.5 border px-2 py-0.5 text-[12px] font-medium",
-                        clase,
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={cn(
+                          "rounded-chip inline-flex items-center gap-1.5 border px-2 py-0.5 text-[12px] font-medium",
+                          clase,
+                        )}
+                      >
+                        <Icon size={13} aria-hidden="true" />
+                        {n.tipo}
+                      </span>
+                      {ultima && (
+                        <span className="text-accent text-[12px] font-medium">
+                          Lo más reciente
+                        </span>
                       )}
-                    >
-                      <Icon size={13} aria-hidden="true" />
-                      {n.tipo}
-                    </span>
+                    </div>
                     <h3 className="text-ink mt-2 text-[16px] font-semibold">
                       {n.titulo}
                     </h3>

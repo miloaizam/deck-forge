@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileWarning, Hammer, Layers, LibraryBig, Menu, Sparkles, X } from "lucide-react";
+import { FileText, Hammer, Layers, LibraryBig, Menu, Sparkles, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { HelpButton } from "./HelpButton";
@@ -21,7 +21,7 @@ const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
   { href: "/constructor", label: "Constructor", Icon: Hammer },
   { href: "/barajas", label: "Mis barajas", Icon: Layers },
-  { href: "/erratas", label: "Erratas", Icon: FileWarning },
+  { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];
 

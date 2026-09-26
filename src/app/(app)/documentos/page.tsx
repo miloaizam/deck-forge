@@ -1,28 +1,29 @@
-import { FileWarning } from "lucide-react";
+import { FileText } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Erratas",
-  description: "Correcciones oficiales al texto de las cartas de Mitos y Leyendas.",
+  title: "Documentos",
+  description:
+    "Documentos oficiales del formato Escuelas Elementales de Mitos y Leyendas, para leer y descargar.",
 };
 
-export default function ErratasPage() {
+export default function DocumentosPage() {
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <p className="eyebrow mb-3">Reglas</p>
-      <h1 className="text-3xl font-bold tracking-[-0.02em]">Erratas</h1>
+      <h1 className="text-3xl font-bold tracking-[-0.02em]">Documentos</h1>
 
       <div className="border-line rounded-panel mt-10 border border-dashed px-6 py-20 text-center">
-        <FileWarning
+        <FileText
           size={28}
           aria-hidden="true"
           className="text-muted mx-auto mb-4 opacity-60"
         />
         <p className="text-ink text-lg">Todavía no está lista.</p>
         <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
-          Aquí van a vivir las correcciones oficiales al texto de las cartas. La API de
-          MyL ya entrega ese dato por carta, así que es cosa de traerlo y darle una vista
-          propia.
+          Aquí estarán los documentos oficiales del formato, para leerlos en el sitio y
+          descargarlos: la Fe de Erratas, con el texto vigente de cada carta corregida, y
+          la Banlist, con las cartas prohibidas y restringidas.
         </p>
       </div>
     </main>

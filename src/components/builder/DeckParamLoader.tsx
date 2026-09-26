@@ -52,7 +52,7 @@ export function DeckParamLoader({ onLoad, onError }: DeckParamLoaderProps) {
 
     const guardado = readDeck(m!);
     if (guardado) onLoad(guardado);
-    else onError("No encontré esa baraja en este navegador.");
+    else onError("No se encontró esa baraja en este navegador.");
   }, [m, d, onLoad, onError]);
 
   return null;

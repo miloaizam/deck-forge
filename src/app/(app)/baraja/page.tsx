@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { DeckDetailView } from "@/components/decks/DeckDetailView";
+import { DeckDetailSkeleton } from "@/components/Skeleton";
 import { getCards } from "@/lib/cards";
 
 export const metadata: Metadata = {
@@ -30,14 +31,7 @@ export default async function BarajaPage() {
     // deja la carta en 132px, que es donde se reconoce sin abrirla.
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       {/* Toda la pagina depende del parametro, asi que el limite va afuera. */}
-      <Suspense
-        fallback={
-          <div aria-hidden="true" className="flex flex-col gap-4">
-            <div className="border-line rounded-panel h-24 animate-pulse border" />
-            <div className="border-line rounded-panel h-72 animate-pulse border" />
-          </div>
-        }
-      >
+      <Suspense fallback={<DeckDetailSkeleton />}>
         <DeckDetailView cards={cards} />
       </Suspense>
     </main>

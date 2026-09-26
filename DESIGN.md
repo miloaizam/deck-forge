@@ -73,6 +73,19 @@ inventes un cuarto.
 | `ink` | `#EDE9F7` | texto principal |
 | `muted` | `#9A93B5` | secundario, metadatos, placeholders |
 
+### Estados
+
+Dicen **qué pasó**, no son la marca: van solo en detalles (el icono y el filete
+izquierdo de un aviso), nunca de fondo. Cada uno lleva además su icono, así que
+el color no es el único indicador.
+
+| Token | Oscuro | Claro | Uso |
+|---|---|---|---|
+| `success` | `#34D399` | `#047857` | se creó, guardó, importó o duplicó algo |
+| `danger` | `#F87171` | `#B91C1C` | se borró o se vació algo |
+| `warning` | `#FBBF24` | `#B45309` | algo no se pudo hacer, y el aviso dice por qué |
+| `accent` | (el de la marca) | | informativo: enlace copiado, archivo exportado |
+
 ### Tema claro
 
 La app es **dark-first**, pero tiene tema claro conmutable desde la navbar. Se
@@ -183,15 +196,24 @@ superficies, no de la sombra.
   | Hoja de la baraja (teléfono) | `panel-anim panel-abajo` | sube desde abajo | baja |
   | Fondo oscuro de los cuatro | (el `::backdrop` de `panel-anim`) | se oscurece | se aclara |
   | Menú de la navbar (teléfono) | filas de grilla `0fr` → `1fr` | se despliega | se pliega |
-  | Desplegables y panel de filtros | `despliegue` + `hidden` | fundido y baja 6 px | fundido |
+  | Panel de filtros | `pliegue` + `abierto` | se despliega y empuja la grilla | se pliega |
+  | Desplegables de filtros | `despliegue` + `hidden` | fundido y baja 6 px | fundido |
   | Preguntas de la ayuda | `desplegable` | la respuesta se abre | se cierra |
-  | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido |
+  | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido, y los de abajo suben |
+  | Panel y hoja de la baraja | `AutoHeight` (componente) | crece al agregar | se encoge al quitar |
+  | Fila nueva del panel | `fila-entra` | fundido desde la izquierda | — |
+  | Baraja nueva, avisos del panel | `aparece` | fundido y sube 4 px | — |
+  | Imagen de carta que baja | `imagen-carga` | su hueco late hasta que llega | — |
 
   La entrada dura algo más que la salida (220 contra 160 ms en los modales):
   cerrar es algo que ya se decidió. Los paneles que se deslizan no se
   desvanecen, porque un panel a medio transparentar mientras se mueve se ve
   sucio. Todo es CSS (`@starting-style` y `transition-behavior:
   allow-discrete`); un navegador que no lo entienda abre y cierra de golpe.
+- **Un cambio de alto se anima, no salta.** `height: auto` no tiene
+  transición en CSS, así que `AutoHeight` mide el contenido con un
+  ResizeObserver y pone el alto en píxeles. El panel de filtros, que tiene
+  desplegables que se salen de él, recorta solo mientras se abre.
 - **Un elemento que se anima al cerrar tiene que seguir montado mientras
   sale.** Por eso los desplegables se ocultan con `hidden` en vez de
   desmontarse, y `CardModal` y `ConfirmDialog` siguen pintando la última
@@ -265,6 +287,10 @@ No es opcional. Una baraja mal etiquetado es una baraja que alguien no puede arm
   `brand-300` dentro del texto de habilidad: son reglas, no prosa, y el jugador
   las busca con la vista. La lista vive en `KEYWORDS_IMPRESAS`
   (`src/lib/types.ts`) y excluye las etiquetas internas de la API.
-- Los errores dicen qué pasó y qué hacer: "Esa baraja ya tiene 3 copias de esta
-  carta (el máximo)".
+- Los errores dicen qué pasó y qué hacer: "La baraja ya lleva 3 copias de
+  Kirin, el máximo permitido".
+- **El sitio informa, no conversa.** Los avisos describen la acción en forma
+  impersonal —"Baraja "X" eliminada.", "Cambios guardados correctamente en
+  "X".", "No se pudo copiar el enlace."—, nunca en primera persona ("Borré…",
+  "No pude…"): no es un chatbot que cuenta lo que hizo.
 - Sin signos de exclamación ni emojis en la UI.

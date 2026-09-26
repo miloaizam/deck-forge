@@ -92,71 +92,73 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
         </div>
       </div>
 
-      {/* Montado siempre y oculto con `hidden`, para que abrir y cerrar se
-          vean (`.despliegue` en globals.css). */}
-      <div
-        id={panelId}
-        className={cn(
-          "despliegue border-line bg-surface rounded-panel border p-4 sm:p-5",
-          !open && "hidden",
-        )}
-      >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {/* Dos filas de cuatro en pantalla ancha, en el orden en que se
+      {/* Montado siempre: se despliega hacia abajo y empuja la grilla con
+          transicion, en vez de aparecer de golpe (`.pliegue` en globals.css).
+          Cerrado queda inerte. El `-mt-4` / `pt-4` mueve el hueco del `gap` a
+          dentro del pliegue, para que cerrado no deje 16 px de aire. */}
+      <div id={panelId} inert={!open} className={cn("pliegue -mt-4", open && "abierto")}>
+        <div>
+          <div className="pt-4">
+            <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {/* Dos filas de cuatro en pantalla ancha, en el orden en que se
                 suele filtrar. La edicion solo aparece en /catalogo: en la
                 pagina de una edicion la faceta viene vacia y el Select no se
                 dibuja. Luz y Oscuridad no tienen selector propio: son
                 keywords impresas y salen en Habilidad. */}
-          <Select
-            label="Edición"
-            value={filters.edicion}
-            options={facets.ediciones}
-            onChange={set("edicion")}
-            format={editionTitle}
-          />
-          <Select
-            label="Frecuencia"
-            value={filters.frecuencia}
-            options={facets.frecuencias}
-            onChange={set("frecuencia")}
-          />
-          <Select
-            label="Escuela elemental"
-            value={filters.escuela}
-            options={facets.escuelas}
-            onChange={set("escuela")}
-          />
-          <Select
-            label="Tipo"
-            value={filters.tipo}
-            options={facets.tipos}
-            onChange={set("tipo")}
-          />
-          <Select
-            label="Raza"
-            value={filters.raza}
-            options={facets.razas}
-            onChange={set("raza")}
-          />
-          <Select
-            label="Habilidad"
-            value={filters.habilidad}
-            options={facets.habilidades}
-            onChange={set("habilidad")}
-            placeholder="Todas"
-          />
-          <Select
-            label="Fuerza"
-            value={filters.fuerza}
-            options={facets.fuerzas}
-            onChange={set("fuerza")}
-          />
-          <Select
-            label="Coste"
-            value={filters.coste}
-            options={facets.costes}
-            onChange={set("coste")}
-          />
+                <Select
+                  label="Edición"
+                  value={filters.edicion}
+                  options={facets.ediciones}
+                  onChange={set("edicion")}
+                  format={editionTitle}
+                />
+                <Select
+                  label="Frecuencia"
+                  value={filters.frecuencia}
+                  options={facets.frecuencias}
+                  onChange={set("frecuencia")}
+                />
+                <Select
+                  label="Escuela elemental"
+                  value={filters.escuela}
+                  options={facets.escuelas}
+                  onChange={set("escuela")}
+                />
+                <Select
+                  label="Tipo"
+                  value={filters.tipo}
+                  options={facets.tipos}
+                  onChange={set("tipo")}
+                />
+                <Select
+                  label="Raza"
+                  value={filters.raza}
+                  options={facets.razas}
+                  onChange={set("raza")}
+                />
+                <Select
+                  label="Habilidad"
+                  value={filters.habilidad}
+                  options={facets.habilidades}
+                  onChange={set("habilidad")}
+                  placeholder="Todas"
+                />
+                <Select
+                  label="Fuerza"
+                  value={filters.fuerza}
+                  options={facets.fuerzas}
+                  onChange={set("fuerza")}
+                />
+                <Select
+                  label="Coste"
+                  value={filters.coste}
+                  options={facets.costes}
+                  onChange={set("coste")}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

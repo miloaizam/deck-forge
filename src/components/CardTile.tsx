@@ -4,6 +4,15 @@ import { Plus } from "lucide-react";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+/**
+ * Apaga el latido de `.imagen-carga` cuando la imagen llego. Es un atributo
+ * que React no maneja, asi que tocarlo en el DOM no pelea con el render; y
+ * next/image dispara `onLoad` tambien con las que ya estaban en cache.
+ */
+export function marcarCargada(e: React.SyntheticEvent<HTMLImageElement>): void {
+  e.currentTarget.dataset.cargada = "";
+}
+
 /** Proporcion real del arte de las cartas MyL: 512 x 732. */
 export const CARD_RATIO = "512 / 732";
 
@@ -41,7 +50,9 @@ export function CardTile({
           width={200}
           height={286}
           loading="lazy"
-          className="w-full"
+          // Mientras baja la imagen, su hueco late (`.imagen-carga`).
+          onLoad={marcarCargada}
+          className="imagen-carga w-full"
           style={{ aspectRatio: CARD_RATIO }}
         />
         <span className="block px-2.5 py-2">

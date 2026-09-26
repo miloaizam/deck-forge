@@ -156,7 +156,7 @@ export interface MergeResult {
  * `saveDecks` recorta a MAX_BARAJAS quedandose con las primeras, asi que poner
  * las importadas delante y guardar tal cual dejaba que un archivo con 50
  * barajas borrara todas las del usuario, mientras la interfaz decia
- * "Importaste 50". Ahora entra solo lo que cabe, y quien llama dice cuantas
+ * que se habian importado 50. Ahora entra solo lo que cabe, y quien llama dice cuantas
  * quedaron fuera.
  */
 export function mergeImported(existentes: Deck[], nuevas: Deck[]): MergeResult {
