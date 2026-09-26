@@ -1,9 +1,15 @@
-# Cabeceras de seguridad. Cloudflare Pages lee este archivo tal cual
-# desde la raiz del sitio publicado. Ver la seccion "Seguridad" de CLAUDE.md.
+# Cabeceras de seguridad. Cloudflare (Workers con Static Assets) lee este
+# archivo desde la raiz del sitio publicado. Ver "Seguridad" en CLAUDE.md.
 #
-# Nota sobre 'unsafe-inline' en script-src/style-src: el App Router incrusta
-# el payload de hidratacion en <script> inline y, sin servidor, no hay forma
-# de emitir un nonce. Todo lo demas queda cerrado a nuestro propio origen.
+# Esto es una PLANTILLA. `pnpm run build` corre scripts/csp-hashes.mjs, que
+# cambia el 'unsafe-inline' de script-src por los hashes de los <script>
+# inline de cada pagina y agrega una regla por pagina en out/_headers. El
+# 'unsafe-inline' de aqui es solo el punto de partida: si el paso de hashes
+# no corre, `pnpm run audit` falla.
+#
+# style-src si conserva 'unsafe-inline': React escribe atributos style="…"
+# y esos no se pueden autorizar por hash sin 'unsafe-hashes' atributo por
+# atributo. Un estilo inyectado no ejecuta codigo.
 
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests

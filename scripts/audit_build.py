@@ -11,11 +11,17 @@ Que revisa:
   2. No se filtraron rutas absolutas de la maquina de build.
   3. Nada apunta a un host externo: ni scripts, ni imagenes, ni fuentes.
   4. `_headers` existe y trae las cabeceras de seguridad obligatorias.
-  5. La CSP no contiene 'unsafe-eval' ni comodines.
+  5. La CSP no contiene 'unsafe-eval' ni comodines, y script-src no lleva
+     'unsafe-inline': cada pagina autoriza sus <script> inline por hash.
+     Se reconstruye la CSP que recibe cada HTML con las reglas de Cloudflare
+     y se comprueba que cubra todos sus scripts, sin fiarse del generador.
   6. Toda imagen referenciada en el HTML existe realmente en el build.
   7. Los dos esquemas (TypeScript y Pydantic) declaran los mismos valores.
 """
 
+import base64
+import hashlib
+import json
 import re
 import sys
 from pathlib import Path
@@ -69,6 +75,69 @@ def revisar_hosts_externos() -> None:
         fallo(f"recurso externo referenciado en el HTML: {url}")
 
 
+# Limites de _headers en Cloudflare. Tambien los comprueba csp-hashes.mjs.
+MAX_LINEA_HEADERS = 2000
+MAX_REGLAS_HEADERS = 100
+
+INLINE = re.compile(r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>", re.S | re.I)
+NEXT_S = re.compile(r"^\(self\.__next_s=self\.__next_s\|\|\[\]\)\.push\((.*)\)$", re.S)
+
+
+def sha(codigo: str) -> str:
+    digest = hashlib.sha256(codigo.encode("utf-8")).digest()
+    return "'sha256-" + base64.b64encode(digest).decode() + "'"
+
+
+def hashes_inline(html: str) -> set[str]:
+    """Los scripts inline de la pagina, mas los que next/script crea despues."""
+    vistos = set()
+    for codigo in INLINE.findall(html):
+        vistos.add(sha(codigo))
+        diferido = NEXT_S.match(codigo)
+        if diferido:
+            _, props = json.loads(diferido.group(1))
+            vistos.add(sha(props.get("children", "")))
+    return vistos
+
+
+def leer_reglas(texto: str) -> list[dict]:
+    """Parsea _headers como el asset worker de Cloudflare."""
+    reglas: list[dict] = []
+    for linea in texto.splitlines():
+        if not linea.strip() or linea.lstrip().startswith("#"):
+            continue
+        if not linea[0].isspace():
+            patron = "(?P<splat>.*)".join(re.escape(p) for p in linea.strip().split("*"))
+            patron = re.sub(r"\\?:(\w+)", r"(?P<\1>[^/]+)", patron)
+            reglas.append({"re": re.compile(f"^{patron}$"), "set": [], "unset": []})
+        elif linea.strip().startswith("!"):
+            reglas[-1]["unset"].append(linea.strip()[1:].strip().lower())
+        else:
+            nombre, valor = linea.strip().split(":", 1)
+            reglas[-1]["set"].append((nombre.strip().lower(), valor.strip()))
+    return reglas
+
+
+def cabeceras_para(reglas: list[dict], ruta: str) -> dict[str, str]:
+    """Reglas en orden; `!` borra; una cabecera repetida se une con coma."""
+    h: dict[str, str] = {}
+    puestas: set[str] = set()
+    for regla in reglas:
+        if not regla["re"].match(ruta):
+            continue
+        for nombre in regla["unset"]:
+            h.pop(nombre, None)
+        for nombre, valor in regla["set"]:
+            h[nombre] = f"{h[nombre]}, {valor}" if nombre in puestas and nombre in h else valor
+            puestas.add(nombre)
+    return h
+
+
+def ruta_publica(html: Path) -> str:
+    rel = html.parent.relative_to(OUT).as_posix()
+    return "/" if rel == "." else f"/{rel}/"
+
+
 def revisar_headers() -> None:
     headers = OUT / "_headers"
     if not headers.exists():
@@ -80,19 +149,46 @@ def revisar_headers() -> None:
         if cabecera not in texto:
             fallo(f"_headers no declara {cabecera}")
 
-    csp = next((l for l in texto.splitlines() if "Content-Security-Policy" in l), "")
-    if "unsafe-eval" in csp:
-        fallo("la CSP permite 'unsafe-eval'")
-    if re.search(r"(default|script|img|font|connect)-src[^;]*\*", csp):
-        fallo("la CSP usa un comodin * en alguna directiva")
-    for directiva in ("object-src 'none'", "base-uri 'none'", "frame-ancestors 'none'"):
-        if directiva not in csp:
-            fallo(f"la CSP no cierra {directiva}")
-    if "'unsafe-inline'" in csp:
-        avisos.append(
-            "la CSP mantiene 'unsafe-inline' (limitacion conocida del App Router "
-            "sin servidor; ver la seccion de seguridad de CLAUDE.md)"
-        )
+    largas = [l for l in texto.splitlines() if len(l) > MAX_LINEA_HEADERS]
+    if largas:
+        fallo(f"_headers tiene {len(largas)} linea(s) de mas de {MAX_LINEA_HEADERS} caracteres")
+    reglas = leer_reglas(texto)
+    if len(reglas) > MAX_REGLAS_HEADERS:
+        fallo(f"_headers tiene {len(reglas)} reglas, el maximo es {MAX_REGLAS_HEADERS}")
+
+    # (ruta que la sirve, archivo). La 404 se sirve en cualquier ruta que no
+    # exista, asi que se revisa con una que seguro no existe.
+    paginas = [(ruta_publica(f), f) for f in OUT.rglob("index.html")]
+    paginas.append(("/ruta-que-no-existe-auditoria/", OUT / "404.html"))
+
+    for ruta, archivo in sorted(paginas):
+        csp = cabeceras_para(reglas, ruta).get("content-security-policy", "")
+        if not csp:
+            fallo(f"{ruta} sale sin CSP")
+            continue
+        if ", " in csp:
+            fallo(f"{ruta} recibe dos CSP unidas con coma (falta un `!` en _headers)")
+        if "unsafe-eval" in csp:
+            fallo(f"la CSP de {ruta} permite 'unsafe-eval'")
+        if re.search(r"(default|script|img|font|connect)-src[^;]*\*", csp):
+            fallo(f"la CSP de {ruta} usa un comodin * en alguna directiva")
+        for directiva in ("object-src 'none'", "base-uri 'none'", "frame-ancestors 'none'"):
+            if directiva not in csp:
+                fallo(f"la CSP de {ruta} no cierra {directiva}")
+
+        script_src = re.search(r"script-src([^;]*)", csp)
+        permitidos = set(script_src.group(1).split()) if script_src else set()
+        if "'unsafe-inline'" in permitidos:
+            fallo(
+                f"la CSP de {ruta} lleva 'unsafe-inline' en script-src: no corrio "
+                "scripts/csp-hashes.mjs (usa `pnpm run build`, no `next build`)"
+            )
+        faltan = hashes_inline(archivo.read_text(encoding="utf-8")) - permitidos
+        if faltan:
+            fallo(f"{ruta}: {len(faltan)} script(s) inline sin su hash en la CSP; la pagina no hidrataria")
+
+    if not fallos:
+        print(f"CSP por hashes verificada en {len(paginas)} paginas.")
 
 
 def revisar_imagenes() -> None:

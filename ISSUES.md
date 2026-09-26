@@ -34,19 +34,6 @@ Ordenadas de más a menos importante.
   diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
   dorada de Sarras.
 
-## La CSP permite scripts y estilos inline
-
-- **Qué pasa:** `script-src` y `style-src` llevan `'unsafe-inline'` en
-  `public/_headers`, porque el App Router incrusta el payload de hidratación en
-  `<script>` inline y sin servidor no hay nonce.
-- **Arreglo propuesto:** hashear en build los bloques inline de cada HTML y
-  meter los hashes en la CSP (CLAUDE.md, §6, "Por qué la CSP no usa hashes").
-- **Por qué sigue abierto:** un hash mal calculado deja el sitio en blanco y no
-  había navegador para comprobarlo. El entorno remoto trae ahora Chromium con
-  Playwright, así que ya se puede verificar.
-- **Arreglado cuando:** la CSP no lleva `'unsafe-inline'` en `script-src`, todas
-  las páginas de `out/` hidratan en un navegador real y `pnpm run audit` pasa.
-
 ## Nada comprueba el código antes de publicar
 
 - **Qué pasa:** los cambios se suben directo a `main` y no hay CI. El

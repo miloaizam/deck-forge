@@ -6,7 +6,7 @@
   "description": "Constructor de barajas para el formato Escuelas Elementales de Mitos y Leyendas",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/csp-hashes.mjs",
     "preview": "python3 -m http.server --directory out 4173",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

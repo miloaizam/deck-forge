@@ -780,11 +780,11 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 2. **CSP**: `default-src 'self'`, `object-src 'none'`, `base-uri 'none'`,
    `form-action 'none'`, `frame-ancestors 'none'`, imágenes y fuentes solo del
    propio origen.
-   *Limitación consciente:* `script-src` y `style-src` llevan `'unsafe-inline'`
-   porque el App Router incrusta el payload de hidratación en `<script>` inline
-   y, sin servidor, no hay forma de emitir un nonce. El impacto real es bajo
-   —la app no renderiza HTML de terceros ni recibe input remoto— y el resto de
-   la política sigue impidiendo cargar o exfiltrar hacia orígenes externos.
+   **`script-src` no lleva `'unsafe-inline'`: autoriza por hash**, página por
+   página. Ver "La CSP por hashes", más abajo.
+   `style-src` sí lo conserva: React escribe atributos `style="…"` y esos no
+   se autorizan por hash sin `'unsafe-hashes'` atributo por atributo. Un
+   estilo inyectado no ejecuta código.
 
 3. **Nada de HTML crudo.** `dangerouslySetInnerHTML` está prohibido y ESLint
    falla si aparece (`react/no-danger`). El texto de habilidad de las cartas se
@@ -856,16 +856,52 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 
 12. **`pnpm run audit`** revisa el sitio ya construido y falla si aparece un
     source map, una ruta absoluta de la máquina de build, un recurso externo,
-    una imagen rota, una cabecera de seguridad ausente o los dos esquemas
-    desincronizados. Correr siempre antes de publicar.
+    una imagen rota, una cabecera de seguridad ausente, un script inline sin
+    su hash en la CSP o los dos esquemas desincronizados. Correr siempre
+    antes de publicar.
 
-### Por qué la CSP no usa hashes
+### La CSP por hashes
 
-Quitar `'unsafe-inline'` de `script-src` exigiría hashear los bloques inline
-que el App Router incrusta en cada HTML. Es factible, pero **no hay navegador
-en este entorno para comprobar que la página siga hidratando**, y un hash mal
-calculado deja el sitio en blanco. Se deja documentado como pendiente: hacerlo
-solo cuando se pueda verificar en un navegador real.
+El App Router incrusta en cada HTML tres o cuatro `<script>` inline (el
+payload de hidratación y el script del tema) y, sin servidor, no hay nonce.
+Pero el HTML es estático, así que `pnpm run build` corre después de
+`next build` el script **`scripts/csp-hashes.mjs`**, que calcula el sha256 de
+cada bloque y reescribe `out/_headers`:
+
+- `public/_headers` es la **plantilla**. Su `'unsafe-inline'` es el punto de
+  partida que el script reemplaza; no se toca a mano en `out/`.
+- La regla `/*` lleva los hashes de `404.html`, porque Cloudflare sirve esa
+  página en cualquier ruta que no exista.
+- Cada página lleva **su propia regla**, que empieza con
+  `! Content-Security-Policy` y pone la suya. Sin el `!`, Cloudflare une las
+  dos CSP con una coma y el navegador aplica **las dos a la vez**: la de `/*`
+  bloquearía los scripts de la página. Esa semántica se leyó en el propio
+  asset worker de Cloudflare (`@cloudflare/workers-shared`): reglas en orden,
+  ruta exacta sin query string, `!` borra y una cabecera repetida se une.
+- **La trampa que costó encontrar: `next/script` con `beforeInteractive` no
+  deja un `<script>` en el HTML.** Deja el código como dato en
+  `self.__next_s` y el runtime de Next crea el `<script>` después. Ese script
+  también pasa por la CSP; el generador saca su código del dato y lo hashea.
+  Es el script del tema del layout raíz.
+
+`pnpm run audit` no se fía del generador: reconstruye con las mismas reglas de
+Cloudflare la CSP que recibe cada HTML, recalcula los hashes y falla si falta
+alguno, si `script-src` conserva `'unsafe-inline'` (señal de que alguien corrió
+`next build` a secas) o si una línea pasa de los 2000 caracteres que admite
+`_headers`.
+
+Se verificó en Chromium con un servidor que aplica `out/_headers` con esa
+misma semántica: con la CSP sin hashes, 71 bloqueos y ninguna página hidrata;
+con los hashes, cero bloqueos en las 19 páginas y en un recorrido completo
+(navegar, abrir una carta, armar, guardar y compartir una baraja, recargar con
+el tema claro).
+
+**Al cambiar de versión de Next, repetir esa prueba en un navegador**: si el
+framework empieza a crear otros scripts en tiempo de ejecución, la auditoría
+no los ve —no están en el HTML— y solo el navegador lo delata (Chrome lo dice
+en la consola: "Refused to execute inline script", con el hash que esperaba).
+La prueba se hizo con Playwright desde fuera del repo, que no lo tiene como
+dependencia.
 
 ---
 
