@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 interface CardModalProps {
   card: Card | null;
   onClose: () => void;
-  /** Copias en el mazo. Solo las pasa el constructor. */
+  /** Copias en la baraja. Solo las pasa el constructor. */
   copies?: number;
-  /** Si viene, el modal ofrece agregar la carta al mazo. */
+  /** Si viene, el modal ofrece agregar la carta a la baraja. */
   onAdd?: () => void;
   /** Por que no se puede agregar, si es que no se puede. */
   addBlocked?: string;
@@ -160,12 +160,12 @@ export function CardModal({
                       )}
                     >
                       <Plus size={16} aria-hidden="true" />
-                      Agregar al mazo
+                      Agregar a la baraja
                     </button>
                     <span className="text-muted text-[13px] tabular-nums">
                       {copies === 0
-                        ? "Todavía no está en el mazo"
-                        : `${copies} en el mazo`}
+                        ? "Todavía no está en la baraja"
+                        : `${copies} en la baraja`}
                     </span>
                     {addBlocked && (
                       <span className="text-muted w-full text-[13px]">{addBlocked}</span>

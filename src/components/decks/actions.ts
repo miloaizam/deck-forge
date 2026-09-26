@@ -3,13 +3,13 @@ import { exportFile, shareUrl } from "@/lib/deck-code";
 import type { Deck } from "@/lib/types";
 
 /**
- * Compartir y descargar un mazo.
+ * Compartir y descargar una baraja.
  *
  * Viven aparte porque las usan la lista y el detalle, y duplicarlas era la via
  * segura a que una copiara un enlace con otro formato que la otra.
  */
 
-/** Copia el enlace del mazo. Devuelve el mensaje que hay que mostrar. */
+/** Copia el enlace de la baraja. Devuelve el mensaje que hay que mostrar. */
 export async function copyShareLink(deck: Deck): Promise<string> {
   try {
     await navigator.clipboard.writeText(shareUrl(deck, window.location.origin));
@@ -21,13 +21,13 @@ export async function copyShareLink(deck: Deck): Promise<string> {
   }
 }
 
-/** Baja el mazo como archivo. Todo pasa en el navegador: nada sale del origen. */
+/** Baja la baraja como archivo. Todo pasa en el navegador: nada sale del origen. */
 export function downloadDeck(deck: Deck): void {
   const blob = new Blob([exportFile([deck])], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `mazo-${slugNombre(deck)}.json`;
+  a.download = `baraja-${slugNombre(deck)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

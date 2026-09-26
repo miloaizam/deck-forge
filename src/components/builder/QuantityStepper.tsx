@@ -36,7 +36,7 @@ export const CAJA_FILA =
   "flex size-7 items-center justify-center rounded-full border border-transparent transition-colors";
 
 /**
- * Los botones de mas y menos de una fila del mazo.
+ * Los botones de mas y menos de una fila de la baraja.
  *
  * DESIGN.md marca este componente como el punto donde mas se rompe el tamano
  * minimo tactil, asi que los dos botones son de 44x44 (`size-11`) y no se

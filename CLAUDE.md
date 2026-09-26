@@ -12,7 +12,7 @@ Sitio **100% estático**: no hay backend, no hay base de datos, no hay cuentas.
 Todo corre en el navegador del usuario.
 
 - El **catálogo** es data fija → archivos estáticos generados en build.
-- El **mazo** es del usuario → vive en su navegador (`localStorage` + URL).
+- El **baraja** es del usuario → vive en su navegador (`localStorage` + URL).
 
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
@@ -28,7 +28,7 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 | Tipografía | Space Grotesk vía `next/font/google` (auto-hospedada en build) |
 | Iconos | `lucide-react` |
 | Búsqueda | `minisearch` *(instalado, aún sin usar)* |
-| Compartir mazo | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
+| Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -45,7 +45,7 @@ pnpm run dev         # desarrollo en http://localhost:3000
 pnpm run build       # export estático a out/
 pnpm run preview     # sirve out/ en http://localhost:4173
 pnpm run check       # typecheck + lint + formato + tests (correr antes de commitear)
-pnpm run test        # tests de las reglas de mazo (corredor de Node, sin dependencias)
+pnpm run test        # tests de las reglas de baraja (corredor de Node, sin dependencias)
 pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
@@ -208,7 +208,7 @@ out/           build estático (git-ignorado)
     Aliados del juego llevan raza impresa; la única que nació sin ella, Nana,
     fue erratada a **Ancestral**. Si una edición nueva trae un Aliado con
     `raza: null`, hay que leer el arte y completarla. Los Tótems sí van sin
-    raza —los 51 cargados— y entran en cualquier mazo, igual que Talismanes,
+    raza —los 51 cargados— y entran en cualquier baraja, igual que Talismanes,
     Armas y Oros.
   - **El oro inicial de cada edición llega mal frecuentado y a veces mal
     nombrado.** Es esa carta a arte completo, sin habilidad y sin cuadro de
@@ -501,7 +501,7 @@ out/           build estático (git-ignorado)
     las imágenes entre sí, así que `fetch_edition.py` **avisa ahora cuando dos
     cartas bajan el mismo PNG**. Era el único par duplicado de las 261.
   - **`Traición`, la primera keyword que se imprime CON UN COSTE pegado**
-    ("Traición - Destierra la primera carta de tu Mazo Castillo"). Como
+    ("Traición - Destierra la primera carta de tu Baraja Castillo"). Como
     `Guardián`, la API no la etiqueta nunca. Por decisión del proyecto **no
     sube a la fila de keywords**: el coste es texto de reglas y allí se
     perdería. Se queda en el cuerpo con la palabra resaltada, que es justo lo
@@ -565,7 +565,7 @@ out/           build estático (git-ignorado)
     con el fandom en **230 de 230**, mientras que los **flags de la API fallan
     en 29**. Es la confirmación independiente de lo que se decidió en
     Steampunk. Son 103 cartas con atributo (52 Luz, 51 Oscuridad), tres veces
-    más que Steampunk: la vía Luz/Oscuridad por fin da para armar mazo.
+    más que Steampunk: la vía Luz/Oscuridad por fin da para armar baraja.
   - **Las 6 Legendarias son reimpresiones premium** de las 6 primeras Ultra
     Real, mismo nombre y mismo texto: Lilith (`LG-234`/`LG-001`), Solomon
     (`231`/`002`), Caín (`233`/`003`), Shoki el Cazador (`232`/`008`), Crear
@@ -667,7 +667,7 @@ out/           build estático (git-ignorado)
     Dimachaerus, Azi Dahaka, Yaoguai, Nostradamus y Akiko Yamamoto ganan
     `Errante` y una condición de escuela; Astra cambia "Destruir" por
     "Desterrar"; Carmina Burana cambia cuándo se puede usar. La edición además
-    abrevia: escribe "tu Castillo" por "tu Mazo Castillo" y "Cuando entra en
+    abrevia: escribe "tu Castillo" por "tu Baraja Castillo" y "Cuando entra en
     juego" por "Cuando este Aliado entra en juego". Las 66 se leyeron del arte
     una a una.
 - **La extensión de Escuelas Elementales** (11 cartas, `EE-316`…`EE-326`) no
@@ -767,7 +767,7 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 4. **Todo lo que entra desde fuera del bundle se valida con Zod** antes de
    usarse: `cards.json`, `localStorage` y la query string. `localStorage` lo
    puede editar el usuario o cualquier extensión del navegador — nunca se
-   asume su forma. Al decodificar un mazo desde la URL: parsear a la
+   asume su forma. Al decodificar una baraja desde la URL: parsear a la
    defensiva, acotar tamaños y descartar ids desconocidos sin reventar la app.
 
 5. **Cero terceros.** Sin analytics, sin CDNs, sin fuentes remotas, sin
@@ -787,12 +787,12 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    nadie descarga nada durante el install. Si alguna dependencia nueva reclama
    su build, la respuesta por defecto es `false` hasta haber leído qué hace.
 
-7. **Privacidad.** Los mazos no se guardan en ningún servidor: viven en el
+7. **Privacidad.** Las barajas no se guardan en ningún servidor: viven en el
    `localStorage` del usuario. No hay cuentas, ni datos personales, ni banner de
    consentimiento. Que siga así.
 
-   *Matiz honesto:* un mazo compartido viaja en la query string
-   (`/mazo/?d=…`), así que **sí pasa por el borde de Cloudflare** y puede
+   *Matiz honesto:* una baraja compartida viaja en la query string
+   (`/baraja/?d=…`), así que **sí pasa por el borde de Cloudflare** y puede
    quedar en sus logs, como cualquier URL. No es "nunca sale del navegador".
    Un fragmento (`#d=`) no saldría, pero cuesta la reactividad de
    `useSearchParams`; se deja documentado por si algún día importa.
@@ -859,7 +859,7 @@ modal de detalle con keywords resaltadas, buscador (MiniSearch), filtros por
 faceta con selector propio y paginación.
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
-`/builder` (placeholder) · `/mazos` (placeholder) · `/erratas` (placeholder).
+`/constructor` (placeholder) · `/barajas` (placeholder) · `/erratas` (placeholder).
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -874,7 +874,7 @@ y fuerza.
 
 **El orden del catálogo vive en `src/lib/card-order.ts` y lo comparten las
 cuatro vistas** que listan cartas: `/catalogo`, `/catalogo/<edicion>`, la
-grilla del constructor y el contenido de un mazo. Si cada una ordenara a su
+grilla del constructor y el contenido de una baraja. Si cada una ordenara a su
 manera, una carta cambiaría de sitio al pasar de una a otra y habría que
 volver a buscarla. Manda la **edición, de la última en salir a la primera**
 —Escuelas Elementales arriba, Bushido al fondo, o sea al revés que
@@ -916,7 +916,7 @@ que sale del campo `keywords`. Hubo un `Select` de atributo —vacío mientras n
 hubo cartas que lo llevaran— y se quitó al llegar Steampunk: un selector que
 dijera lo mismo que otro solo parte la búsqueda en dos sitios. El campo
 `atributo` de la carta **sigue existiendo** y es el que usan las reglas de
-mazo; lo que se fue es el filtro.
+baraja; lo que se fue es el filtro.
 
 `src/lib/ability.ts` separa lo que la carta **declara** del resto del texto: el
 modal pone las keywords arriba, en una fila propia, y debajo solo el efecto.
@@ -988,7 +988,7 @@ las keywords.
 **Cada edición declara la keyword a su manera, y eso rompió el resaltado.**
 Bushido y Sol Naciente la imprimen a secas ("Única. Furia."), pero Dominio y
 ContraAtaque le pegan el recordatorio de reglas entre paréntesis ("Única (Sólo
-puedes tener una copia de esta carta en tu Mazo Castillo)."), y en cinco cartas
+puedes tener una copia de esta carta en tu Baraja Castillo)."), y en cinco cartas
 de ContraAtaque ni siquiera llega el punto de cierre. El regex exigía el punto
 pegado a la keyword, así que de 44 cartas de Dominio reconocía 4 y de 37 de
 ContraAtaque, ninguna: salían sin violeta. Ahora salta el paréntesis y acepta
@@ -1031,22 +1031,51 @@ Elementales (326, con las 11 de su extensión).
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.
 
-### Constructor de mazos (Fase 2)
+### Constructor de barajas (Fase 2)
 
-Rutas: `/builder` arma y edita · `/mazos` la lista · `/mazo` el detalle.
+Rutas: `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle.
 
-`/mazo` va en **singular y con query string** (`?m=` uno tuyo, `?d=` uno
-compartido) porque `output: "export"` no admite una ruta dinámica `/mazos/[id]`
+`/baraja` va en **singular y con query string** (`?m=` una tuya, `?d=` una
+compartida) porque `output: "export"` no admite una ruta dinámica `/barajas/[id]`
 para datos del usuario: `generateStaticParams` no puede conocer ids que se
 inventan en el navegador.
 
-**El enlace compartido lleva el mazo en binario, no en JSON comprimido.** El
+**Se dice baraja, no mazo.** En Chile "mazo" suena a golpe, no a cartas, así que
+toda la interfaz dice *baraja* y las rutas van en español: `/constructor`,
+`/barajas`, `/baraja`. Tres cosas quedan fuera a propósito:
+
+- **`Mazo Castillo` no se toca.** Son 634 apariciones en `data-src/` y es el
+  nombre que el juego **imprime en la carta** para esa zona. Cambiarlo falsearía
+  el texto del catálogo, que es justo lo que se verificó contra el arte.
+- **El nombre de los campos serializados se queda en `mazos`**: el sobre del
+  `localStorage` (`{ v: 1, mazos: [...] }`, bajo la clave `deckforge-decks`) y el
+  archivo de respaldo (`{ app: "deckforge", v: 1, mazos: [...] }`). Eso ya está
+  **escrito en el navegador de cada usuario y dentro de los `.json` que exportó**:
+  renombrarlo le dejaría la lista vacía y sus respaldos sin importar. La palabra
+  de la interfaz es *baraja*; la del disco se queda como nació. Es el mismo
+  criterio que con `PREFIJOS` en `deck-code.ts` —formato ya publicado no se
+  reordena— y por eso lleva un comentario en los dos sitios.
+- **El código sigue en inglés** (`Deck`, `deck-rules.ts`, `DeckPanel.tsx`,
+  `components/builder/`), que es lo que pide la sección 5. Lo que sí se renombró
+  son los identificadores que ya estaban en español y llevaban la palabra:
+  `SECCIONES_DE_LA_BARAJA`, `MAX_NOMBRE_BARAJA`, `MAX_DESCRIPCION_BARAJA`,
+  `MAX_BARAJAS`.
+
+**`Side deck` se queda en inglés**, porque es la jerga con que el jugador de TCG
+lo nombra y el reglamento de MyL tampoco lo traduce.
+
+Ojo con un efecto de renombrar `/mazo` a `/baraja`: **los enlaces compartidos
+antes del cambio apuntan a `/mazo/?d=…` y ahora dan 404**. El código del enlace
+sigue siendo válido —el formato binario no cambió—, así que basta pegar el `?d=`
+en `/baraja/` para recuperar la baraja.
+
+**El enlace compartido lleva la baraja en binario, no en JSON comprimido.** El
 primer formato armaba una tupla, la pasaba a JSON y lo comprimía con lz-string,
-y salía largo por un motivo de fondo: un mazo es una lista de números pequeños y
+y salía largo por un motivo de fondo: una baraja es una lista de números pequeños y
 en JSON cada uno se escribe como texto (`["hs-040",3],`, catorce caracteres)
 para que después un compresor de propósito general tenga que volver a adivinar
 qué hay debajo. Escribirlos como números de una vez sale más corto que comprimir
-su forma de texto: un mazo de 50 cartas bajó de **~300 caracteres de URL a
+su forma de texto: una baraja de 50 cartas bajó de **~300 caracteres de URL a
 ~127**, y el peor caso representable (60 entradas, side de 20, nombre de 30) de
 468 a 203. Las piezas:
 
@@ -1072,8 +1101,8 @@ su forma de texto: un mazo de 50 cartas bajó de **~300 caracteres de URL a
   formato: así un enlace de una versión futura se puede rechazar diciendo que es
   de otra versión en vez de "no pude leerlo", mientras que un código cualquiera
   cae fuera del rango y se prueba como formato 1.
-- El nombre del mazo viaja en UTF-8 con un byte de largo, y es lo que más ocupa:
-  la mitad del código de un mazo típico. Fuera quedan el id local, las fechas,
+- El nombre de la baraja viaja en UTF-8 con un byte de largo, y es lo que más ocupa:
+  la mitad del código de una baraja típica. Fuera quedan el id local, las fechas,
   la descripción, la portada y la afinidad fijada.
 
 Reglas del formato, en `src/lib/deck-rules.ts`: 50 cartas, un oro inicial (un
@@ -1083,73 +1112,73 @@ carta (1 si es Única), una sola afinidad y side de hasta 10 cartas.
 
 **El oro inicial tiene que ser un Oro con UNA sola copia en el principal.** Es
 una carta concreta que se aparta antes de empezar: con dos copias iguales en el
-mazo no se sabría cuál quedó fuera del montón. La regla vive en `validateDeck` y
+baraja no se sabría cuál quedó fuera del montón. La regla vive en `validateDeck` y
 el botón de la fila la respeta, pero **sigue activo cuando esa carta ya es el
-oro inicial**, para poder soltarlo si el mazo llegó a ese estado agregando
+oro inicial**, para poder soltarlo si la baraja llegó a ese estado agregando
 copias después; si se escondiera, quedaría un error sin forma de arreglarlo
 desde ahí. El oro inicial **no tiene caja propia** en el panel: se elige con un
 botón de moneda en la fila de su Oro, junto al `−/+`. Antes era una sección
 punteada que repetía los nombres de Oros que ya estaban listados dos centímetros
 más abajo.
 
-**El mazo se pinta en el orden del catálogo, y por eso las filas no saltan.**
+**La baraja se pinta en el orden del catálogo, y por eso las filas no saltan.**
 `RuleCard` lleva un campo `orden` que reparte `buildCardIndex` —que es quien ve
 el catálogo entero y lo ordena con `compareCards`— y `resolveDeck` ordena por
 él. La clave es que `orden` sale **solo de la carta** y nunca de cuántas copias
-lleve el mazo: si la lista se ordenara por copias, bajar una carta de 3 a 2 la
-mandaría hacia abajo justo bajo el cursor. En `/mazo` la mesa conserva el corte
+lleve la baraja: si la lista se ordenara por copias, bajar una carta de 3 a 2 la
+mandaría hacia abajo justo bajo el cursor. En `/baraja` la mesa conserva el corte
 por tipo (`ORDEN_EN_MESA`) y dentro de cada tipo usa ese mismo `orden`.
 
-**El side deck es una extensión del mazo, no un mazo aparte**: lleva las cartas
+**El side deck es una extensión de la baraja, no una baraja aparte**: lleva las cartas
 que quiera entre 0 y 10 —no hay mínimo ni tamaño exacto—, pero comparte con el
 principal el máximo de copias, las Únicas y la afinidad. Por eso
 `deckStats` deduce la afinidad sobre las 60 cartas, mientras que los contadores
 por tipo y la curva siguen siendo del principal, que es lo que se juega de
 salida.
 
-**Un mazo se arma de una de tres formas, y son alternativas**: por raza, por
+**Una baraja se arma de una de tres formas, y son alternativas**: por raza, por
 escuela elemental (sus dos razas exactas) o **por atributo** —todos sus Aliados
 Luz, o todos Oscuridad—. Basta con cumplir **una**. La tercera llega con
-Steampunk y es la que obligó a reescribir la afinidad: un mazo de Aliados Luz
+Steampunk y es la que obligó a reescribir la afinidad: una baraja de Aliados Luz
 de cuatro razas distintas es legal, y ninguna vía de raza lo explica.
 
 Por eso `Afinidad` ya no es un veredicto único sino una **lista de vías
-abiertas**. Mientras el mazo se arma cumple varias a la vez —el primer Aliado
+abiertas**. Mientras la baraja se arma cumple varias a la vez —el primer Aliado
 las abre todas las que le correspondan— y se van cerrando a medida que entran
 cartas. La clave que hace esto simple: **cada vía es una condición sobre TODOS
 los Aliados**, así que una vía abierta sigue abierta al agregar un Aliado si y
 solo si ese Aliado la cumple. De ahí sale `admite()`, de una línea, y de ahí
-que el catálogo del constructor pueda filtrarse sin recalcular el mazo entero.
+que el catálogo del constructor pueda filtrarse sin recalcular la baraja entera.
 
 **El atributo restringe solo a los Aliados**, exactamente igual que la raza.
 Es una decisión del proyecto y no es obvia: en Steampunk el atributo lo
 imprimen también Talismanes, Armas, Tótems y Oros, así que Quiebra Mentes
-(Talismán Oscuridad) **cabe en un mazo Luz**. Como la raza solo la llevan los
+(Talismán Oscuridad) **cabe en una baraja Luz**. Como la raza solo la llevan los
 Aliados, el conteo de razas nunca necesitó mirar el tipo; el del atributo sí, y
 por eso `deckStats` ahora filtra por `tipo === "Aliado"` antes de contar.
 
 **Un Aliado sin atributo cierra la vía del atributo.** No es "de los dos": no
-hay mazo Luz que lo admita, igual que un Aliado de otra raza cierra la vía de
+hay baraja Luz que lo admita, igual que un Aliado de otra raza cierra la vía de
 la raza. En Steampunk eso deja a nueve Aliados neutros (Dorian Grey, Dupin,
 Otto, Jack, Peter Pan, Ada Lovelace, Haures, Cthulhu y Fu Manchú) fuera del
-arquetipo de atributo, aunque sigan entrando en cualquier mazo de su raza.
+arquetipo de atributo, aunque sigan entrando en cualquier baraja de su raza.
 
 `deckAffinitySchema` ganó la variante `{ modo: "atributo" }` **sin subir
-`DECK_VERSION`**: el cambio es aditivo y ningún mazo ya guardado deja de leerse.
+`DECK_VERSION`**: el cambio es aditivo y ninguna baraja ya guardado deja de leerse.
 
 **El mínimo de 15 lo cumple un tipo solo, no la suma de los dos**: 14 Aliados y
-14 Tótems son 28 cartas y el mazo sigue sin cumplir. Por eso `deckStats` lleva
+14 Tótems son 28 cartas y la baraja sigue sin cumplir. Por eso `deckStats` lleva
 `aliadosOTotems` con el **mayor** de los dos contadores y no con su suma.
 
 **Los Oros sin habilidad no tienen tope de copias**: son el recurso con que se
-paga todo y el mazo lleva los que necesite. Los 25 que sí traen habilidad son
+paga todo y la baraja lleva los que necesite. Los 25 que sí traen habilidad son
 cartas como cualquier otra y van al tope de 3; solo seis de ellos (Regalía
 Imperial, Pantano Sagrado, Mon, Chozuya, Biblioteca Eterna y Mochuelo) son
 además Únicos. Ojo: esto **decía "los cuatro Oros con habilidad son todos
 Únicos"** y dejó de ser cierto en Dominio, mucho antes de que nadie lo notara.
 Por eso el esquema de Zod acota las
 entradas a 50 y no a 3: describe lo que se puede **representar**, no lo que es
-legal — si recortara a 3, un mazo importado con 4 copias se volvería legal en
+legal — si recortara a 3, una baraja importada con 4 copias se volvería legal en
 silencio al leerlo.
 
 **Cuando dos impresiones dicen cosas distintas, manda la última.** Es la que se
@@ -1162,7 +1191,7 @@ cómo imprime cada edición, y cada carta conserva el recordatorio que la suya
 lleva impreso.
 
 Efecto secundario que conviene tener presente: **28 cartas ganaron `Única` o
-`Errante` al heredar el texto vigente**, así que un mazo guardado con tres
+`Errante` al heredar el texto vigente**, así que una baraja guardada con tres
 Tezcatlipoca de Hijos del Sol dejó de ser legal. Es correcto —hoy la carta es
 Única— pero no es obvio mirando solo el catálogo viejo.
 
@@ -1183,15 +1212,15 @@ otro homónimo, el mismo apaño.
 dos Kirin Milenaria son cuatro Kirin. Y se suman principal y side.
 
 `canAdd` comparte contadores y mensajes con `validateDeck` a propósito: si
-divergieran, el botón "+" dejaría armar un mazo que el validador rechaza.
+divergieran, el botón "+" dejaría armar una baraja que el validador rechaza.
 
-Los mazos viven en `localStorage` y se leen con `useSyncExternalStore`, no con
+Las barajas viven en `localStorage` y se leen con `useSyncExternalStore`, no con
 un efecto que llame a `setState` — el compilador de React bloquea eso y tiene
 razón: es un sistema externo. Sale gratis la sincronización entre pestañas.
 
 Ojo con `useSearchParams` en un export estático: **exige un `<Suspense>`**, y la
 trampa es que en desarrollo funciona sin él y falla el build de producción. En
-`/builder` el límite envuelve una hoja que no pinta nada (`DeckParamLoader`),
+`/constructor` el límite envuelve una hoja que no pinta nada (`DeckParamLoader`),
 no la isla entera: envolverla entera tiraría a la basura el HTML prerenderizado
 de la grilla, que es lo caro de esa página.
 

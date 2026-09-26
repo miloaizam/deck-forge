@@ -42,10 +42,10 @@ const ICONO =
   "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /**
- * Muestra un mazo, sea tuyo (`?m=`) o de un enlace compartido (`?d=`).
+ * Muestra una baraja, sea tuyo (`?m=`) o de un enlace compartido (`?d=`).
  *
- * Es la unica forma de tener un detalle por mazo con `output: "export"`: una
- * ruta dinamica `/mazos/[id]` no puede existir, porque generateStaticParams no
+ * Es la unica forma de tener un detalle por baraja con `output: "export"`: una
+ * ruta dinamica `/barajas/[id]` no puede existir, porque generateStaticParams no
  * conoce ids que se inventan en el navegador.
  */
 export function DeckDetailView({ cards }: DeckDetailViewProps) {
@@ -64,7 +64,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const cargado = useHydrated();
   const index = useMemo(() => buildCardIndex(cards), [cards]);
 
-  // El mazo se DERIVA de la URL y del store, sin estado propio ni efectos: asi
+  // La baraja se DERIVA de la URL y del store, sin estado propio ni efectos: asi
   // cambiar de ?m=a a ?m=b no deja pegado el anterior y no hay renders en
   // cascada. El codigo compartido manda si vienen los dos parametros.
   const { deck, error } = useMemo((): { deck: Deck | null; error: string } => {
@@ -76,9 +76,9 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       const guardado = decks.find((x) => x.id === m);
       return guardado
         ? { deck: guardado, error: "" }
-        : { deck: null, error: "No encontré ese mazo en este navegador." };
+        : { deck: null, error: "No encontré esa baraja en este navegador." };
     }
-    return { deck: null, error: "Este enlace no trae ningún mazo." };
+    return { deck: null, error: "Este enlace no trae ninguna baraja." };
   }, [m, d, decks]);
 
   const avisar = useCallback((texto: string) => {
@@ -87,8 +87,8 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   }, []);
 
   /**
-   * La portada se guarda al vuelo: el mazo sale del store, asi que escribirlo
-   * basta para que la lista y esta vista se enteren. En un mazo compartido no
+   * La portada se guarda al vuelo: la baraja sale del store, asi que escribirlo
+   * basta para que la lista y esta vista se enteren. En una baraja compartida no
    * se ofrece —no hay nada guardado que actualizar—, y de eso se encarga el
    * `onPortada` que se le pasa (o no) a DeckSections.
    */
@@ -106,7 +106,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   };
 
   if (!cargado) {
-    // Esqueleto, no spinner: el mazo sale de la URL o de localStorage al montar.
+    // Esqueleto, no spinner: la baraja sale de la URL o de localStorage al montar.
     return (
       <div aria-hidden="true" className="flex flex-col gap-4">
         <div className="border-line rounded-panel h-24 animate-pulse border" />
@@ -123,12 +123,12 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
           aria-hidden="true"
           className="text-muted mx-auto mb-4 opacity-60"
         />
-        <p className="text-ink text-lg">{error || "No hay ningún mazo aquí."}</p>
+        <p className="text-ink text-lg">{error || "No hay ninguna baraja aquí."}</p>
         <Link
-          href="/mazos"
+          href="/barajas"
           className="text-accent focus-visible:outline-brand-500 mt-4 inline-block rounded text-[15px] underline underline-offset-4 transition-opacity hover:opacity-75"
         >
-          Ver mis mazos
+          Ver mis barajas
         </Link>
       </div>
     );
@@ -142,11 +142,11 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* El nombre del mazo ES el titulo de la pagina; a su lado, el conteo y
-          las mismas acciones que trae su tarjeta en /mazos. */}
+      {/* El nombre de la baraja ES el titulo de la pagina; a su lado, el conteo y
+          las mismas acciones que trae su tarjeta en /barajas. */}
       <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <p className="eyebrow mb-3">Mazo</p>
+          <p className="eyebrow mb-3">Baraja</p>
           <h1 className="text-3xl font-bold tracking-[-0.02em]">{deckTitle(deck)}</h1>
           {/* La descripcion es opcional: si esta vacia no deja hueco. */}
           {deck.descripcion.trim() !== "" && (
@@ -158,7 +158,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
         <div className="flex flex-col items-start gap-3 sm:items-end">
           {/* El aviso va en la linea del recuento y no bajo los botones: ahi
-              reservaba su alto siempre —para no empujar el mazo al aparecer— y
+              reservaba su alto siempre —para no empujar la baraja al aparecer— y
               eran 32px de aire permanente entre los botones y las cartas. */}
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <p role="status" aria-live="polite" className="text-muted text-[13px]">
@@ -174,10 +174,10 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             {compartido ? (
               <button type="button" onClick={guardar} className={BOTON}>
                 <Save size={14} aria-hidden="true" />
-                Guardar en mis mazos
+                Guardar en mis barajas
               </button>
             ) : (
-              <Link href={`/builder/?m=${deck.id}`} className={BOTON}>
+              <Link href={`/constructor/?m=${deck.id}`} className={BOTON}>
                 <Hammer size={14} aria-hidden="true" />
                 Editar
               </Link>
@@ -185,7 +185,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             <button
               type="button"
               onClick={() => void copyShareLink(deck).then(avisar)}
-              aria-label="Compartir el mazo"
+              aria-label="Compartir la baraja"
               title="Copiar enlace"
               className={ICONO}
             >
@@ -194,23 +194,23 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             <button
               type="button"
               onClick={() => downloadDeck(deck)}
-              aria-label="Exportar el mazo"
+              aria-label="Exportar la baraja"
               title="Exportar a un archivo"
               className={ICONO}
             >
               <Download size={14} aria-hidden="true" />
             </button>
 
-            {/* Duplicar y borrar solo tienen sentido sobre un mazo tuyo. */}
+            {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
             {!compartido && (
               <>
                 <button
                   type="button"
                   onClick={() => {
                     saveDeck(duplicateDeck(deck));
-                    avisar("Dupliqué el mazo.");
+                    avisar("Dupliqué la baraja.");
                   }}
-                  aria-label="Duplicar el mazo"
+                  aria-label="Duplicar la baraja"
                   title="Duplicar"
                   className={ICONO}
                 >
@@ -219,7 +219,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => setPorBorrar(true)}
-                  aria-label="Borrar el mazo"
+                  aria-label="Borrar la baraja"
                   title="Borrar"
                   className={ICONO}
                 >
@@ -232,12 +232,12 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       </header>
 
       {/* El panel de estado solo aparece cuando hay algo que corregir: decirle
-          "todo bien" a quien ya ve el mazo completo es ruido. */}
+          "todo bien" a quien ya ve la baraja completa es ruido. */}
       {!legal && (
         <div className="border-line bg-panel rounded-panel flex flex-col gap-2 border p-5">
           <p className="text-ink flex items-center gap-2 text-[13px]">
             <TriangleAlert size={15} aria-hidden="true" className="shrink-0" />
-            El mazo todavía no cumple las reglas del formato
+            La baraja todavía no cumple las reglas del formato
           </p>
           <ul className="text-muted flex flex-col gap-1 text-[13px]">
             {issues.map((i, n) => (
@@ -255,18 +255,18 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         onVer={(cardId) => setVista(cards.find((c) => c.id === cardId) ?? null)}
       />
 
-      {/* El mismo modal del catalogo, sin el boton de agregar: aqui el mazo ya
+      {/* El mismo modal del catalogo, sin el boton de agregar: aqui la baraja ya
           esta armado y se viene a mirar la carta, no a cambiarla. */}
       <CardModal card={vista} onClose={() => setVista(null)} />
 
       <ConfirmDialog
         open={porBorrar}
-        titulo="¿Borrar el mazo?"
+        titulo="¿Borrar la baraja?"
         mensaje={`"${deckTitle(deck)}" se borra de este navegador y no hay de donde recuperarlo.`}
-        confirmar="Borrar el mazo"
+        confirmar="Borrar la baraja"
         onConfirm={() => {
           deleteDeck(deck.id);
-          router.push("/mazos");
+          router.push("/barajas");
         }}
         onCancel={() => setPorBorrar(false)}
       />

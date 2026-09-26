@@ -16,7 +16,7 @@ import {
   type ResolvedEntry,
   DECK_TOTAL,
 } from "@/lib/deck-rules";
-import { SECCIONES_DEL_MAZO, type Deck, type Tipo } from "@/lib/types";
+import { SECCIONES_DE_LA_BARAJA, type Deck, type Tipo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface DeckPanelProps {
@@ -34,7 +34,7 @@ interface DeckPanelProps {
 /**
  * El interruptor de oro inicial vive en la fila de su Oro.
  *
- * Antes era una caja aparte que repetia los nombres de los Oros del mazo; aqui
+ * Antes era una caja aparte que repetia los nombres de los Oros de la baraja; aqui
  * ocupa el ancho de un boton y se elige donde ya esta la carta.
  */
 function OroInicialToggle({
@@ -71,7 +71,7 @@ function OroInicialToggle({
         className={cn(
           CAJA_FILA,
           // El activo si lleva caja fija: no es una accion que se ofrece al
-          // apuntar, es el estado del mazo y tiene que verse sin tocarlo.
+          // apuntar, es el estado de la baraja y tiene que verse sin tocarlo.
           activo
             ? "border-brand-600 bg-accent-soft text-accent"
             : bloqueo
@@ -110,7 +110,7 @@ function Fila({
   // El oro inicial sale de las 50 del principal: un Oro del side no sirve.
   const puedeSerOroInicial = zone === "principal" && entry.card.oroSinHabilidad;
   // Y tiene que ser una carta concreta, no una de varias iguales: con dos o mas
-  // copias en el mazo no se sabria cual es la que se aparta al empezar.
+  // copias en la baraja no se sabria cual es la que se aparta al empezar.
   const bloqueoOro =
     !esOroInicial && entry.n > 1
       ? `${entry.card.nombre} no puede ser el oro inicial: llevas ${entry.n} copias y tiene que ser un Oro con una sola.`
@@ -190,12 +190,12 @@ function Seccion({
           un vistazo. El total va en pastilla LLENA y no en una suave: al tamano
           de un contador, un fondo tenue con letra del mismo tono se pierde
           contra el panel, que es lo que pasaba antes. */}
-      <h4 className="text-ink mb-2 flex items-center justify-between gap-2 text-sm font-bold tracking-[0.1em] uppercase">
+      <h3 className="text-ink mb-2 flex items-center justify-between gap-2 text-sm font-bold tracking-[0.1em] uppercase">
         {titulo}
         <span className="bg-brand-600 rounded-chip min-w-7 px-2 py-0.5 text-center text-xs font-bold tracking-normal text-white tabular-nums">
           {total}
         </span>
-      </h4>
+      </h3>
       <ul className="divide-line divide-y">
         {filas.map((f) => (
           <Fila
@@ -244,7 +244,7 @@ export function DeckPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Estado siempre a la vista: si el mazo es legal y cuantas cartas lleva.
+      {/* Estado siempre a la vista: si la baraja es legal y cuantas cartas lleva.
           Van en la misma fila y la cuenta a la derecha, alineada con los totales
           de cada tramo: asi ocupa un solo sitio, lo diga lo que diga el estado.
           Antes iba encima y en su propia linea, y el numero se corria hacia
@@ -263,7 +263,7 @@ export function DeckPanel({
             <TriangleAlert size={15} aria-hidden="true" className="shrink-0" />
           )}
           {legal
-            ? "El mazo cumple las reglas del formato"
+            ? "La baraja cumple las reglas del formato"
             : `${errores.length} cosas por corregir`}
         </p>
 
@@ -288,13 +288,13 @@ export function DeckPanel({
 
       {res.principal.length === 0 && res.side.length === 0 ? (
         <p className="text-muted border-line rounded-card border border-dashed px-4 py-10 text-center text-[13px] leading-relaxed">
-          El mazo está vacío. Agrega cartas desde el catálogo con el botón
+          La baraja está vacío. Agrega cartas desde el catálogo con el botón
           <span className="text-accent"> + </span>
           de cada una.
         </p>
       ) : (
         <>
-          {SECCIONES_DEL_MAZO.map(({ tipo, titulo }) => (
+          {SECCIONES_DE_LA_BARAJA.map(({ tipo, titulo }) => (
             <Seccion
               key={tipo}
               titulo={titulo}
@@ -320,7 +320,7 @@ export function DeckClearButton({ onClear }: { onClear: () => void }) {
       className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-4 text-[13px] transition-colors"
     >
       <Trash2 size={14} aria-hidden="true" />
-      Vaciar el mazo
+      Vaciar la baraja
     </button>
   );
 }

@@ -9,7 +9,7 @@ Objetivo: lanzar **gratis, sin servidor y sin base de datos**, con margen para c
 
 | Pregunta | Decisión | Por qué |
 |---|---|---|
-| ¿Tendrá login? | **No** (en el MVP) | No necesitas cuentas para consultar cartas y armar mazos. Se resuelve con guardado local + compartir por URL. |
+| ¿Tendrá login? | **No** (en el MVP) | No necesitas cuentas para consultar cartas y armar barajas. Se resuelve con guardado local + compartir por URL. |
 | ¿GitHub Pages o Cloudflare Pages? | **Cloudflare Pages** | Ancho de banda ilimitado, mejor para imágenes, y te deja crecer a R2/dominio propio sin migrar. El código igual vive en GitHub. |
 | ¿Un repo de GitHub para todo? | **Sí, uno solo** | Código + datos + imágenes + scripts en el mismo repo. Cloudflare se conecta a ese repo y despliega solo. |
 | ¿Un JSON o varios? | **Editas varios (uno por edición) → se combinan en uno solo** | Editar por edición es cómodo; la app carga un único `cards.json` (~1–3 MB) y filtra en memoria. |
@@ -27,9 +27,9 @@ Todo corre en el navegador. No hay backend que mantener.
    │  App React (HTML/JS/CSS estáticos)           │
    │   • carga cards.json (catálogo completo)     │
    │   • busca / filtra en memoria                │
-   │   • arma el mazo (estado local)              │
+   │   • arma la baraja (estado local)              │
    │   • guarda en localStorage                   │
-   │   • comparte el mazo codificado en la URL    │
+   │   • comparte la baraja codificada en la URL    │
    │   • pide imágenes .webp por URL              │
    └─────────────────────────────────────────────┘
               │                         │
@@ -39,7 +39,7 @@ Todo corre en el navegador. No hay backend que mantener.
                    (sirve archivos estáticos)
 ```
 
-Regla mental: **el catálogo es data fija** (solo cambia cuando tú agregas cartas), así que va en archivos estáticos. **El mazo es del usuario**, así que vive en su navegador. Nada de esto necesita servidor ni BD.
+Regla mental: **el catálogo es data fija** (solo cambia cuando tú agregas cartas), así que va en archivos estáticos. **La baraja es del usuario**, así que vive en su navegador. Nada de esto necesita servidor ni BD.
 
 ---
 
@@ -49,10 +49,10 @@ Regla mental: **el catálogo es data fija** (solo cambia cuando tú agregas cart
 |---|---|---|
 | Control de versiones | **Git + GitHub** | Guardar el proyecto, historial, y fuente para Cloudflare |
 | Empaquetador | **Vite** | Servidor de desarrollo + build a estáticos (`dist/`) |
-| UI | **React** | Grilla de cartas, filtros, panel de mazo (mucho material de ayuda) |
+| UI | **React** | Grilla de cartas, filtros, panel de baraja (mucho material de ayuda) |
 | Estilos | **Tailwind CSS** | Rápido, y mapea directo a tu paleta de marca (violeta/blanco) |
 | Búsqueda | **MiniSearch** o **Fuse.js** | Buscar por nombre/habilidad al instante, en el cliente |
-| Compartir mazo | **lz-string** | Comprimir el mazo para meterlo en la URL |
+| Compartir baraja | **lz-string** | Comprimir la baraja para meterlo en la URL |
 | Datos (dev) | **Python + Pydantic** | Validar el JSON de cartas antes de publicar |
 | Imágenes (dev) | **Python + Pillow** | Convertir a WebP + generar miniaturas |
 | Hosting | **Cloudflare Pages** | Publicar el sitio gratis, se actualiza con cada push |
@@ -69,13 +69,13 @@ Instalaciones previas (una sola vez):
 
 ## 3. Login: no, y cómo se resuelve sin él
 
-Sin cuentas pierdes solo una cosa: **mazos guardados en la nube y sincronizados entre dispositivos**. Lo compensas con tres mecanismos que cubren el 95% del uso real:
+Sin cuentas pierdes solo una cosa: **barajas guardadas en la nube y sincronizados entre dispositivos**. Lo compensas con tres mecanismos que cubren el 95% del uso real:
 
-1. **Guardado local** (`localStorage`): los mazos del usuario quedan en su navegador. Al volver, siguen ahí.
-2. **Compartir por URL**: el mazo se codifica en un enlace (`deckforge.pages.dev/mazo?d=XXXX`). Cualquiera abre ese link y ve el mazo. Ideal para pasarlo por WhatsApp/Discord.
-3. **Exportar / importar**: botón para bajar el mazo como `.json` (o texto) y volver a cargarlo.
+1. **Guardado local** (`localStorage`): las barajas del usuario quedan en su navegador. Al volver, siguen ahí.
+2. **Compartir por URL**: la baraja se codifica en un enlace (`deckforge.pages.dev/baraja?d=XXXX`). Cualquiera abre ese link y ve la baraja. Ideal para pasarlo por WhatsApp/Discord.
+3. **Exportar / importar**: botón para bajar la baraja como `.json` (o texto) y volver a cargarla.
 
-Cuándo agregarías login (fase futura, opcional): perfiles públicos, guardar mazos en la nube, "me gusta", comentarios. Eso se hace después con **Supabase** (tier gratis con auth + Postgres) sin reescribir el frontend. No lo necesitas para lanzar.
+Cuándo agregarías login (fase futura, opcional): perfiles públicos, guardar barajas en la nube, "me gusta", comentarios. Eso se hace después con **Supabase** (tier gratis con auth + Postgres) sin reescribir el frontend. No lo necesitas para lanzar.
 
 ---
 
@@ -133,7 +133,7 @@ deckforge/
 │  │  ├─ Filters.jsx
 │  │  └─ DeckPanel.jsx
 │  ├─ lib/
-│  │  ├─ deckCode.js           # codificar/decodificar mazo ↔ URL
+│  │  ├─ deckCode.js           # codificar/decodificar baraja ↔ URL
 │  │  └─ search.js             # índice de búsqueda
 │  └─ index.css                # Tailwind + tokens de marca
 ├─ index.html
@@ -449,18 +449,18 @@ Si algo falla en el build, casi siempre es (a) el *output directory* mal puesto 
 - Filtros: edición, tipo, raza, escuela, atributo, coste, frecuencia, legalidad.
 - Buscador por nombre/habilidad (MiniSearch).
 
-**Fase 2 — Constructor de mazos**
-- Panel de mazo con conteos (Aliados/Armas/Talismanes/Tótems/Oros), tope de 50.
+**Fase 2 — Constructor de barajas**
+- Panel de baraja con conteos (Aliados/Armas/Talismanes/Tótems/Oros), tope de 50.
 - Reglas del formato (máximos por carta, banlist).
 - Curva de coste + resumen por escuela.
 - Guardado en `localStorage` + exportar/importar.
 
 **Fase 3 — Compartir**
-- Codificar el mazo en la URL (lz-string) y reconstruirlo al abrir el link.
-- Imagen/exportación del mazo para redes.
+- Codificar la baraja en la URL (lz-string) y reconstruirlo al abrir el link.
+- Imagen/exportación de la baraja para redes.
 
 **Fase futura (opcional) — Cuentas**
-- Login + mazos en la nube con Supabase (tier gratis). Solo si lo quieres; el resto no cambia.
+- Login + barajas en la nube con Supabase (tier gratis). Solo si lo quieres; el resto no cambia.
 
 ---
 
@@ -471,7 +471,7 @@ Lo más eficiente es ir por la **Fase 0** ya mismo. Puedo ayudarte con lo que qu
 - **Generar el scaffold real** del proyecto (React + Tailwind con tu paleta, componentes base de grilla/modal) listo para copiar.
 - Escribir el **`tailwind.config.js`** con tus tokens de marca.
 - Crear los **componentes** `CardGrid`, `CardTile`, `Filters`, `DeckPanel`.
-- La lógica de **codificar/decodificar el mazo en la URL**.
+- La lógica de **codificar/decodificar la baraja en la URL**.
 - Un **`data-src/escuelas-elementales.json`** de ejemplo con varias cartas reales para que pruebes toda la cadena (imágenes → build → app).
 
 Dime por cuál partimos y lo armamos.

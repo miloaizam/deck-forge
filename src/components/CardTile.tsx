@@ -10,9 +10,9 @@ export const CARD_RATIO = "512 / 732";
 interface CardTileProps {
   card: Card;
   onSelect: (card: Card) => void;
-  /** Copias en el mazo. Solo el constructor las pasa. */
+  /** Copias en la baraja. Solo el constructor las pasa. */
   copies?: number;
-  /** Si viene, la carta muestra un boton para sumarla al mazo. */
+  /** Si viene, la carta muestra un boton para sumarla a la baraja. */
   onAdd?: (card: Card) => void;
   /** Por que no se puede agregar. Si viene, el boton lo explica al pulsarlo. */
   addBlocked?: string;
@@ -58,7 +58,7 @@ export function CardTile({
           y la posicion no pueden ser el unico indicador. */}
       {copies > 0 && (
         <span
-          aria-label={`${copies} en el mazo`}
+          aria-label={`${copies} en la baraja`}
           className="bg-brand-600 rounded-chip absolute top-2 left-2 flex min-w-7 items-center justify-center px-1.5 py-1 text-[13px] font-medium text-white tabular-nums"
         >
           {copies}
@@ -75,7 +75,7 @@ export function CardTile({
           // puede EXPLICAR por que no se puede. Un disabled no dice nada.
           aria-disabled={addBlocked ? true : undefined}
           title={addBlocked}
-          aria-label={addBlocked ?? `Agregar ${card.nombre} al mazo`}
+          aria-label={addBlocked ?? `Agregar ${card.nombre} a la baraja`}
           className={cn(
             "bg-surface/85 focus-visible:outline-brand-500 rounded-chip absolute top-2 right-2 flex size-11 items-center justify-center backdrop-blur transition-colors",
             addBlocked

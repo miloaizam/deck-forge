@@ -2,22 +2,22 @@ import lzString from "lz-string";
 import { z } from "zod";
 
 import { createDeck } from "./deck";
-import { deckSchema, MAX_NOMBRE_MAZO, type Deck, type DeckEntry } from "./types";
+import { deckSchema, MAX_NOMBRE_BARAJA, type Deck, type DeckEntry } from "./types";
 
 /**
- * Codificar y decodificar un mazo para compartirlo por enlace.
+ * Codificar y decodificar una baraja para compartirlo por enlace.
  *
- * El mazo entero no viaja: fuera quedan el id local, las fechas, la descripcion,
+ * La baraja entera no viaja: fuera quedan el id local, las fechas, la descripcion,
  * la portada y la afinidad fijada — no le sirven a quien recibe el enlace y solo
  * alargan la URL. Viajan el nombre, el oro inicial y las dos zonas.
  *
  * El codigo es BINARIO y va en base64url, que no lleva ningun caracter que la
- * URL tenga que escapar. La version 1 metia el mazo en JSON y lo comprimia con
- * lz-string, y el resultado era largo por un motivo de fondo: un mazo es una
+ * URL tenga que escapar. La version 1 metia la baraja en JSON y la comprimia con
+ * lz-string, y el resultado era largo por un motivo de fondo: una baraja es una
  * lista de numeros pequenos, y en JSON cada uno de esos numeros se escribe como
  * texto (`["hs-040",3],`, catorce caracteres) para que un compresor de proposito
  * general tenga que volver a adivinar que hay debajo. Escribirlos como numeros
- * de una vez sale mas corto que comprimir su forma de texto: un mazo de 50
+ * de una vez sale mas corto que comprimir su forma de texto: una baraja de 50
  * cartas baja de ~300 caracteres de URL a ~130.
  *
  * El formato, bit a bit (`escribirZona` y `leerZona` son la referencia exacta):
@@ -41,7 +41,7 @@ import { deckSchema, MAX_NOMBRE_MAZO, type Deck, type DeckEntry } from "./types"
  *
  * La version va primero para que un decodificador viejo pueda RECHAZAR un
  * codigo nuevo con un mensaje claro, en vez de malinterpretarlo y mostrar un
- * mazo equivocado.
+ * baraja equivocada.
  */
 
 /**
@@ -59,7 +59,7 @@ const WIRE_VERSION_LZ = 1;
 
 /**
  * Rango de primeros bytes reservado para este formato binario. Sirve para
- * distinguir "viene de una version mas nueva" de "esto no es un mazo": un byte
+ * distinguir "viene de una version mas nueva" de "esto no es una baraja": un byte
  * cualquiera cae casi siempre fuera del rango y el codigo se prueba entonces
  * como formato 1.
  */
@@ -112,7 +112,7 @@ const ANCHO_PREFIJO = 5;
 const ANCHO_NUMERO = 10;
 /** Hasta 31 grupos por zona, uno por edicion. */
 const ANCHO_GRUPOS = 5;
-/** Hasta 63 entradas por grupo; el esquema del mazo topa en 60. */
+/** Hasta 63 entradas por grupo; el esquema de la baraja topa en 60. */
 const ANCHO_ENTRADAS = 6;
 /** Salto respecto del numero anterior del mismo grupo. */
 const ANCHO_SALTO = 6;
@@ -230,7 +230,7 @@ function refDe(id: string): Ref | null {
 
 /**
  * Escribe una zona. Devuelve `false` si algo no cabe en el formato, y entonces
- * el mazo entero se codifica en el formato 1.
+ * la baraja entera se codifica en el formato 1.
  */
 function escribirZona(w: BitWriter, entradas: DeckEntry[]): boolean {
   const grupos = new Map<number, { numero: number; n: number }[]>();
@@ -253,7 +253,7 @@ function escribirZona(w: BitWriter, entradas: DeckEntry[]): boolean {
     let previo = -1;
     for (const { numero, n } of grupo) {
       // El primero va entero. Los demas, el salto respecto del anterior; si no
-      // cabe —o si dos entradas repiten numero, que un mazo importado a mano
+      // cabe —o si dos entradas repiten numero, que una baraja importada a mano
       // puede traer— se escapa y va entero tambien.
       const salto = numero - previo - 1;
       if (previo < 0 || salto < 0 || salto >= SALTO_ESCAPE) {
@@ -276,12 +276,12 @@ function escribirZona(w: BitWriter, entradas: DeckEntry[]): boolean {
   return true;
 }
 
-/** El codigo binario, o `null` si este mazo no se puede escribir asi. */
+/** El codigo binario, o `null` si esta baraja no se puede escribir asi. */
 function encodeBinario(deck: Deck): string | null {
   const w = new BitWriter();
   w.write(WIRE_VERSION, ANCHO_VERSION);
 
-  const nombre = new TextEncoder().encode(deck.nombre.slice(0, MAX_NOMBRE_MAZO));
+  const nombre = new TextEncoder().encode(deck.nombre.slice(0, MAX_NOMBRE_BARAJA));
   if (nombre.length >= 1 << ANCHO_LARGO_NOMBRE) return null;
   w.write(nombre.length, ANCHO_LARGO_NOMBRE);
   for (const b of nombre) w.write(b, 8);
@@ -327,7 +327,7 @@ export type DecodeResult =
 const ILEGIBLE: DecodeResult = {
   ok: false,
   motivo: "ilegible",
-  mensaje: "No pude leer el mazo de ese enlace. Puede que esté cortado.",
+  mensaje: "No pude leer la baraja de ese enlace. Puede que esté cortado.",
 };
 
 const DE_OTRA_VERSION: DecodeResult = {
@@ -336,14 +336,14 @@ const DE_OTRA_VERSION: DecodeResult = {
   mensaje: "Ese enlace viene de otra versión de DeckForge y no lo puedo leer.",
 };
 
-/** Arma el mazo con id propio y fechas de ahora: para quien lo recibe, es suyo. */
+/** Arma la baraja con id propio y fechas de ahora: para quien la recibe, es suya. */
 function armar(
   nombre: string,
   oroInicial: string | null,
   principal: DeckEntry[],
   side: DeckEntry[],
 ): DecodeResult {
-  const base = createDeck(nombre || "Mazo compartido");
+  const base = createDeck(nombre || "Baraja compartida");
   const parsed = deckSchema.safeParse({ ...base, oroInicial, principal, side });
   return parsed.success ? { ok: true, deck: parsed.data } : ILEGIBLE;
 }
@@ -383,7 +383,7 @@ function leerZona(r: BitReader): DeckEntry[] {
       const n = copias < COPIAS_ESCAPE ? copias + 1 : r.read(ANCHO_COPIAS) + 1;
 
       // Una edicion que este codigo conoce y nosotros no: se descarta la
-      // entrada y el mazo se abre sin ella, en vez de no abrirse. El contador
+      // entrada y la baraja se abre sin ella, en vez de no abrirse. El contador
       // de cartas lo deja a la vista.
       const id = idDe(prefijo, numero);
       if (id) entradas.push({ id, n });
@@ -417,19 +417,19 @@ function decodeBinario(codigo: string): DecodeResult | null {
     const side = leerZona(r);
     return armar(new TextDecoder().decode(nombre), oroInicial, principal, side);
   } catch {
-    // Un codigo cortado por el chat que lo llevaba, o que nunca fue un mazo.
+    // Un codigo cortado por el chat que lo llevaba, o que nunca fue una baraja.
     return null;
   }
 }
 
 const entradasSchema = z.array(
-  // Mismo tope que el esquema del mazo: los Oros sin habilidad no tienen limite.
+  // Mismo tope que el esquema de la baraja: los Oros sin habilidad no tienen limite.
   z.tuple([z.string().regex(SLUG), z.number().int().min(1).max(50)]),
 );
 
 const wireLzSchema = z.tuple([
   z.literal(WIRE_VERSION_LZ),
-  // Igual que el esquema del mazo: se admite leer mas largo de lo que se
+  // Igual que el esquema de la baraja: se admite leer mas largo de lo que se
   // deja escribir, para no romper un enlace hecho cuando el tope era otro.
   z.string().max(200),
   z.string().regex(SLUG).nullable(),
@@ -454,7 +454,7 @@ function decodeLz(codigo: string): DecodeResult {
   }
 
   // La version se mira antes que el resto, para poder distinguir "viene de una
-  // version que no conozco" de "esto no es un mazo".
+  // version que no conozco" de "esto no es una baraja".
   if (Array.isArray(bruto) && bruto[0] !== WIRE_VERSION_LZ) return DE_OTRA_VERSION;
 
   const parsed = wireLzSchema.safeParse(bruto);
@@ -470,7 +470,7 @@ function decodeLz(codigo: string): DecodeResult {
 }
 
 /**
- * Reconstruye un mazo desde un codigo, del formato que sea. Nunca lanza.
+ * Reconstruye una baraja desde un codigo, del formato que sea. Nunca lanza.
  *
  * Solo valida la FORMA. Que las cartas existan se resuelve despues, en
  * `resolveDeck`, que reporta las desconocidas: asi un enlace viejo se sigue
@@ -478,13 +478,13 @@ function decodeLz(codigo: string): DecodeResult {
  */
 export function decodeDeck(codigo: string | null | undefined): DecodeResult {
   if (!codigo) {
-    return { ok: false, motivo: "vacio", mensaje: "Ese enlace no trae ningún mazo." };
+    return { ok: false, motivo: "vacio", mensaje: "Ese enlace no trae ninguna baraja." };
   }
   if (codigo.length > MAX_CODIGO) {
     return {
       ok: false,
       motivo: "largo",
-      mensaje: "Ese enlace es demasiado largo para ser un mazo.",
+      mensaje: "Ese enlace es demasiado largo para ser una baraja.",
     };
   }
 
@@ -496,7 +496,7 @@ export function decodeDeck(codigo: string | null | undefined): DecodeResult {
 
 /** El enlace completo para compartir, con la barra final que usa el sitio. */
 export function shareUrl(deck: Deck, origen: string): string {
-  return `${origen.replace(/\/$/, "")}/mazo/?d=${encodeDeck(deck)}`;
+  return `${origen.replace(/\/$/, "")}/baraja/?d=${encodeDeck(deck)}`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -505,6 +505,8 @@ export function shareUrl(deck: Deck, origen: string): string {
 
 const FILE_VERSION = 1;
 
+// `app` y `mazos` son formato en disco: los respaldos ya exportados por el
+// usuario los llevan escritos, asi que no siguen a la palabra de la interfaz.
 const archivoSchema = z.object({
   app: z.literal("deckforge"),
   v: z.literal(FILE_VERSION),
@@ -525,7 +527,7 @@ export function exportFile(decks: Deck[]): string {
 }
 
 export interface ImportResult {
-  mazos: Deck[];
+  barajas: Deck[];
   /** Cuantas entradas del archivo no se pudieron leer. */
   descartados: number;
 }
@@ -533,7 +535,7 @@ export interface ImportResult {
 /**
  * Lee un archivo de respaldo. Nunca lanza.
  *
- * Cada mazo se valida por separado y se le asigna un id nuevo, para que
+ * Cada baraja se valida por separado y se le asigna un id nuevo, para que
  * importar dos veces el mismo archivo no pise lo que ya habia.
  */
 export function importFile(texto: string): ImportResult | null {
@@ -547,7 +549,7 @@ export function importFile(texto: string): ImportResult | null {
   const sobre = archivoSchema.safeParse(bruto);
   if (!sobre.success) return null;
 
-  const mazos: Deck[] = [];
+  const barajas: Deck[] = [];
   let descartados = 0;
   for (const m of sobre.data.mazos) {
     const parsed = deckSchema.safeParse(m);
@@ -555,8 +557,8 @@ export function importFile(texto: string): ImportResult | null {
       descartados++;
       continue;
     }
-    mazos.push({ ...parsed.data, id: createDeck().id });
+    barajas.push({ ...parsed.data, id: createDeck().id });
   }
 
-  return { mazos, descartados };
+  return { barajas, descartados };
 }

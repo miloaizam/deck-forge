@@ -14,7 +14,7 @@ import {
  * Cuantas cartas por pagina.
  *
  * El catalogo llena siete columnas y el constructor seis, que ademas cede
- * ancho al panel del mazo: cada uno cierra sus filas con un numero distinto.
+ * ancho al panel de la baraja: cada uno cierra sus filas con un numero distinto.
  */
 export const PAGE_SIZE = 35;
 export const PAGE_SIZE_BUILDER = 30;

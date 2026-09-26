@@ -5,8 +5,8 @@
 <h1 align="center">DeckForge</h1>
 
 <p align="center">
-  <strong>Donde se forjan los mazos.</strong><br>
-  Constructor de mazos para el formato <strong>Escuelas Elementales</strong> de
+  <strong>Donde se forjan las barajas.</strong><br>
+  Constructor de barajas para el formato <strong>Escuelas Elementales</strong> de
   Mitos y Leyendas.
 </p>
 
@@ -32,14 +32,14 @@ edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
 
 **Un constructor que conoce las reglas.** Mientras armas, la página te va
 diciendo cómo vas: cuántas cartas llevas, cuántas copias te quedan de cada una,
-si la afinidad del mazo sigue en pie, qué oro inicial elegiste y cómo se ve la
-curva de coste. No descubres al final que el mazo era ilegal.
+si la afinidad de la baraja sigue en pie, qué oro inicial elegiste y cómo se ve la
+curva de coste. No descubres al final que la baraja era ilegal.
 
-**Tus mazos, guardados en tu navegador.** Los armas, los guardas, los duplicas y
+**Tus barajas, guardadas en tu navegador.** Las armas, las guardas, las duplicas y
 los editas cuando quieras. Y puedes bajarlos como archivo para llevártelos a
 otro computador o tenerlos de respaldo.
 
-**Un enlace para compartir.** El mazo entero viaja dentro de la dirección: se la
+**Un enlace para compartir.** La baraja entera viaja dentro de la dirección: se la
 mandas a alguien por WhatsApp o Discord y la abre al tiro, sin registrarse ni
 instalar nada.
 
@@ -50,7 +50,7 @@ navegador se descarga el catálogo y ahí mismo hace todo el trabajo. De eso sal
 tres cosas que valen la pena:
 
 - **No hay cuentas ni contraseñas.** No hay nada que registrar.
-- **Tus mazos son tuyos.** Viven en tu navegador, no en una base de datos
+- **Tus barajas son tuyos.** Viven en tu navegador, no en una base de datos
   nuestra. El único que los ve eres tú, salvo que compartas el enlace.
 - **Nadie te sigue.** Sin analytics, sin cookies de terceros, sin píxeles de
   seguimiento.

@@ -9,7 +9,7 @@ import { catalogSchema, FRECUENCIAS, type Card, type Frecuencia } from "./types"
 
 /**
  * El orden del catalogo lo comparten tres vistas —/catalogo, la grilla del
- * constructor y el contenido de un mazo—, asi que una carta tiene que caer en
+ * constructor y el contenido de una baraja—, asi que una carta tiene que caer en
  * el mismo sitio en las tres. Va contra el catalogo real, como los demas tests
  * del repo: lo que se comprueba es que los DATOS entren en el orden, no que un
  * comparador escrito a mano se compare consigo mismo.

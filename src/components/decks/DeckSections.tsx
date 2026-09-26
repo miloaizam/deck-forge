@@ -3,11 +3,11 @@ import { Coins, Star } from "lucide-react";
 
 import { CARD_RATIO } from "../CardTile";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
-import { SECCIONES_DEL_MAZO, type Tipo } from "@/lib/types";
+import { SECCIONES_DE_LA_BARAJA, type Tipo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /** Las pilas se reparten en el mismo orden en que se lee la lista. */
-const ORDEN_EN_MESA: Tipo[] = SECCIONES_DEL_MAZO.map((s) => s.tipo);
+const ORDEN_EN_MESA: Tipo[] = SECCIONES_DE_LA_BARAJA.map((s) => s.tipo);
 
 /** Alto de la carta en proporcion a su ancho (arte de 512 x 732). */
 const ALTO = 732 / 512;
@@ -70,9 +70,9 @@ function ordenarPilas(filas: ResolvedEntry[], oroInicial: string | null): PilaIt
 }
 
 /**
- * Elige esta carta como portada del mazo, o la quita si ya lo es.
+ * Elige esta carta como portada de la baraja, o la quita si ya lo es.
  *
- * Solo aparece en un mazo propio: uno compartido por enlace no se guarda en
+ * Solo aparece en una baraja propia: una compartida por enlace no se guarda en
  * este navegador y no habria donde escribir la eleccion. Fuera de la carta que
  * ya es portada, se muestra al apuntar o al enfocar con el teclado: cincuenta
  * estrellas encendidas a la vez serian ruido.
@@ -210,7 +210,7 @@ function Pila({
  * items-start hace que todas cuelguen de la misma linea y cada una crezca
  * hacia abajo segun sus copias.
  *
- * Diez por fila en escritorio, que es el ancho en que un mazo de 50 se lee de
+ * Diez por fila en escritorio, que es el ancho en que una baraja de 50 se lee de
  * una. Abajo bajan por tramos: a 10 columnas un telefono daria cartas de 30px.
  */
 function Mesa({
@@ -241,7 +241,7 @@ function Mesa({
 }
 
 /**
- * El contenido de un mazo, con el side al final.
+ * El contenido de una baraja, con el side al final.
  *
  * Se reparte como sobre una mesa: una sola grilla ordenada por tipo, con las
  * copias de cada carta superpuestas.
@@ -255,9 +255,9 @@ export function DeckSections({
 }: {
   res: ResolvedDeck;
   oroInicial: string | null;
-  /** Que carta hace de portada en /mazos. */
+  /** Que carta hace de portada en /barajas. */
   portada: string | null;
-  /** Si falta, el mazo no es de este navegador y la portada no se puede tocar. */
+  /** Si falta, la baraja no es de este navegador y la portada no se puede tocar. */
   onPortada?: (cardId: string | null) => void;
   /** Abre el detalle de una carta. */
   onVer: (cardId: string) => void;
@@ -271,8 +271,8 @@ export function DeckSections({
         onVer={onVer}
       />
 
-      {/* El side si se separa: no son 10 cartas del mazo, son las 10 que no
-          estan en el. Mezclarlas en la misma mesa mentiria sobre el mazo. */}
+      {/* El side si se separa: no son 10 cartas de la baraja, son las 10 que no
+          estan en el. Mezclarlas en la misma mesa mentiria sobre la baraja. */}
       {res.side.length > 0 && (
         <section>
           <Encabezado titulo="Side deck" total={res.side.reduce((s, f) => s + f.n, 0)} />

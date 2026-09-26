@@ -29,7 +29,7 @@ function mazoDePrueba(): Deck {
   return deck;
 }
 
-test("un mazo sobrevive el viaje de ida y vuelta", () => {
+test("una baraja sobrevive el viaje de ida y vuelta", () => {
   const original = mazoDePrueba();
   const resultado = decodeDeck(encodeDeck(original));
 
@@ -43,16 +43,16 @@ test("un mazo sobrevive el viaje de ida y vuelta", () => {
   assert.deepEqual(resultado.deck.side, original.side);
 });
 
-test("el mazo decodificado trae id propio y no el del que lo compartio", () => {
+test("la baraja decodificada trae id propio y no el de quien la compartio", () => {
   const original = mazoDePrueba();
   const resultado = decodeDeck(encodeDeck(original));
   assert.ok(resultado.ok);
   assert.notEqual(resultado.deck.id, original.id, "el id local no debe viajar");
 });
 
-test("un mazo lleno cabe comodo en una URL", () => {
+test("una baraja llena cabe comodo en una URL", () => {
   // 50 cartas distintas es el peor caso realista para el largo del codigo.
-  let deck = setStartingGold(createDeck("Mazo largo"), "bu-225");
+  let deck = setStartingGold(createDeck("Baraja larga"), "bu-225");
   for (let i = 1; i <= 49; i++) {
     deck = setQuantity(deck, `bu-${String(i).padStart(3, "0")}`, "principal", 1);
   }
@@ -61,7 +61,7 @@ test("un mazo lleno cabe comodo en una URL", () => {
     url.length < LARGO_INCOMODO,
     `la URL mide ${url.length} y deberia bajar de ${LARGO_INCOMODO}`,
   );
-  assert.match(url, /\/mazo\/\?d=/, "la ruta lleva barra final antes del parametro");
+  assert.match(url, /\/baraja\/\?d=/, "la ruta lleva barra final antes del parametro");
 });
 
 test("el codigo no lleva nada que la URL tenga que escapar", () => {
@@ -203,23 +203,23 @@ test("un codigo de otra version se distingue de uno ilegible", () => {
 });
 
 test("el archivo de respaldo va y vuelve", () => {
-  const mazos = [mazoDePrueba(), createDeck("Otro")];
-  const resultado = importFile(exportFile(mazos));
+  const barajas = [mazoDePrueba(), createDeck("Otro")];
+  const resultado = importFile(exportFile(barajas));
 
   assert.ok(resultado);
-  assert.equal(resultado.mazos.length, 2);
+  assert.equal(resultado.barajas.length, 2);
   assert.equal(resultado.descartados, 0);
-  assert.equal(resultado.mazos[0].nombre, "Dragones de prueba");
+  assert.equal(resultado.barajas[0].nombre, "Dragones de prueba");
 });
 
 test("importar asigna ids nuevos, para no pisar lo que ya habia", () => {
   const original = mazoDePrueba();
   const resultado = importFile(exportFile([original]));
   assert.ok(resultado);
-  assert.notEqual(resultado.mazos[0].id, original.id);
+  assert.notEqual(resultado.barajas[0].id, original.id);
 });
 
-test("importFile rescata los mazos buenos y cuenta los malos", () => {
+test("importFile rescata las barajas buenas y cuenta las malas", () => {
   const bueno = mazoDePrueba();
   const archivo = JSON.stringify({
     app: "deckforge",
@@ -229,7 +229,7 @@ test("importFile rescata los mazos buenos y cuenta los malos", () => {
 
   const resultado = importFile(archivo);
   assert.ok(resultado);
-  assert.equal(resultado.mazos.length, 1, "el bueno se rescata");
+  assert.equal(resultado.barajas.length, 1, "el bueno se rescata");
   assert.equal(resultado.descartados, 3, "los tres malos se cuentan");
 });
 

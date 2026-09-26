@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     template: "%s · DeckForge",
   },
   description:
-    "Constructor de mazos para el formato Escuelas Elementales de Mitos y Leyendas.",
+    "Constructor de barajas para el formato Escuelas Elementales de Mitos y Leyendas.",
   applicationName: "DeckForge",
   icons: { icon: "/brand/icon-violet.svg" },
   openGraph: {
     title: "DeckForge",
     description:
-      "Constructor de mazos para el formato Escuelas Elementales de Mitos y Leyendas.",
+      "Constructor de barajas para el formato Escuelas Elementales de Mitos y Leyendas.",
     siteName: "DeckForge",
     locale: "es_CL",
     type: "website",

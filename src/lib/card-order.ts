@@ -5,9 +5,9 @@ import { FRECUENCIAS, type Card } from "./types";
  * El orden en que se presenta el catalogo, en un solo lugar.
  *
  * Lo comparten las tres vistas que listan cartas —el catalogo, la grilla del
- * constructor y el contenido de un mazo—: si cada una ordenara a su manera, una
+ * constructor y el contenido de una baraja—: si cada una ordenara a su manera, una
  * carta cambiaria de sitio al pasar de una a otra y habria que volver a
- * buscarla. Solo depende de la carta, nunca de cuantas copias lleve el mazo:
+ * buscarla. Solo depende de la carta, nunca de cuantas copias lleve la baraja:
  * de eso depende que restar una copia no mueva su fila.
  */
 

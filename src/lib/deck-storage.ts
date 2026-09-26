@@ -1,7 +1,7 @@
 import { deckSchema, type Deck } from "./types";
 
 /**
- * Los mazos del usuario, guardados en su navegador.
+ * Las barajas del usuario, guardados en su navegador.
  *
  * No lleva `"use client"` a proposito: asi un Server Component puede importar
  * la clave sin que Next le entregue una referencia de cliente en vez del valor
@@ -11,8 +11,8 @@ import { deckSchema, type Deck } from "./types";
 
 export const DECKS_KEY = "deckforge-decks";
 
-/** Tope de mazos guardados. Es un limite de cordura, no del formato. */
-export const MAX_MAZOS = 50;
+/** Tope de barajas guardadas. Es un limite de cordura, no del formato. */
+export const MAX_BARAJAS = 50;
 
 /** Cota antes de parsear: localStorage puede traer cualquier cosa. */
 const MAX_CHARS = 512 * 1024;
@@ -20,10 +20,10 @@ const MAX_CHARS = 512 * 1024;
 const disponible = () => typeof window !== "undefined";
 
 /**
- * Convierte lo que haya en localStorage en mazos, descartando lo que no cuadre.
+ * Convierte lo que haya en localStorage en barajas, descartando lo que no cuadre.
  *
  * `localStorage` lo puede editar el usuario o cualquier extension, asi que se
- * valida con `safeParse` y **cada mazo por separado**: uno corrupto no puede
+ * valida con `safeParse` y **cada baraja por separado**: una corrupta no puede
  * llevarse por delante a los otros diecinueve. Cualquier fallo devuelve lo que
  * se haya podido rescatar, nunca una excepcion.
  */
@@ -37,7 +37,12 @@ export function parseDecks(raw: string | null): Deck[] {
     return [];
   }
 
-  // El sobre se parsea flojo para poder rescatar los mazos uno a uno.
+  // El sobre se parsea flojo para poder rescatar las barajas una a una.
+  //
+  // El campo se llama `mazos` y no `barajas` a proposito: es formato en disco,
+  // ya escrito en el localStorage de cada usuario. Renombrarlo dejaria la lista
+  // vacia a quien tenga barajas guardadas. La palabra de la interfaz es
+  // "baraja"; la del sobre se queda como nacio.
   const lista = Array.isArray(bruto)
     ? bruto
     : typeof bruto === "object" && bruto !== null && "mazos" in bruto
@@ -49,7 +54,7 @@ export function parseDecks(raw: string | null): Deck[] {
     .map((m) => deckSchema.safeParse(m))
     .filter((r) => r.success)
     .map((r) => r.data)
-    .slice(0, MAX_MAZOS);
+    .slice(0, MAX_BARAJAS);
 }
 
 export function readDecks(): Deck[] {
@@ -66,14 +71,14 @@ export function readDeck(id: string): Deck | null {
 }
 
 /* ------------------------------------------------------------------ *
- * Los mazos como sistema externo
+ * Las barajas como sistema externo
  *
  * localStorage no existe en tiempo de build, asi que la lista no se puede
  * calcular al renderizar. Se expone como un store para que React la lea con
  * `useSyncExternalStore`, que es el primitivo hecho para esto: nada de leerla
  * en un efecto y llamar a setState, que dispara renders en cascada.
  *
- * De paso se gana sincronizacion entre pestanas: si guardas un mazo en una, la
+ * De paso se gana sincronizacion entre pestanas: si guardas una baraja en una, la
  * lista de la otra se entera.
  * ------------------------------------------------------------------ */
 
@@ -122,13 +127,13 @@ export function getServerDecksSnapshot(): Deck[] {
 /**
  * Guarda la lista completa. Devuelve si pudo.
  *
- * Puede fallar por cuota llena, y que el mazo no persista es molesto pero que
+ * Puede fallar por cuota llena, y que la baraja no persista es molesto pero que
  * reviente la pagina es peor: quien llame decide como avisarlo.
  */
 export function saveDecks(decks: Deck[]): boolean {
   if (!disponible()) return false;
   try {
-    const sobre = { v: 1, mazos: decks.slice(0, MAX_MAZOS) };
+    const sobre = { v: 1, mazos: decks.slice(0, MAX_BARAJAS) };
     localStorage.setItem(DECKS_KEY, JSON.stringify(sobre));
     avisar();
     return true;
@@ -137,7 +142,7 @@ export function saveDecks(decks: Deck[]): boolean {
   }
 }
 
-/** Inserta o reemplaza un mazo, dejando el mas reciente primero. */
+/** Inserta o reemplaza una baraja, dejando el mas reciente primero. */
 export function saveDeck(deck: Deck): boolean {
   const resto = readDecks().filter((d) => d.id !== deck.id);
   return saveDecks([deck, ...resto]);

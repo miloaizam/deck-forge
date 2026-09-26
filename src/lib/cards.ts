@@ -13,7 +13,7 @@ import { catalogSchema, type Card } from "./types";
  * preferimos fallar en el build y no en la cara del usuario.
  *
  * Sale ya ordenado con `compareCards`, que es el orden que comparten el
- * catalogo, la grilla del constructor y el contenido de un mazo.
+ * catalogo, la grilla del constructor y el contenido de una baraja.
  */
 export async function getCards(): Promise<Card[]> {
   const file = path.join(process.cwd(), "public", "data", "cards.json");

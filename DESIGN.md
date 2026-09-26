@@ -10,11 +10,11 @@ Para lo técnico, ver [CLAUDE.md](CLAUDE.md).
 ## 1. Los tres principios
 
 **Intuitivo.** El usuario llega a hacer una cosa: encontrar cartas y armar un
-mazo. Esa acción está siempre a la vista.
+baraja. Esa acción está siempre a la vista.
 
 - La búsqueda y los filtros nunca se esconden detrás de un menú.
 - Cero navegación anidada: como máximo un nivel.
-- Estado siempre visible: cuántas cartas lleva el mazo, qué filtro está activo,
+- Estado siempre visible: cuántas cartas lleva la baraja, qué filtro está activo,
   cuántos resultados hay. Nada de que el usuario adivine.
 - Toda acción da respuesta inmediata (<100 ms percibidos). Si algo tarda, se
   muestra un esqueleto de carga, no un spinner sobre pantalla vacía.
@@ -60,7 +60,7 @@ componente.**
 |---|---|---|
 | `bg` | `#0D0B14` | fondo de página |
 | `surface` | `#15121F` | bloques y barras sobre el fondo |
-| `panel` | `#1B1730` | tarjetas, modales, panel de mazo |
+| `panel` | `#1B1730` | tarjetas, modales, panel de baraja |
 | `line` | `#2A2342` | bordes y separadores |
 
 Jerarquía de profundidad: `bg → surface → panel`. Tres niveles bastan; no
@@ -159,7 +159,7 @@ superficies, no de la sombra.
 - Contenedor de contenido: `max-w-[1040px]` (el de la guía de marca).
   La grilla del catálogo puede ir hasta `max-w-[1280px]`.
 - Espaciado en múltiplos de 4; los saltos entre secciones son grandes (48–64 px).
-- Mobile-first: la grilla arranca en 2 columnas y crece; el panel de mazo pasa
+- Mobile-first: la grilla arranca en 2 columnas y crece; el panel de baraja pasa
   a hoja inferior en pantallas chicas.
 - Breakpoints los de Tailwind por defecto. El punto crítico de la marca es
   **720 px** (donde las rejillas de dos columnas colapsan a una).
@@ -199,7 +199,7 @@ Archivos en `public/brand/`: `logo-white.svg`, `logo-violet.svg`,
 
 ## 7. Accesibilidad
 
-No es opcional. Un mazo mal etiquetado es un mazo que alguien no puede armar.
+No es opcional. Una baraja mal etiquetado es una baraja que alguien no puede armar.
 
 - **Contraste** AA mínimo: 4.5:1 en texto normal, 3:1 en texto grande y en
   bordes de controles. `muted` sobre `bg` cumple; no lo uses más apagado.
@@ -210,7 +210,7 @@ No es opcional. Un mazo mal etiquetado es un mazo que alguien no puede armar.
   reemplazo.
 - **Objetivos táctiles** ≥ 44×44 px. Los botones de +/− cantidad son el punto
   donde esto más se rompe: cuídalos. Ojo con una trampa: el área que se pulsa y
-  la caja que se **ve** no tienen por qué medir lo mismo. En las filas del mazo
+  la caja que se **ve** no tienen por qué medir lo mismo. En las filas de la baraja
   el `<button>` mide 44 y es transparente, y dentro lleva un círculo de 28 que
   solo se pinta al apuntarlo (`BOTON_FILA` y `CAJA_FILA` en
   `QuantityStepper.tsx`). Tres cajas con borde de 44 px por fila pesaban más que
@@ -233,7 +233,7 @@ No es opcional. Un mazo mal etiquetado es un mazo que alguien no puede armar.
 
 ## 8. Escribir en la interfaz
 
-- Español de Chile, tuteo, directo y breve. "Agregar al mazo", no
+- Español de Chile, tuteo, directo y breve. "Agregar a la baraja", no
   "Proceder a añadir la carta seleccionada".
 - Los términos del juego se respetan tal cual: *Aliado*, *Talismán*, *Tótem*,
   *Frecuencia*, *Mega Real*. No los traduzcas ni los simplifiques.
@@ -241,6 +241,6 @@ No es opcional. Un mazo mal etiquetado es un mazo que alguien no puede armar.
   `brand-300` dentro del texto de habilidad: son reglas, no prosa, y el jugador
   las busca con la vista. La lista vive en `KEYWORDS_IMPRESAS`
   (`src/lib/types.ts`) y excluye las etiquetas internas de la API.
-- Los errores dicen qué pasó y qué hacer: "Ese mazo ya tiene 3 copias de esta
+- Los errores dicen qué pasó y qué hacer: "Esa baraja ya tiene 3 copias de esta
   carta (el máximo)".
 - Sin signos de exclamación ni emojis en la UI.

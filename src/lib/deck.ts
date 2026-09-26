@@ -1,17 +1,17 @@
 import {
   DECK_VERSION,
-  MAX_DESCRIPCION_MAZO,
-  MAX_NOMBRE_MAZO,
+  MAX_DESCRIPCION_BARAJA,
+  MAX_NOMBRE_BARAJA,
   type Deck,
   type DeckEntry,
 } from "./types";
 
 /**
- * Construccion y mutacion de mazos.
+ * Construccion y mutacion de barajas.
  *
- * Todo es puro: cada funcion devuelve un mazo nuevo, nunca toca el que recibe.
+ * Todo es puro: cada funcion devuelve una baraja nueva, nunca toca la que recibe.
  * Las reglas del formato NO viven aqui — estan en `deck-rules.ts`. Este modulo
- * deja representar mazos ilegales a proposito: un mazo a medio armar lo es casi
+ * deja representar barajas ilegales a proposito: una baraja a medio armar lo es casi
  * siempre, y uno importado con cuatro copias tiene que poder entrar para que el
  * validador lo pueda reportar.
  */
@@ -19,7 +19,7 @@ import {
 export type DeckZone = "principal" | "side";
 
 /**
- * Id local de un mazo: 10 caracteres de [a-z0-9].
+ * Id local de una baraja: 10 caracteres de [a-z0-9].
  *
  * No se usa `crypto.randomUUID()` porque sus 36 caracteres con guiones ensucian
  * la URL sin aportar nada: esto no identifica a nadie ni sale del navegador.
@@ -36,7 +36,7 @@ export function createDeck(nombre = ""): Deck {
   return {
     v: DECK_VERSION,
     id: newDeckId(),
-    nombre: nombre.slice(0, MAX_NOMBRE_MAZO),
+    nombre: nombre.slice(0, MAX_NOMBRE_BARAJA),
     descripcion: "",
     oroInicial: null,
     portada: null,
@@ -48,7 +48,7 @@ export function createDeck(nombre = ""): Deck {
   };
 }
 
-/** Marca el mazo como tocado. Todas las mutaciones pasan por aqui. */
+/** Marca la baraja como tocado. Todas las mutaciones pasan por aqui. */
 function touch(deck: Deck, cambios: Partial<Deck>): Deck {
   return { ...deck, ...cambios, actualizado: Date.now() };
 }
@@ -81,7 +81,7 @@ export function setQuantity(deck: Deck, cardId: string, zone: DeckZone, n: numbe
   const oroInicial =
     deck.oroInicial === cardId && !sigueEnPrincipal ? null : deck.oroInicial;
 
-  // La portada puede ser cualquier carta del mazo, side incluido, asi que se
+  // La portada puede ser cualquier carta de la baraja, side incluido, asi que se
   // limpia solo cuando no queda ninguna copia en ninguna de las dos zonas.
   const otraZona: DeckZone = zone === "principal" ? "side" : "principal";
   const sigueEnElMazo = n > 0 || deck[otraZona].some((e) => e.id === cardId);
@@ -91,10 +91,10 @@ export function setQuantity(deck: Deck, cardId: string, zone: DeckZone, n: numbe
 }
 
 /**
- * Elige que carta hace de portada del mazo en /mazos. `null` la quita.
+ * Elige que carta hace de portada de la baraja en /barajas. `null` la quita.
  *
- * No agrega la carta al mazo si no esta —al reves que el oro inicial—: la
- * portada se elige desde el detalle, entre las que el mazo ya lleva.
+ * No agrega la carta a la baraja si no esta —al reves que el oro inicial—: la
+ * portada se elige desde el detalle, entre las que la baraja ya lleva.
  */
 export function setCover(deck: Deck, cardId: string | null): Deck {
   return touch(deck, { portada: cardId });
@@ -112,7 +112,7 @@ export function removeCard(deck: Deck, cardId: string, zone: DeckZone): Deck {
  * Elige que carta hace de oro inicial.
  *
  * Es un puntero a una carta que tambien tiene que estar en `principal`: el oro
- * inicial cuenta dentro de las 50. Si la carta no esta en el mazo, se agrega
+ * inicial cuenta dentro de las 50. Si la carta no esta en la baraja, se agrega
  * una copia, que es lo que el usuario espera al elegirla.
  */
 export function setStartingGold(deck: Deck, cardId: string | null): Deck {
@@ -134,17 +134,17 @@ export function setStartingGold(deck: Deck, cardId: string | null): Deck {
  * nombre sea obligatorio se resuelve al guardar, no al teclear.
  */
 export function renameDeck(deck: Deck, nombre: string): Deck {
-  return touch(deck, { nombre: nombre.slice(0, MAX_NOMBRE_MAZO) });
+  return touch(deck, { nombre: nombre.slice(0, MAX_NOMBRE_BARAJA) });
 }
 
 /** Cambia la descripcion. Es opcional: vacia es un valor legitimo. */
 export function describeDeck(deck: Deck, descripcion: string): Deck {
-  return touch(deck, { descripcion: descripcion.slice(0, MAX_DESCRIPCION_MAZO) });
+  return touch(deck, { descripcion: descripcion.slice(0, MAX_DESCRIPCION_BARAJA) });
 }
 
-/** Como se muestra un mazo que todavia no tiene nombre. */
+/** Como se muestra una baraja que todavia no tiene nombre. */
 export function deckTitle(deck: Deck): string {
-  return deck.nombre.trim() || "Mazo sin nombre";
+  return deck.nombre.trim() || "Baraja sin nombre";
 }
 
 export function duplicateDeck(deck: Deck, nombre?: string): Deck {
@@ -152,7 +152,7 @@ export function duplicateDeck(deck: Deck, nombre?: string): Deck {
   return {
     ...deck,
     id: newDeckId(),
-    nombre: (nombre ?? `${deck.nombre} (copia)`).slice(0, MAX_NOMBRE_MAZO),
+    nombre: (nombre ?? `${deck.nombre} (copia)`).slice(0, MAX_NOMBRE_BARAJA),
     creado: ahora,
     actualizado: ahora,
   };

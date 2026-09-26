@@ -47,7 +47,12 @@ import {
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
 import { saveDeck } from "@/lib/deck-storage";
-import { MAX_DESCRIPCION_MAZO, MAX_NOMBRE_MAZO, type Card, type Deck } from "@/lib/types";
+import {
+  MAX_DESCRIPCION_BARAJA,
+  MAX_NOMBRE_BARAJA,
+  type Card,
+  type Deck,
+} from "@/lib/types";
 import { DECK_NAME_FIELD, DECK_NOTE_FIELD } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -73,16 +78,16 @@ function GuardarButton({
       ) : (
         <Save size={14} aria-hidden="true" />
       )}
-      {guardado ? "Guardado" : "Guardar mazo"}
+      {guardado ? "Guardado" : "Guardar baraja"}
     </button>
   );
 }
 
 /**
- * A donde van las cartas que se agregan: al mazo o al side.
+ * A donde van las cartas que se agregan: a la baraja o al side.
  *
  * El side deck es opcional y admite de 0 a SIDE_TOTAL cartas, pero no
- * es un mazo aparte: comparte el tope de copias y las Unicas con el principal.
+ * es una baraja aparte: comparte el tope de copias y las Unicas con el principal.
  * Por eso esto elige un destino y no abre una vista distinta.
  */
 function ZonaSwitch({
@@ -97,7 +102,7 @@ function ZonaSwitch({
   enElSide: number;
 }) {
   const opciones: { z: DeckZone; texto: string; cuenta: string }[] = [
-    { z: "principal", texto: "Mazo", cuenta: `${enPrincipal}/${DECK_TOTAL}` },
+    { z: "principal", texto: "Baraja", cuenta: `${enPrincipal}/${DECK_TOTAL}` },
     { z: "side", texto: "Side deck", cuenta: `${enElSide}/${SIDE_TOTAL}` },
   ];
 
@@ -137,7 +142,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
   /**
    * A que zona van las cartas que se agregan desde el catalogo.
    *
-   * El side es una EXTENSION del mazo, no un mazo aparte: comparte el tope de
+   * El side es una EXTENSION de la baraja, no una baraja aparte: comparte el tope de
    * copias, las Unicas y la afinidad de raza, de eso se encarga `canAdd`. Aqui
    * solo se elige el destino.
    */
@@ -163,16 +168,16 @@ export function BuilderView({ cards }: BuilderViewProps) {
   }, [deck]);
 
   /**
-   * Solo las cartas que pueden entrar en ESTE mazo.
+   * Solo las cartas que pueden entrar en ESTE baraja.
    *
-   * En cuanto el mazo tiene un Aliado su afinidad empieza a cerrarse: o sigue
+   * En cuanto la baraja tiene un Aliado su afinidad empieza a cerrarse: o sigue
    * mono-raza, o crece hacia su escuela, o se sostiene por el atributo.
    * Ofrecer cartas que el validador va a rechazar solo hace perder el tiempo.
    * La afinidad la llevan los Aliados y nadie mas, asi que Talismanes, Armas,
-   * Totems y Oros entran en cualquier mazo y nunca se filtran.
+   * Totems y Oros entran en cualquier baraja y nunca se filtran.
    *
-   * Vale para las dos zonas: el side entra al mazo entre partidas, asi que no
-   * puede traer un Aliado que el mazo no admite.
+   * Vale para las dos zonas: el side entra a la baraja entre partidas, asi que no
+   * puede traer un Aliado que la baraja no admite.
    */
   const acotado = !stats.afinidad.vacio && stats.afinidad.vias.length > 0;
   const disponibles = useMemo(
@@ -192,7 +197,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const currentPage = Math.min(page, totalPages);
   const visible = paginate(results, currentPage, PAGE_SIZE_BUILDER);
 
-  // El aviso se borra solo: es un mensaje de paso, no un estado del mazo.
+  // El aviso se borra solo: es un mensaje de paso, no un estado de la baraja.
   const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mostrarAviso = useCallback((mensaje: string) => {
     setAviso(mensaje);
@@ -207,11 +212,11 @@ export function BuilderView({ cards }: BuilderViewProps) {
   );
 
   // Guardar termina el trabajo del constructor, asi que lleva a la ficha del
-  // mazo: es donde se ve entero, se comparte y se borra. El mazo ya esta en
-  // localStorage cuando navegamos, y /mazo lo lee de ahi por su id.
+  // baraja: es donde se ve entero, se comparte y se borra. La baraja ya esta en
+  // localStorage cuando navegamos, y /baraja lo lee de ahi por su id.
   const guardar = () => {
     if (deck.nombre.trim() === "") {
-      mostrarAviso("Ponle un nombre al mazo antes de guardarlo.");
+      mostrarAviso("Ponle un nombre a la baraja antes de guardarla.");
       return;
     }
     if (!saveDeck(deck)) {
@@ -219,7 +224,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
       return;
     }
     setGuardado(true);
-    router.push(`/mazo/?m=${deck.id}`);
+    router.push(`/baraja/?m=${deck.id}`);
   };
 
   const agregar = (card: Card, zone: DeckZone = zona) => {
@@ -289,10 +294,10 @@ export function BuilderView({ cards }: BuilderViewProps) {
               cartas. */}
           {acotado && (
             <p className="text-muted -mt-2 text-[13px]">
-              Mostrando solo cartas que caben en este mazo: Aliados{" "}
+              Mostrando solo cartas que caben en esta baraja: Aliados{" "}
               <span className="text-ink">{affinityAdmits(stats.afinidad)}</span>, más
               Talismanes, Armas, Tótems y Oros. Para cambiar de afinidad, quita los
-              Aliados del mazo.
+              Aliados de la baraja.
             </p>
           )}
 
@@ -341,21 +346,27 @@ export function BuilderView({ cards }: BuilderViewProps) {
             —y las flechas que dibujan Windows y macOS en sus extremos— cae
             dentro del panel y no montada sobre su esquina redondeada. */}
         <aside className="border-line bg-panel rounded-panel sticky top-20 hidden max-h-[calc(100dvh-6rem)] flex-col overflow-hidden border p-2 lg:flex">
+          {/* El titulo va FUERA del div que scrollea, para que no se vaya al
+              recorrer el panel: es el mismo papel que cumple la cabecera
+              pegajosa de la hoja bajo lg, y dice lo mismo. */}
+          <h2 className="text-ink border-line mx-2 mt-1 mb-1 border-b pb-2.5 text-[15px] font-medium">
+            La baraja
+          </h2>
           <div className="scrollbar-slim flex min-h-0 flex-col gap-4 overflow-y-auto p-2">
             <input
               value={deck.nombre}
               onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}
-              placeholder="Nombre del mazo"
-              maxLength={MAX_NOMBRE_MAZO}
-              aria-label="Nombre del mazo"
+              placeholder="Nombre de la baraja"
+              maxLength={MAX_NOMBRE_BARAJA}
+              aria-label="Nombre de la baraja"
               className={cn(DECK_NAME_FIELD, "bg-surface")}
             />
             <textarea
               value={deck.descripcion}
               onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}
               placeholder="Descripción (opcional)"
-              aria-label="Descripción del mazo"
-              maxLength={MAX_DESCRIPCION_MAZO}
+              aria-label="Descripción de la baraja"
+              maxLength={MAX_DESCRIPCION_BARAJA}
               rows={2}
               className={cn(DECK_NOTE_FIELD, "bg-surface")}
             />
@@ -390,17 +401,17 @@ export function BuilderView({ cards }: BuilderViewProps) {
         <input
           value={deck.nombre}
           onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}
-          placeholder="Nombre del mazo"
-          maxLength={MAX_NOMBRE_MAZO}
-          aria-label="Nombre del mazo"
+          placeholder="Nombre de la baraja"
+          maxLength={MAX_NOMBRE_BARAJA}
+          aria-label="Nombre de la baraja"
           className={DECK_NAME_FIELD}
         />
         <textarea
           value={deck.descripcion}
           onChange={(e) => setDeck((d) => describeDeck(d, e.target.value))}
           placeholder="Descripción (opcional)"
-          aria-label="Descripción del mazo"
-          maxLength={MAX_DESCRIPCION_MAZO}
+          aria-label="Descripción de la baraja"
+          maxLength={MAX_DESCRIPCION_BARAJA}
           rows={2}
           className={cn(DECK_NOTE_FIELD, "mt-2 mb-4")}
         />
