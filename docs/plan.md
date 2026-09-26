@@ -3,6 +3,22 @@
 Deckbuilder web para el formato **Escuelas Elementales** de Mitos y Leyendas.
 Objetivo: lanzar **gratis, sin servidor y sin base de datos**, con margen para crecer.
 
+> **Documento histórico.** Es el plan con que arrancó el proyecto y se conserva
+> por las razones de cada decisión, que siguen valiendo. Lo que cambió al
+> construirlo:
+>
+> | El plan decía | Lo que hay |
+> |---|---|
+> | Vite + React, build a `dist/` | **Next.js 16** (App Router) con `output: "export"`, build a `out/` |
+> | `tailwind.config.js` | Tailwind v4 **CSS-first**, en `src/app/globals.css` |
+> | npm | **pnpm** (`packageManager` en `package.json`) |
+> | Cloudflare Pages | **Cloudflare Workers con Static Assets** (`wrangler.jsonc`) |
+> | lz-string en la URL, `?d=` | Código **binario** propio (`deck-code.ts`) en el **fragmento**, `#d=`; lz-string solo lee los enlaces viejos |
+> | Filtros de atributo y legalidad | El atributo se filtra desde *habilidad*; la legalidad espera a la banlist |
+>
+> Cómo se trabaja hoy: [DEVELOPMENT.md](../DEVELOPMENT.md) y [CLAUDE.md](../CLAUDE.md).
+> Lo que falta: [TODO.md](../TODO.md). Lo que está mal: [ISSUES.md](../ISSUES.md).
+
 ---
 
 ## 0. Respuestas rápidas a tus preguntas
@@ -380,6 +396,10 @@ python scripts/build_cards.py
 
 ## 10. Puesta en marcha del proyecto (paso a paso)
 
+> **Obsoleto.** Estos pasos crean un proyecto Vite con npm, que no es lo que se
+> construyó. Para levantar el proyecto de hoy, ver
+> [DEVELOPMENT.md](../DEVELOPMENT.md).
+
 Todo esto se hace **una vez**, en tu computador. Copia y pega los comandos.
 
 ```bash
@@ -420,6 +440,12 @@ git push -u origin main
 
 ## 11. Publicar en Cloudflare Pages (paso a paso, sin experiencia previa)
 
+> **Obsoleto.** El sitio se publica en Cloudflare **Workers** con Static
+> Assets: la configuración está en `wrangler.jsonc` (sirve `out/`, con
+> `out/404.html` para las rutas que no existen). El build que se publica tiene
+> que ser `pnpm run build`, no `next build` a secas: es el que escribe los
+> hashes de la CSP en `out/_headers`.
+
 1. Entra a **cloudflare.com** y crea una cuenta gratis (o inicia sesión).
 2. En el panel, ve a **Workers & Pages** → **Create** → pestaña **Pages** → **Connect to Git**.
 3. Autoriza a Cloudflare a acceder a tu **GitHub** y selecciona el repo **deckforge**.
@@ -438,40 +464,30 @@ Si algo falla en el build, casi siempre es (a) el *output directory* mal puesto 
 
 ## 12. Roadmap por fases
 
-**Fase 0 — Esqueleto (1 edición piloto)**
-- Proyecto Vite corriendo, Tailwind con tu marca, logo integrado.
-- Cargar `cards.json` con solo la edición Escuelas Elementales.
+El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
+
+**Fase 0 — Esqueleto (1 edición piloto)** — hecha.
+- Proyecto corriendo (Next.js, no Vite), Tailwind con la marca, logo integrado.
 - Grilla de cartas con miniaturas + modal de detalle.
-- Publicado en Cloudflare Pages.
+- Publicado en Cloudflare (Workers, no Pages).
 
-**Fase 1 — Catálogo completo del formato**
-- Todas las ediciones (Bushido → Legado Gótico + Escuelas Elementales) cargadas.
-- Filtros: edición, tipo, raza, escuela, atributo, coste, frecuencia, legalidad.
-- Buscador por nombre/habilidad (MiniSearch).
+**Fase 1 — Catálogo completo del formato** — hecha.
+- Las diez ediciones cargadas y revisadas contra el arte (2159 cartas).
+- Filtros: edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
+  El atributo se filtra desde habilidad; la **legalidad** espera a la banlist.
+- Buscador por nombre y habilidad (MiniSearch).
 
-**Fase 2 — Constructor de barajas**
-- Panel de baraja con conteos (Aliados/Armas/Talismanes/Tótems/Oros), tope de 50.
-- Reglas del formato (máximos por carta, banlist).
-- Curva de coste + resumen por escuela.
+**Fase 2 — Constructor de barajas** — hecha, salvo dos puntos.
+- Panel de baraja con conteos por tipo, tope de 50 y side de hasta 10.
+- Reglas del formato: copias por carta, Únicas, oro inicial, mínimo de Aliados
+  o Tótems y afinidad por raza, escuela o atributo.
 - Guardado en `localStorage` + exportar/importar.
+- **Pendiente:** la banlist y la curva de coste (las dos en TODO.md).
 
-**Fase 3 — Compartir**
-- Codificar la baraja en la URL (lz-string) y reconstruirlo al abrir el link.
-- Imagen/exportación de la baraja para redes.
+**Fase 3 — Compartir** — a medias.
+- Hecho: la baraja viaja en el enlace, en binario y en el fragmento (`#d=`).
+- **Pendiente:** imagen de la baraja para redes (TODO.md).
 
-**Fase futura (opcional) — Cuentas**
-- Login + barajas en la nube con Supabase (tier gratis). Solo si lo quieres; el resto no cambia.
-
----
-
-## 13. Cómo seguimos
-
-Lo más eficiente es ir por la **Fase 0** ya mismo. Puedo ayudarte con lo que quieras primero:
-
-- **Generar el scaffold real** del proyecto (React + Tailwind con tu paleta, componentes base de grilla/modal) listo para copiar.
-- Escribir el **`tailwind.config.js`** con tus tokens de marca.
-- Crear los **componentes** `CardGrid`, `CardTile`, `Filters`, `DeckPanel`.
-- La lógica de **codificar/decodificar la baraja en la URL**.
-- Un **`data-src/escuelas-elementales.json`** de ejemplo con varias cartas reales para que pruebes toda la cadena (imágenes → build → app).
-
-Dime por cuál partimos y lo armamos.
+**Fase futura — Cuentas**
+- En TODO.md, con la advertencia de que cambia premisas del proyecto (sin
+  backend, sin datos personales) que hay que reescribir antes de empezar.

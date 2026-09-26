@@ -42,15 +42,3 @@ Ordenadas de más a menos importante.
 - **Arreglo:** conseguir el arte a tamaño completo, borrar
   `public/cards/do-00X.webp` y su `thumb/`, y volver a correr
   `pnpm run data:images`.
-
-## Documentación desactualizada
-
-- `CLAUDE.md`, tabla del stack: dice que `minisearch` está "instalado, aún sin
-  usar", pero el buscador ya lo usa (`src/lib/catalog.ts`).
-- `CLAUDE.md`, §9: la línea de rutas marca `/constructor` y `/barajas` como
-  placeholder; ya son el constructor y la lista de barajas.
-- `CLAUDE.md`, §6.1: dice que las cabeceras las aplica "Cloudflare Pages"; el
-  hosting es Cloudflare Workers con Static Assets.
-- `docs/plan.md` sigue hablando de Vite, `tailwind.config.js` y Cloudflare
-  Pages, y su roadmap no refleja lo ya hecho.
-- **Arreglado cuando:** los cuatro puntos dicen lo que hace el código hoy.

@@ -135,6 +135,20 @@ terminada.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
 
+## Curva de coste en el constructor
+
+Del roadmap original, Fase 2 (`docs/plan.md`): nunca se hizo, aunque el README
+la prometía (ya no).
+
+- **Qué:** cuántas cartas del principal hay de cada coste, a la vista mientras
+  se arma la baraja.
+- **Por dónde:** `deckStats` en `src/lib/deck-rules.ts` ya recorre el
+  principal para contar por tipo; la curva es otro contador ahí, con su test.
+  Solo el principal, como los contadores por tipo: el side no se juega de
+  salida. Los Oros no tienen coste (`coste: null`) y van aparte.
+- **Terminado cuando:** el panel del constructor muestra la curva y se
+  actualiza al agregar o quitar cartas.
+
 ## Exportar la baraja como imagen
 
 Del roadmap, Fase 3 (`docs/plan.md`).

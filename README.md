@@ -32,12 +32,12 @@ edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
 
 **Un constructor que conoce las reglas.** Mientras armas, la página te va
 diciendo cómo vas: cuántas cartas llevas, cuántas copias te quedan de cada una,
-si la afinidad de la baraja sigue en pie, qué oro inicial elegiste y cómo se ve la
-curva de coste. No descubres al final que la baraja era ilegal.
+si la afinidad de la baraja sigue en pie y qué oro inicial elegiste. No
+descubres al final que la baraja era ilegal.
 
 **Tus barajas, guardadas en tu navegador.** Las armas, las guardas, las duplicas y
-los editas cuando quieras. Y puedes bajarlos como archivo para llevártelos a
-otro computador o tenerlos de respaldo.
+las editas cuando quieras. Y puedes bajarlas como archivo para llevártelas a
+otro computador o tenerlas de respaldo.
 
 **Un enlace para compartir.** La baraja entera viaja dentro de la dirección: se la
 mandas a alguien por WhatsApp o Discord y la abre al tiro, sin registrarse ni

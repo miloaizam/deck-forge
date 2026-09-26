@@ -38,7 +38,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Estilos | Tailwind CSS v4 (config CSS-first en `globals.css`, **no** hay `tailwind.config.js`) |
 | Tipografía | Space Grotesk vía `next/font/google` (auto-hospedada en build) |
 | Iconos | `lucide-react` |
-| Búsqueda | `minisearch` *(instalado, aún sin usar)* |
+| Búsqueda | `minisearch` (buscador del catálogo, en `src/lib/catalog.ts`) |
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
@@ -790,7 +790,8 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 1. **Cabeceras HTTP** en [`public/_headers`](public/_headers): CSP,
    `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
    `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`.
-   Cloudflare Pages las aplica tal cual.
+   Cloudflare (Workers con Static Assets) las aplica; la CSP la completa el
+   build con los hashes de cada página (ver "La CSP por hashes").
 
 2. **CSP**: `default-src 'self'`, `object-src 'none'`, `base-uri 'none'`,
    `form-action 'none'`, `frame-ancestors 'none'`, imágenes y fuentes solo del
@@ -957,13 +958,17 @@ a fuentes oficiales cuando corresponde.
 
 ## 9. Estado actual
 
-**Fase 0 lista + buena parte de Fase 1.** Funcionando: portada, cadena de
-datos completa (API → `data-src` → WebP → `cards.json`), catálogo con grilla,
-modal de detalle con keywords resaltadas, buscador (MiniSearch), filtros por
-faceta con selector propio y paginación.
+**Fases 0, 1 y 2 listas; de la 3, el enlace para compartir.** Funcionando:
+portada, cadena de datos completa (API → `data-src` → WebP → `cards.json`),
+catálogo con grilla, modal de detalle con keywords resaltadas, buscador
+(MiniSearch), filtros por faceta con selector propio y paginación; constructor
+con las reglas del formato, lista y detalle de barajas, exportar e importar, y
+enlace para compartir. Lo que falta está en [TODO.md](TODO.md) y lo que está
+mal, en [ISSUES.md](ISSUES.md).
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
-`/constructor` (placeholder) · `/barajas` (placeholder) · `/erratas` (placeholder).
+`/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
+`/erratas` (placeholder).
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1256,8 +1261,7 @@ por tipo (`ORDEN_EN_MESA`) y dentro de cada tipo usa ese mismo `orden`.
 que quiera entre 0 y 10 —no hay mínimo ni tamaño exacto—, pero comparte con el
 principal el máximo de copias, las Únicas y la afinidad. Por eso
 `deckStats` deduce la afinidad sobre las 60 cartas, mientras que los contadores
-por tipo y la curva siguen siendo del principal, que es lo que se juega de
-salida.
+por tipo siguen siendo del principal, que es lo que se juega de salida.
 
 **Una baraja se arma de una de tres formas, y son alternativas**: por raza, por
 escuela elemental (sus dos razas exactas) o **por atributo** —todos sus Aliados
