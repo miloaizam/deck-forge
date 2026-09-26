@@ -222,6 +222,20 @@ terminada.
 - **Terminado cuando:** un usuario nuevo puede resolver las dudas básicas
   (guardar, compartir, armar) sin salir del sitio.
 
+## Avisar que los enlaces viejos de `/mazo/` ya no abren
+
+- **Qué pasa:** los enlaces que se compartieron antes de cambiar "mazo" por
+  "baraja" apuntan a `/mazo/?d=…` y hoy dan 404. Por decisión del proyecto
+  **no se redirigen**: se le explica al usuario cómo sacar uno nuevo.
+- **Qué decirle** (en la sección de preguntas frecuentes o en novedades):
+  - Si la baraja está guardada en su navegador: abrirla en **Mis barajas** y
+    volver a copiar el enlace. El nuevo ya es `/baraja/#d=…`.
+  - Si solo tiene el enlace viejo: cambiar `/mazo/` por `/baraja/` en la
+    dirección. El código sigue siendo válido (el formato no cambió), la
+    baraja se abre y desde ahí se puede guardar o volver a compartir.
+- **Terminado cuando:** esa explicación está en el sitio, donde el usuario
+  la encuentre.
+
 ## Botón para volver arriba
 
 - **Qué:** un botón pequeño abajo a la derecha que sube de una vez al
