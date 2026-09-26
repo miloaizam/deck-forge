@@ -349,7 +349,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
           {/* El titulo va FUERA del div que scrollea, para que no se vaya al
               recorrer el panel: es el mismo papel que cumple la cabecera
               pegajosa de la hoja bajo lg, y dice lo mismo. */}
-          <h2 className="text-ink border-line mx-2 mt-1 mb-1 border-b pb-2.5 text-[15px] font-medium">
+          <h2 className="text-ink border-line mx-2 mt-1 mb-1 border-b pb-3 text-xl font-semibold tracking-[-0.01em]">
             La baraja
           </h2>
           <div className="scrollbar-slim flex min-h-0 flex-col gap-4 overflow-y-auto p-2">

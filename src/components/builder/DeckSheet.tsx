@@ -88,7 +88,9 @@ export function DeckSheet({
       >
         <div className="relative">
           <div className="border-line bg-surface sticky top-0 z-10 flex items-center justify-between border-b px-4 py-3">
-            <h2 className="text-ink text-[15px] font-medium">La baraja</h2>
+            <h2 className="text-ink text-xl font-semibold tracking-[-0.01em]">
+              La baraja
+            </h2>
             <button
               type="button"
               onClick={() => ref.current?.close()}

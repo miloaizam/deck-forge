@@ -288,7 +288,7 @@ export function DeckPanel({
 
       {res.principal.length === 0 && res.side.length === 0 ? (
         <p className="text-muted border-line rounded-card border border-dashed px-4 py-10 text-center text-[13px] leading-relaxed">
-          La baraja está vacío. Agrega cartas desde el catálogo con el botón
+          La baraja está vacía. Agrega cartas desde el catálogo con el botón
           <span className="text-accent"> + </span>
           de cada una.
         </p>

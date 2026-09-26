@@ -33,18 +33,20 @@ export const TEXT_FIELD =
  * aplasta los items que pueden encogerse. El campo pasaba de 48px a 20 en
  * cuanto se empezaba a armar la baraja, que es justo cuando se usa.
  */
-export const DECK_NAME_FIELD = cn(TEXT_FIELD, "h-12 shrink-0 rounded-md");
+export const DECK_NAME_FIELD = cn(TEXT_FIELD, "h-12 shrink-0 rounded-md text-[15px]");
 
 /**
- * La descripcion de la baraja: la misma caja del nombre, pero de dos lineas y con
- * la tipografia de un pie, que es una nota y no un titulo.
+ * La descripcion de la baraja: la misma caja del nombre, de dos lineas y con
+ * la MISMA letra. Iba a 13px, de pie de foto, y justo debajo del nombre a 14
+ * se leia como un descuido: dos placeholders de tamano distinto uno sobre
+ * otro. Sale de DECK_NAME_FIELD para que no vuelvan a separarse.
  *
  * `resize-none` porque el alto lo fija `rows`: un textarea estirable dentro de
  * un panel que ya scrollea confunde mas que ayuda.
  */
 export const DECK_NOTE_FIELD = cn(
-  TEXT_FIELD,
-  "h-auto shrink-0 resize-none rounded-md py-2 text-[13px] leading-snug",
+  DECK_NAME_FIELD,
+  "h-auto shrink-0 resize-none rounded-md py-2.5 leading-snug",
 );
 
 /**
