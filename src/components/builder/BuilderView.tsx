@@ -52,7 +52,13 @@ import {
   DECK_TOTAL,
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
-import { nombreOcupado, readDeck, readDecks, saveDeck } from "@/lib/deck-storage";
+import {
+  mensajeNoGuardada,
+  nombreOcupado,
+  readDeck,
+  readDecks,
+  saveDeck,
+} from "@/lib/deck-storage";
 import {
   MAX_DESCRIPCION_BARAJA,
   MAX_NOMBRE_BARAJA,
@@ -232,8 +238,9 @@ export function BuilderView({ cards }: BuilderViewProps) {
     }
     // Se mira antes de escribir: despues ya estaria guardada siempre.
     const yaExistia = readDeck(deck.id) !== null;
-    if (!saveDeck(deck)) {
-      avisarError("No se pudo guardar: el almacenamiento del navegador está lleno.");
+    const r = saveDeck(deck);
+    if (r !== "ok") {
+      avisarError(mensajeNoGuardada(r));
       return;
     }
     setGuardado(true);

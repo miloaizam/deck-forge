@@ -101,7 +101,9 @@ function BotonPortada({
         "focus-visible:outline-brand-500 rounded-chip inline-flex size-7 shrink-0 items-center justify-center transition",
         activa
           ? "text-accent"
-          : "text-muted hover:text-ink opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+          : // Oculta hasta pasar el cursor, salvo en pantallas tactiles: sin cursor
+            // nadie sabria que existe.
+            "text-muted hover:text-ink opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100",
         className,
       )}
     >

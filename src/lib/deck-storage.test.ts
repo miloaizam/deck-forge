@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import { createDeck, setQuantity } from "./deck";
 import {
+  insertDeck,
+  mensajeNoGuardada,
   mergeImported,
   nombreLibre,
   nombreOcupado,
@@ -158,4 +160,30 @@ test("importar renombra lo que choca, tambien dentro del mismo archivo", () => {
     ["Dragón (copia)", "Sombra", "sombra (copia)"],
   );
   assert.equal(r.renombradas, 2);
+});
+
+test("guardar una baraja nueva con la lista llena no desplaza a ninguna", () => {
+  const llenas = Array.from({ length: MAX_BARAJAS }, (_, i) => createDeck(`L${i}`));
+  assert.equal(insertDeck(llenas, createDeck("La 51")), null);
+  assert.equal(llenas.length, MAX_BARAJAS);
+  assert.match(mensajeNoGuardada("lleno"), new RegExp(`${MAX_BARAJAS} barajas`));
+});
+
+test("con la lista llena, reemplazar una que ya existe si se puede", () => {
+  const llenas = Array.from({ length: MAX_BARAJAS }, (_, i) => createDeck(`L${i}`));
+  const editada = { ...llenas[30], nombre: "Editada" };
+  const lista = insertDeck(llenas, editada);
+  assert.ok(lista);
+  assert.equal(lista.length, MAX_BARAJAS);
+  assert.equal(lista[0].nombre, "Editada");
+  assert.equal(new Set(lista.map((d) => d.id)).size, MAX_BARAJAS);
+});
+
+test("una baraja nueva entra primera si hay espacio", () => {
+  const pocas = [createDeck("A"), createDeck("B")];
+  const lista = insertDeck(pocas, createDeck("Nueva"));
+  assert.deepEqual(
+    lista?.map((d) => d.nombre),
+    ["Nueva", "A", "B"],
+  );
 });

@@ -36,7 +36,7 @@ import {
   validateDeck,
   DECK_TOTAL,
 } from "@/lib/deck-rules";
-import { deleteDeck, nombreLibre, saveDeck } from "@/lib/deck-storage";
+import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
 
 interface DeckDetailViewProps {
@@ -99,9 +99,8 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
    */
   const elegirPortada = (cardId: string | null) => {
     if (!deck) return;
-    if (!saveDeck(setCover(deck, cardId))) {
-      toast("No se pudo guardar: el almacenamiento del navegador está lleno.", "warning");
-    }
+    const r = saveDeck(setCover(deck, cardId));
+    if (r !== "ok") toast(mensajeNoGuardada(r), "warning");
   };
 
   const guardar = () => {
@@ -113,10 +112,10 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       decks.filter((x) => x.id !== deck.id),
     );
     const aGuardar = nombre === deck.nombre ? deck : { ...deck, nombre };
-    if (saveDeck(aGuardar)) {
+    const r = saveDeck(aGuardar);
+    if (r === "ok") {
       toast(`Baraja "${deckTitle(aGuardar)}" guardada en Mis barajas.`, "success");
-    } else
-      toast("No se pudo guardar: el almacenamiento del navegador está lleno.", "warning");
+    } else toast(mensajeNoGuardada(r), "warning");
   };
 
   if (!cargado) {
@@ -226,17 +225,13 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                   type="button"
                   onClick={() => {
                     const copia = duplicateDeck(deck, nombreLibre(deck.nombre, decks));
-                    if (saveDeck(copia)) {
+                    const r = saveDeck(copia);
+                    if (r === "ok") {
                       toast(
                         `Baraja duplicada como "${deckTitle(copia)}". La copia está en Mis barajas.`,
                         "success",
                       );
-                    } else {
-                      toast(
-                        "No se pudo duplicar: el almacenamiento del navegador está lleno.",
-                        "warning",
-                      );
-                    }
+                    } else toast(mensajeNoGuardada(r, "duplicar"), "warning");
                   }}
                   aria-label="Duplicar la baraja"
                   title="Duplicar"

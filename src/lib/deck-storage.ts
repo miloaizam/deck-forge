@@ -229,10 +229,42 @@ export function mergeImported(existentes: Deck[], nuevas: Deck[]): MergeResult {
   };
 }
 
-/** Inserta o reemplaza una baraja, dejando el mas reciente primero. */
-export function saveDeck(deck: Deck): boolean {
-  const resto = readDecks().filter((d) => d.id !== deck.id);
-  return saveDecks([deck, ...resto]);
+/**
+ * La lista con `deck` primera: reemplaza la que tenga su id o, si es nueva, la
+ * suma. Devuelve `null` si es nueva y ya hay MAX_BARAJAS.
+ *
+ * **Nunca desplaza.** `saveDecks` recorta quedandose con las primeras, asi que
+ * poner una nueva delante con la lista llena expulsaba en silencio la mas
+ * vieja. Es el mismo criterio de `mergeImported`, por el otro camino.
+ */
+export function insertDeck(lista: Deck[], deck: Deck): Deck[] | null {
+  const resto = lista.filter((d) => d.id !== deck.id);
+  if (resto.length === lista.length && lista.length >= MAX_BARAJAS) return null;
+  return [deck, ...resto];
+}
+
+/**
+ * Lo que pasa al guardar una baraja: `lleno` es el tope de MAX_BARAJAS y
+ * `sin-espacio`, que el navegador no dejo escribir (cuota llena o
+ * almacenamiento bloqueado). Se distinguen porque el remedio es otro.
+ */
+export type GuardarResultado = "ok" | "lleno" | "sin-espacio";
+
+/** Inserta o reemplaza una baraja, dejando la mas reciente primera. */
+export function saveDeck(deck: Deck): GuardarResultado {
+  const lista = insertDeck(readDecks(), deck);
+  if (!lista) return "lleno";
+  return saveDecks(lista) ? "ok" : "sin-espacio";
+}
+
+/** El aviso de una baraja que no se pudo guardar, igual en todas las vistas. */
+export function mensajeNoGuardada(
+  resultado: Exclude<GuardarResultado, "ok">,
+  accion = "guardar",
+): string {
+  return resultado === "lleno"
+    ? `No se pudo ${accion}: ya hay ${MAX_BARAJAS} barajas guardadas, el máximo. Elimina alguna para hacer espacio.`
+    : `No se pudo ${accion}: el almacenamiento del navegador está lleno.`;
 }
 
 export function deleteDeck(id: string): boolean {

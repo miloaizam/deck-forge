@@ -186,7 +186,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Puedo elegir la imagen de mi baraja?",
         respuesta: [
-          "Sí. En la página de la baraja, pasa el cursor sobre una carta y toca la **estrella** que aparece a su lado: esa carta queda de **portada**, y es la imagen que acompaña a la baraja en Mis barajas.",
+          "Sí. En la página de la baraja, toca la **estrella** junto a una carta: esa carta queda de **portada**, y es la imagen que acompaña a la baraja en Mis barajas. En el teléfono las estrellas se ven siempre; en el computador aparecen al pasar el cursor sobre la carta.",
         ],
       },
     ],

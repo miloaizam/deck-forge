@@ -27,6 +27,22 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Arreglo",
+    titulo: "Ninguna baraja se pierde al llegar a 50",
+    texto: [
+      "Con 50 barajas guardadas, crear, duplicar o guardar otra borraba en silencio la más antigua. Ahora no se guarda y un aviso explica que se llegó al máximo: basta eliminar alguna para hacer espacio.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Arreglo",
+    titulo: "La estrella de portada, también en el teléfono",
+    texto: [
+      "En la página de una baraja, la estrella para elegir la carta de portada solo aparecía al pasar el cursor, así que en una pantalla táctil no se veía. Ahora en el teléfono y la tableta se ve siempre.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Mejora",
     titulo: "Novedades más cortas de recorrer",
     texto: [

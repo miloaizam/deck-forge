@@ -31,6 +31,7 @@ import {
 } from "@/lib/deck-rules";
 import {
   deleteDeck,
+  mensajeNoGuardada,
   mergeImported,
   nombreLibre,
   saveDeck,
@@ -88,14 +89,10 @@ export function DeckListView({ cards }: DeckListViewProps) {
   const duplicar = (deck: Deck) => {
     // La copia no puede llamarse igual que otra: sale "X (copia)", "X (copia 2)"…
     const copia = duplicateDeck(deck, nombreLibre(deck.nombre, decks));
-    if (saveDeck(copia)) {
+    const r = saveDeck(copia);
+    if (r === "ok") {
       toast(`Baraja duplicada como "${deckTitle(copia)}".`, "success");
-    } else {
-      toast(
-        "No se pudo duplicar: el almacenamiento del navegador está lleno.",
-        "warning",
-      );
-    }
+    } else toast(mensajeNoGuardada(r, "duplicar"), "warning");
   };
 
   const importar = (nuevos: Deck[]) => {

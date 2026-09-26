@@ -826,7 +826,11 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    - **Importar nunca desplaza.** `saveDecks` recorta a 50 quedándose con las
      primeras, así que un archivo con 50 barajas borraba las del usuario.
      `mergeImported()` solo suma lo que cabe, y el aviso dice cuántas no
-     cupieron.
+     cupieron. **Guardar tampoco**: con 50, crear, duplicar o guardar una
+     compartida expulsaba la más vieja. `insertDeck()` devuelve `null` si la
+     baraja es nueva y no cabe, y `saveDeck` distingue `lleno` de
+     `sin-espacio` (el navegador no dejó escribir) para que el aviso
+     (`mensajeNoGuardada`) diga el remedio correcto.
    - Nombre y nota pierden los caracteres de control y de dirección de texto
      al leerse (un `U+202E` deja escribir un nombre que se lee como otro).
 
