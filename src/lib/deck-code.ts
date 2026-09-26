@@ -102,6 +102,14 @@ const PREFIJOS: readonly string[] = [
   "dr",
   "cr",
   "fu",
+  // Ediciones de origen de las reimpresiones de los productos especiales.
+  "su",
+  "re",
+  "cm",
+  "te",
+  "as",
+  "mi",
+  "pb",
 ];
 
 const ANCHO_VERSION = 8;

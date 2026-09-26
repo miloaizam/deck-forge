@@ -33,17 +33,11 @@ for (const c of CATALOGO) {
 }
 
 /**
- * De ediciones que no son del formato, o reimpresiones que la API no entrega,
- * y que HOY no estan en el catalogo. Las nombran la Fe de Erratas y la
- * Banlist, asi que puede que el formato si las admita: la revision esta
- * anotada en ISSUES.md ("Cartas de fuera de las diez ediciones..."). Al
- * cargar una, se borra de aqui.
+ * Cartas de otras ediciones que la Banlist pone "en observacion" y que el
+ * proyecto decidio NO cargar (ver ISSUES.md). Si alguna llega al catalogo,
+ * se borra de aqui.
  */
 const FUERA_DEL_FORMATO = [
-  "Devastador",
-  "Ataque de Dragón",
-  "Dragón de Magma",
-  "Lahmu",
   "Wyvern Dorado",
   "Raksasa Sombrío",
   "Jarnvid",

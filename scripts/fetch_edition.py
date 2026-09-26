@@ -66,6 +66,17 @@ EDITION_CODES = {
     "dominios-de-ra": "DR",
     "cruzadas": "CR",
     "furia": "FU",
+    # Las ediciones de origen de las reimpresiones que traen los productos
+    # especiales del formato: Pack de Batalla: Dominio, Pack America y Dominio
+    # de Totems (ver CLAUDE.md). Al final, como PREFIJOS en deck-code.ts.
+    "sumeria": "SU",
+    "rebelion": "RE",
+    "camelot": "CM",
+    "templarios": "TE",
+    "asgard": "AS",
+    "midgard": "MI",
+    # Las dos promos buy-a-box del Pack de Batalla que la API no tiene.
+    "pack-de-batalla-dominio": "PB",
 }
 
 # El slug de la API cuando NO coincide con el nuestro. Escuelas Elementales es

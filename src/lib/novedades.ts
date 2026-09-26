@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
     tipo: "Novedad",
+    titulo: "31 cartas nuevas: las de los mazos especiales del formato",
+    texto: [
+      "El catálogo suma las cartas que traen el Pack de Batalla: Dominio, el Pack América y Dominio de Tótems y que faltaban, como Tiamat, Thor el Poderoso, Devastador, Lou Carcolh, Balaur o Árbol del Grito. Salen con su edición de origen (Templarios, Asgard, Sumeria…) y se pueden agregar a cualquier baraja.",
+      "Las erratas oficiales de algunas de ellas, como la raza Dragón de Devastador, todavía no se aplican: igual que el resto de la Fe de Erratas, están en Documentos.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Novedad",
     titulo: "Tres tipos de Oro, y un filtro para cada uno",
     texto: [
       "El catálogo y el constructor distinguen ahora los Oros con habilidad, los sin habilidad y los Oros iniciales de edición: las cartas «Oro Inicial» de cada edición, a arte completo, marcadas en la grilla.",

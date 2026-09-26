@@ -20,7 +20,10 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 - **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
   ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
   catálogo en `documentos.test.ts`.
-- **Erratas:** el catálogo tiene que mostrar el texto erratado. Ojo: al cargar
+- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, las
+  de cuatro cartas de los mazos especiales que ya están cargadas sin errata:
+  Devastador y Dragón de Magma (raza Bestia → Dragón), Ataque de Dragón y
+  Lahmu (texto). Ojo: al cargar
   Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
   cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
   Erratas y cuáles no.

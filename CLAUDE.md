@@ -1316,7 +1316,45 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión).
+Elementales (326, con las 11 de su extensión)—, más **31 cartas sueltas** de
+los productos especiales del formato (ver abajo): **2190** en total.
+
+**Los productos especiales del formato traen reimpresiones de ediciones que no
+son del formato.** La tabla oficial está en la página «Escuelas Elementales
+(Formato)» del fandom: además de las ediciones, cuenta Steampunk, Kit Sanctum y
+Kit Terra Orientalis (EE-301…315), Héroes del Dharma (la extensión,
+EE-316…326) y tres mazos: **Pack de Batalla: Dominio** (DO-RP, más tres promos
+buy-a-box PB1), **Pack América** (SD1) y **Dominio de Tótems** (SD2). Esos tres
+mazos reimprimen cartas de Furia, Sumeria, Rebelión, Camelot, Templarios,
+Asgard y Midgard, y faltaban **32** en el catálogo; se revisaron el
+26-09-2026:
+
+- **Entran con su impresión original**, no con la del mazo: la API no tiene
+  los mazos como edición (su buscador, `POST /cards/search`, solo devuelve la
+  impresión de origen). Se bajaron con `pnpm run data:card <edición> <número>`
+  a `data-src/extras.json`, y sus ediciones van en `editions.ts` como
+  `parcial`, con su prefijo al final de `PREFIJOS` y `EDITION_CODES` (`su`,
+  `re`, `cm`, `te`, `as`, `mi`). Cuando la edición trae dos impresiones, va la
+  normal: ni la Milenaria (`m-…`) ni la de aniversario (`…_veinte`).
+- **Dante y Gólem de Praga** (PB1-02 y PB1-03) no están en la API: `dante_pb`
+  es OTRO producto (PB Inferno) aunque traiga un Dante. Se cargaron a mano con
+  el arte del fandom, en la edición `pack-de-batalla-dominio` (`pb`).
+- **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
+  arte dice Kojh. Ya estaba.
+- Se verificaron las 31 contra el arte. Coste y Fuerza, sin fallos; el texto,
+  como siempre: a **Balaur le faltaba la `Furia`** entera, Lou Carcolh decía
+  "Raa", Thor "a las Fuerza", y nombres sin tilde (Dragón de Magma, Tugarín).
+- **Las erratas de la Fe de Erratas NO se les aplicaron**, igual que al resto
+  del catálogo (TODO "Aplicar las erratas…"): Devastador y Dragón de Magma
+  siguen Bestia y no Dragón, y Ataque de Dragón y Lahmu con su texto impreso.
+- Las **9 cartas en observación** de la Banlist (Wotan, Melusina…) **no se
+  cargaron**, por decisión del proyecto; siguen en `FUERA_DEL_FORMATO` de
+  `documentos.test.ts`. Tampoco el mazo **Furia Implacable** (SD4), que es de
+  Bloque Furia y no figura en la tabla del formato.
+- `productos.test.ts` lista las cartas de los tres mazos y falla si falta
+  alguna. Las seis `parcial` que ya había en `editions.ts` sin cartas
+  (Helénica, Imperio, Espada Sagrada, Dominios de Ra, Cruzadas) siguen vacías:
+  sus prefijos ya están en `PREFIJOS` y no se pueden quitar.
 
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.
