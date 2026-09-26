@@ -18,7 +18,7 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 
 **Lo que falta y lo que está roto tiene su lista**, en la raíz:
 
-- [`PENDIENTES.md`](PENDIENTES.md): funcionalidades por hacer.
+- [`TODO.md`](TODO.md): funcionalidades por hacer.
 - [`ISSUES.md`](ISSUES.md): errores, bugs y mejoras de lo que ya existe.
 
 Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
@@ -86,7 +86,7 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 ## 4. Estructura
 
 ```
-PENDIENTES.md  funcionalidades por hacer (se borra la entrada al hacerla)
+TODO.md        funcionalidades por hacer (se borra la entrada al hacerla)
 ISSUES.md      errores y mejoras abiertas (se borra la entrada al arreglarla)
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más

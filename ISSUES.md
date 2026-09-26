@@ -1,7 +1,7 @@
 # Issues
 
 Errores, bugs y cosas que **existen pero hay que arreglar o mejorar**. Lo que
-todavía no existe va en [PENDIENTES.md](PENDIENTES.md).
+todavía no existe va en [TODO.md](TODO.md).
 
 **Cómo se usa.** Al encontrar un problema que no se arregla en el momento, se
 anota aquí. Al arreglarlo, en el **mismo commit** se borra su entrada. No se
@@ -13,6 +13,26 @@ Cada entrada lleva qué pasa, dónde, y cómo se comprueba que está arreglado.
 Ordenadas de más a menos importante.
 
 ---
+
+## Nueva revisión del catálogo: podrían faltar cartas
+
+- **Qué pasa:** hay cartas que dan la impresión de no estar en el catálogo.
+  Además de las faltantes, conviene aprovechar la pasada para buscar errores
+  de datos que se hayan escapado.
+- **Precedentes:** la API ya escondió cartas antes. Por arriba, Sol Naciente
+  tenía a Takemikazuchi (SN-143) fuera del listado; por abajo, las seis
+  Legendarias de Dominio no existen en la API; y la extensión de Escuelas
+  Elementales tampoco estaba.
+- **Por dónde:**
+  - Contar las cartas de cada edición contra su total **impreso** en el pie
+    (`ESC-040-300`, `SOL-013-232`…) y contra la lista del fandom.
+  - Buscar huecos en la numeración de cada edición.
+  - Probar `/static/cards/<ed>/<n>.png` unos números más allá del último y
+    también desde 001.
+  - Revisar las promos, que el fandom no lista.
+- **Arreglado cuando:** cada edición cuadra con su total impreso, o la
+  diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
+  dorada de Sarras.
 
 ## La CSP permite scripts y estilos inline
 
@@ -50,8 +70,8 @@ Ordenadas de más a menos importante.
 
 - `CLAUDE.md`, tabla del stack: dice que `minisearch` está "instalado, aún sin
   usar", pero el buscador ya lo usa (`src/lib/catalog.ts`).
-- `CLAUDE.md`, §9: la línea de rutas marca `/builder` y `/mazos` como
-  placeholder; ya son el constructor y la lista de mazos.
+- `CLAUDE.md`, §9: la línea de rutas marca `/constructor` y `/barajas` como
+  placeholder; ya son el constructor y la lista de barajas.
 - `CLAUDE.md`, §6.1: dice que las cabeceras las aplica "Cloudflare Pages"; el
   hosting es Cloudflare Workers con Static Assets.
 - `docs/plan.md` sigue hablando de Vite, `tailwind.config.js` y Cloudflare
