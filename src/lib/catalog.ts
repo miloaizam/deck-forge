@@ -1,5 +1,6 @@
 import MiniSearch from "minisearch";
 
+import { compareEditions } from "./card-order";
 import { EDITIONS } from "./editions";
 import {
   ESCUELAS,
@@ -62,7 +63,9 @@ export function countActiveFilters(f: CatalogFilters): number {
  *
  * Tipo, raza, escuela y frecuencia usan las listas canonicas del formato: la
  * oferta es la misma en toda edicion, asi el filtro no cambia de forma segun
- * lo que este cargado. Coste y fuerza si se derivan de las cartas, porque son
+ * lo que este cargado. Tipo, raza, escuela y habilidad van en orden
+ * alfabetico; frecuencia, de la mas rara a la mas comun, que es su orden
+ * natural; edicion, de la mas nueva a la mas vieja. Coste y fuerza si se derivan de las cartas, porque son
  * rangos abiertos.
  *
  * El atributo NO tiene faceta propia: Luz y Oscuridad son keywords impresas
@@ -85,6 +88,14 @@ export interface Facets {
   fuerzas: string[];
 }
 
+/**
+ * En castellano y sin que las tildes manden al final: "Bárbaro" va con la B y
+ * "Única" con la U. Un sort() a secas compara codigos y las pondria detras de
+ * la Z.
+ */
+const COLLATOR = new Intl.Collator("es");
+const alfabetico = (lista: readonly string[]) => [...lista].sort(COLLATOR.compare);
+
 export function buildFacets(cards: Card[]): Facets {
   const numeric = (pick: (c: Card) => number | null) =>
     [
@@ -96,9 +107,13 @@ export function buildFacets(cards: Card[]): Facets {
       ),
     ].sort((a, b) => Number(a) - Number(b));
 
-  // El orden de EDITIONS es el de salida del juego, no el alfabetico.
+  // Ediciones de la mas nueva a la mas vieja, igual que las ordena la grilla
+  // (compareEditions): Escuelas Elementales arriba, Bushido al final, y las
+  // parciales despues.
   const presentes = new Set(cards.map((c) => c.edicion));
-  const ediciones = EDITIONS.filter((e) => presentes.has(e.slug)).map((e) => e.slug);
+  const ediciones = EDITIONS.filter((e) => presentes.has(e.slug))
+    .map((e) => e.slug)
+    .sort(compareEditions);
 
   // Las keywords que trae cada carta incluyen etiquetas internas de busqueda
   // de la API ("Destruir", "que controles"): al filtro solo suben las que el
@@ -107,10 +122,10 @@ export function buildFacets(cards: Card[]): Facets {
 
   return {
     ediciones: ediciones.length > 1 ? ediciones : [],
-    habilidades: KEYWORDS_IMPRESAS.filter((k) => declaradas.has(k)),
-    tipos: [...TIPOS],
-    razas: [...RAZAS],
-    escuelas: [...ESCUELAS],
+    habilidades: alfabetico(KEYWORDS_IMPRESAS.filter((k) => declaradas.has(k))),
+    tipos: alfabetico(TIPOS),
+    razas: alfabetico(RAZAS),
+    escuelas: alfabetico(ESCUELAS),
     frecuencias: [...FRECUENCIAS],
     costes: numeric((c) => c.coste),
     fuerzas: numeric((c) => c.fuerza),

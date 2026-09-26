@@ -1018,6 +1018,19 @@ ocho facetas: edición (solo en `/catalogo`, porque en la página de una edició
 no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
 y fuerza.
 
+**Cada filtro ofrece sus opciones en un orden decidido**, en `buildFacets()`
+(`src/lib/catalog.ts`):
+- **Edición:** de la más nueva a la más vieja, con el mismo comparador que
+  ordena la grilla (`compareEditions` de `card-order.ts`), para que filtro y
+  grilla no digan cosas distintas.
+- **Tipo, raza, escuela y habilidad:** orden alfabético con
+  `Intl.Collator("es")`. Un `sort()` a secas compara códigos y manda
+  "Bárbaro" o "Única" detrás de la Z.
+- **Frecuencia:** su orden natural, de la más rara a la más común.
+- **Coste y fuerza:** numérico.
+
+`catalog.test.ts` lo comprueba contra el catálogo real.
+
 **El orden del catálogo vive en `src/lib/card-order.ts` y lo comparten las
 cuatro vistas** que listan cartas: `/catalogo`, `/catalogo/<edicion>`, la
 grilla del constructor y el contenido de una baraja. Si cada una ordenara a su

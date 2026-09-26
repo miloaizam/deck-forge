@@ -31,6 +31,18 @@ const RANGO_EDICION = new Map<string, number>([
 ]);
 
 /**
+ * Compara dos ediciones por su slug en el orden del catalogo: la mas nueva
+ * primero. Lo usa tambien el filtro de edicion, para que ofrezca las ediciones
+ * en el mismo orden en que salen en la grilla.
+ */
+export function compareEditions(a: string, b: string): number {
+  // Una edicion que no este en EDITIONS va al final en vez de reventar.
+  return (
+    (RANGO_EDICION.get(a) ?? EDITIONS.length) - (RANGO_EDICION.get(b) ?? EDITIONS.length)
+  );
+}
+
+/**
  * El oro inicial de una edicion: la carta a arte completo, sin habilidad, con
  * que empieza la partida. Va nombrada "Oro Inicial <edicion>" en `data-src/`
  * (ver la seccion de datos de CLAUDE.md), que es lo que la reconoce aqui.
@@ -67,10 +79,7 @@ function rangoDentroDeOro(card: Card): number {
  * frecuencia corre seguido.
  */
 export function compareCards(a: Card, b: Card): number {
-  // Una edicion que no este en EDITIONS va al final en vez de reventar.
-  const edicion =
-    (RANGO_EDICION.get(a.edicion) ?? EDITIONS.length) -
-    (RANGO_EDICION.get(b.edicion) ?? EDITIONS.length);
+  const edicion = compareEditions(a.edicion, b.edicion);
   if (edicion !== 0) return edicion;
 
   const frecuencia =
