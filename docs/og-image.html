@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  Plantilla de la imagen de vista previa (src/app/opengraph-image.png), la que
+  muestran WhatsApp, Discord y compañía al pegar un enlace de DeckForge.
+
+  Las apps de chat no aceptan SVG en og:image, así que la imagen es un PNG
+  hecho a partir de esta página: se abre en Chromium a 1200×630 y se captura.
+  Colores sacados de los tokens de src/app/globals.css (tema oscuro).
+
+  La tipografía es Space Grotesk. next/font la descarga en el build, así que
+  para regenerar hay que apuntar el @font-face de abajo al .woff2 latino de
+  out/_next/static/media/ (el que declara `unicode-range: U+??…`).
+
+  El contenido va centrado a propósito: WhatsApp recorta la miniatura a un
+  cuadrado central en algunas vistas, y lo que quede fuera del centro se pierde.
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: "Space Grotesk";
+        font-weight: 300 700;
+        src: url("FUENTE_WOFF2") format("woff2");
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+      }
+      body {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(120% 120% at 30% 20%, #1d1633 0%, #0c0a13 70%);
+        font-family: "Space Grotesk", sans-serif;
+        color: #ede9f7;
+      }
+      .halo {
+        position: absolute;
+        top: -300px;
+        left: 50%;
+        width: 720px;
+        height: 720px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: rgb(109 40 217 / 0.32);
+        filter: blur(140px);
+      }
+      .marco {
+        position: absolute;
+        inset: 28px;
+        border: 1px solid #2a2342;
+        border-radius: 28px;
+      }
+      main {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .eyebrow {
+        margin: 0 0 34px;
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #a78bfa;
+      }
+      .logo {
+        width: 620px;
+        filter: drop-shadow(0 24px 48px rgb(124 58 237 / 0.45));
+      }
+      .lema {
+        margin: 40px 0 0;
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: #9a93b5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="halo"></div>
+    <div class="marco"></div>
+    <main>
+      <p class="eyebrow">Mitos y Leyendas · Escuelas Elementales</p>
+      <img class="logo" src="../public/brand/logo-white.svg" alt="DeckForge" />
+      <p class="lema">Donde se forjan las barajas</p>
+    </main>
+  </body>
+</html>

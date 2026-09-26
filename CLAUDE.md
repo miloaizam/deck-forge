@@ -993,6 +993,22 @@ logotipo como salida a casa. En un sitio estático **solo ocurren dos**:
 No hay servidor que devuelva un 403 o un 503: no se inventan páginas para
 códigos que no pueden salir.
 
+**La vista previa al compartir un enlace lleva el logotipo.** WhatsApp, Discord
+y compañía leen `og:image`, que tiene que ser PNG o JPG (no SVG) con URL
+absoluta. La imagen es `src/app/opengraph-image.jpg` (1200×630, 54 KB: por
+encima de ~300 KB WhatsApp a veces no la muestra), vale para todas las rutas, y
+la URL absoluta la arma Next con `metadataBase` del layout raíz: **si el sitio
+cambia de dominio, hay que cambiar `SITE_URL` ahí**. Se generó desde
+`docs/og-image.html` capturándola en Chromium; la plantilla explica cómo
+regenerarla. Dos límites a saber:
+
+- El enlace de una baraja muestra la tarjeta genérica de DeckForge, no el
+  nombre de la baraja: la página es estática y la baraja viaja en el
+  fragmento (`#d=`), que el lector de vistas previas ni siquiera recibe.
+- Las apps guardan la vista previa de cada URL un tiempo. Un enlace que ya se
+  compartió antes del cambio puede seguir saliendo sin imagen hasta que
+  caduque.
+
 La navbar es una fila plana de cuatro enlaces (sin desplegable). Bajo `md` se
 pliegan detrás de un botón de menú: no caben junto al logotipo en un teléfono.
 

@@ -1,0 +1,1 @@
+DeckForge, constructor de barajas para el formato Escuelas Elementales de Mitos y Leyendas

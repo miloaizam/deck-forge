@@ -5,7 +5,16 @@ import { spaceGrotesk } from "@/lib/fonts";
 import { THEME_KEY } from "@/lib/theme";
 import "./globals.css";
 
+/**
+ * Donde se publica el sitio. Las vistas previas de WhatsApp, Discord y compania
+ * piden la imagen con URL ABSOLUTA, y Next la arma a partir de esto; sin
+ * metadataBase la escribiria relativa y la vista previa saldria sin imagen.
+ * Si el sitio cambia de dominio, se cambia aqui.
+ */
+const SITE_URL = "https://deckforge-myl.pages.dev";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "DeckForge",
     template: "%s · DeckForge",
@@ -21,7 +30,11 @@ export const metadata: Metadata = {
     siteName: "DeckForge",
     locale: "es_CL",
     type: "website",
+    // La imagen la pone src/app/opengraph-image.jpg (plantilla en
+    // docs/og-image.html), y vale para todas las rutas.
   },
+  // Tarjeta grande en X/Twitter; sin twitter:image propia, toma la de og.
+  twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
 };
 
