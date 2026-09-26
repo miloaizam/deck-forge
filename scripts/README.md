@@ -18,9 +18,9 @@ No hace falta `sudo`.
 ## La cadena
 
 ```bash
-npm run data:fetch bushido   # api.myl.cl  -> data-src/bushido.json + images-src/*.png
-npm run data:images          # images-src/ -> public/cards/ (webp 420px + thumb 200px)
-npm run data:cards           # data-src/   -> public/data/cards.json (validado)
+pnpm run data:fetch bushido   # api.myl.cl  -> data-src/bushido.json + images-src/*.png
+pnpm run data:images          # images-src/ -> public/cards/ (webp 420px + thumb 200px)
+pnpm run data:cards           # data-src/   -> public/data/cards.json (validado)
 ```
 
 ## `fetch_edition.py`
@@ -36,9 +36,9 @@ Consume la **API oficial de MyL** (publica, sin autenticacion):
 Opciones utiles:
 
 ```bash
-npm run data:fetch bushido -- --limit 20     # piloto
-npm run data:fetch bushido -- --no-images    # solo metadata
-npm run data:fetch bushido -- --force        # regenerar (pisa correcciones)
+pnpm run data:fetch bushido --limit 20     # piloto
+pnpm run data:fetch bushido --no-images    # solo metadata
+pnpm run data:fetch bushido --force        # regenerar (pisa correcciones)
 ```
 
 Hace una pausa de 0,4 s entre peticiones y se salta las imagenes ya bajadas.

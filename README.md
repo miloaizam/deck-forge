@@ -2,92 +2,82 @@
   <img src="public/brand/logo-violet.svg" alt="DeckForge" width="300">
 </p>
 
-# DeckForge
+<h1 align="center">DeckForge</h1>
 
-Constructor de mazos para el formato **Escuelas Elementales** de Mitos y
-Leyendas. Sitio estático: todo corre en el navegador, sin servidor, sin base de
-datos y sin cuentas.
+<p align="center">
+  <strong>Donde se forjan los mazos.</strong><br>
+  Constructor de mazos para el formato <strong>Escuelas Elementales</strong> de
+  Mitos y Leyendas.
+</p>
 
-> **Estado: Fase 0 — en curso.** Catálogo con grilla y modal de detalle,
-> funcionando con 20 cartas de Bushido (piloto). Faltan filtros, buscador y
-> constructor de mazos.
+<p align="center">
+  <a href="https://deckforge-myl.pages.dev"><strong>deckforge-myl.pages.dev</strong></a>
+</p>
 
 ---
 
-## Requisitos
+Escuelas Elementales es un formato con sus propias reglas de construcción: 50
+cartas, un oro inicial, un mínimo de 15 Aliados **o** 15 Tótems, hasta tres
+copias de cada carta (una sola si es Única), una única afinidad y un side de
+hasta 10 cartas. Llevar la cuenta de todo eso a mano, mientras buscas cartas en
+diez ediciones distintas, es justo el trabajo que hace esta página.
 
-- **Node.js 20.9+** (probado con 24). El repo trae `.nvmrc`.
-- **Python 3.10+** — solo para los scripts de datos e imágenes.
+Gratis, sin cuenta y sin instalar nada. Abres el sitio y armas.
 
-## Cómo correrlo
+## Qué encuentras
 
-```bash
-npm install
-npm run dev        # http://localhost:3000
-```
+**El catálogo completo del formato.** Las 2159 cartas de las diez ediciones, con
+su arte y su texto. Buscas por nombre o por lo que dice la carta, y filtras por
+edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
 
-Otros comandos:
+**Un constructor que conoce las reglas.** Mientras armas, la página te va
+diciendo cómo vas: cuántas cartas llevas, cuántas copias te quedan de cada una,
+si la afinidad del mazo sigue en pie, qué oro inicial elegiste y cómo se ve la
+curva de coste. No descubres al final que el mazo era ilegal.
 
-| Comando | Qué hace |
-|---|---|
-| `npm run build` | Genera el sitio estático en `out/` |
-| `npm run preview` | Sirve `out/` en http://localhost:4173 |
-| `npm run check` | Typecheck + lint + formato |
-| `npm run data:fetch <edicion>` | `api.myl.cl` → `data-src/` + `images-src/` |
-| `npm run data:images` | `images-src/*` → `public/cards/*.webp` |
-| `npm run data:cards` | `data-src/*.json` → `public/data/cards.json` |
+**Tus mazos, guardados en tu navegador.** Los armas, los guardas, los duplicas y
+los editas cuando quieras. Y puedes bajarlos como archivo para llevártelos a
+otro computador o tenerlos de respaldo.
 
-### Datos de las cartas
+**Un enlace para compartir.** El mazo entero viaja dentro de la dirección: se la
+mandas a alguien por WhatsApp o Discord y la abre al tiro, sin registrarse ni
+instalar nada.
 
-```bash
-python3 -m venv --without-pip .venv
-curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
-.venv/bin/pip install -r requirements.txt
-```
+## Cómo funciona
 
-Sin `sudo`. Detalles en [`scripts/README.md`](scripts/README.md).
+DeckForge **no tiene servidor**. Es un sitio estático: cuando lo abres, tu
+navegador se descarga el catálogo y ahí mismo hace todo el trabajo. De eso salen
+tres cosas que valen la pena:
 
-El catálogo se baja de la API oficial de MyL:
+- **No hay cuentas ni contraseñas.** No hay nada que registrar.
+- **Tus mazos son tuyos.** Viven en tu navegador, no en una base de datos
+  nuestra. El único que los ve eres tú, salvo que compartas el enlace.
+- **Nadie te sigue.** Sin analytics, sin cookies de terceros, sin píxeles de
+  seguimiento.
 
-```bash
-npm run data:fetch bushido    # o -- --limit 20 para un piloto
-npm run data:images
-npm run data:cards
-```
+El catálogo se arma con los datos de la API oficial de MyL, pero **revisados
+carta por carta contra el arte impreso**: la API tiene textos cambiados, nombres
+mal escritos, números al revés y cartas que ni siquiera aparecen. Ese trabajo de
+corrección es buena parte del proyecto, y está documentado en
+[CLAUDE.md](CLAUDE.md).
 
-## Estructura
+## Estado
 
-```
-docs/            plan del proyecto y guía de marca
-data-src/        fuente editable del catálogo (un JSON por edición)
-images-src/      originales de las cartas (no se suben al repo)
-scripts/         herramientas Python: validan datos, convierten imágenes
-public/          se sirve tal cual (marca, catálogo generado, imágenes)
-src/             la app: rutas, componentes y lógica
-```
+El catálogo y el constructor están funcionando, con las diez ediciones del
+formato cargadas: Bushido, Sol Naciente, Dominio, ContraAtaque, Águila Imperial,
+Steampunk, Axis Mundi, Hijos del Sol, Legado Gótico y Escuelas Elementales (con
+su extensión).
 
-## Publicación
+Queda pendiente la **banlist** y la **página de erratas**.
 
-Cloudflare Workers con Static Assets, conectado a este repo:
+## ¿Quieres ayudar?
 
-- **Build command:** `npm run build`
-- **Deploy command:** `npx wrangler deploy`
-
-La configuración vive en `wrangler.jsonc`: no declara `main`, así que no hay
-código de Worker ejecutándose — Cloudflare solo sirve los archivos de `out/`.
-El `public/_headers` se aplica igual que en Pages.
-
-Cada `git push` a `main` re-despliega.
-
-## Documentación
-
-- [CLAUDE.md](CLAUDE.md) — convenciones de código y seguridad
-- [DESIGN.md](DESIGN.md) — convenciones de diseño, tokens y accesibilidad
-- [docs/plan.md](docs/plan.md) — plan completo por fases
-- [docs/brand.html](docs/brand.html) — guía de marca (ábrela en el navegador)
+Se agradecen los reportes de erratas en las cartas y los arreglos por pull
+request. Cómo levantar el proyecto y cómo se trabaja aquí está en
+**[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
 ## Créditos y derechos
 
-Proyecto sin fines de lucro, hecho por fans. El arte y los nombres de las
-cartas son propiedad de su editor. Se acredita a los ilustradores en cada
-carta.
+Proyecto sin fines de lucro, hecho por fans. El arte y los nombres de las cartas
+son propiedad de su editor. Se acredita a los ilustradores en cada carta: son 73
+en el catálogo.

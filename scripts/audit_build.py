@@ -4,7 +4,7 @@ Corre sobre `out/` y falla con codigo 1 si encuentra algo que no deberia salir
 a produccion. La idea es que sea imposible publicar una regresion de seguridad
 sin enterarse.
 
-    npm run build && npm run audit
+    pnpm run build && pnpm run audit
 
 Que revisa:
   1. No hay source maps publicados (revelan el codigo fuente).
@@ -136,7 +136,7 @@ def revisar_esquemas() -> None:
 
 def main() -> int:
     if not OUT.exists():
-        print("No existe out/. Corre `npm run build` primero.")
+        print("No existe out/. Corre `pnpm run build` primero.")
         return 1
 
     for revision in (

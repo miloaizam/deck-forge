@@ -369,7 +369,7 @@ def main() -> int:
     print(f"\nOK: {len(cards)} cartas -> {out_json}")
     if not args.no_images:
         print(f"    {images} imagen(es) nueva(s) -> {IMAGES_SRC}/")
-    print("\nSiguiente paso: npm run data:images && npm run data:cards")
+    print("\nSiguiente paso: pnpm run data:images && pnpm run data:cards")
     return 0
 
 

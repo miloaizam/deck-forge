@@ -1,7 +1,8 @@
 node_modules
 .next
 out
-package-lock.json
+# Lo escribe pnpm, no prettier.
+pnpm-lock.yaml
 public/data
 # Datos de cartas: los escribe fetch_edition.py, no prettier.
 data-src

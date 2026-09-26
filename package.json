@@ -2,6 +2,7 @@
   "name": "deckforge",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.17.0",
   "description": "Constructor de mazos para el formato Escuelas Elementales de Mitos y Leyendas",
   "scripts": {
     "dev": "next dev",
@@ -12,7 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node --import ./scripts/ts-imports.mjs --test src/lib/*.test.ts",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm run test",
     "audit": ".venv/bin/python scripts/audit_build.py",
     "data:fetch": ".venv/bin/python scripts/fetch_edition.py",
     "data:card": ".venv/bin/python scripts/fetch_card.py",

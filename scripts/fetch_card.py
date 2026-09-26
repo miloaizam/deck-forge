@@ -10,10 +10,10 @@ ya esta en extras.json, avisa y no la toca. Las correcciones a mano (tildes,
 sobre todo) se conservan.
 
 Uso:
-    npm run data:card <edicion-slug> <numero>     # ej: helenica 042
-    npm run data:card <edicion-slug> <numero> --no-images
+    pnpm run data:card <edicion-slug> <numero>     # ej: helenica 042
+    pnpm run data:card <edicion-slug> <numero> --no-images
 
-Despues: npm run data:images && npm run data:cards
+Despues: pnpm run data:images && pnpm run data:cards
 """
 
 import argparse
@@ -112,7 +112,7 @@ def main() -> int:
         print()
         for problema in problemas:
             print(f"  [OJO] {problema}")
-        print("        `npm run data:cards` la va a rechazar tal cual esta.")
+        print("        `pnpm run data:cards` la va a rechazar tal cual esta.")
         print("        Decide a mano que poner en ese campo antes de construir.")
 
     if not args.no_images:
@@ -130,7 +130,7 @@ def main() -> int:
     print(f"\nOK: {card['codigo']} {card['nombre']} -> {EXTRAS.name}")
     print(f"    {len(extras)} carta(s) sueltas en total.")
     print("\nRevisa el nombre y la habilidad a mano, y despues:")
-    print("    npm run data:images && npm run data:cards")
+    print("    pnpm run data:images && pnpm run data:cards")
     return 0
 
 

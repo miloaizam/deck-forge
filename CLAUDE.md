@@ -33,22 +33,33 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
 | Hosting | Cloudflare Workers (Static Assets) — `wrangler.jsonc` sirve `out/` |
+| Gestor de paquetes | **pnpm** (fijado en `packageManager`; `pnpm-lock.yaml` commiteado, ajustes en `pnpm-workspace.yaml`) |
 
 ---
 
 ## 3. Comandos
 
 ```bash
-npm run dev          # desarrollo en http://localhost:3000
-npm run build        # export estático a out/
-npm run preview      # sirve out/ en http://localhost:4173
-npm run check        # typecheck + lint + formato + tests (correr antes de commitear)
-npm run test         # tests de las reglas de mazo (corredor de Node, sin dependencias)
-npm run audit        # auditoría de seguridad sobre out/ (tras `npm run build`)
-npm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
-npm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
-npm run data:images          # images-src/*    -> public/cards/*.webp
-npm run data:cards           # data-src/*.json -> public/data/cards.json
+pnpm install         # instalar dependencias (respeta pnpm-lock.yaml)
+pnpm run dev         # desarrollo en http://localhost:3000
+pnpm run build       # export estático a out/
+pnpm run preview     # sirve out/ en http://localhost:4173
+pnpm run check       # typecheck + lint + formato + tests (correr antes de commitear)
+pnpm run test        # tests de las reglas de mazo (corredor de Node, sin dependencias)
+pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
+pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
+pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
+pnpm run data:images         # images-src/*    -> public/cards/*.webp
+pnpm run data:cards          # data-src/*.json -> public/data/cards.json
+```
+
+**Dos diferencias con npm que muerden.** `pnpm audit` **no** es nuestro script:
+es la auditoría de vulnerabilidades de pnpm, y la del build es `pnpm run audit`
+—por eso el `check` del `package.json` llama a los otros scripts con `pnpm run`
+y no a secas—. Y los argumentos de un script van **sin el `--` de npm**: pnpm lo
+pasaría literal al programa (`pnpm run data:fetch bushido --force`, no
+`-- --force`).
+
 ```
 
 Los scripts de Python corren en el venv del repo (`.venv/`). Si no existe:
@@ -763,9 +774,18 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    hotlinking de imágenes, sin píxeles de seguimiento. Todo se sirve desde
    nuestro origen. La telemetría de Next.js está desactivada.
 
-6. **Cadena de suministro.** `package-lock.json` commiteado; dependencias
-   mínimas y justificadas; `npm audit` antes de publicar; revisar qué instala
-   `postinstall` scripts antes de aprobarlos.
+6. **Cadena de suministro.** `pnpm-lock.yaml` commiteado; dependencias mínimas y
+   justificadas; `pnpm audit` antes de publicar; revisar qué instala un
+   `postinstall` antes de aprobarlo.
+
+   pnpm ayuda aquí: **no deja que una dependencia corra su script de instalación
+   sin permiso explícito**, y el permiso se anota en `allowBuilds` de
+   `pnpm-workspace.yaml`. La única que lo pide es `unrs-resolver` (el resolvedor
+   nativo de `eslint-config-next`), cuyo `postinstall` baja el binario de la
+   plataforma si falta. Está en **`false`**: ese binario ya llega como
+   dependencia opcional del propio paquete, así que no hay nada que preparar y
+   nadie descarga nada durante el install. Si alguna dependencia nueva reclama
+   su build, la respuesta por defecto es `false` hasta haber leído qué hace.
 
 7. **Privacidad.** Los mazos no se guardan en ningún servidor: viven en el
    `localStorage` del usuario. No hay cuentas, ni datos personales, ni banner de
@@ -793,7 +813,7 @@ cookies, sin datos personales—, pero eso no se deja al azar:
     `<object>` ni `<iframe>`. Que sean archivos propios, no hotlinkeados, y
     que no lleven metadatos con datos personales del autor.
 
-12. **`npm run audit`** revisa el sitio ya construido y falla si aparece un
+12. **`pnpm run audit`** revisa el sitio ya construido y falla si aparece un
     source map, una ruta absoluta de la máquina de build, un recurso externo,
     una imagen rota, una cabecera de seguridad ausente o los dos esquemas
     desincronizados. Correr siempre antes de publicar.
@@ -1132,7 +1152,7 @@ de la grilla, que es lo caro de esa página.
 
 ### Tests
 
-`npm run test` corre el corredor de Node, que desde Node 24 ejecuta TypeScript
+`pnpm run test` corre el corredor de Node, que desde Node 24 ejecuta TypeScript
 de fábrica: **cero dependencias nuevas**. Van contra el catálogo real y no
 contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los

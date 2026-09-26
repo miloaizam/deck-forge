@@ -1,0 +1,15 @@
+# Ajustes de pnpm. No hay workspace: este es el archivo donde pnpm 11 lee la
+# configuracion del proyecto (el campo "pnpm" de package.json ya no se lee).
+#
+# pnpm no deja que una dependencia corra su script de instalacion sin permiso
+# explicito, que es justo la revision que pide CLAUDE.md #6. La unica que lo
+# pide aqui es `unrs-resolver`, el resolvedor nativo de eslint-config-next: su
+# postinstall llama a `napi-postinstall`, que comprueba si esta el binario de la
+# plataforma y lo BAJA si falta.
+#
+# Queda en `false` a proposito. El binario que le toca a esta maquina
+# (@unrs/resolver-binding-linux-x64-gnu) ya llega como dependencia opcional del
+# propio paquete, asi que no hay nada que preparar: eslint funciona igual y
+# nadie baja nada durante el install.
+allowBuilds:
+  unrs-resolver: false
