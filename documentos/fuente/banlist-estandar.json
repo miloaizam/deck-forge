@@ -1,0 +1,323 @@
+{
+  "titulo": "Banlist Formato Estándar RE MyL",
+  "formato": "Estándar RE MyL (Escuelas Elementales)",
+  "original": {
+    "titulo": "Banlist Formato Estándar RE MYL",
+    "archivo": "Banlist Estándar RE MYL.pdf",
+    "paginas": 5,
+    "modificado": "2025-11-26"
+  },
+  "version": "2026-09-26",
+  "construccion": "La construcción del mazo debe contener siempre un mínimo de 15 Aliados o Tótems, más side deck de 10 cartas.",
+  "prohibidas": [
+    "Gris-Gris",
+    "Ankou",
+    "Nephilim",
+    "Viaje en el Tiempo",
+    "Butic",
+    "Roce de Hielo",
+    "Pergamino de Agua",
+    "Traer el Terror",
+    "Bechard"
+  ],
+  "unicas": [
+    "Scarbo",
+    "Caballero Errante",
+    "Teutates",
+    "Atui Koro Ekashi",
+    "Maestro de Go",
+    "Baco",
+    "Yestay",
+    "Paracelso",
+    "Quetzalcoatl Glorioso",
+    "Dominio, La Novela",
+    "Rayo de Luna",
+    "Ieyasu",
+    "Forja Masamune",
+    "Raiuni",
+    "Krisna",
+    "Grace O'Malley",
+    "Tecpatl",
+    "Ballesta Gigante",
+    "Cristalino Amarillo",
+    "Bouda",
+    "Hidromancia",
+    "Ikiryo",
+    "Luz Solar",
+    "Mantus",
+    "Raziel",
+    "Margot la Fee",
+    "Sarras",
+    "Simargl",
+    "Tezcatlipoca",
+    "Euforia",
+    "Fuerza Compartida"
+  ],
+  "observacion": {
+    "descripcion": "Cartas agregadas en observación como Únicas, Errantes y/o Libres, fuera de las ediciones que componen Escuelas Elementales.",
+    "condiciones": [
+      {
+        "carta": "Wyvern Dorado",
+        "condicion": "Carta Única"
+      },
+      {
+        "carta": "Wotan",
+        "condicion": null
+      },
+      {
+        "carta": "Melusina",
+        "condicion": null
+      },
+      {
+        "carta": "Jarnvid",
+        "condicion": "Carta Única"
+      },
+      {
+        "carta": "Anubis de Inpu",
+        "condicion": "Carta Única"
+      },
+      {
+        "carta": "Bibi Dalair Kaur",
+        "condicion": "Carta Errante"
+      },
+      {
+        "carta": "Mut",
+        "condicion": "Libre por tres copias"
+      }
+    ],
+    "porRaza": [
+      {
+        "raza": "Faerie",
+        "cartas": [
+          {
+            "carta": "Melusina",
+            "edicion": "Templarios"
+          }
+        ]
+      },
+      {
+        "raza": "Dragón",
+        "cartas": [
+          {
+            "carta": "Wyvern Dorado",
+            "edicion": "Camelot"
+          }
+        ]
+      },
+      {
+        "raza": "Sombra",
+        "cartas": [
+          {
+            "carta": "Raksasa Sombrío",
+            "edicion": "Dharma"
+          }
+        ]
+      },
+      {
+        "raza": "Eterno",
+        "cartas": [
+          {
+            "carta": "Wotan",
+            "edicion": "Midgard"
+          },
+          {
+            "carta": "Jarnvid",
+            "edicion": "Asgard"
+          }
+        ]
+      },
+      {
+        "raza": "Bárbaro",
+        "cartas": [
+          {
+            "carta": "Muhammad Bin Qasim",
+            "edicion": "Dharma"
+          }
+        ]
+      },
+      {
+        "raza": "Samurái",
+        "cartas": [
+          {
+            "carta": "Bibi Dalair Kaur",
+            "edicion": "Dharma"
+          }
+        ]
+      },
+      {
+        "raza": "Ancestral",
+        "cartas": [
+          {
+            "carta": "Anubis de Inpu",
+            "edicion": "Kemet"
+          },
+          {
+            "carta": "Mut",
+            "edicion": "Kemet"
+          }
+        ]
+      }
+    ]
+  },
+  "erratas": [
+    {
+      "carta": "Honjo Masamune",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Constantino XI",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Mal Nido",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Grotekop",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Yaoguai",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Ciempiés Gigante",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Taishakuten",
+      "texto": "Errante"
+    },
+    {
+      "carta": "Amikiri",
+      "texto": "Indesterrable"
+    },
+    {
+      "carta": "Nanna",
+      "texto": "Raza Ancestral"
+    },
+    {
+      "carta": "Devastador",
+      "texto": "Raza Dragón"
+    },
+    {
+      "carta": "Dragón de Magma",
+      "texto": "Raza Dragón"
+    },
+    {
+      "carta": "Coto de Caza",
+      "texto": "Se corrige su texto: «Mientras este Tótem»."
+    },
+    {
+      "carta": "Archa",
+      "texto": "Se corrige su texto: «Mientras esta Arma»."
+    },
+    {
+      "carta": "Adapa",
+      "texto": "No puede hacer objetivo de su habilidad a sí mismo."
+    },
+    {
+      "carta": "Krisna",
+      "texto": "Carta Única. Solo puede disparar su habilidad para entrar sin pagar su coste desde tu mano si controlas Aliados de raza Héroe.",
+      "edicion": "Despertar Gótico"
+    },
+    {
+      "carta": "Arjumand Banu Begum",
+      "texto": "Aliado raza Bárbaro coste 2 fuerza 3: cambia su coste a 1 y solo puede disparar su habilidad si solo controlas Aliados de raza Bárbaro.",
+      "edicion": "Despertar Gótico"
+    },
+    {
+      "carta": "Tsukuyomi",
+      "texto": "Aliado de raza Faerie: pasa de ser Carta Única a Errante."
+    },
+    {
+      "carta": "Kuyén",
+      "texto": "Puedes «Desterrar» este Aliado desde tu mano para robar una carta."
+    },
+    {
+      "carta": "Ada Lovelace",
+      "texto": "Puede buscar hasta tres Armas con distinto nombre."
+    },
+    {
+      "carta": "Mazo Desafiante y/o Guerrero",
+      "texto": "Puedes usar una de estas opciones al construir tu Mazo Castillo: Shingas más Karna como Carta Única, o solamente usar Karna hasta tres copias en tu Mazo Castillo y/o side deck."
+    },
+    {
+      "carta": "Akiko Yamamoto",
+      "texto": "Errante, y solo puede activar su habilidad si todos los Aliados que controlas son Samurái y/o Luz. El contador de Honor solo puede ir a un Aliado de raza Samurái."
+    },
+    {
+      "carta": "Azi Dahaka",
+      "texto": "Errante. Solo si todos los Aliados que controlas son de raza Dragón: puedes generar un Oro para jugar Dragones de coste 4 o más. Luego, robar una carta."
+    },
+    {
+      "carta": "Dimachaerus",
+      "texto": "Errante. Solo puedes activarlo si todos los Aliados que controlas son de raza Guerrero."
+    },
+    {
+      "carta": "Astra",
+      "texto": "Exhumar. Puedes «Desterrar este Aliado» para cancelar una habilidad disparada o activada."
+    },
+    {
+      "carta": "Carmina Burana",
+      "texto": "En Guerra de Talismanes, puedes desterrar este Oro de tu reserva para cancelar el ataque oponente."
+    },
+    {
+      "carta": "Espejo Negro",
+      "texto": "El contador de Tesoro solo puede ser usado para generar un Oro siempre y cuando no sea tu primer turno."
+    },
+    {
+      "carta": "Babalú Ayé",
+      "texto": "Ilusión. Cuando un Oponente Robe una carta, puedes elegir hasta una carta de tu Cementerio y Barajarla en tu Mazo Castillo. Luego, tu oponente Bota una carta."
+    },
+    {
+      "carta": "Invencible",
+      "texto": "Puedes destruir un Aliado para cancelar la habilidad disparada que está entrando en juego, y no puede disparar el resto de habilidades por el turno."
+    },
+    {
+      "carta": "Kukulkán",
+      "texto": "Una vez por turno, «puedes destruir un Oro que controles» para robar una carta."
+    },
+    {
+      "carta": "Amaterasu",
+      "texto": "En tu Fase de Vigilia, una vez por turno, si todos los Aliados que controlas son de Raza Faerie y/o Eterno, puedes elegir un Aliado oponente y ponerlo en la parte inferior del Mazo Castillo de su dueño."
+    },
+    {
+      "carta": "La Voisin",
+      "texto": "No puede hacer objetivo a Oros oponentes."
+    },
+    {
+      "carta": "Ukita Hideie",
+      "texto": "Puedes buscar un Aliado de raza Samurái de coste dos o menos en tu mazo o tu cementerio y jugarlo sin pagar su coste."
+    },
+    {
+      "carta": "Rito de Sangre",
+      "texto": "Puedes desterrar cualquier cantidad de cartas de tu cementerio para que un Aliado de raza Oni gane tanta fuerza como cartas desterradas de esta manera hasta la fase final."
+    },
+    {
+      "carta": "Wyvern Dorado",
+      "texto": "Aliado raza Dragón. Carta Única.",
+      "edicion": "Camelot"
+    },
+    {
+      "carta": "Raksasa Sombrío",
+      "texto": "Aliado raza Sombra. Imbloqueable. Cuando entra en juego, puedes robar dos cartas. Luego, descartar dos cartas de tu mano o un Aliado. Cuando este Aliado haga daño de combate y si solo controlas Aliados de raza Sombra, puedes buscar hasta dos cartas en el Mazo Castillo oponente y desterrarlas.",
+      "edicion": "Dharma"
+    },
+    {
+      "carta": "Jarnvid",
+      "texto": "Solo puedes usar este Tótem si solamente controlas Aliados de raza Eterno. Carta Única.",
+      "edicion": "Asgard"
+    },
+    {
+      "carta": "Harionna",
+      "texto": "Pasa a tener Oscuridad. Dicho atributo solo se considera para mazos con la mecánica Oscuridad. Este atributo no se considera para la Raza Oni o Culto Tenebris (Oni/Sombra)."
+    }
+  ],
+  "correcciones": [
+    "«ESTÁDAR» → Estándar; «OBSEVASIÓN» y «AGREGADASEN» → Observación, agregadas en.",
+    "Nombres de carta según el catálogo: «Simagrl» → Simargl, «Ukita Hidae» → Ukita Hideie, «Arjumand Banu Bengu» → Arjumand Banu Begum, «Babalú Aye» → Babalú Ayé, «Grace O´Malley» → Grace O'Malley, «Pergamino del Agua» → Pergamino de Agua.",
+    "La edición de Raksasa Sombrío, Muhammad Bin Qasim y Bibi Dalair Kaur sale como «Dharna» en la página 5 y «Dharma» en la 4: se deja Dharma.",
+    "Ortografía y mayúsculas del propio documento («atibuto», «considra», «abributo», «tötem», «así mismo», «Puedes Buscar un buscar un», «un habilidad», «Luego. Descartar»), sin cambiar lo que dicen."
+  ]
+}

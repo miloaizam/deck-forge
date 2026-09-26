@@ -113,6 +113,9 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 
 ```
 TODO.md        funcionalidades por hacer (se borra la entrada al hacerla)
+documentos/    Fe de Erratas y Banlist transcritas a PDF con el estilo del sitio,
+               más sus datos en fuente/*.json. NO se publican (no están en
+               public/): ver documentos/README.md
 ISSUES.md      errores y mejoras abiertas (se borra la entrada al arreglarla)
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
@@ -1544,7 +1547,8 @@ contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los
 imports sin extensión que espera el bundler de Next.
 
-**Todavía no hay** banlist ni Fe de Erratas en `/documentos`. Esta última tiene ahora
+**Todavía no hay** banlist ni Fe de Erratas en el sitio: están transcritas en
+`documentos/` (PDF y JSON, sin publicar ni aplicar). Esta última tiene ahora
 material de sobra: al cargar Escuelas Elementales quedaron **66 cartas cuyo
 texto cambió entre impresiones**, y el catálogo muestra el vigente sin decir en
 ninguna parte que la impresión vieja decía otra cosa.

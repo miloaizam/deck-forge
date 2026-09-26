@@ -30,6 +30,8 @@ Ordenadas de más a menos importante.
   - Probar `/static/cards/<ed>/<n>.png` unos números más allá del último y
     también desde 001.
   - Revisar las promos, que el fandom no lista.
+  - **Una pista concreta:** la Banlist oficial prohíbe **Traer el Terror**, y
+    esa carta no está en el catálogo (ver `documentos/README.md`).
 - **Arreglado cuando:** cada edición cuadra con su total impreso, o la
   diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
   dorada de Sarras.

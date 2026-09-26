@@ -15,21 +15,24 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 
 ## Erratas y banlist
 
-### Recrear la Fe de Erratas y la Banlist de MyL
+### Validar los datos de la Fe de Erratas y la Banlist
 
-- **Qué:** rehacer como archivos propios los dos documentos oficiales del
-  formato: la **Fe de Erratas** (qué dice hoy cada carta corregida) y la
-  **Banlist** (qué cartas están prohibidas o restringidas).
-- **Por qué:** son la base de las dos entradas que siguen. Tenerlos como datos
-  y no solo como PDF permite aplicarlos al catálogo y al validador.
-- **Por dónde:** un archivo de datos por documento, validado con Zod como todo
-  lo que entra desde fuera del bundle, y su versión para leer y descargar.
-  Anotar la fecha y la fuente oficial de cada uno.
-- **Terminado cuando:** los dos documentos existen en el repo, completos y
-  contrastados con la fuente oficial.
+Los dos documentos ya están transcritos (`documentos/`, con sus datos en
+`documentos/fuente/*.json` y la revisión contra los originales en
+`documentos/README.md`). Falta lo que los vuelve utilizables por el sitio:
+
+- **Qué:** un esquema de Zod para cada JSON, como todo lo que entra desde fuera
+  del bundle, y un test que los lea y los cruce con el catálogo real (cada
+  carta nombrada existe, o está marcada como de fuera del formato).
+- **Ojo:** la Fe de Erratas es de **junio de 2022** y la Banlist de noviembre de
+  2025. Conviene confirmar con la fuente oficial que no haya una Fe de Erratas
+  más nueva antes de aplicar nada.
+- **Terminado cuando:** los dos JSON validan en `pnpm run check` y el test
+  falla si una carta nombrada no se encuentra.
 
 ### Aplicar las erratas y la banlist
 
+- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`.
 - **Erratas:** el catálogo tiene que mostrar el texto erratado. Ojo: al cargar
   Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
   cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
@@ -39,7 +42,9 @@ terminada. Van agrupadas por la parte del sitio que tocan.
   (`src/lib/deck-rules.ts`) ya tiene las reglas `carta-prohibida` y
   `carta-restringida`. Hoy no disparan porque todas las cartas son `libre`.
   Falta cargar los datos, decidir qué limita `restringida` y mostrarlo en el
-  catálogo y el constructor.
+  catálogo y el constructor. La banlist además declara **31 cartas Únicas**
+  (una copia) y 37 erratas de reglas, algunas de construcción ("Mazo
+  Desafiante y/o Guerrero").
 - **Terminado cuando:** el catálogo muestra el texto erratado, el validador
   rechaza o limita las cartas de la banlist y hay tests contra el catálogo
   real que lo comprueban.
@@ -47,6 +52,9 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 ### Publicar la Fe de Erratas y la Banlist en DeckForge
 
 - **Qué:** que se puedan **ver** desde la web y **descargar**.
+- **Ya existen los PDF** con el estilo del sitio: `documentos/FeDeErratas-260926.pdf`
+  y `documentos/BanlistEstandar-260926.pdf`. Publicar es copiarlos (o
+  generarlos) a `public/reglas/` y enlazarlos.
 - **Por dónde:** `/documentos` es hoy un placeholder
   (`src/app/(app)/documentos/page.tsx`). Los descargables van en `public/reglas/`
   y se enlazan con `<a href="/reglas/x.pdf" download>`: la CSP lleva
