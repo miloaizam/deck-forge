@@ -1034,10 +1034,46 @@ en el mismo commit que el cambio que los afecta:**
 
 **Volver arriba** (`ScrollTopButton.tsx`, en el layout de `(app)`) aparece tras
 bajar 600 px. En el constructor, bajo `lg`, sube por encima de la barra fija
-que abre la hoja de la baraja; queda por debajo del aviso de rechazos, que dura
-unos segundos y tiene que leerse. Con "reducir movimiento" el salto es
+que abre la hoja de la baraja. Con "reducir movimiento" el salto es
 instantáneo, y el foco vuelve al logotipo para que el teclado siga desde
 arriba.
+
+**Los avisos flotantes son uno solo para todo el sitio.** Cualquier vista llama
+a `toast(texto, "ok" | "error")` (`src/components/toast.ts`) y los pinta
+`Toaster.tsx`, montado en el layout de `(app)`, arriba a la derecha bajo la
+navbar: abajo a la derecha está volver arriba, y en el constructor del
+teléfono, la barra de la baraja. Antes había tres sistemas —una línea de
+texto en Mis barajas, otra en el detalle y un recuadro en el constructor— y
+tres acciones sin aviso. Cuatro cosas que no son obvias:
+
+- **Es un store de módulo, no un contexto.** Así sobrevive a la navegación: un
+  aviso pedido antes de `router.push` se lee en la página de llegada ("Borré…"
+  al volver a Mis barajas, "Creé la baraja…" al llegar a su detalle).
+- **Vive en un popover manual**, que va a la capa superior del navegador. Un
+  `<dialog>` modal tapa cualquier `z-index`, y un rechazo que salta con la
+  hoja de la baraja abierta tiene que verse encima de ella; si llega un aviso
+  con un modal abierto, el popover se vuelve a abrir para quedar arriba. Se
+  ve, pero mientras el modal siga abierto su X no responde: el modal vuelve
+  inerte todo lo que no es él, capa superior incluida. El aviso se va solo.
+- **La región `role="status"` va aparte y siempre está en la página**, oculta
+  a la vista. La lista visible vive en el popover, que está oculto mientras no
+  hay avisos, y una región que aparece junto con su texto no siempre se
+  anuncia.
+- El mismo texto repetido **no se apila**: reinicia su tiempo. Pulsar cinco
+  veces un "+" bloqueado deja un aviso, no cinco. Y el tiempo se detiene con
+  el cursor o el foco encima (WCAG 2.2.1).
+
+Los mensajes van en primera persona, como el resto del sitio ("Exporté…",
+"No pude copiar el enlace…"), y la acción que falla lleva `"error"`, que
+cambia el icono. `copyShareLink` y `downloadDeck` (`decks/actions.ts`) dan su
+propio aviso, para que la lista y el detalle digan lo mismo.
+
+**Lo que se abre y se cierra se anima**, con CSS y sin JavaScript: la tabla de
+qué hace cada panel está en DESIGN.md ("Movimiento"). Ojo al tocar un
+componente animado: lo que se anima al cerrar **tiene que seguir montado
+mientras sale**, así que los desplegables se ocultan con `hidden` en vez de
+`{open && …}`, y `CardModal` y `ConfirmDialog` conservan en estado la última
+carta y el último texto.
 
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
@@ -1350,6 +1386,14 @@ arquetipo de atributo, aunque sigan entrando en cualquier baraja de su raza.
 
 `deckAffinitySchema` ganó la variante `{ modo: "atributo" }` **sin subir
 `DECK_VERSION`**: el cambio es aditivo y ninguna baraja ya guardado deja de leerse.
+
+**La curva de coste va en el panel del constructor**, bajo el estado de la
+baraja (`CostCurve.tsx`). La cuenta la hace `deckStats` —solo el principal,
+como los contadores por tipo— y `costCurve()` la pasa a columnas **fijas** de 0
+a 5 más una de "6+": si las columnas aparecieran según la baraja, las barras
+cambiarían de sitio al agregar una carta. Los Oros no tienen coste y se
+cuentan aparte, junto al título. `deck-rules.test.ts` lo comprueba contra el
+catálogo real.
 
 **El mínimo de 15 lo cumple un tipo solo, no la suma de los dos**: 14 Aliados y
 14 Tótems son 28 cartas y la baraja sigue sin cumplir. Por eso `deckStats` lleva

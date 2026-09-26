@@ -205,3 +205,139 @@
   text-transform: uppercase;
   color: var(--color-accent);
 }
+
+/* ------------------------------------------------------------------ *
+ * Aparecer y desaparecer
+ *
+ * CSS puro, sin JavaScript: `@starting-style` da el estado del que se entra y
+ * `transition-behavior: allow-discrete` deja que `display` y `overlay` (el
+ * paso a la capa superior de un <dialog>) esperen a que termine la salida. Un
+ * navegador que no lo entienda muestra y oculta de golpe, como antes.
+ *
+ * La regla de movimiento de DESIGN.md: 150-250 ms, `--ease-out-soft`, nada que
+ * rebote ni gire. Y la de "reducir movimiento" de la base deja todo en 0,01 ms.
+ * ------------------------------------------------------------------ */
+@layer components {
+  /* Los <dialog>. Base comun: se desvanecen, y su fondo oscuro tambien. La
+     entrada dura algo mas que la salida: cerrar es algo que ya se decidio. */
+  .panel-anim,
+  .panel-anim::backdrop {
+    transition-property: opacity, translate, scale, overlay, display;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-out-soft);
+    transition-behavior: allow-discrete;
+    opacity: 0;
+  }
+  .panel-anim:not([open]),
+  .panel-anim:not([open])::backdrop {
+    transition-duration: 160ms;
+  }
+  .panel-anim[open],
+  .panel-anim[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .panel-anim[open],
+    .panel-anim[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Detalle de una carta: sube un poco al entrar y solo se desvanece al salir. */
+  @starting-style {
+    .panel-sube[open] {
+      translate: 0 16px;
+    }
+  }
+
+  /* Confirmacion: un leve crecimiento al entrar. */
+  @starting-style {
+    .panel-crece[open] {
+      scale: 0.96;
+    }
+  }
+
+  /* Paneles que se deslizan (la ayuda desde la derecha, la hoja de la baraja
+     desde abajo): entran y salen por el mismo borde y no se desvanecen, que un
+     panel a medio transparentar mientras se mueve se ve sucio. Solo su fondo
+     se aclara. */
+  .panel-derecha,
+  .panel-abajo {
+    opacity: 1;
+    transition-duration: 250ms;
+  }
+  .panel-derecha:not([open]),
+  .panel-abajo:not([open]) {
+    transition-duration: 200ms;
+  }
+  .panel-derecha:not([open]) {
+    translate: 100% 0;
+  }
+  .panel-abajo:not([open]) {
+    translate: 0 100%;
+  }
+  @starting-style {
+    .panel-derecha[open] {
+      opacity: 1;
+      translate: 100% 0;
+    }
+    .panel-abajo[open] {
+      opacity: 1;
+      translate: 0 100%;
+    }
+  }
+
+  /* Lo que se muestra y se oculta con `hidden` (desplegables, el panel de
+     filtros): fundido y un deslizamiento corto al abrir, fundido al cerrar. */
+  .despliegue {
+    transition-property: opacity, translate, display;
+    transition-duration: 180ms;
+    transition-timing-function: var(--ease-out-soft);
+    transition-behavior: allow-discrete;
+  }
+  .despliegue.hidden {
+    opacity: 0;
+    transition-duration: 120ms;
+  }
+  @starting-style {
+    .despliegue:not(.hidden) {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  /* Avisos flotantes: fundido al entrar y al salir (la salida la marca
+     `aviso-saliendo`, que dura SALIDA_MS de toast.ts). */
+  .aviso {
+    transition-property: opacity, translate;
+    transition-duration: 200ms;
+    transition-timing-function: var(--ease-out-soft);
+  }
+  .aviso-saliendo {
+    opacity: 0;
+  }
+  @starting-style {
+    .aviso {
+      opacity: 0;
+      translate: 0 -6px;
+    }
+  }
+
+  /* Las preguntas de la ayuda: la respuesta se abre y se cierra en vez de
+     saltar. `::details-content` e `interpolate-size` son recientes; donde no
+     existen, la regla se ignora y el <details> abre de golpe, como siempre. */
+  .desplegable {
+    interpolate-size: allow-keywords;
+  }
+  .desplegable::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition-property: block-size, content-visibility;
+    transition-duration: 220ms;
+    transition-timing-function: var(--ease-out-soft);
+    transition-behavior: allow-discrete;
+  }
+  .desplegable[open]::details-content {
+    block-size: auto;
+  }
+}

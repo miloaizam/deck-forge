@@ -1,3 +1,4 @@
+import { toast } from "../toast";
 import { deckTitle } from "@/lib/deck";
 import { exportFile, shareUrl } from "@/lib/deck-code";
 import type { Deck } from "@/lib/types";
@@ -6,18 +7,19 @@ import type { Deck } from "@/lib/types";
  * Compartir y descargar una baraja.
  *
  * Viven aparte porque las usan la lista y el detalle, y duplicarlas era la via
- * segura a que una copiara un enlace con otro formato que la otra.
+ * segura a que una copiara un enlace con otro formato que la otra. Cada una da
+ * su propio aviso, asi que las dos vistas dicen lo mismo.
  */
 
-/** Copia el enlace de la baraja. Devuelve el mensaje que hay que mostrar. */
-export async function copyShareLink(deck: Deck): Promise<string> {
+/** Copia el enlace de la baraja y avisa si se pudo. */
+export async function copyShareLink(deck: Deck): Promise<void> {
   try {
     await navigator.clipboard.writeText(shareUrl(deck, window.location.origin));
-    return "Enlace copiado.";
+    toast("Enlace copiado.");
   } catch {
     // Sin permiso de portapapeles (o sin HTTPS) no hay a que recurrir salvo
     // decirlo: el enlace es demasiado largo para pedir que lo copien a mano.
-    return "No pude copiar el enlace. Revisa los permisos del navegador.";
+    toast("No pude copiar el enlace. Revisa los permisos del navegador.", "error");
   }
 }
 
@@ -30,6 +32,7 @@ export function downloadDeck(deck: Deck): void {
   a.download = `baraja-${slugNombre(deck)}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  toast(`Exporté "${deckTitle(deck)}" a un archivo.`);
 }
 
 function slugNombre(deck: Deck): string {

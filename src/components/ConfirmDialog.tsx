@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ConfirmDialogProps {
   /** Cerrado cuando es `false`. El texto del cuerpo lo pone quien lo abre. */
@@ -31,6 +31,11 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Quien lo abre suele vaciar el mensaje al cerrar (en /barajas sale de la
+  // baraja por borrar, que vuelve a null): se conserva el ultimo para que la
+  // salida no se desvanezca con el texto ya borrado.
+  const [texto, setTexto] = useState(mensaje);
+  if (open && mensaje !== texto) setTexto(mensaje);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -46,13 +51,13 @@ export function ConfirmDialog({
       // el estado de quien lo abrio nunca se queda creyendo que sigue abierto.
       onClose={onCancel}
       aria-labelledby="confirm-titulo"
-      className="bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(26rem,calc(100vw-2rem))] border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      className="panel-anim panel-crece bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(26rem,calc(100vw-2rem))] border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-2 p-5 sm:p-6">
         <h2 id="confirm-titulo" className="text-ink text-lg font-bold">
           {titulo}
         </h2>
-        <p className="text-muted text-[13px] leading-relaxed">{mensaje}</p>
+        <p className="text-muted text-[13px] leading-relaxed">{texto}</p>
 
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           <button

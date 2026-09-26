@@ -117,12 +117,19 @@ export function Navbar() {
         </div>
       </nav>
 
-      {open && (
-        <div
-          id="menu-principal"
-          className="border-line bg-bg border-t px-4 py-2 md:hidden"
-        >
-          <ul className="mx-auto flex max-w-[1480px] flex-col">
+      {/* Siempre en la pagina, para poder desplegarlo: la fila de la grilla
+          pasa de 0fr a 1fr y el contenido se descubre de arriba hacia abajo.
+          Cerrado queda `inert` e invisible, fuera del teclado y del lector. */}
+      <div
+        id="menu-principal"
+        inert={!open}
+        className={cn(
+          "grid transition-[grid-template-rows,visibility] duration-200 ease-(--ease-out-soft) md:hidden",
+          open ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">
+          <ul className="border-line bg-bg mx-auto flex max-w-[1480px] flex-col border-t px-4 py-2">
             {LINKS.map(({ href, label, Icon }) => (
               <li key={href}>
                 <Link
@@ -143,7 +150,7 @@ export function Navbar() {
             ))}
           </ul>
         </div>
-      )}
+      </div>
     </header>
   );
 }

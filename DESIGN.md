@@ -172,6 +172,30 @@ superficies, no de la sombra.
 - Hover en carta: elevación sutil + borde que pasa a `brand-500`. Sin escalar
   más de 1.02.
 - Cambios de filtro: transición de opacidad, no reordenamientos animados.
+- **Lo que aparece y desaparece se anima, sin nada que rebote ni gire.** Las
+  clases viven en `globals.css` ("Aparecer y desaparecer"):
+
+  | Elemento | Clase | Al abrir | Al cerrar |
+  |---|---|---|---|
+  | Detalle de una carta | `panel-anim panel-sube` | fundido y sube 16 px | fundido |
+  | Confirmación | `panel-anim panel-crece` | fundido y crece desde 0,96 | fundido |
+  | Panel de ayuda | `panel-anim panel-derecha` | entra desde la derecha | sale por la derecha |
+  | Hoja de la baraja (teléfono) | `panel-anim panel-abajo` | sube desde abajo | baja |
+  | Fondo oscuro de los cuatro | (el `::backdrop` de `panel-anim`) | se oscurece | se aclara |
+  | Menú de la navbar (teléfono) | filas de grilla `0fr` → `1fr` | se despliega | se pliega |
+  | Desplegables y panel de filtros | `despliegue` + `hidden` | fundido y baja 6 px | fundido |
+  | Preguntas de la ayuda | `desplegable` | la respuesta se abre | se cierra |
+  | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido |
+
+  La entrada dura algo más que la salida (220 contra 160 ms en los modales):
+  cerrar es algo que ya se decidió. Los paneles que se deslizan no se
+  desvanecen, porque un panel a medio transparentar mientras se mueve se ve
+  sucio. Todo es CSS (`@starting-style` y `transition-behavior:
+  allow-discrete`); un navegador que no lo entienda abre y cierra de golpe.
+- **Un elemento que se anima al cerrar tiene que seguir montado mientras
+  sale.** Por eso los desplegables se ocultan con `hidden` en vez de
+  desmontarse, y `CardModal` y `ConfirmDialog` siguen pintando la última
+  carta y el último texto mientras se desvanecen.
 - **Se respeta `prefers-reduced-motion`** — ya está implementado en
   `globals.css`; no lo anules.
 

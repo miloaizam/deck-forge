@@ -16,12 +16,14 @@ import {
   affinityLabel,
   buildCardIndex,
   canAdd,
+  costCurve,
   deckAffinity,
   deckStats,
   isLegal,
   resolveDeck,
   toRuleCard,
   validateDeck,
+  CURVA_TOPE,
   DECK_TOTAL,
   MIN_ALIADOS_O_TOTEMS,
   SIDE_TOTAL,
@@ -579,4 +581,49 @@ test("el atributo solo restringe a los Aliados", () => {
   const { afinidad } = deckStats(resolveDeck(deck, index));
   assert.ok(admite(afinidad, talismanOscuro));
   assert.ok(canAdd(deck, index.porId.get(talismanOscuro.id)!, "side", index).ok);
+});
+
+test("la curva de coste cuenta copias del principal y deja fuera a los Oros", () => {
+  const deck = mazoLegal("Dragón");
+  const res = resolveDeck(deck, index);
+  const stats = deckStats(res);
+  const curva = costCurve(stats.curva);
+
+  // Columnas fijas: 0, 1, ... y la ultima junta desde CURVA_TOPE.
+  assert.deepEqual(
+    curva.map((p) => p.etiqueta),
+    ["0", "1", "2", "3", "4", "5", "6+"],
+  );
+  assert.equal(curva.length, CURVA_TOPE + 1);
+
+  // Todo lo que tiene coste esta en la curva; lo que falta son los Oros.
+  const enCurva = curva.reduce((s, p) => s + p.n, 0);
+  assert.equal(enCurva + stats.porTipo.Oro, stats.totalPrincipal);
+
+  // Cada columna es la suma de las copias con ese coste.
+  for (const [i, p] of curva.entries()) {
+    const esperado = res.principal
+      .filter(({ card }) =>
+        card.coste === null
+          ? false
+          : i === CURVA_TOPE
+            ? card.coste >= CURVA_TOPE
+            : card.coste === i,
+      )
+      .reduce((s, e) => s + e.n, 0);
+    assert.equal(p.n, esperado, `coste ${p.etiqueta}`);
+  }
+});
+
+test("la curva junta los costes altos y no mira el side", () => {
+  const caras = cards.filter((c) => c.coste !== null && c.coste > CURVA_TOPE);
+  assert.ok(caras.length >= 2, "el catalogo trae cartas de coste 7 o mas");
+  let deck = createDeck("Curva");
+  for (const c of caras.slice(0, 2)) deck = addCard(deck, c.id, "principal");
+  const [lateral] = cards.filter((c) => c.coste === 1);
+  deck = addCard(deck, lateral.id, "side");
+
+  const curva = costCurve(deckStats(resolveDeck(deck, index)).curva);
+  assert.equal(curva[CURVA_TOPE].n, 2);
+  assert.equal(curva[1].n, 0, "el side no entra en la curva");
 });

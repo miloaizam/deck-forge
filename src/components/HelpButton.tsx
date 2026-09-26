@@ -64,7 +64,7 @@ export function HelpButton() {
         onClick={(e) => {
           if (e.target === ref.current) cerrar();
         }}
-        className="bg-surface border-line text-ink shadow-panel sm:rounded-l-panel m-0 ml-auto h-dvh max-h-dvh w-[min(30rem,100vw)] max-w-none border-l p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+        className="panel-anim panel-derecha bg-surface border-line text-ink shadow-panel sm:rounded-l-panel m-0 ml-auto h-dvh max-h-dvh w-[min(30rem,100vw)] max-w-none border-l p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
       >
         <div className="flex h-full flex-col">
           {/* Un <div> y no un <header>: el panel vive dentro de la navbar, y un
@@ -94,7 +94,7 @@ export function HelpButton() {
                 </h3>
                 <div className="divide-line divide-y">
                   {seccion.items.map((item) => (
-                    <details key={item.pregunta} name="faq" className="group">
+                    <details key={item.pregunta} name="faq" className="desplegable group">
                       <summary className="focus-visible:outline-brand-500 hover:text-accent flex cursor-pointer list-none items-center justify-between gap-3 rounded py-3 text-[15px] font-medium transition-colors [&::-webkit-details-marker]:hidden">
                         {item.pregunta}
                         <ChevronDown

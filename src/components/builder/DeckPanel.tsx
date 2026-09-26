@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Check, Coins, Trash2, TriangleAlert } from "lucide-react";
 
+import { CostCurve } from "./CostCurve";
 import { BOTON_FILA, CAJA_FILA, QuantityStepper } from "./QuantityStepper";
 import { CARD_RATIO } from "../CardTile";
 import type { DeckZone } from "@/lib/deck";
@@ -294,6 +295,12 @@ export function DeckPanel({
         </p>
       ) : (
         <>
+          {/* Solo del principal, como los contadores: el side no se juega de
+              salida. Con el side solo no hay curva que mirar. */}
+          {res.principal.length > 0 && (
+            <CostCurve curva={stats.curva} oros={stats.porTipo.Oro} />
+          )}
+
           {SECCIONES_DE_LA_BARAJA.map(({ tipo, titulo }) => (
             <Seccion
               key={tipo}

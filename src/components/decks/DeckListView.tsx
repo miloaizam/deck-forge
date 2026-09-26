@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Check,
   Copy,
@@ -17,6 +17,7 @@ import {
 
 import { copyShareLink, downloadDeck } from "./actions";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { toast } from "../toast";
 import { DeckTransfer } from "./DeckTransfer";
 import { useDecks, useHydrated } from "./use-decks";
 import { deckTitle, duplicateDeck } from "@/lib/deck";
@@ -64,26 +65,24 @@ export function DeckListView({ cards }: DeckListViewProps) {
   // cuando se guarda una baraja, aqui o en otra pestana.
   const decks = useDecks();
   const cargado = useHydrated();
-  const [mensaje, setMensaje] = useState("");
   /** Que baraja esta esperando confirmacion de borrado. Borrar no tiene vuelta. */
   const [porBorrar, setPorBorrar] = useState<Deck | null>(null);
 
   const index = useMemo(() => buildCardIndex(cards), [cards]);
-
-  const avisar = useCallback((texto: string) => {
-    setMensaje(texto);
-    setTimeout(() => setMensaje(""), 5000);
-  }, []);
 
   // Ninguna de estas toca estado local: escriben en el store y la lista se
   // vuelve a leer sola.
   const borrar = (deck: Deck) => {
     deleteDeck(deck.id);
     setPorBorrar(null);
-    avisar(`Borré "${deckTitle(deck)}".`);
+    toast(`Borré "${deckTitle(deck)}".`);
   };
 
-  const duplicar = (deck: Deck) => saveDeck(duplicateDeck(deck));
+  const duplicar = (deck: Deck) => {
+    if (saveDeck(duplicateDeck(deck))) toast(`Dupliqué "${deckTitle(deck)}".`);
+    else
+      toast("No pude duplicarla: el almacenamiento del navegador está lleno.", "error");
+  };
 
   const importar = (nuevos: Deck[]) => {
     const merge = mergeImported(decks, nuevos);
@@ -95,7 +94,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
           href="/constructor"
           className="bg-brand-600 hover:bg-brand-500 rounded-chip focus-visible:outline-brand-300 inline-flex h-11 items-center gap-2 px-4 text-sm font-medium text-white transition-colors"
@@ -104,19 +103,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
           Armar una baraja
         </Link>
 
-        {/* El aviso va en la fila de los botones y no en una linea propia: ahi
-            reservaba su alto siempre —para no empujar la lista al aparecer— y
-            eran 20px de aire permanente entre los botones y las barajas. Con
-            flex-1 y min-w-0 ocupa el hueco del medio y encoge hasta cero. */}
-        <p
-          role="status"
-          aria-live="polite"
-          className="text-muted min-w-0 flex-1 truncate px-1 text-[13px]"
-        >
-          {mensaje}
-        </p>
-
-        <DeckTransfer decks={decks} onImport={importar} onMessage={avisar} />
+        <DeckTransfer decks={decks} onImport={importar} />
       </div>
 
       {!cargado ? (
@@ -226,7 +213,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => void copyShareLink(deck).then(avisar)}
+                      onClick={() => void copyShareLink(deck)}
                       aria-label={`Compartir ${deckTitle(deck)}`}
                       title="Copiar enlace"
                       className={ACCION_ICONO}

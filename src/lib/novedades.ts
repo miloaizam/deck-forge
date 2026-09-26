@@ -27,6 +27,31 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
+    tipo: "Novedad",
+    titulo: "Curva de coste en el constructor",
+    texto: [
+      "El panel de la baraja muestra cuántas cartas llevas de cada coste, en barras que se mueven a medida que agregas o quitas cartas. Así se ve de un vistazo si la baraja está cargada de cartas caras.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Mejora",
+    titulo: "Avisos al copiar, exportar, guardar y borrar",
+    texto: [
+      "Ahora todo lo importante te avisa con un mensaje arriba a la derecha: enlace copiado, baraja exportada, creada, guardada, duplicada o borrada. Antes, exportar una baraja o borrarla desde su página no decía nada.",
+      "Los motivos por los que una carta no entra en la baraja salen en el mismo lugar. Si dejas el cursor encima, el aviso espera a que termines de leerlo.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Mejora",
+    titulo: "Todo se abre y se cierra con suavidad",
+    texto: [
+      "El detalle de una carta, la ayuda, los filtros, el menú del teléfono y la hoja de la baraja ya no aparecen de golpe: entran y salen con una animación corta. Si tu equipo tiene activado «reducir movimiento», se respeta y no hay animaciones.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
     tipo: "Aviso",
     titulo: "Los mazos ahora se llaman barajas",
     texto: [

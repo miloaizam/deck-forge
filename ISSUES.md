@@ -34,15 +34,6 @@ Ordenadas de más a menos importante.
   diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
   dorada de Sarras.
 
-## Arte a baja resolución en las seis Legendarias de Dominio
-
-- **Qué pasa:** DO-001 … DO-006 no existen en la API y su arte se consiguió a
-  354×508; `resize_to_width()` lo amplía a 420 de ancho, así que se ve más
-  blando que el resto.
-- **Arreglo:** conseguir el arte a tamaño completo, borrar
-  `public/cards/do-00X.webp` y su `thumb/`, y volver a correr
-  `pnpm run data:images`.
-
 ## La estrella de portada no se ve en pantallas táctiles
 
 - **Qué pasa:** en la página de una baraja, el botón para elegir la carta de
@@ -57,3 +48,19 @@ Ordenadas de más a menos importante.
 - **Arreglado cuando:** en un teléfono se ve la estrella de cada carta y se
   puede elegir la portada; y la respuesta de la ayuda (`src/lib/faq.ts`) deja
   de hablar solo del cursor.
+
+## Guardar la baraja número 51 borra la más vieja sin avisar
+
+- **Qué pasa:** `saveDeck` (`src/lib/deck-storage.ts`) pone la baraja primera y
+  guarda con `saveDecks`, que recorta a `MAX_BARAJAS` (50) quedándose con las
+  primeras. Con 50 barajas guardadas, **crear una nueva, duplicar o guardar una
+  compartida expulsa en silencio la más antigua**, y el aviso dice que todo
+  salió bien. Es el mismo fallo que ya se arregló al importar
+  (`mergeImported`), por el otro camino.
+- **Arreglo posible:** que `saveDeck` no desplace: si la baraja es nueva y ya
+  hay 50, que no guarde y lo diga, con un resultado que distinga "lleno de
+  barajas" de "sin espacio en el navegador" (hoy los dos son `false` y el aviso
+  habla del almacenamiento).
+- **Arreglado cuando:** con 50 barajas, crear, duplicar o guardar otra no borra
+  ninguna y el aviso explica que se llegó al máximo; con un test en
+  `deck-storage.test.ts`.

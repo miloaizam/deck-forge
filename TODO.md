@@ -9,11 +9,13 @@ historial de git y en [CLAUDE.md](CLAUDE.md), y aquí solo vive lo que falta. Si
 se implementa a medias, se reescribe la entrada con lo que queda.
 
 Cada entrada lleva qué es, por qué importa, por dónde empezar y cuándo se da por
-terminada.
+terminada. Van agrupadas por la parte del sitio que tocan.
 
 ---
 
-## Recrear la Fe de Erratas y la Banlist de MyL
+## Erratas y banlist
+
+### Recrear la Fe de Erratas y la Banlist de MyL
 
 - **Qué:** rehacer como archivos propios los dos documentos oficiales del
   formato: la **Fe de Erratas** (qué dice hoy cada carta corregida) y la
@@ -26,7 +28,7 @@ terminada.
 - **Terminado cuando:** los dos documentos existen en el repo, completos y
   contrastados con la fuente oficial.
 
-## Aplicar las erratas y la banlist
+### Aplicar las erratas y la banlist
 
 - **Erratas:** el catálogo tiene que mostrar el texto erratado. Ojo: al cargar
   Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
@@ -42,7 +44,7 @@ terminada.
   rechaza o limita las cartas de la banlist y hay tests contra el catálogo
   real que lo comprueban.
 
-## Publicar la Fe de Erratas y la Banlist en DeckForge
+### Publicar la Fe de Erratas y la Banlist en DeckForge
 
 - **Qué:** que se puedan **ver** desde la web y **descargar**.
 - **Por dónde:** `/erratas` es hoy un placeholder
@@ -54,23 +56,9 @@ terminada.
 - **Terminado cuando:** las dos listas se leen en el sitio, se descargan, y
   `pnpm run audit` pasa.
 
-## Base de datos y cuentas de usuario
+## Constructor y barajas
 
-- **Qué:** conectar DeckForge a una base de datos (Supabase, por ejemplo) para
-  poder crear cuentas y guardar barajas en la nube.
-- **Ojo, cambia premisas del proyecto.** Hoy CLAUDE.md dice sin backend, sin
-  cuentas, sin datos personales y con la CSP cerrada a `connect-src 'self'`.
-  Antes de empezar hay que decidir y reescribir esas secciones (§1, §6 y §7):
-  el host de la base de datos en la CSP, qué datos personales se guardan, si
-  hace falta aviso de privacidad y cómo conviven las barajas de
-  `localStorage` con las de la cuenta.
-- **Por dónde:** el export estático se puede mantener si todo se hace desde el
-  navegador con el cliente de Supabase y reglas de acceso por fila (RLS). La
-  clave pública va en el bundle por diseño; la de servicio, nunca.
-- **Terminado cuando:** se puede crear una cuenta, iniciar sesión y guardar y
-  recuperar barajas desde otro dispositivo, con CLAUDE.md al día.
-
-## Pre-guardado de la baraja en el constructor
+### Pre-guardado de la baraja en el constructor
 
 - **Qué:** un borrador automático mientras se arma la baraja, a modo de
   salvoconducto: si se sale de `/constructor` sin guardar (otra pestaña, un
@@ -82,21 +70,7 @@ terminada.
 - **Terminado cuando:** salir y volver al constructor no pierde la baraja en
   curso, y guardar o descartar borra el borrador.
 
-## Reimpresiones de otras ediciones
-
-- **Qué:** agregar las reimpresiones de cartas que **ya están** en el catálogo
-  pero salieron en ediciones fuera del formato: Atavismo, Karma, las
-  Legendarias de Trempulcahue, etc.
-- **Por dónde:** el mecanismo ya existe para las cartas sueltas:
-  `data-src/extras.json` (`pnpm run data:card <edición> <número>`) y las
-  ediciones `parcial` de `src/lib/editions.ts`. Cada reimpresión **comparte
-  `identidad`** con su carta, para que el tope de copias las cuente juntas.
-  Una edición nueva necesita su prefijo **al final** de `PREFIJOS` en
-  `src/lib/deck-code.ts`: reordenar esa tabla rompe los enlaces compartidos.
-- **Terminado cuando:** las reimpresiones salen en el catálogo, se pueden
-  agregar a una baraja y cuentan como la misma carta.
-
-## Testeador de barajas en `/baraja`
+### Testeador de barajas en `/baraja`
 
 - **Qué:** sacar al azar una **mano inicial de 8 cartas** del principal, para
   ver qué puede salir.
@@ -109,7 +83,7 @@ terminada.
 - **Terminado cuando:** desde `/baraja` se roba una mano, se hacen mulligans y
   la mano nunca incluye el oro inicial.
 
-## Distinguir los tres tipos de Oro
+### Distinguir los tres tipos de Oro
 
 - **Qué:** que el catálogo y el constructor distingan los Oros **sin
   habilidad**, los **iniciales** y los **con habilidad**. Hoy son todos "Oro".
@@ -124,7 +98,34 @@ terminada.
 - **Terminado cuando:** se puede filtrar por cada tipo de Oro y se ven
   distintos en la grilla y en el panel de la baraja.
 
-## Oros iniciales por raza
+### Exportar la baraja como imagen
+
+Del roadmap, Fase 3 (`docs/plan.md`).
+
+- **Por qué:** para compartir la baraja en redes sociales, donde un enlace dice
+  menos que una imagen.
+- **Ojo:** sin servidor y sin dependencias nuevas si se puede (canvas del
+  navegador), y respetando la CSP: nada de recursos externos.
+- **Terminado cuando:** desde `/baraja` se puede descargar una imagen de la
+  baraja.
+
+## Catálogo y cartas
+
+### Reimpresiones de otras ediciones
+
+- **Qué:** agregar las reimpresiones de cartas que **ya están** en el catálogo
+  pero salieron en ediciones fuera del formato: Atavismo, Karma, las
+  Legendarias de Trempulcahue, etc.
+- **Por dónde:** el mecanismo ya existe para las cartas sueltas:
+  `data-src/extras.json` (`pnpm run data:card <edición> <número>`) y las
+  ediciones `parcial` de `src/lib/editions.ts`. Cada reimpresión **comparte
+  `identidad`** con su carta, para que el tope de copias las cuente juntas.
+  Una edición nueva necesita su prefijo **al final** de `PREFIJOS` en
+  `src/lib/deck-code.ts`: reordenar esa tabla rompe los enlaces compartidos.
+- **Terminado cuando:** las reimpresiones salen en el catálogo, se pueden
+  agregar a una baraja y cuentan como la misma carta.
+
+### Oros iniciales por raza
 
 - **Qué:** agregar los oros iniciales de raza que salieron en ediciones
   posteriores.
@@ -135,7 +136,7 @@ terminada.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
 
-## Recortar el arte de la extensión de Escuelas Elementales
+### Recortar el arte de la extensión de Escuelas Elementales
 
 - **Qué pasa:** las 11 cartas de la extensión (`ee-316` a `ee-326`: Visnu,
   Krisna, Harionna, Siddhattha Gotama, El Dharma, Aryuna, Karna, Loto Sagrado,
@@ -159,27 +160,7 @@ terminada.
   ven con el mismo borde y esquinas, en la grilla y en el modal, y en los dos
   temas.
 
-## Revisar la resolución de las imágenes de las cartas
-
-- **Qué:** que todas las cartas se vean con buena resolución. Hay que hacer
-  una revisión edición por edición; **Escuelas Elementales se ve excelente** y
-  sirve de referencia de lo que se busca.
-- **Lo que ya se sabe:** todas las WebP salen a **420 px** de ancho y las
-  miniaturas a **200 px** (`resize_to_width()`), pero el original de cada
-  edición no es igual. La API entrega 512×732 casi siempre; las Legendarias de
-  Axis Mundi, 709×1016; Legado Gótico, 419×600; y las seis Legendarias de
-  Dominio, 354×508 (esas, ampliadas: es el issue abierto del arte a baja
-  resolución). A mismo tamaño en pantalla, lo que cambia es cuánto detalle
-  traía el original y cuánto se perdió al comprimir.
-- **Por dónde:** una plancha por edición con la misma carta a tamaño real y
-  ampliada, comparada contra Escuelas Elementales. Mirar también la calidad de
-  compresión de `scripts/convert_images.py` y si conviene servir más de 420 px
-  donde el original lo permite.
-- **Terminado cuando:** ninguna edición se ve claramente peor que Escuelas
-  Elementales, o la diferencia está explicada (un original que no existe a más
-  resolución).
-
-## Cartas borrosas en la grilla del catálogo
+### Cartas borrosas en la grilla del catálogo
 
 - **Qué pasa:** en `/catalogo` las cartas se muestran grandes para que se lean,
   y a ese tamaño se ven un poco borrosas.
@@ -199,27 +180,52 @@ terminada.
 - **Terminado cuando:** se decide qué hacer con los números de peso delante y,
   si se hace, la grilla se ve nítida en una pantalla 2×.
 
-## Curva de coste en el constructor
+### Revisar la resolución de las imágenes de las cartas
 
-Del roadmap original, Fase 2 (`docs/plan.md`): nunca se hizo, aunque el README
-la prometía (ya no).
+- **Qué:** que todas las cartas se vean con buena resolución. Hay que hacer
+  una revisión edición por edición; **Escuelas Elementales se ve excelente** y
+  sirve de referencia de lo que se busca.
+- **Lo que ya se sabe:** todas las WebP salen a **420 px** de ancho y las
+  miniaturas a **200 px** (`resize_to_width()`), pero el original de cada
+  edición no es igual. La API entrega 512×732 casi siempre; las Legendarias de
+  Axis Mundi, 709×1016; Legado Gótico, 419×600; y las seis Legendarias de
+  Dominio, 354×508 (esas, ampliadas: tienen entrada propia, la siguiente).
+  A mismo tamaño en pantalla, lo que cambia es cuánto detalle
+  traía el original y cuánto se perdió al comprimir.
+- **Por dónde:** una plancha por edición con la misma carta a tamaño real y
+  ampliada, comparada contra Escuelas Elementales. Mirar también la calidad de
+  compresión de `scripts/convert_images.py` y si conviene servir más de 420 px
+  donde el original lo permite.
+- **Terminado cuando:** ninguna edición se ve claramente peor que Escuelas
+  Elementales, o la diferencia está explicada (un original que no existe a más
+  resolución).
 
-- **Qué:** cuántas cartas del principal hay de cada coste, a la vista mientras
-  se arma la baraja.
-- **Por dónde:** `deckStats` en `src/lib/deck-rules.ts` ya recorre el
-  principal para contar por tipo; la curva es otro contador ahí, con su test.
-  Solo el principal, como los contadores por tipo: el side no se juega de
-  salida. Los Oros no tienen coste (`coste: null`) y van aparte.
-- **Terminado cuando:** el panel del constructor muestra la curva y se
-  actualiza al agregar o quitar cartas.
+### Arte a tamaño completo para las seis Legendarias de Dominio
 
-## Exportar la baraja como imagen
+- **Qué:** DO-001 a DO-006 (Adapa, Caída del Sol, Devorar, Nammu, Xolotl y
+  Carpa Dragón) no existen en la API, y su arte se consiguió aparte a
+  **354×508**. `resize_to_width()` lo amplía a 420 de ancho, así que se ven
+  más blandas que el resto.
+- **Por dónde:** conseguir el arte a tamaño completo, borrar
+  `public/cards/do-00X.webp` y su `thumb/` (`data:images` se salta las WebP
+  que ya existen) y volver a correr `pnpm run data:images`.
+- **Terminado cuando:** las seis se ven tan nítidas como el resto de Dominio
+  en la grilla y en el modal.
 
-Del roadmap, Fase 3 (`docs/plan.md`).
+## Grande y con decisiones previas
 
-- **Por qué:** para compartir la baraja en redes sociales, donde un enlace dice
-  menos que una imagen.
-- **Ojo:** sin servidor y sin dependencias nuevas si se puede (canvas del
-  navegador), y respetando la CSP: nada de recursos externos.
-- **Terminado cuando:** desde `/baraja` se puede descargar una imagen de la
-  baraja.
+### Base de datos y cuentas de usuario
+
+- **Qué:** conectar DeckForge a una base de datos (Supabase, por ejemplo) para
+  poder crear cuentas y guardar barajas en la nube.
+- **Ojo, cambia premisas del proyecto.** Hoy CLAUDE.md dice sin backend, sin
+  cuentas, sin datos personales y con la CSP cerrada a `connect-src 'self'`.
+  Antes de empezar hay que decidir y reescribir esas secciones (§1, §6 y §7):
+  el host de la base de datos en la CSP, qué datos personales se guardan, si
+  hace falta aviso de privacidad y cómo conviven las barajas de
+  `localStorage` con las de la cuenta.
+- **Por dónde:** el export estático se puede mantener si todo se hace desde el
+  navegador con el cliente de Supabase y reglas de acceso por fila (RLS). La
+  clave pública va en el bundle por diseño; la de servicio, nunca.
+- **Terminado cuando:** se puede crear una cuenta, iniciar sesión y guardar y
+  recuperar barajas desde otro dispositivo, con CLAUDE.md al día.

@@ -84,7 +84,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo armo una baraja?",
         respuesta: [
-          "Entra a **Constructor** y agrega cartas con el botón **+** de cada una. El panel **«La baraja»** (en el teléfono, la barra de abajo) lleva la cuenta y te dice qué falta para que la baraja sea legal.",
+          "Entra a **Constructor** y agrega cartas con el botón **+** de cada una. El panel **«La baraja»** (en el teléfono, la barra de abajo) lleva la cuenta, muestra la **curva de coste** y te dice qué falta para que la baraja sea legal.",
         ],
       },
       {
@@ -117,10 +117,16 @@ export const FAQ: FaqSection[] = [
         ],
       },
       {
+        pregunta: "¿Qué es la curva de coste?",
+        respuesta: [
+          "Las barras del panel de la baraja: cuántas cartas llevas de cada **coste**, de 0 a 6 o más. Sirve para ver de un vistazo si la baraja está cargada de cartas caras. Solo cuenta la baraja, no el side deck, y los **Oros** van aparte porque no tienen coste.",
+        ],
+      },
+      {
         pregunta: "¿Por qué desaparecieron cartas del constructor?",
         respuesta: [
           "Cuando agregas Aliados, el constructor muestra **solo los Aliados que caben** en la afinidad de tu baraja, y te lo avisa sobre las cartas. Talismanes, Armas, Tótems y Oros siguen apareciendo todos. Para cambiar de afinidad, **quita los Aliados** de la baraja.",
-          "Si una carta no se puede agregar, por ejemplo porque ya tienes las copias máximas, el constructor **te dice el motivo** al intentarlo.",
+          "Si una carta no se puede agregar, por ejemplo porque ya tienes las copias máximas, el constructor **te dice el motivo** en un aviso arriba a la derecha.",
         ],
       },
       {

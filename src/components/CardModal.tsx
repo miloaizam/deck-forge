@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
@@ -41,6 +41,12 @@ export function CardModal({
 }: CardModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
+  // La carta que se pinta es la ultima que se abrio, no `card`: al cerrar,
+  // `card` pasa a null en el acto y el dialogo se desvaneceria vacio. Se
+  // ajusta durante el render, que es como React pide derivar estado de props.
+  const [mostrada, setMostrada] = useState(card);
+  if (card && card !== mostrada) setMostrada(card);
+
   // Usamos <dialog> nativo: trae foco atrapado, cierre con Esc y devolucion
   // del foco al elemento que lo abrio, sin librerias ni codigo propio.
   useEffect(() => {
@@ -61,9 +67,9 @@ export function CardModal({
       // El alto lo pone el area que scrollea, no el dialogo: asi hay un solo
       // lugar donde vive el tope y el dialogo se dimensiona por su contenido.
       // `overflow-hidden` esta solo para que las esquinas redondeadas recorten.
-      className="bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(56rem,calc(100vw-2rem))] overflow-hidden border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      className="panel-anim panel-sube bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(56rem,calc(100vw-2rem))] overflow-hidden border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
     >
-      {card && (
+      {mostrada && (
         <div className="relative">
           {/* El boton queda sobre el dialogo, no dentro del area que scrollea:
               cerrar tiene que estar siempre a mano. */}
@@ -83,8 +89,8 @@ export function CardModal({
           <div className="scrollbar-slim max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
             <div className="grid gap-6 p-5 sm:grid-cols-[minmax(0,17rem)_1fr] sm:gap-8 sm:p-8">
               <Image
-                src={card.imagen}
-                alt={`Carta: ${card.nombre}`}
+                src={mostrada.imagen}
+                alt={`Carta: ${mostrada.nombre}`}
                 width={420}
                 height={600}
                 priority
@@ -94,24 +100,24 @@ export function CardModal({
 
               <div className="min-w-0">
                 <p className="text-muted pr-12 text-[11px] tracking-[0.22em] uppercase">
-                  {editionTitle(card.edicion)}
+                  {editionTitle(mostrada.edicion)}
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-[-0.01em] sm:text-3xl">
-                  {card.nombre}
+                  {mostrada.nombre}
                 </h2>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="border-line bg-accent-soft text-accent rounded-chip border px-2.5 py-1 text-xs">
-                    {card.tipo}
+                    {mostrada.tipo}
                   </span>
-                  {card.raza && (
+                  {mostrada.raza && (
                     <span className="border-line bg-panel text-muted rounded-chip border px-2.5 py-1 text-xs">
-                      {card.raza}
+                      {mostrada.raza}
                     </span>
                   )}
-                  {card.escuela && (
+                  {mostrada.escuela && (
                     <span className="border-line bg-panel text-muted rounded-chip border px-2.5 py-1 text-xs">
-                      {card.escuela}
+                      {mostrada.escuela}
                     </span>
                   )}
                 </div>
@@ -119,25 +125,25 @@ export function CardModal({
                 <dl className="border-line mt-6 grid grid-cols-3 gap-4 border-t pt-5">
                   {/* Mismo orden que la carta impresa: fuerza a la izquierda,
                       coste a la derecha. */}
-                  <Stat label="Fuerza" value={card.fuerza} />
-                  <Stat label="Coste" value={card.coste} />
-                  <Stat label="Frecuencia" value={card.frecuencia} />
+                  <Stat label="Fuerza" value={mostrada.fuerza} />
+                  <Stat label="Coste" value={mostrada.coste} />
+                  <Stat label="Frecuencia" value={mostrada.frecuencia} />
                 </dl>
 
-                {card.habilidad && (
+                {mostrada.habilidad && (
                   <div className="border-line mt-5 border-t pt-5">
                     <h3 className="text-muted text-[11px] tracking-[0.18em] uppercase">
                       Habilidad
                     </h3>
                     <div className="mt-2">
-                      <AbilityText text={card.habilidad} />
+                      <AbilityText text={mostrada.habilidad} />
                     </div>
                   </div>
                 )}
 
-                {card.ilustrador && (
+                {mostrada.ilustrador && (
                   <p className="text-muted border-line mt-5 border-t pt-5 text-[13px]">
-                    Ilustración de <span className="text-ink">{card.ilustrador}</span>
+                    Ilustración de <span className="text-ink">{mostrada.ilustrador}</span>
                   </p>
                 )}
 

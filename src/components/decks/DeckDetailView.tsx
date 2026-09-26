@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Copy,
   Download,
@@ -17,6 +17,7 @@ import {
 import { DeckSections } from "./DeckSections";
 import { CardModal } from "../CardModal";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
@@ -55,7 +56,6 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const m = params.get("m");
   const d = useSharedCode();
 
-  const [mensaje, setMensaje] = useState("");
   /** Que carta se esta mirando en el modal. */
   const [vista, setVista] = useState<Card | null>(null);
   /** Borrar no tiene vuelta: se confirma en un modal aparte. */
@@ -83,11 +83,6 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
     return { deck: null, error: "Este enlace no trae ninguna baraja." };
   }, [m, d, decks]);
 
-  const avisar = useCallback((texto: string) => {
-    setMensaje(texto);
-    setTimeout(() => setMensaje(""), 4000);
-  }, []);
-
   /**
    * La portada se guarda al vuelo: la baraja sale del store, asi que escribirlo
    * basta para que la lista y esta vista se enteren. En una baraja compartida no
@@ -97,14 +92,14 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const elegirPortada = (cardId: string | null) => {
     if (!deck) return;
     if (!saveDeck(setCover(deck, cardId))) {
-      avisar("No pude guardarlo: el almacenamiento del navegador está lleno.");
+      toast("No pude guardarlo: el almacenamiento del navegador está lleno.", "error");
     }
   };
 
   const guardar = () => {
     if (!deck) return;
-    if (saveDeck(deck)) avisar(`Guardé "${deckTitle(deck)}" en este navegador.`);
-    else avisar("No pude guardarlo: el almacenamiento del navegador está lleno.");
+    if (saveDeck(deck)) toast(`Guardé "${deckTitle(deck)}" en tus barajas.`);
+    else toast("No pude guardarlo: el almacenamiento del navegador está lleno.", "error");
   };
 
   if (!cargado) {
@@ -159,18 +154,10 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         </div>
 
         <div className="flex flex-col items-start gap-3 sm:items-end">
-          {/* El aviso va en la linea del recuento y no bajo los botones: ahi
-              reservaba su alto siempre —para no empujar la baraja al aparecer— y
-              eran 32px de aire permanente entre los botones y las cartas. */}
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p role="status" aria-live="polite" className="text-muted text-[13px]">
-              {mensaje}
-            </p>
-            <p className="text-muted text-[13px] tabular-nums">
-              {stats.totalPrincipal}/{DECK_TOTAL} cartas
-              {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-            </p>
-          </div>
+          <p className="text-muted text-[13px] tabular-nums">
+            {stats.totalPrincipal}/{DECK_TOTAL} cartas
+            {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
+          </p>
 
           <div className="flex flex-wrap gap-2">
             {compartido ? (
@@ -186,7 +173,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             )}
             <button
               type="button"
-              onClick={() => void copyShareLink(deck).then(avisar)}
+              onClick={() => void copyShareLink(deck)}
               aria-label="Compartir la baraja"
               title="Copiar enlace"
               className={ICONO}
@@ -209,8 +196,16 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    saveDeck(duplicateDeck(deck));
-                    avisar("Dupliqué la baraja.");
+                    if (saveDeck(duplicateDeck(deck))) {
+                      toast(
+                        `Dupliqué "${deckTitle(deck)}": la copia está en Mis barajas.`,
+                      );
+                    } else {
+                      toast(
+                        "No pude duplicarla: el almacenamiento del navegador está lleno.",
+                        "error",
+                      );
+                    }
                   }}
                   aria-label="Duplicar la baraja"
                   title="Duplicar"
@@ -268,6 +263,9 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         confirmar="Borrar la baraja"
         onConfirm={() => {
           deleteDeck(deck.id);
+          // El aviso vive en el layout y sobrevive al cambio de pagina: se lee
+          // al llegar a Mis barajas.
+          toast(`Borré "${deckTitle(deck)}".`);
           router.push("/barajas");
         }}
         onCancel={() => setPorBorrar(false)}

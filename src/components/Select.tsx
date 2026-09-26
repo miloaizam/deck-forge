@@ -230,84 +230,89 @@ export function Select({
         )}
       </div>
 
-      {open && (
-        <div className="border-line bg-panel shadow-panel rounded-card absolute top-full right-0 left-0 z-20 mt-1.5 border py-1.5">
-          {/* El buscador va fuera de la lista y no scrollea con ella: la lista
+      {/* Siempre montado y oculto con `hidden`: asi el cierre puede
+          desvanecerse (ver `.despliegue` en globals.css). */}
+      <div
+        className={cn(
+          "despliegue border-line bg-panel shadow-panel rounded-card absolute top-full right-0 left-0 z-20 mt-1.5 border py-1.5",
+          !open && "hidden",
+        )}
+      >
+        {/* El buscador va fuera de la lista y no scrollea con ella: la lista
               se recorre y el campo se queda donde se escribe. */}
-          {buscable && (
-            <div className="relative px-1.5 pb-1.5">
-              <Search
-                size={15}
-                aria-hidden="true"
-                className="text-muted pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
-              />
-              <input
-                ref={inputRef}
-                type="text"
-                role="combobox"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  // La lista cambia entera: el recorrido vuelve a empezar.
-                  setActive(0);
-                }}
-                onKeyDown={onKeyDown}
-                placeholder="Buscar…"
-                aria-label={`Buscar en ${label}`}
-                aria-expanded
-                aria-controls={listId}
-                aria-activedescendant={activeId}
-                aria-autocomplete="list"
-                autoComplete="off"
-                className={cn(TEXT_FIELD, "bg-surface h-9 pr-3 pl-8")}
-              />
-            </div>
-          )}
+        {buscable && (
+          <div className="relative px-1.5 pb-1.5">
+            <Search
+              size={15}
+              aria-hidden="true"
+              className="text-muted pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
+            />
+            <input
+              ref={inputRef}
+              type="text"
+              role="combobox"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                // La lista cambia entera: el recorrido vuelve a empezar.
+                setActive(0);
+              }}
+              onKeyDown={onKeyDown}
+              placeholder="Buscar…"
+              aria-label={`Buscar en ${label}`}
+              aria-expanded
+              aria-controls={listId}
+              aria-activedescendant={activeId}
+              aria-autocomplete="list"
+              autoComplete="off"
+              className={cn(TEXT_FIELD, "bg-surface h-9 pr-3 pl-8")}
+            />
+          </div>
+        )}
 
-          <ul
-            ref={listRef}
-            id={listId}
-            role="listbox"
-            tabIndex={-1}
-            aria-labelledby={`${id}-label`}
-            aria-activedescendant={buscable ? undefined : activeId}
-            onKeyDown={buscable ? undefined : onKeyDown}
-            className="max-h-72 scrollbar-none overflow-y-auto outline-none"
-          >
-            {items.map((item, i) => {
-              const seleccionada = item === value;
-              return (
-                <li
-                  key={item || "__todos"}
-                  id={`${id}-opt-${i}`}
-                  data-index={i}
-                  role="option"
-                  aria-selected={seleccionada}
-                  onClick={() => pick(i)}
-                  onMouseEnter={() => setActive(i)}
-                  className={cn(
-                    "flex cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-sm transition-colors",
-                    i === active && "bg-surface",
-                    seleccionada ? "text-accent" : "text-ink",
-                    !item && "text-muted",
-                  )}
-                >
-                  <span className="truncate">{item ? format(item) : placeholder}</span>
-                  {seleccionada && (
-                    <Check size={14} aria-hidden="true" className="shrink-0" />
-                  )}
-                </li>
-              );
-            })}
-
-            {items.length === 0 && (
-              <li role="presentation" className="text-muted px-3 py-2.5 text-sm">
-                Sin coincidencias
+        <ul
+          ref={listRef}
+          id={listId}
+          role="listbox"
+          tabIndex={-1}
+          aria-labelledby={`${id}-label`}
+          aria-activedescendant={buscable ? undefined : activeId}
+          onKeyDown={buscable ? undefined : onKeyDown}
+          className="max-h-72 scrollbar-none overflow-y-auto outline-none"
+        >
+          {items.map((item, i) => {
+            const seleccionada = item === value;
+            return (
+              <li
+                key={item || "__todos"}
+                id={`${id}-opt-${i}`}
+                data-index={i}
+                role="option"
+                aria-selected={seleccionada}
+                onClick={() => pick(i)}
+                onMouseEnter={() => setActive(i)}
+                className={cn(
+                  "flex cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-sm transition-colors",
+                  i === active && "bg-surface",
+                  seleccionada ? "text-accent" : "text-ink",
+                  !item && "text-muted",
+                )}
+              >
+                <span className="truncate">{item ? format(item) : placeholder}</span>
+                {seleccionada && (
+                  <Check size={14} aria-hidden="true" className="shrink-0" />
+                )}
               </li>
-            )}
-          </ul>
-        </div>
-      )}
+            );
+          })}
+
+          {items.length === 0 && (
+            <li role="presentation" className="text-muted px-3 py-2.5 text-sm">
+              Sin coincidencias
+            </li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

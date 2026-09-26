@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Save } from "lucide-react";
 
@@ -11,6 +11,7 @@ import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
 import { Pagination } from "../Pagination";
+import { toast } from "../toast";
 import {
   applyFilters,
   buildFacets,
@@ -27,6 +28,7 @@ import {
   addCard,
   clearDeck,
   createDeck,
+  deckTitle,
   describeDeck,
   renameDeck,
   setQuantity,
@@ -46,7 +48,7 @@ import {
   DECK_TOTAL,
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
-import { saveDeck } from "@/lib/deck-storage";
+import { readDeck, saveDeck } from "@/lib/deck-storage";
 import {
   MAX_DESCRIPCION_BARAJA,
   MAX_NOMBRE_BARAJA,
@@ -59,6 +61,13 @@ import { cn } from "@/lib/utils";
 interface BuilderViewProps {
   cards: Card[];
 }
+
+/**
+ * Los rechazos del constructor ("ya llevas 3 copias") van como aviso de error.
+ * Vive fuera del componente para ser estable: DeckParamLoader la tiene en las
+ * dependencias de su efecto.
+ */
+const avisarError = (mensaje: string) => toast(mensaje, "error");
 
 function GuardarButton({
   guardado,
@@ -137,7 +146,6 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Card | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [aviso, setAviso] = useState("");
   const [guardado, setGuardado] = useState(false);
   /**
    * A que zona van las cartas que se agregan desde el catalogo.
@@ -197,34 +205,35 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const currentPage = Math.min(page, totalPages);
   const visible = paginate(results, currentPage, PAGE_SIZE_BUILDER);
 
-  // El aviso se borra solo: es un mensaje de paso, no un estado de la baraja.
-  const avisoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mostrarAviso = useCallback((mensaje: string) => {
-    setAviso(mensaje);
-    if (avisoTimer.current) clearTimeout(avisoTimer.current);
-    avisoTimer.current = setTimeout(() => setAviso(""), 5000);
-  }, []);
-  useEffect(
-    () => () => {
-      if (avisoTimer.current) clearTimeout(avisoTimer.current);
-    },
-    [],
-  );
-
   // Guardar termina el trabajo del constructor, asi que lleva a la ficha del
   // baraja: es donde se ve entero, se comparte y se borra. La baraja ya esta en
   // localStorage cuando navegamos, y /baraja lo lee de ahi por su id.
   const guardar = () => {
     if (deck.nombre.trim() === "") {
-      mostrarAviso("Ponle un nombre a la baraja antes de guardarla.");
+      avisarError("Ponle un nombre a la baraja antes de guardarla.");
       return;
     }
+    // Se mira antes de escribir: despues ya estaria guardada siempre.
+    const yaExistia = readDeck(deck.id) !== null;
     if (!saveDeck(deck)) {
-      mostrarAviso("No pude guardarlo: el almacenamiento del navegador está lleno.");
+      avisarError("No pude guardarlo: el almacenamiento del navegador está lleno.");
       return;
     }
     setGuardado(true);
+    // El aviso se pide antes de navegar y se lee ya en la pagina de la baraja.
+    toast(
+      yaExistia
+        ? `Guardé los cambios de "${deckTitle(deck)}".`
+        : `Creé la baraja "${deckTitle(deck)}".`,
+    );
     router.push(`/baraja/?m=${deck.id}`);
+  };
+
+  const vaciar = () => {
+    // Sin confirmacion, porque se rehace a mano; pero que se note que paso.
+    if (deck.principal.length === 0 && deck.side.length === 0) return;
+    setDeck((d) => clearDeck(d));
+    toast("Vacié la baraja.");
   };
 
   const agregar = (card: Card, zone: DeckZone = zona) => {
@@ -232,7 +241,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
     if (!rc) return;
     const check = canAdd(deck, rc, zone, index);
     if (!check.ok) {
-      mostrarAviso(check.mensaje);
+      avisarError(check.mensaje);
       return;
     }
     // addCard cuenta las copias de ESA zona; copiasPorId suma las dos y aqui
@@ -257,7 +266,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
       onSetQuantity={(id, zone, n) => setDeck((d) => setQuantity(d, id, zone, n))}
       onSetStartingGold={(id) => setDeck((d) => setStartingGold(d, id))}
       onVer={(id) => setSelected(cards.find((c) => c.id === id) ?? null)}
-      onBlocked={mostrarAviso}
+      onBlocked={avisarError}
     />
   );
 
@@ -265,7 +274,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
     <>
       {/* Aislar useSearchParams aqui deja prerenderizar todo lo de arriba. */}
       <Suspense fallback={null}>
-        <DeckParamLoader onLoad={setDeck} onError={mostrarAviso} />
+        <DeckParamLoader onLoad={setDeck} onError={avisarError} />
       </Suspense>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start lg:gap-6">
@@ -373,22 +382,10 @@ export function BuilderView({ cards }: BuilderViewProps) {
             {panel}
             <div className="border-line flex flex-wrap gap-2 border-t pt-4">
               <GuardarButton guardado={guardado} onGuardar={guardar} />
-              <DeckClearButton onClear={() => setDeck((d) => clearDeck(d))} />
+              <DeckClearButton onClear={vaciar} />
             </div>
           </div>
         </aside>
-      </div>
-
-      {/* Un solo lugar donde se anuncian los rechazos, para lector de pantalla. */}
-      <div
-        role="status"
-        aria-live="polite"
-        className={cn(
-          "border-line bg-panel shadow-panel rounded-card fixed inset-x-4 bottom-20 z-30 mx-auto max-w-md border px-4 py-3 text-[13px] transition-opacity lg:bottom-6",
-          aviso ? "text-ink opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        {aviso}
       </div>
 
       <DeckSheet
@@ -418,7 +415,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
         {panel}
         <div className="border-line mt-4 flex flex-wrap gap-2 border-t pt-4">
           <GuardarButton guardado={guardado} onGuardar={guardar} />
-          <DeckClearButton onClear={() => setDeck((d) => clearDeck(d))} />
+          <DeckClearButton onClear={vaciar} />
         </div>
       </DeckSheet>
 

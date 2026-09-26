@@ -393,6 +393,35 @@ export function deckStats(res: ResolvedDeck): DeckStats {
   };
 }
 
+/** Desde este coste la curva junta todo en una columna ("6+"). */
+export const CURVA_TOPE = 6;
+
+export interface CurvePoint {
+  /** Lo que se lee bajo la barra: "0", "1"… y "6+" en la ultima. */
+  etiqueta: string;
+  n: number;
+}
+
+/**
+ * La curva de coste como columnas fijas, de 0 a CURVA_TOPE+.
+ *
+ * Siempre las mismas columnas, aunque esten en cero: si aparecieran y
+ * desaparecieran segun la baraja, las barras cambiarian de sitio al agregar
+ * una carta y no se podria comparar una curva con otra de un vistazo. Por
+ * encima de 6 hay 31 cartas en todo el catalogo; con una columna por coste la
+ * curva seria casi toda hueco a la derecha.
+ *
+ * Los Oros no tienen coste y no estan en `curva`: se cuentan aparte.
+ */
+export function costCurve(curva: Map<number, number>): CurvePoint[] {
+  const puntos: CurvePoint[] = Array.from({ length: CURVA_TOPE + 1 }, (_, i) => ({
+    etiqueta: i === CURVA_TOPE ? `${i}+` : String(i),
+    n: 0,
+  }));
+  for (const [coste, n] of curva) puntos[Math.min(coste, CURVA_TOPE)].n += n;
+  return puntos;
+}
+
 /* ------------------------------------------------------------------ *
  * Validacion
  * ------------------------------------------------------------------ */

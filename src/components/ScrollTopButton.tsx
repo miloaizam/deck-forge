@@ -24,8 +24,7 @@ const enElServidor = () => false;
  *
  * En el constructor, bajo `lg`, el borde inferior ya lo ocupa la barra que abre
  * la hoja de la baraja (h-14 mas el area segura), asi que ahi se sube por
- * encima de ella. Queda debajo del aviso de rechazos (z-30 contra z-20): el
- * aviso dura unos segundos y tiene que leerse.
+ * encima de ella. Los avisos flotantes van arriba (`Toaster`): no se cruzan.
  */
 export function ScrollTopButton() {
   const visible = useSyncExternalStore(subscribe, lejosDelInicio, enElServidor);

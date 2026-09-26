@@ -84,7 +84,7 @@ export function DeckSheet({
         onClick={(e) => {
           if (e.target === ref.current) ref.current?.close();
         }}
-        className="bg-surface border-line text-ink shadow-panel rounded-t-panel mt-auto mb-0 w-full max-w-none border-t p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+        className="panel-anim panel-abajo bg-surface border-line text-ink shadow-panel rounded-t-panel mt-auto mb-0 w-full max-w-none border-t p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
       >
         <div className="relative">
           <div className="border-line bg-surface sticky top-0 z-10 flex items-center justify-between border-b px-4 py-3">

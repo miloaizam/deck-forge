@@ -480,12 +480,13 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
   El atributo se filtra desde habilidad; la **legalidad** espera a la banlist.
 - Buscador por nombre y habilidad (MiniSearch).
 
-**Fase 2 — Constructor de barajas** — hecha, salvo dos puntos.
+**Fase 2 — Constructor de barajas** — hecha, salvo un punto.
 - Panel de baraja con conteos por tipo, tope de 50 y side de hasta 10.
 - Reglas del formato: copias por carta, Únicas, oro inicial, mínimo de Aliados
   o Tótems y afinidad por raza, escuela o atributo.
 - Guardado en `localStorage` + exportar/importar.
-- **Pendiente:** la banlist y la curva de coste (las dos en TODO.md).
+- Curva de coste del principal en el panel.
+- **Pendiente:** la banlist (TODO.md).
 
 **Fase 3 — Compartir** — a medias.
 - Hecho: la baraja viaja en el enlace, en binario y en el fragmento (`#d=`).
