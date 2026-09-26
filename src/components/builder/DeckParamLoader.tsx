@@ -13,7 +13,7 @@ interface DeckParamLoaderProps {
 }
 
 /**
- * Lee `?m=` (un mazo guardado) o `?d=` (uno compartido) y lo entrega arriba.
+ * Lee `?m=` (una baraja guardada) o `?d=` (una compartida) y la entrega arriba.
  *
  * No pinta nada: existe solo para aislar `useSearchParams` detras de su propio
  * <Suspense>. Si el gancho se llamara desde la isla entera, todo lo que hay por
@@ -21,8 +21,8 @@ interface DeckParamLoaderProps {
  * el HTML estatico, que es justo lo caro de esta pagina.
  *
  * Se usa el gancho y no `window.location.search` porque navegar de
- * `/builder/?m=a` a `/builder/?m=b` no remonta la isla: leyendo `window` una
- * sola vez el mazo se quedaria pegado en el primero.
+ * `/constructor/?m=a` a `/constructor/?m=b` no remonta la isla: leyendo `window` una
+ * sola vez la baraja se quedaria pegado en el primero.
  */
 export function DeckParamLoader({ onLoad, onError }: DeckParamLoaderProps) {
   const params = useSearchParams();
@@ -50,7 +50,7 @@ export function DeckParamLoader({ onLoad, onError }: DeckParamLoaderProps) {
 
     const guardado = readDeck(m!);
     if (guardado) onLoad(guardado);
-    else onError("No encontré ese mazo en este navegador.");
+    else onError("No encontré esa baraja en este navegador.");
   }, [m, d, onLoad, onError]);
 
   return null;

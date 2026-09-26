@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   // No hay optimizador de imagenes sin servidor: las WebP ya vienen
   // redimensionadas desde scripts/convert_images.py.
   images: { unoptimized: true },
-  // `/mazo` -> `/mazo/index.html`, evita redirecciones raras en Pages.
+  // `/baraja` -> `/baraja/index.html`, evita redirecciones raras en Pages.
   trailingSlash: true,
   reactStrictMode: true,
 };

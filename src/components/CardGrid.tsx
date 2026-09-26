@@ -6,14 +6,14 @@ import type { Card } from "@/lib/types";
 interface CardGridProps {
   cards: Card[];
   onSelect: (card: Card) => void;
-  /** Copias en el mazo por id de carta. Solo lo pasa el constructor. */
+  /** Copias en la baraja por id de carta. Solo lo pasa el constructor. */
   copies?: Map<string, number>;
   onAdd?: (card: Card) => void;
   /** Por que no se puede agregar cada carta, si es que no se puede. */
   addBlocked?: (card: Card) => string | undefined;
   /**
    * Cuantas columnas caben. El catalogo tiene la pagina entera; el constructor
-   * cede casi medio metro de pantalla al panel del mazo y cierra en seis.
+   * cede casi medio metro de pantalla al panel de la baraja y cierra en seis.
    */
   variante?: "catalogo" | "constructor";
 }

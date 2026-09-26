@@ -36,7 +36,7 @@ test("reconoce la keyword declarada a secas, como la imprimen Bushido y Sol Naci
 
 test("reconoce la keyword con el recordatorio entre parentesis de Dominio y ContraAtaque", () => {
   const { keywords, cuerpo } = splitAbility(
-    "Única (Sólo puedes tener una copia de esta carta en tu Mazo Castillo).\n" +
+    "Única (Sólo puedes tener una copia de esta carta en tu Baraja Castillo).\n" +
       "Furia (Este Aliado no necesita pasar por una Fase de Agrupación para ser declarado atacante).\n" +
       "Cuando este Aliado entra en juego, Roba una carta.",
   );
@@ -118,7 +118,7 @@ test("un parentesis que es regla de verdad se queda", () => {
   // No explica una keyword: es lo que hace ESTA carta y no se puede tirar.
   for (const texto of [
     "Redirige el efecto de un Talismán que afecte a una de tus cartas (El nuevo objetivo debe ser válido).",
-    "Baraja tu Cementerio con tu Mazo Castillo (Si tienes cero cartas pierdes el juego).",
+    "Baraja tu Cementerio con tu Baraja Castillo (Si tienes cero cartas pierdes el juego).",
   ]) {
     assert.equal(splitAbility(texto).cuerpo, texto);
   }

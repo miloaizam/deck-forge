@@ -8,18 +8,18 @@ import type { Deck } from "@/lib/types";
 
 interface DeckTransferProps {
   decks: Deck[];
-  onImport: (mazos: Deck[]) => void;
+  onImport: (barajas: Deck[]) => void;
   onMessage: (mensaje: string) => void;
 }
 
 const BOTON =
   "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
-/** Mas de esto no es un respaldo de mazos, es otra cosa. */
+/** Mas de esto no es un respaldo de barajas, es otra cosa. */
 const MAX_ARCHIVO = 1024 * 1024;
 
 /**
- * Llevarse los mazos a otro navegador y traerlos de vuelta.
+ * Llevarse las barajas a otro navegador y traerlas de vuelta.
  *
  * Todo pasa en el navegador: el archivo se arma con un Blob y se baja con un
  * <a download>, sin que nada salga del origen. No se usa un data: URI porque
@@ -34,7 +34,7 @@ export function DeckTransfer({ decks, onImport, onMessage }: DeckTransferProps) 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `deckforge-mazos-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `deckforge-barajas-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -43,7 +43,7 @@ export function DeckTransfer({ decks, onImport, onMessage }: DeckTransferProps) 
     setOcupado(true);
     try {
       if (file.size > MAX_ARCHIVO) {
-        onMessage("Ese archivo es demasiado grande para ser un respaldo de mazos.");
+        onMessage("Ese archivo es demasiado grande para ser un respaldo de barajas.");
         return;
       }
 
@@ -52,17 +52,17 @@ export function DeckTransfer({ decks, onImport, onMessage }: DeckTransferProps) 
         onMessage("Ese archivo no es un respaldo de DeckForge.");
         return;
       }
-      if (resultado.mazos.length === 0) {
-        onMessage("No pude leer ningún mazo de ese archivo.");
+      if (resultado.barajas.length === 0) {
+        onMessage("No pude leer ninguna baraja de ese archivo.");
         return;
       }
 
-      onImport(resultado.mazos);
+      onImport(resultado.barajas);
       // Se dice la verdad completa: cuantos entraron y cuantos se cayeron.
       onMessage(
         resultado.descartados === 0
-          ? `Importaste ${resultado.mazos.length} ${resultado.mazos.length === 1 ? "mazo" : "mazos"}.`
-          : `Importaste ${resultado.mazos.length} y descarté ${resultado.descartados} por estar dañados.`,
+          ? `Importaste ${resultado.barajas.length} ${resultado.barajas.length === 1 ? "baraja" : "barajas"}.`
+          : `Importaste ${resultado.barajas.length} y descarté ${resultado.descartados} por estar dañadas.`,
       );
     } catch {
       onMessage("No pude leer ese archivo.");
@@ -104,7 +104,7 @@ export function DeckTransfer({ decks, onImport, onMessage }: DeckTransferProps) 
           if (file) void importar(file);
         }}
         className="sr-only"
-        aria-label="Elegir un archivo de mazos para importar"
+        aria-label="Elegir un archivo de barajas para importar"
       />
     </div>
   );

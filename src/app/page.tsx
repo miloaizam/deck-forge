@@ -47,12 +47,12 @@ export default function Home() {
         <p className="eyebrow mb-5">Mitos y Leyendas · Escuelas Elementales</p>
 
         <h1 className="text-wordmark text-[clamp(2.75rem,8vw,4.5rem)] leading-[1.02] font-bold tracking-[-0.02em]">
-          Donde se forjan los mazos
+          Donde se forjan las barajas
         </h1>
 
         <p className="text-muted mx-auto mt-6 max-w-[54ch] text-[17px] leading-relaxed">
           Consulta el catálogo completo del formato, encuentra la carta exacta que buscas
-          y arma tu mazo. Gratis, sin cuentas y sin instalar nada.
+          y arma tu baraja. Gratis, sin cuentas y sin instalar nada.
         </p>
 
         <div className="mt-10 flex justify-center">

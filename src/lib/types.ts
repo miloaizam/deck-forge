@@ -19,17 +19,17 @@ import { z } from "zod";
 export const TIPOS = ["Aliado", "Talismán", "Arma", "Tótem", "Oro"] as const;
 
 /**
- * Las secciones de un mazo, en el orden en que se presentan: Aliados, Armas,
+ * Las secciones de una baraja, en el orden en que se presentan: Aliados, Armas,
  * Talismanes, Totems y Oros.
  *
- * Vale para las tres vistas —la lista y las pilas de /mazo y el panel del
+ * Vale para las tres vistas —la lista y las pilas de /baraja y el panel del
  * constructor—, que antes llevaban cada una su propio orden. No es el de
  * TIPOS, que ordena el filtro del catalogo y se queda como esta.
  *
  * El plural va escrito y no derivado: los terminos del juego se respetan tal
  * cual, y en castellano ninguna regla automatica los acierta todos.
  */
-export const SECCIONES_DEL_MAZO: readonly { tipo: Tipo; titulo: string }[] = [
+export const SECCIONES_DE_LA_BARAJA: readonly { tipo: Tipo; titulo: string }[] = [
   { tipo: "Aliado", titulo: "Aliados" },
   { tipo: "Arma", titulo: "Armas" },
   { tipo: "Talismán", titulo: "Talismanes" },
@@ -184,7 +184,7 @@ export const catalogSchema = z.array(cardSchema);
 /**
  * Las dos razas de cada escuela elemental.
  *
- * Espejo de ESCUELA_POR_RAZA en scripts/fetch_edition.py. Un mazo del formato
+ * Espejo de ESCUELA_POR_RAZA en scripts/fetch_edition.py. Una baraja del formato
  * es o mono-raza o de una escuela (sus dos razas exactas): no se pueden mezclar
  * razas de escuelas distintas.
  */
@@ -199,7 +199,7 @@ export const RAZAS_POR_ESCUELA: Record<Escuela, readonly [Raza, Raza]> = {
  * La escuela de cada raza, o nada si no tiene.
  *
  * Cinco razas (Bárbaro, Samurái, Héroe, Bestia y Ancestral) no pertenecen a
- * ninguna escuela: solo pueden armar mazos mono-raza. Por eso es `Partial`.
+ * ninguna escuela: solo pueden armar barajas mono-raza. Por eso es `Partial`.
  */
 export const ESCUELA_POR_RAZA: Partial<Record<Raza, Escuela>> = Object.fromEntries(
   Object.entries(RAZAS_POR_ESCUELA).flatMap(([escuela, razas]) =>
@@ -208,27 +208,27 @@ export const ESCUELA_POR_RAZA: Partial<Record<Raza, Escuela>> = Object.fromEntri
 );
 
 /* ------------------------------------------------------------------ *
- * Mazos
+ * Barajas
  *
- * Un mazo no viene de la API: lo arma el usuario y vive en su navegador
+ * Una baraja no viene de la API: la arma el usuario y vive en su navegador
  * (localStorage) o viaja en un enlace. O sea que es entrada externa y no se
  * usa sin validar, igual que el catalogo.
  * ------------------------------------------------------------------ */
 
 export const DECK_VERSION = 1;
 
-/** Tope del nombre que el usuario le pone al mazo. */
-export const MAX_NOMBRE_MAZO = 30;
+/** Tope del nombre que el usuario le pone a la baraja. */
+export const MAX_NOMBRE_BARAJA = 30;
 
-/** Tope de la descripcion del mazo. Es una nota corta, no un articulo. */
-export const MAX_DESCRIPCION_MAZO = 50;
+/** Tope de la descripcion de la baraja. Es una nota corta, no un articulo. */
+export const MAX_DESCRIPCION_BARAJA = 50;
 
 /**
  * Lo que el esquema admite LEER, que es mas de lo que la interfaz deja
  * escribir.
  *
  * Los topes de arriba se han acortado ya una vez, y acortar el `.max()` del
- * esquema con ellos tiraria a la basura los mazos ya guardados con un nombre
+ * esquema con ellos tiraria a la basura las barajas ya guardados con un nombre
  * mas largo: `deck-storage` descarta lo que no valida. Asi en cambio entran y
  * se recortan al leerlos. La cota sigue existiendo —un localStorage hostil no
  * va a meternos un nombre de un mega—, solo que mas arriba.
@@ -240,17 +240,17 @@ const MAX_DESCRIPCION_LEIBLE = 600;
  * Cotas de forma, deliberadamente mas anchas que las reglas del formato.
  *
  * El esquema describe lo que se puede REPRESENTAR, no lo que es legal. Si
- * recortara a 3 copias, un mazo importado con 4 se volveria legal en silencio
+ * recortara a 3 copias, una baraja importada con 4 se volveria legal en silencio
  * al leerlo; asi en cambio entra, y el validador lo reporta.
  */
 const MAX_ENTRADAS = 60;
 const MAX_ENTRADAS_SIDE = 20;
 // El tope de copias del formato son 3, pero los Oros sin habilidad no tienen
-// tope: un mazo puede llevar hasta 35 iguales (50 menos el minimo de Aliados y
-// Totems). El esquema acota la FORMA, no la regla, asi que va al total del mazo.
+// tope: una baraja puede llevar hasta 35 iguales (50 menos el minimo de Aliados y
+// Totems). El esquema acota la FORMA, no la regla, asi que va al total de la baraja.
 const MAX_COPIAS_REPRESENTABLES = 50;
 
-/** Id local de un mazo. Nunca sale del navegador ni viaja en el enlace. */
+/** Id local de una baraja. Nunca sale del navegador ni viaja en el enlace. */
 const DECK_ID = /^[a-z0-9]{10}$/;
 
 export const deckEntrySchema = z.object({
@@ -260,11 +260,11 @@ export const deckEntrySchema = z.object({
 });
 
 /**
- * Raza, escuela o atributo: las tres formas que puede tomar un mazo.
+ * Raza, escuela o atributo: las tres formas que puede tomar una baraja.
  *
  * La de atributo llega con Steampunk, la primera edicion que imprime Luz y
  * Oscuridad. Se agrega sin subir `DECK_VERSION` porque el cambio es aditivo:
- * ningun mazo ya guardado deja de leerse por esto.
+ * ninguna baraja ya guardado deja de leerse por esto.
  */
 export const deckAffinitySchema = z.discriminatedUnion("modo", [
   z.object({ modo: z.literal("raza"), valor: z.enum(RAZAS) }),
@@ -283,33 +283,33 @@ export const deckSchema = z.object({
   nombre: z
     .string()
     .max(MAX_NOMBRE_LEIBLE)
-    .transform((t) => t.slice(0, MAX_NOMBRE_MAZO)),
+    .transform((t) => t.slice(0, MAX_NOMBRE_BARAJA)),
   /**
-   * Nota corta del autor sobre el mazo. Opcional: casi siempre viene vacia.
-   * Con `.default("")` los mazos ya guardados se siguen leyendo.
+   * Nota corta del autor sobre la baraja. Opcional: casi siempre viene vacia.
+   * Con `.default("")` las barajas ya guardados se siguen leyendo.
    */
   descripcion: z
     .string()
     .max(MAX_DESCRIPCION_LEIBLE)
-    .transform((t) => t.slice(0, MAX_DESCRIPCION_MAZO))
+    .transform((t) => t.slice(0, MAX_DESCRIPCION_BARAJA))
     .default(""),
   /**
-   * Que carta del mazo hace de oro inicial. Es un PUNTERO a una entrada de
+   * Que carta de la baraja hace de oro inicial. Es un PUNTERO a una entrada de
    * `principal`, no una zona aparte: el oro inicial cuenta dentro de las 50,
    * y darle un hueco propio garantizaba un error de conteo de uno.
    */
   oroInicial: z.string().regex(SLUG).nullable().default(null),
   /**
-   * Que carta del mazo hace de portada en la lista. Presentacion pura: no
+   * Que carta de la baraja hace de portada en la lista. Presentacion pura: no
    * entra en las reglas ni en el enlace compartido, como `afinidadFijada`.
-   * Lleva `.default(null)` para que los mazos ya guardados sigan leyendose.
+   * Lleva `.default(null)` para que las barajas ya guardados sigan leyendose.
    */
   portada: z.string().regex(SLUG).nullable().default(null),
   principal: z.array(deckEntrySchema).max(MAX_ENTRADAS),
   side: z.array(deckEntrySchema).max(MAX_ENTRADAS_SIDE),
   /**
    * Preferencia de la interfaz, no fuente de verdad. Sirve para filtrar el
-   * catalogo del constructor. La legalidad del mazo SIEMPRE se decide por las
+   * catalogo del constructor. La legalidad de la baraja SIEMPRE se decide por las
    * cartas que lleva, nunca por este campo.
    */
   afinidadFijada: deckAffinitySchema.nullable().default(null),

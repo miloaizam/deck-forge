@@ -10,7 +10,7 @@ import {
 import type { Deck } from "@/lib/types";
 
 /**
- * Los mazos guardados, leidos como sistema externo.
+ * Las barajas guardadas, leidos como sistema externo.
  *
  * `useSyncExternalStore` es el primitivo hecho para esto: leer localStorage en
  * un efecto y llamar a setState dispara renders en cascada, y el compilador de
@@ -26,7 +26,7 @@ const sinSuscripcion = () => () => {};
 /**
  * Si el navegador ya tomo el control.
  *
- * Sirve para distinguir "todavia no lei localStorage" de "no hay mazos", que
+ * Sirve para distinguir "todavia no lei localStorage" de "no hay barajas", que
  * en pantalla son cosas muy distintas: un esqueleto o un estado vacio.
  */
 export function useHydrated(): boolean {

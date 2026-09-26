@@ -5,23 +5,23 @@ import { DeckDetailView } from "@/components/decks/DeckDetailView";
 import { getCards } from "@/lib/cards";
 
 export const metadata: Metadata = {
-  title: "Mazo",
-  description: "Detalle de un mazo del formato Escuelas Elementales.",
-  // Un mazo compartido es contenido de un usuario, no del sitio.
+  title: "Baraja",
+  description: "Detalle de una baraja del formato Escuelas Elementales.",
+  // Una baraja compartida es contenido de un usuario, no del sitio.
   robots: { index: false, follow: true },
 };
 
 /**
- * Detalle de un mazo: `?m=` uno guardado, `?d=` uno compartido por enlace.
+ * Detalle de una baraja: `?m=` una guardada, `?d=` una compartida por enlace.
  *
  * Va en singular y con query string porque `output: "export"` no admite una
- * ruta dinamica `/mazos/[id]` para datos del usuario: generateStaticParams no
+ * ruta dinamica `/barajas/[id]` para datos del usuario: generateStaticParams no
  * puede conocer ids que se inventan en el navegador.
  *
- * El titulo lo pone la isla, no la pagina: es el nombre del mazo, y ese solo se
+ * El titulo lo pone la isla, no la pagina: es el nombre de la baraja, y ese solo se
  * conoce en el navegador.
  */
-export default async function MazoPage() {
+export default async function BarajaPage() {
   const cards = await getCards();
 
   return (

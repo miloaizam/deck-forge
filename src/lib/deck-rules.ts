@@ -16,7 +16,7 @@ import {
  * Las reglas del formato Escuelas Elementales.
  *
  * Funciones puras, sin React y sin I/O, al estilo de `catalog.ts`. Es el modulo
- * de mas consecuencia del repo: si se equivoca, declara legal un mazo que no lo
+ * de mas consecuencia del repo: si se equivoca, declara legal una baraja que no lo
  * es. Por eso tiene tests en `deck-rules.test.ts`.
  */
 
@@ -30,7 +30,7 @@ export const MAX_COPIAS_UNICA = 1;
 /**
  * Los tipos que pueden cumplir el minimo obligatorio, cada uno POR SU CUENTA.
  *
- * El formato pide 15 Aliados o 15 Totems, no 15 entre los dos: un mazo con 14
+ * El formato pide 15 Aliados o 15 Totems, no 15 entre los dos: una baraja con 14
  * Aliados y 14 Totems no cumple. Por eso el contador es el mayor de los dos y
  * no su suma.
  */
@@ -39,7 +39,7 @@ const TIPOS_DEL_MINIMO: readonly Tipo[] = ["Aliado", "Tótem"];
 /**
  * Lo minimo que las reglas necesitan saber de una carta.
  *
- * No se tipa contra `Card` a proposito: asi la vista de un mazo compartido
+ * No se tipa contra `Card` a proposito: asi la vista de una baraja compartida
  * puede recibir una proyeccion flaca del catalogo sin tocar este modulo.
  */
 export interface RuleCard {
@@ -51,13 +51,13 @@ export interface RuleCard {
   /**
    * Luz, Oscuridad o ninguno. Lo imprimen tambien Talismanes, Armas, Totems y
    * Oros, pero para las reglas solo cuenta el de los Aliados: el atributo
-   * restringe el mazo igual que la raza, y por los mismos motivos.
+   * restringe la baraja igual que la raza, y por los mismos motivos.
    */
   atributo: Atributo | null;
   coste: number | null;
   thumb: string;
   legalidad: Legalidad;
-  /** Lleva la keyword Unica: 1 copia por mazo. Tambien la traen seis Oros. */
+  /** Lleva la keyword Unica: 1 copia por baraja. Tambien la traen seis Oros. */
   unica: boolean;
   /**
    * Es un Oro sin habilidad. De ese hecho salen dos reglas: puede ocupar el
@@ -66,7 +66,7 @@ export interface RuleCard {
   oroSinHabilidad: boolean;
   /**
    * Lugar de la carta en el orden del catalogo (`compareCards`), ya resuelto:
-   * el mazo se pinta en ese mismo orden y aqui no queda mas que restar. Lo pone
+   * la baraja se pinta en ese mismo orden y aqui no queda mas que restar. Lo pone
    * `buildCardIndex`, que es quien ve el catalogo entero.
    */
   orden: number;
@@ -96,7 +96,7 @@ export interface CardIndex {
 /** Caro de construir y el catalogo no cambia en runtime: memorizar con useMemo. */
 export function buildCardIndex(cards: Card[]): CardIndex {
   // Se ordena aqui y no se da por hecho el orden en que llegaron: el indice es
-  // quien reparte el `orden` a cada carta, y de el sale el del mazo.
+  // quien reparte el `orden` a cada carta, y de el sale el de la baraja.
   const ordenadas = sortCards(cards);
   return { porId: new Map(ordenadas.map((c, i) => [c.id, toRuleCard(c, i)])) };
 }
@@ -104,19 +104,19 @@ export function buildCardIndex(cards: Card[]): CardIndex {
 /* ------------------------------------------------------------------ *
  * Afinidad
  *
- * Un mazo del formato se arma de una de tres formas: por raza, por escuela
+ * Una baraja del formato se arma de una de tres formas: por raza, por escuela
  * elemental (las dos razas exactas de una) o por atributo (todos sus Aliados
  * Luz, o todos Oscuridad). Son ALTERNATIVAS, no niveles: basta con cumplir una.
  *
  * La via del atributo llega con Steampunk, que es la primera edicion que
  * imprime Luz y Oscuridad, y es la que justifica que esto sea una lista de
- * vias abiertas y no un solo veredicto: mientras el mazo se arma suele cumplir
+ * vias abiertas y no un solo veredicto: mientras la baraja se arma suele cumplir
  * varias a la vez —el primer Aliado abre todas las que le corresponden— y se
- * van cerrando a medida que entran cartas. Un mazo de Aliados Luz de cuatro
+ * van cerrando a medida que entran cartas. Una baraja de Aliados Luz de cuatro
  * razas distintas es legal, y ninguna via de raza lo explica.
  * ------------------------------------------------------------------ */
 
-/** Solo los Aliados llevan afinidad; el resto entra en cualquier mazo. */
+/** Solo los Aliados llevan afinidad; el resto entra en cualquier baraja. */
 export interface ConAfinidad {
   tipo: Tipo;
   raza: Raza | null;
@@ -129,16 +129,16 @@ export type Via =
   | { modo: "atributo"; atributo: Atributo };
 
 export interface Afinidad {
-  /** El mazo no tiene Aliados todavia: sigue abierto a cualquier cosa. */
+  /** La baraja no tiene Aliados todavia: sigue abierto a cualquier cosa. */
   vacio: boolean;
   /**
-   * Las vias que los Aliados del mazo todavia cumplen, de la mas estrecha a la
-   * mas ancha. Si el mazo tiene Aliados y esto queda vacio, es ilegal.
+   * Las vias que los Aliados de la baraja todavia cumplen, de la mas estrecha a la
+   * mas ancha. Si la baraja tiene Aliados y esto queda vacio, es ilegal.
    */
   vias: Via[];
 }
 
-/** Lo que las reglas de afinidad miran de los Aliados de un mazo. */
+/** Lo que las reglas de afinidad miran de los Aliados de una baraja. */
 export interface Afinidades {
   razas: Set<Raza>;
   atributos: Set<Atributo>;
@@ -154,7 +154,7 @@ function escuelaComun(razas: Raza[]): Escuela | null {
 }
 
 /**
- * Deduce que vias sigue cumpliendo un mazo.
+ * Deduce que vias sigue cumpliendo una baraja.
  *
  * Cada via es una condicion sobre TODOS los Aliados ("todos de esta raza",
  * "todos de este atributo"), asi que una via abierta sigue abierta al agregar
@@ -170,14 +170,14 @@ export function deckAffinity({ razas, atributos, neutros }: Afinidades): Afinida
 
   if (lista.length === 1) vias.push({ modo: "raza", raza: lista[0] });
 
-  // Con una sola raza la via de escuela se abre igual: el mazo todavia puede
+  // Con una sola raza la via de escuela se abre igual: la baraja todavia puede
   // crecer hacia la otra raza de su escuela.
   const escuela = escuelaComun(lista);
   if (escuela) {
     vias.push({ modo: "escuela", escuela, razas: RAZAS_POR_ESCUELA[escuela] });
   }
 
-  // Un Aliado sin atributo no es "de los dos": no hay mazo de atributo que lo
+  // Un Aliado sin atributo no es "de los dos": no hay baraja de atributo que lo
   // admita, igual que un Aliado de otra raza cierra la via de la raza.
   if (!neutros && atributos.size === 1) {
     vias.push({ modo: "atributo", atributo: [...atributos][0] });
@@ -202,10 +202,10 @@ function viaAdmite(via: Via, card: ConAfinidad): boolean {
 }
 
 /**
- * Si esa carta puede entrar en un mazo con esta afinidad.
+ * Si esa carta puede entrar en una baraja con esta afinidad.
  *
  * Los que no son Aliados entran siempre: la afinidad restringe los Aliados y
- * nadie mas, asi que un Talisman Oscuridad cabe en un mazo Luz. Es la misma
+ * nadie mas, asi que un Talisman Oscuridad cabe en una baraja Luz. Es la misma
  * regla de siempre para la raza, ahora tambien para el atributo.
  */
 export function admite(afinidad: Afinidad, card: ConAfinidad): boolean {
@@ -217,7 +217,7 @@ export function admite(afinidad: Afinidad, card: ConAfinidad): boolean {
 /**
  * Como se lee la afinidad en una linea.
  *
- * Muestra la via de raza mas estrecha que siga abierta y, si el mazo ademas
+ * Muestra la via de raza mas estrecha que siga abierta y, si la baraja ademas
  * comparte atributo, tambien ese: "Caballero", "Gremio de Paladines · Luz".
  * Las dos vias de raza juntas ("Caballero" y "Gremio de Paladines") dirian lo
  * mismo dos veces, asi que manda la estrecha.
@@ -236,7 +236,7 @@ export function affinityLabel(afinidad: Afinidad): string {
 }
 
 /**
- * Que Aliados admite todavia el mazo, en prosa, para explicar por que el
+ * Que Aliados admite todavia la baraja, en prosa, para explicar por que el
  * catalogo del constructor esta acotado.
  *
  * Cuando sigue abierta la via de la escuela, la de la raza sobra: las razas de
@@ -260,7 +260,7 @@ export function affinityAdmits(afinidad: Afinidad): string {
 }
 
 /* ------------------------------------------------------------------ *
- * Resolucion del mazo contra el catalogo
+ * Resolucion de la baraja contra el catalogo
  * ------------------------------------------------------------------ */
 
 export interface ResolvedEntry {
@@ -320,10 +320,10 @@ export function copiasPorIdentidad(res: ResolvedDeck): Map<string, number> {
 }
 
 /**
- * Cuantas copias de una carta admite el mazo.
+ * Cuantas copias de una carta admite la baraja.
  *
  * Los Oros sin habilidad no tienen tope: son el recurso con el que se paga
- * todo y el mazo lleva las que necesite. Los que SI traen habilidad son cartas
+ * todo y la baraja lleva las que necesite. Los que SI traen habilidad son cartas
  * como cualquier otra y van al tope de 3, salvo los que ademas son Únicos.
  */
 export function limiteDeCopias(card: RuleCard): number {
@@ -341,7 +341,7 @@ export interface DeckStats {
   /** Cartas por coste, para la curva. La clave es el coste; las sin coste fuera. */
   curva: Map<number, number>;
   razas: Set<Raza>;
-  /** Los atributos que llevan los Aliados del mazo. Vacio hasta Steampunk. */
+  /** Los atributos que llevan los Aliados de la baraja. Vacio hasta Steampunk. */
   atributos: Set<Atributo>;
   /** Hay Aliados sin atributo impreso. Junto a `atributos`, explica el error. */
   aliadosNeutros: boolean;
@@ -367,8 +367,8 @@ export function deckStats(res: ResolvedDeck): DeckStats {
   }
 
   // La afinidad se mira sobre las 60 cartas, no sobre las 50: el side es una
-  // extension del mazo y entra a el entre partidas, asi que no puede traer una
-  // raza ni un atributo que el mazo no admite. Los contadores y la curva, en
+  // extension de la baraja y entra a el entre partidas, asi que no puede traer una
+  // raza ni un atributo que la baraja no admite. Los contadores y la curva, en
   // cambio, siguen siendo del principal: son lo que se juega de salida.
   for (const { card } of [...res.principal, ...res.side]) {
     // La afinidad la llevan los Aliados y nadie mas. La raza basta para
@@ -421,15 +421,15 @@ export interface DeckIssue {
 }
 
 /**
- * Por que los Aliados del mazo no forman ninguna afinidad.
+ * Por que los Aliados de la baraja no forman ninguna afinidad.
  *
- * Decir solo las razas ya no basta: desde Steampunk un mazo puede romperse por
+ * Decir solo las razas ya no basta: desde Steampunk una baraja puede romperse por
  * el atributo con las razas en orden ("todos Sombra, pero uno es Oscuridad y
  * otro no"), o por los dos a la vez.
  */
 function mensajeDeAfinidad(stats: DeckStats): string {
   const razas = [...stats.razas].join(", ");
-  const base = `Los Aliados de un mazo comparten una raza, una escuela o un atributo. Llevas ${razas}`;
+  const base = `Los Aliados de una baraja comparten una raza, una escuela o un atributo. Llevas ${razas}`;
 
   if (stats.atributos.size > 1) return `${base}, y mezclas Luz con Oscuridad.`;
   if (stats.atributos.size === 1 && stats.aliadosNeutros) {
@@ -452,7 +452,7 @@ function mensajeDeCopias(card: RuleCard, copias: number): DeckIssue {
   return {
     code: "copias-exceso",
     gravedad: "error",
-    mensaje: `Ese mazo ya tiene ${copias} copias de ${card.nombre} (el máximo es ${MAX_COPIAS}).`,
+    mensaje: `Esa baraja ya tiene ${copias} copias de ${card.nombre} (el máximo es ${MAX_COPIAS}).`,
     identidad: card.identidad,
   };
 }
@@ -469,8 +469,8 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
       gravedad: "aviso",
       mensaje:
         n === 1
-          ? "Una carta del mazo ya no está en el catálogo y no se cuenta."
-          : `${n} cartas del mazo ya no están en el catálogo y no se cuentan.`,
+          ? "Una carta de la baraja ya no está en el catálogo y no se cuenta."
+          : `${n} cartas de la baraja ya no están en el catálogo y no se cuentan.`,
     });
   }
 
@@ -478,7 +478,7 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     issues.push({
       code: "sin-nombre",
       gravedad: "error",
-      mensaje: "Ponle un nombre al mazo.",
+      mensaje: "Ponle un nombre a la baraja.",
     });
   }
 
@@ -489,8 +489,8 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
       gravedad: "error",
       mensaje:
         falta > 0
-          ? `El mazo debe tener ${DECK_TOTAL} cartas. Te faltan ${falta}.`
-          : `El mazo debe tener ${DECK_TOTAL} cartas. Te sobran ${-falta}.`,
+          ? `La baraja debe tener ${DECK_TOTAL} cartas. Te faltan ${falta}.`
+          : `La baraja debe tener ${DECK_TOTAL} cartas. Te sobran ${-falta}.`,
     });
   }
 
@@ -500,7 +500,7 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     issues.push({
       code: "oro-inicial-falta",
       gravedad: "error",
-      mensaje: "Falta el oro inicial. Elige un Oro sin habilidad del mazo.",
+      mensaje: "Falta el oro inicial. Elige un Oro sin habilidad de la baraja.",
     });
   } else if (!oro || !oro.oroSinHabilidad) {
     issues.push({
@@ -513,13 +513,13 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     issues.push({
       code: "oro-inicial-invalido",
       gravedad: "error",
-      mensaje: `${oro.nombre} es el oro inicial pero ya no está en el mazo. Elige otro.`,
+      mensaje: `${oro.nombre} es el oro inicial pero ya no está en la baraja. Elige otro.`,
       identidad: oro.identidad,
     });
   } else if (copiesOf(deck, deck.oroInicial, "principal") > 1) {
     // El oro inicial es UNA carta concreta que se aparta antes de empezar, asi
     // que tiene que poder senalarse sin ambiguedad: con varias copias del mismo
-    // Oro en el mazo no se sabe cual quedo fuera del monton.
+    // Oro en la baraja no se sabe cual quedo fuera del monton.
     issues.push({
       code: "oro-inicial-invalido",
       gravedad: "error",
@@ -607,7 +607,7 @@ function describirCarta(card: RuleCard): string {
  * Si se puede sumar una copia mas, y si no, por que.
  *
  * Comparte los contadores y los mensajes con `validateDeck` a proposito: si
- * divergieran, el boton "+" dejaria armar un mazo que el validador rechaza.
+ * divergieran, el boton "+" dejaria armar una baraja que el validador rechaza.
  */
 export function canAdd(
   deck: Deck,
@@ -624,7 +624,7 @@ export function canAdd(
   }
 
   if (zone === "principal" && stats.totalPrincipal >= DECK_TOTAL) {
-    return { ok: false, mensaje: `El mazo ya tiene sus ${DECK_TOTAL} cartas.` };
+    return { ok: false, mensaje: `La baraja ya tiene sus ${DECK_TOTAL} cartas.` };
   }
 
   if (zone === "side" && stats.totalSide >= SIDE_TOTAL) {
@@ -632,11 +632,11 @@ export function canAdd(
   }
 
   // La afinidad restringe las dos zonas: un side de otra escuela o de otro
-  // atributo seria un mazo ilegal en cuanto se usara.
+  // atributo seria una baraja ilegal en cuanto se usara.
   if (!admite(stats.afinidad, card)) {
     return {
       ok: false,
-      mensaje: `Ese mazo es de ${affinityLabel(stats.afinidad)}. ${card.nombre} es ${describirCarta(card)} y no puede entrar.`,
+      mensaje: `Esa baraja es de ${affinityLabel(stats.afinidad)}. ${card.nombre} es ${describirCarta(card)} y no puede entrar.`,
     };
   }
 

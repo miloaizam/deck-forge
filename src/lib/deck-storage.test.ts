@@ -2,15 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { createDeck, setQuantity } from "./deck";
-import { parseDecks, MAX_MAZOS } from "./deck-storage";
+import { parseDecks, MAX_BARAJAS } from "./deck-storage";
 
 /**
  * `localStorage` lo puede editar el usuario o cualquier extension del
  * navegador, asi que lo que importa aqui es que ninguna entrada rara lance ni
- * se lleve por delante los mazos que si estan bien.
+ * se lleve por delante las barajas que si estan bien.
  */
 
-const sobre = (mazos: unknown[]) => JSON.stringify({ v: 1, mazos });
+const sobre = (barajas: unknown[]) => JSON.stringify({ v: 1, mazos: barajas });
 
 test("lee un sobre normal", () => {
   const uno = setQuantity(createDeck("Uno"), "bu-001", "principal", 3);
@@ -20,7 +20,7 @@ test("lee un sobre normal", () => {
   assert.equal(leidos[0].nombre, "Uno");
 });
 
-test("un mazo corrupto no se lleva a los demas", () => {
+test("una baraja corrupta no se lleva a las demas", () => {
   const bueno = createDeck("Bueno");
   const leidos = parseDecks(sobre([{ nombre: "roto" }, bueno, null, 42, []]));
   assert.equal(leidos.length, 1, "el bueno se rescata");
@@ -55,7 +55,7 @@ test("un valor gigante se descarta antes de parsearlo", () => {
   assert.deepEqual(parseDecks("x".repeat(600 * 1024)), []);
 });
 
-test("se acota el numero de mazos", () => {
-  const muchos = Array.from({ length: MAX_MAZOS + 20 }, (_, i) => createDeck(`M${i}`));
-  assert.equal(parseDecks(sobre(muchos)).length, MAX_MAZOS);
+test("se acota el numero de barajas", () => {
+  const muchos = Array.from({ length: MAX_BARAJAS + 20 }, (_, i) => createDeck(`M${i}`));
+  assert.equal(parseDecks(sobre(muchos)).length, MAX_BARAJAS);
 });

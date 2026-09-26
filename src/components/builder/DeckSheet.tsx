@@ -17,10 +17,10 @@ interface DeckSheetProps {
 }
 
 /**
- * El panel del mazo en pantallas chicas: barra fija abajo que lo abre.
+ * El panel de la baraja en pantallas chicas: barra fija abajo que lo abre.
  *
- * DESIGN.md pide que el panel de mazo pase a hoja inferior en pantallas chicas
- * y que el estado del mazo este siempre a la vista, asi que la barra muestra el
+ * DESIGN.md pide que el panel de baraja pase a hoja inferior en pantallas chicas
+ * y que el estado de la baraja este siempre a la vista, asi que la barra muestra el
  * conteo y la legalidad aunque la hoja este cerrada.
  *
  * La hoja es un <dialog> nativo, igual que CardModal: trae foco atrapado,
@@ -50,7 +50,7 @@ export function DeckSheet({
         <button
           type="button"
           onClick={() => onOpenChange(true)}
-          aria-label="Abrir el panel del mazo"
+          aria-label="Abrir el panel de la baraja"
           className="focus-visible:outline-brand-500 flex h-14 w-full items-center gap-3 px-4"
         >
           <span className="text-ink text-lg font-bold tabular-nums">
@@ -88,11 +88,11 @@ export function DeckSheet({
       >
         <div className="relative">
           <div className="border-line bg-surface sticky top-0 z-10 flex items-center justify-between border-b px-4 py-3">
-            <h3 className="text-ink text-[15px] font-medium">El mazo</h3>
+            <h2 className="text-ink text-[15px] font-medium">La baraja</h2>
             <button
               type="button"
               onClick={() => ref.current?.close()}
-              aria-label="Cerrar el panel del mazo"
+              aria-label="Cerrar el panel de la baraja"
               className="text-muted hover:text-ink hover:bg-panel focus-visible:outline-brand-500 rounded-chip flex size-11 items-center justify-center transition-colors"
             >
               <X size={18} aria-hidden="true" />

@@ -26,7 +26,7 @@ OUT = ROOT / "public" / "data" / "cards.json"
 def revisar_identidades(cards: list[dict]) -> tuple[list[str], list[str]]:
     """Comprueba que las impresiones de una misma carta no se contradigan.
 
-    `identidad` es la clave con la que el constructor de mazos cuenta copias,
+    `identidad` es la clave con la que el constructor de barajas cuenta copias,
     asi que dos cartas que la comparten tienen que ser de verdad la misma. Un
     choque en `tipo` o `raza` significa que el slug fusiono cartas distintas y
     romperia las reglas del formato: eso es un error.

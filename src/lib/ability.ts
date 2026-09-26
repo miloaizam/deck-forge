@@ -21,7 +21,7 @@ const ALTERNATIVA = KEYWORDS_IMPRESAS.map((k) =>
  *
  * Bushido y Sol Naciente declaran la keyword a secas ("Unica. Furia."), pero
  * Dominio y ContraAtaque le pegan la explicacion entre parentesis ("Unica
- * (Solo puedes tener una copia de esta carta en tu Mazo Castillo)."). Es el
+ * (Solo puedes tener una copia de esta carta en tu Baraja Castillo)."). Es el
  * mismo texto de reglas repetido carta a carta y **no se muestra**: lo que hace
  * cada keyword es conocimiento comun del formato, y repetirlo en cada carta
  * ahoga el efecto, que es lo unico que cambia de una a otra.
@@ -40,7 +40,7 @@ const FIN_DECLARACION = `${RECORDATORIO}(?:\\.|(?=\\n|$))`;
 
 /**
  * El guion que separa la keyword de su parametro: "Traición - Destierra la
- * primera carta de tu Mazo Castillo", "Inmunidad - Cartas Luz".
+ * primera carta de tu Baraja Castillo", "Inmunidad - Cartas Luz".
  */
 const GUION_DE_PARAMETRO = "\\s-\\s";
 
@@ -98,7 +98,7 @@ export const ABRE_CON_KEYWORD_CON_COSTE = new RegExp(
  * Son mecanicas —cosas que la carta HACE— y por eso quedaron fuera de
  * `KEYWORDS_IMPRESAS` (ver la seccion de datos de CLAUDE.md). El recordatorio
  * es el mismo trozo repetido carta a carta: "(Cada carta elegida, puedes
- * Desterrarla o Barajarla en el Mazo Castillo de su dueño)" sale en trece.
+ * Desterrarla o Barajarla en el Baraja Castillo de su dueño)" sale en trece.
  *
  * Van por raiz y no por palabra entera porque la carta las conjuga:
  * "Alimenta", "Alimentarlo", "Purificarlas", "Purifícala".

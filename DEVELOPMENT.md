@@ -62,8 +62,8 @@ docs/            plan del proyecto y guía de marca
 out/             build estático (git-ignorado)
 ```
 
-Las rutas: `/` portada · `/catalogo` y `/catalogo/<edicion>` · `/builder` arma y
-edita · `/mazos` la lista · `/mazo` el detalle · `/erratas` (todavía vacía).
+Las rutas: `/` portada · `/catalogo` y `/catalogo/<edicion>` · `/constructor` arma y
+edita · `/barajas` la lista · `/baraja` el detalle · `/erratas` (todavía vacía).
 
 Dónde tocar según lo que quieras hacer:
 
@@ -71,7 +71,7 @@ Dónde tocar según lo que quieras hacer:
 |---|---|
 | Cambiar cómo se ve algo | `src/components/` y los tokens de `src/app/globals.css` |
 | Cambiar las reglas de construcción | `src/lib/deck-rules.ts` |
-| Cambiar cómo se guarda o comparte un mazo | `src/lib/deck-storage.ts`, `src/lib/deck-code.ts` |
+| Cambiar cómo se guarda o comparte una baraja | `src/lib/deck-storage.ts`, `src/lib/deck-code.ts` |
 | Cambiar el resaltado de keywords | `src/lib/ability.ts` |
 | Corregir el texto o los datos de una carta | `data-src/<edicion>.json` + `pnpm run data:cards` |
 | Agregar una edición | `scripts/fetch_edition.py` y la receta de CLAUDE.md |
@@ -113,7 +113,7 @@ llegaba el punto de cierre.
 Lo que cubren, por si tocas esa zona:
 
 - `deck-rules.test.ts` — las reglas del formato. Es el módulo de más
-  consecuencia del repo: si se equivoca, da por legal un mazo que no lo es.
+  consecuencia del repo: si se equivoca, da por legal una baraja que no lo es.
 - `deck-code.test.ts` — el enlace compartido y el archivo de respaldo. Son
   entrada externa: lo importante es que **nada de lo que llegue haga lanzar**.
 - `deck-storage.test.ts` — lo que se lee de `localStorage`, que el usuario o una
@@ -121,7 +121,7 @@ Lo que cubren, por si tocas esa zona:
 - `ability.test.ts` y `keywords.test.ts` — el texto de las cartas y sus
   keywords.
 - `card-order.test.ts` — el orden en que se listan las cartas, que comparten el
-  catálogo, el constructor y el detalle de un mazo.
+  catálogo, el constructor y el detalle de una baraja.
 
 Si arreglas un bug de datos o de reglas, deja un test que falle sin tu arreglo.
 

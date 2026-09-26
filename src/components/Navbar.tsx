@@ -18,8 +18,8 @@ interface NavLink {
 
 const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
-  { href: "/builder", label: "Builder", Icon: Hammer },
-  { href: "/mazos", label: "Mis mazos", Icon: Layers },
+  { href: "/constructor", label: "Constructor", Icon: Hammer },
+  { href: "/barajas", label: "Mis barajas", Icon: Layers },
   { href: "/erratas", label: "Erratas", Icon: FileWarning },
 ];
 

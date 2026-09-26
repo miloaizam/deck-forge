@@ -42,7 +42,7 @@ const FECHA = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
  * Los botones de una tarjeta, mas compactos que los de una pagina.
  *
  * Aqui van cinco seguidos bajo dos lineas de texto: a la altura de un boton
- * suelto (h-11) la fila pesaba mas que el mazo que describe. A 36px siguen
+ * suelto (h-11) la fila pesaba mas que la baraja que describe. A 36px siguen
  * comodos de pulsar y la tarjeta se lee de una.
  */
 const ACCION =
@@ -52,11 +52,11 @@ const ACCION_ICONO =
 
 export function DeckListView({ cards }: DeckListViewProps) {
   // La lista sale del store, no de estado propio: asi se mantiene al dia sola
-  // cuando se guarda un mazo, aqui o en otra pestana.
+  // cuando se guarda una baraja, aqui o en otra pestana.
   const decks = useDecks();
   const cargado = useHydrated();
   const [mensaje, setMensaje] = useState("");
-  /** Que mazo esta esperando confirmacion de borrado. Borrar no tiene vuelta. */
+  /** Que baraja esta esperando confirmacion de borrado. Borrar no tiene vuelta. */
   const [porBorrar, setPorBorrar] = useState<Deck | null>(null);
 
   const index = useMemo(() => buildCardIndex(cards), [cards]);
@@ -82,16 +82,16 @@ export function DeckListView({ cards }: DeckListViewProps) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          href="/builder"
+          href="/constructor"
           className="bg-brand-600 hover:bg-brand-500 rounded-chip focus-visible:outline-brand-300 inline-flex h-11 items-center gap-2 px-4 text-sm font-medium text-white transition-colors"
         >
           <Plus size={16} aria-hidden="true" />
-          Armar un mazo
+          Armar una baraja
         </Link>
 
         {/* El aviso va en la fila de los botones y no en una linea propia: ahi
             reservaba su alto siempre —para no empujar la lista al aparecer— y
-            eran 20px de aire permanente entre los botones y los mazos. Con
+            eran 20px de aire permanente entre los botones y las barajas. Con
             flex-1 y min-w-0 ocupa el hueco del medio y encoge hasta cero. */}
         <p
           role="status"
@@ -122,9 +122,9 @@ export function DeckListView({ cards }: DeckListViewProps) {
             aria-hidden="true"
             className="text-muted mx-auto mb-4 opacity-60"
           />
-          <p className="text-ink text-lg">Todavía no tienes mazos.</p>
+          <p className="text-ink text-lg">Todavía no tienes barajas.</p>
           <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
-            Los mazos que armes se guardan solo en este navegador. Si cambias de equipo,
+            Las barajas que armes se guardan solo en este navegador. Si cambias de equipo,
             expórtalos a un archivo y vuelve a importarlos allá.
           </p>
         </div>
@@ -141,7 +141,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                 key={deck.id}
                 className="border-line bg-panel rounded-panel flex gap-3 border p-3.5"
               >
-                {/* La portada la elige el usuario en /mazo, y va a la izquierda
+                {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no
                     se dibuja nada: un hueco vacio diria menos que la tarjeta
                     sin foto. */}
@@ -166,7 +166,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <Link
-                        href={`/mazo/?m=${deck.id}`}
+                        href={`/baraja/?m=${deck.id}`}
                         className="text-ink hover:text-accent focus-visible:outline-brand-500 block truncate rounded font-medium transition-colors"
                       >
                         {deckTitle(deck)}
@@ -205,7 +205,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                   {/* `mt-auto` los manda al fondo: la portada fija el alto de
                       la tarjeta y los botones cierran contra su borde. */}
                   <div className="mt-auto flex flex-wrap gap-1.5">
-                    <Link href={`/builder/?m=${deck.id}`} className={ACCION}>
+                    <Link href={`/constructor/?m=${deck.id}`} className={ACCION}>
                       <Hammer size={14} aria-hidden="true" />
                       Editar
                     </Link>
@@ -236,7 +236,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     >
                       <Copy size={14} aria-hidden="true" />
                     </button>
-                    {/* Borrar pide confirmar en un modal: el mazo solo vive
+                    {/* Borrar pide confirmar en un modal: la baraja solo vive
                       aqui y no hay de donde recuperarlo. */}
                     <button
                       type="button"
@@ -257,13 +257,13 @@ export function DeckListView({ cards }: DeckListViewProps) {
 
       <ConfirmDialog
         open={porBorrar !== null}
-        titulo="¿Borrar el mazo?"
+        titulo="¿Borrar la baraja?"
         mensaje={
           porBorrar
             ? `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de donde recuperarlo.`
             : ""
         }
-        confirmar="Borrar el mazo"
+        confirmar="Borrar la baraja"
         onConfirm={() => porBorrar && borrar(porBorrar)}
         onCancel={() => setPorBorrar(null)}
       />
