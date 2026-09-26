@@ -42,3 +42,18 @@ Ordenadas de más a menos importante.
 - **Arreglo:** conseguir el arte a tamaño completo, borrar
   `public/cards/do-00X.webp` y su `thumb/`, y volver a correr
   `pnpm run data:images`.
+
+## La estrella de portada no se ve en pantallas táctiles
+
+- **Qué pasa:** en la página de una baraja, el botón para elegir la carta de
+  portada (una estrella) solo se hace visible al pasar el cursor o al
+  enfocarlo con el teclado (`opacity-0 group-hover:opacity-100` en
+  `BotonPortada`, `src/components/decks/DeckSections.tsx`). En un teléfono no
+  hay cursor: el botón está y se puede tocar, pero no se ve, así que nadie sabe
+  que existe. La ayuda del sitio lo explica con el cursor por eso mismo.
+- **Arreglo posible:** mostrarlo siempre en pantallas sin cursor
+  (`@media (hover: none)` o la variante `pointer-coarse:` de Tailwind), manteniendo
+  el ocultamiento en escritorio, donde cincuenta estrellas a la vez serían ruido.
+- **Arreglado cuando:** en un teléfono se ve la estrella de cada carta y se
+  puede elegir la portada; y la respuesta de la ayuda (`src/lib/faq.ts`) deja
+  de hablar solo del cursor.

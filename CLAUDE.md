@@ -969,7 +969,7 @@ mal, en [ISSUES.md](ISSUES.md).
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
-`/erratas` (placeholder).
+`/erratas` (placeholder) · `/novedades` la línea de tiempo de cambios.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1009,8 +1009,31 @@ regenerarla. Dos límites a saber:
   compartió antes del cambio puede seguir saliendo sin imagen hasta que
   caduque.
 
-La navbar es una fila plana de cuatro enlaces (sin desplegable). Bajo `md` se
-pliegan detrás de un botón de menú: no caben junto al logotipo en un teléfono.
+La navbar es una fila plana de cinco enlaces (sin desplegable): Catálogo,
+Constructor, Mis barajas, Erratas y Novedades. Bajo `md` se pliegan detrás de
+un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
+siempre a la vista y también en el teléfono, la **ayuda** (un signo de
+pregunta) y el botón de tema. La portada no tiene navbar, así que tampoco
+ayuda.
+
+**Dos contenidos para el usuario viven como datos y hay que mantenerlos a mano,
+en el mismo commit que el cambio que los afecta:**
+- **`src/lib/faq.ts`**, las preguntas frecuentes del panel de ayuda
+  (`HelpButton.tsx`, un `<dialog>` lateral con `<details>`). Describen lo que
+  la interfaz hace **hoy**, con los nombres que muestra: si cambia un botón o
+  una regla, se cambia la respuesta. Una ayuda que contradice al sitio es peor
+  que no tenerla.
+- **`src/lib/novedades.ts`**, la línea de tiempo de `/novedades`. Entra solo lo
+  que al usuario le cambia algo, contado para quien juega: nada de seguridad
+  interna, herramientas de desarrollo ni refactors. La fecha es la del commit,
+  y `novedades.test.ts` exige que vayan de la más nueva a la más antigua.
+
+**Volver arriba** (`ScrollTopButton.tsx`, en el layout de `(app)`) aparece tras
+bajar 600 px. En el constructor, bajo `lg`, sube por encima de la barra fija
+que abre la hoja de la baraja; queda por debajo del aviso de rechazos, que dura
+unos segundos y tiene que leerse. Con "reducir movimiento" el salto es
+instantáneo, y el foco vuelve al logotipo para que el teclado siga desde
+arriba.
 
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay

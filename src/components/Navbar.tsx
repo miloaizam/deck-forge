@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileWarning, Hammer, Layers, LibraryBig, Menu, X } from "lucide-react";
+import { FileWarning, Hammer, Layers, LibraryBig, Menu, Sparkles, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { HelpButton } from "./HelpButton";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const LINKS: NavLink[] = [
   { href: "/constructor", label: "Constructor", Icon: Hammer },
   { href: "/barajas", label: "Mis barajas", Icon: Layers },
   { href: "/erratas", label: "Erratas", Icon: FileWarning },
+  { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];
 
 /** `/catalogo` tambien queda activo dentro de `/catalogo/bushido`. */
@@ -73,7 +75,7 @@ export function Navbar() {
           />
         </Link>
 
-        {/* Los cuatro enlaces no caben junto al logotipo en un telefono, asi
+        {/* Los cinco enlaces no caben junto al logotipo en un telefono, asi
             que ahi se pliegan detras del boton de menu. */}
         <div className="hidden items-center gap-1 md:flex">
           {LINKS.map(({ href, label, Icon }) => (
@@ -93,6 +95,9 @@ export function Navbar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* La ayuda va a la izquierda del tema y queda a la vista tambien en
+              el telefono: no se pliega en el menu. */}
+          <HelpButton />
           <ThemeToggle />
 
           <button

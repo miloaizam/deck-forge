@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/Navbar";
+import { ScrollTopButton } from "@/components/ScrollTopButton";
 
 /**
  * Layout de las paginas internas. La portada queda fuera de este grupo, asi
@@ -9,6 +10,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <>
       <Navbar />
       {children}
+      <ScrollTopButton />
     </>
   );
 }
