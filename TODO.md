@@ -159,6 +159,46 @@ terminada.
   ven con el mismo borde y esquinas, en la grilla y en el modal, y en los dos
   temas.
 
+## Revisar la resolución de las imágenes de las cartas
+
+- **Qué:** que todas las cartas se vean con buena resolución. Hay que hacer
+  una revisión edición por edición; **Escuelas Elementales se ve excelente** y
+  sirve de referencia de lo que se busca.
+- **Lo que ya se sabe:** todas las WebP salen a **420 px** de ancho y las
+  miniaturas a **200 px** (`resize_to_width()`), pero el original de cada
+  edición no es igual. La API entrega 512×732 casi siempre; las Legendarias de
+  Axis Mundi, 709×1016; Legado Gótico, 419×600; y las seis Legendarias de
+  Dominio, 354×508 (esas, ampliadas: es el issue abierto del arte a baja
+  resolución). A mismo tamaño en pantalla, lo que cambia es cuánto detalle
+  traía el original y cuánto se perdió al comprimir.
+- **Por dónde:** una plancha por edición con la misma carta a tamaño real y
+  ampliada, comparada contra Escuelas Elementales. Mirar también la calidad de
+  compresión de `scripts/convert_images.py` y si conviene servir más de 420 px
+  donde el original lo permite.
+- **Terminado cuando:** ninguna edición se ve claramente peor que Escuelas
+  Elementales, o la diferencia está explicada (un original que no existe a más
+  resolución).
+
+## Cartas borrosas en la grilla del catálogo
+
+- **Qué pasa:** en `/catalogo` las cartas se muestran grandes para que se lean,
+  y a ese tamaño se ven un poco borrosas.
+- **Medido:** la grilla usa las miniaturas de **200 px** (`card.thumb` en
+  `CardTile.tsx`). En escritorio la carta ocupa 183 px de CSS: en una pantalla
+  normal alcanza, pero en una de alta densidad (la mayoría de notebooks y
+  teléfonos) son **366 px físicos**, y en un teléfono de 390 px de ancho,
+  **507**. El navegador estira la miniatura 1,8 a 2,5 veces: de ahí lo
+  borroso. La imagen grande del modal (420 px) tampoco llega a 2× en todas
+  las pantallas.
+- **Opciones a evaluar:** `srcset` con la miniatura y la imagen de 420 px, para
+  que cada pantalla baje la que necesita (sin servidor funciona igual: son
+  archivos estáticos); o miniaturas más grandes. Las dos cuestan descarga: la
+  grilla pagina de a muchas cartas y hay que medir cuánto sube el peso de la
+  página. Recordar que `next/image` va con `unoptimized` (no hay servidor que
+  redimensione), así que el `srcset` se escribe a mano.
+- **Terminado cuando:** se decide qué hacer con los números de peso delante y,
+  si se hace, la grilla se ve nítida en una pantalla 2×.
+
 ## Curva de coste en el constructor
 
 Del roadmap original, Fase 2 (`docs/plan.md`): nunca se hizo, aunque el README
