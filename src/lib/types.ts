@@ -255,7 +255,7 @@ const fechaSchema = z
 /**
  * Caracteres de control y de direccion de texto.
  *
- * No ejecutan nada, pero viajan en archivos y enlaces `?d=`: un U+202E invierte
+ * No ejecutan nada, pero viajan en archivos y enlaces compartidos: un U+202E invierte
  * lo que sigue y deja escribir un nombre que se lee como otro. Se quitan al
  * leer. Los saltos de linea y tabuladores pasan a espacio, para no pegar dos
  * palabras; la interfaz los pinta como espacio de todos modos. El U+200D

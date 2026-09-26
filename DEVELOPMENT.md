@@ -92,7 +92,7 @@ Están completas en **[CLAUDE.md](CLAUDE.md)** (código, datos y seguridad) y
 - **Tailwind con los tokens de marca**: `bg-panel`, `text-muted`, `border-line`…
   Nada de hex sueltos en los componentes.
 - **Todo lo que entra desde fuera se valida con Zod**: `cards.json`,
-  `localStorage` y la query string. Nunca se asume su forma.
+  `localStorage` y la URL (query y fragmento). Nunca se asume su forma.
 - **No se rompe el export estático**: nada de API routes, middleware, `cookies()`
   ni Server Actions. Tampoco `dangerouslySetInnerHTML`, que ESLint rechaza.
 - **No se editan a mano** `public/data/cards.json` ni `public/cards/`: se

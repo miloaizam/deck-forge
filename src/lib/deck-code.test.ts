@@ -8,6 +8,7 @@ import { createDeck, setQuantity, setStartingGold } from "./deck";
 import {
   decodeDeck,
   encodeDeck,
+  codeFromHash,
   exportFile,
   importFile,
   shareUrl,
@@ -61,7 +62,7 @@ test("una baraja llena cabe comodo en una URL", () => {
     url.length < LARGO_INCOMODO,
     `la URL mide ${url.length} y deberia bajar de ${LARGO_INCOMODO}`,
   );
-  assert.match(url, /\/baraja\/\?d=/, "la ruta lleva barra final antes del parametro");
+  assert.match(url, /\/baraja\/#d=/, "la ruta lleva barra final antes del fragmento");
 });
 
 test("el codigo no lleva nada que la URL tenga que escapar", () => {
@@ -263,4 +264,25 @@ test("un nombre con cambio de direccion llega limpio por el enlace", () => {
   const r = decodeDeck(encodeDeck(trucada));
   assert.ok(r.ok);
   assert.equal(r.ok && r.deck.nombre, "Miagnp");
+});
+
+test("el enlace lleva la baraja en el fragmento, que no llega al servidor", () => {
+  const url = new URL(shareUrl(mazoDePrueba(), "https://deckforge.example"));
+  assert.equal(url.search, "", "nada en la query string");
+  const codigo = codeFromHash(url.hash);
+  assert.ok(codigo);
+  const r = decodeDeck(codigo);
+  assert.ok(r.ok);
+  assert.equal(r.ok && r.deck.nombre, mazoDePrueba().nombre);
+});
+
+test("codeFromHash no lanza y distingue lo que no es una baraja", () => {
+  assert.equal(codeFromHash(""), null);
+  assert.equal(codeFromHash("#"), null);
+  assert.equal(codeFromHash("#m=abc"), null);
+  assert.equal(codeFromHash("#d="), null);
+  assert.equal(codeFromHash("#d=%E0%A4%A"), null, "un escape roto no revienta");
+  assert.equal(codeFromHash("#x=1&d=abc"), "abc");
+  // El formato 1 lleva `+`, que URLSearchParams convertiria en espacio.
+  assert.equal(codeFromHash("#d=a+b$c"), "a+b$c");
 });

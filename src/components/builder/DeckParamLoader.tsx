@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 
 import { decodeDeck } from "@/lib/deck-code";
 import { readDeck } from "@/lib/deck-storage";
+import { useSharedCode } from "@/components/decks/use-shared-code";
 import type { Deck } from "@/lib/types";
 
 interface DeckParamLoaderProps {
@@ -13,7 +14,8 @@ interface DeckParamLoaderProps {
 }
 
 /**
- * Lee `?m=` (una baraja guardada) o `?d=` (una compartida) y la entrega arriba.
+ * Lee `?m=` (una baraja guardada) o `#d=` / `?d=` (una compartida) y la
+ * entrega arriba.
  *
  * No pinta nada: existe solo para aislar `useSearchParams` detras de su propio
  * <Suspense>. Si el gancho se llamara desde la isla entera, todo lo que hay por
@@ -27,7 +29,7 @@ interface DeckParamLoaderProps {
 export function DeckParamLoader({ onLoad, onError }: DeckParamLoaderProps) {
   const params = useSearchParams();
   const m = params.get("m");
-  const d = params.get("d");
+  const d = useSharedCode();
 
   // Cada combinacion de parametros se carga una sola vez: sin esto, cualquier
   // render volveria a pisar lo que el usuario lleve editado.

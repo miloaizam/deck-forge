@@ -34,16 +34,6 @@ Ordenadas de más a menos importante.
   diferencia queda explicada en CLAUDE.md como se hizo con Ordalía y la promo
   dorada de Sarras.
 
-## Un mazo compartido pasa por los logs de Cloudflare
-
-- **Qué pasa:** el enlace `/mazo/?d=…` lleva el mazo en la query string, que
-  llega al servidor y puede quedar en los logs del borde.
-- **Arreglo posible:** moverlo al fragmento (`#d=`), que no sale del
-  navegador. Cuesta la reactividad de `useSearchParams` y hay que seguir
-  leyendo los enlaces `?d=` ya compartidos.
-- **Prioridad baja:** el mazo no es un dato personal. Está documentado en
-  CLAUDE.md, §6.7.
-
 ## Arte a baja resolución en las seis Legendarias de Dominio
 
 - **Qué pasa:** DO-001 … DO-006 no existen en la API y su arte se consiguió a

@@ -19,6 +19,7 @@ import { CardModal } from "../CardModal";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
+import { useSharedCode } from "./use-shared-code";
 import { deckTitle, duplicateDeck, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
@@ -42,7 +43,8 @@ const ICONO =
   "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /**
- * Muestra una baraja, sea tuyo (`?m=`) o de un enlace compartido (`?d=`).
+ * Muestra una baraja, sea tuya (`?m=`) o de un enlace compartido (`#d=`, o
+ * `?d=` en los enlaces de antes).
  *
  * Es la unica forma de tener un detalle por baraja con `output: "export"`: una
  * ruta dinamica `/barajas/[id]` no puede existir, porque generateStaticParams no
@@ -51,7 +53,7 @@ const ICONO =
 export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const params = useSearchParams();
   const m = params.get("m");
-  const d = params.get("d");
+  const d = useSharedCode();
 
   const [mensaje, setMensaje] = useState("");
   /** Que carta se esta mirando en el modal. */

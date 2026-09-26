@@ -806,7 +806,7 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    renderiza siempre como texto plano. Tampoco `eval` ni `new Function`.
 
 4. **Todo lo que entra desde fuera del bundle se valida con Zod** antes de
-   usarse: `cards.json`, `localStorage` y la query string. `localStorage` lo
+   usarse: `cards.json`, `localStorage` y la URL (query y fragmento). `localStorage` lo
    puede editar el usuario o cualquier extensión del navegador — nunca se
    asume su forma. Al decodificar una baraja desde la URL: parsear a la
    defensiva, acotar tamaños y descartar ids desconocidos sin reventar la app.
@@ -854,11 +854,16 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    `localStorage` del usuario. No hay cuentas, ni datos personales, ni banner de
    consentimiento. Que siga así.
 
-   *Matiz honesto:* una baraja compartida viaja en la query string
-   (`/baraja/?d=…`), así que **sí pasa por el borde de Cloudflare** y puede
-   quedar en sus logs, como cualquier URL. No es "nunca sale del navegador".
-   Un fragmento (`#d=`) no saldría, pero cuesta la reactividad de
-   `useSearchParams`; se deja documentado por si algún día importa.
+   **Una baraja compartida viaja en el fragmento** (`/baraja/#d=…`), que el
+   navegador nunca manda al servidor: no pasa por el borde de Cloudflare ni
+   queda en sus logs. Antes iba en la query string (`?d=`) y sí pasaba. Los
+   enlaces viejos se siguen abriendo, y al abrirlos la barra de direcciones
+   se pasa a `#d=` para que, si se vuelven a copiar de ahí, ya no salgan del
+   navegador (el pedido original ya se hizo: eso no tiene arreglo).
+   Lo lee `useSharedCode()` (`src/components/decks/use-shared-code.ts`):
+   `useSearchParams` no ve el fragmento, así que se lee como sistema externo
+   suscrito a `hashchange`. Verificado registrando los pedidos que recibe el
+   servidor: el código no aparece en ninguno.
 
 8. **Sin secretos en el repo.** En un sitio estático no existe lugar seguro
    para una clave: todo `NEXT_PUBLIC_*` termina en el bundle público.
@@ -1153,8 +1158,8 @@ de **habilidad** las ofrece desde ahora.
 
 Rutas: `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle.
 
-`/baraja` va en **singular y con query string** (`?m=` una tuya, `?d=` una
-compartida) porque `output: "export"` no admite una ruta dinámica `/barajas/[id]`
+`/baraja` va en **singular y con parámetros** (`?m=` una tuya, `#d=` una
+compartida; ver seguridad #7 por qué el fragmento) porque `output: "export"` no admite una ruta dinámica `/barajas/[id]`
 para datos del usuario: `generateStaticParams` no puede conocer ids que se
 inventan en el navegador.
 
@@ -1185,7 +1190,7 @@ lo nombra y el reglamento de MyL tampoco lo traduce.
 Ojo con un efecto de renombrar `/mazo` a `/baraja`: **los enlaces compartidos
 antes del cambio apuntan a `/mazo/?d=…` y ahora dan 404**. El código del enlace
 sigue siendo válido —el formato binario no cambió—, así que basta pegar el `?d=`
-en `/baraja/` para recuperar la baraja.
+en `/baraja/` para recuperar la baraja (o como `#d=`: se leen los dos).
 
 **El enlace compartido lleva la baraja en binario, no en JSON comprimido.** El
 primer formato armaba una tupla, la pasaba a JSON y lo comprimía con lz-string,

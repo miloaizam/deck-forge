@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * Detalle de una baraja: `?m=` una guardada, `?d=` una compartida por enlace.
+ * Detalle de una baraja: `?m=` una guardada, `#d=` una compartida por enlace
+ * (`?d=` en los enlaces de antes, que se siguen leyendo).
  *
  * Va en singular y con query string porque `output: "export"` no admite una
  * ruta dinamica `/barajas/[id]` para datos del usuario: generateStaticParams no

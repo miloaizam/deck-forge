@@ -494,9 +494,35 @@ export function decodeDeck(codigo: string | null | undefined): DecodeResult {
   return decodeBinario(codigo) ?? decodeLz(codigo);
 }
 
-/** El enlace completo para compartir, con la barra final que usa el sitio. */
+/**
+ * El enlace completo para compartir, con la barra final que usa el sitio.
+ *
+ * El codigo va en el FRAGMENTO (`#d=`), no en la query string: el navegador
+ * nunca manda el fragmento al servidor, asi que la baraja no pasa por el borde
+ * de Cloudflare ni queda en sus logs. Los enlaces viejos con `?d=` se siguen
+ * leyendo (ver `useSharedCode`).
+ */
 export function shareUrl(deck: Deck, origen: string): string {
-  return `${origen.replace(/\/$/, "")}/baraja/?d=${encodeDeck(deck)}`;
+  return `${origen.replace(/\/$/, "")}/baraja/#d=${encodeDeck(deck)}`;
+}
+
+/**
+ * Saca el codigo de una baraja del fragmento de la URL (`#d=…`). `null` si no
+ * trae ninguno. Nunca lanza.
+ *
+ * No usa URLSearchParams: convierte `+` en espacio, y el alfabeto del formato 1
+ * (lz-string) lleva `+`. El codigo binario va en base64url y no necesita
+ * decodificarse, pero un enlace que paso por `?d=` y se movio al fragmento
+ * puede venir con escapes `%`.
+ */
+export function codeFromHash(hash: string): string | null {
+  const m = /^#?(?:[^&]*&)*d=([^&]*)/.exec(hash);
+  if (!m || m[1] === "") return null;
+  try {
+    return decodeURIComponent(m[1]);
+  } catch {
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------------ *
