@@ -46,15 +46,16 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 
 ### Reimpresiones de otras ediciones
 
-- **Qué:** agregar las reimpresiones de cartas que **ya están** en el catálogo
-  pero salieron en ediciones fuera del formato: Atavismo, Karma, las
-  Legendarias de Trempulcahue, etc.
-- **Por dónde:** el mecanismo ya existe para las cartas sueltas:
-  `data-src/extras.json` (`pnpm run data:card <edición> <número>`) y las
-  ediciones `parcial` de `src/lib/editions.ts`. Cada reimpresión **comparte
-  `identidad`** con su carta, para que el tope de copias las cuente juntas.
-  Una edición nueva necesita su prefijo **al final** de `PREFIJOS` en
-  `src/lib/deck-code.ts`: reordenar esa tabla rompe los enlaces compartidos.
+- **Qué:** agregar otras impresiones de cartas que **ya están** en el catálogo
+  (Atavismo, Karma, las Legendarias de Trempulcahue, etc.). Son la misma carta:
+  el objetivo es que el jugador **elija con qué arte la lleva** en su baraja.
+- **De dónde:** la lista y las imágenes las entrega el proyecto. No hay que
+  salir a buscarlas.
+- **Por dónde:** cada reimpresión **comparte `identidad`** con su carta, para
+  que el tope de copias las cuente juntas. Va en `data-src/extras.json` con los
+  datos leídos de su arte, y su edición es la del producto donde salió, con su
+  prefijo **al final** de `PREFIJOS` (`deck-code.ts`). Nunca se reutiliza una
+  URL de imagen ya publicada (CLAUDE.md, caché de `/cards/*`).
 - **Terminado cuando:** las reimpresiones salen en el catálogo, se pueden
   agregar a una baraja y cuentan como la misma carta.
 
