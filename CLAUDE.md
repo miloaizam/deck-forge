@@ -1552,7 +1552,9 @@ contra fixtures, porque los bordes que duelen salen de los datos.
 imports sin extensión que espera el bundler de Next.
 
 **Todavía no hay** banlist ni Fe de Erratas en el sitio: están transcritas en
-`documentos/` (PDF y JSON, sin publicar ni aplicar). Esta última tiene ahora
+`documentos/` (PDF y JSON, sin publicar ni aplicar). Sus JSON se validan con
+los esquemas de `src/lib/documentos.ts`, y `documentos.test.ts` los cruza con
+el catálogo real. Esta última tiene ahora
 material de sobra: al cargar Escuelas Elementales quedaron **66 cartas cuyo
 texto cambió entre impresiones**, y el catálogo muestra el vigente sin decir en
 ninguna parte que la impresión vieja decía otra cosa.

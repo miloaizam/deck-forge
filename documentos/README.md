@@ -19,6 +19,11 @@ documento oficial es un archivo nuevo, no se pisa el anterior.
 - **`fuente/*.json`** son los datos transcritos, y son la fuente de verdad: los
   PDF se generan a partir de ellos. Cuando se apliquen las erratas y la
   banlist al sitio, se leerán de aquí.
+- **`src/lib/documentos.ts`** tiene un esquema de Zod para cada JSON, y
+  **`src/lib/documentos.test.ts`** los valida en `pnpm run check` y los cruza
+  con el catálogo: cada carta nombrada tiene que existir, o estar en una lista
+  que dice por qué no (fuera del formato, falta en el catálogo, o no es una
+  carta sino una regla de construcción).
 - **`fuente/generar.mjs`** arma el HTML de cada documento y lo imprime a PDF con
   Chromium. Colores del tema oscuro de `src/app/globals.css`, Space Grotesk y
   el logotipo de `public/brand/`.

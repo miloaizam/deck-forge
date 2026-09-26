@@ -15,24 +15,11 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 
 ## Erratas y banlist
 
-### Validar los datos de la Fe de Erratas y la Banlist
-
-Los dos documentos ya están transcritos (`documentos/`, con sus datos en
-`documentos/fuente/*.json` y la revisión contra los originales en
-`documentos/README.md`). Falta lo que los vuelve utilizables por el sitio:
-
-- **Qué:** un esquema de Zod para cada JSON, como todo lo que entra desde fuera
-  del bundle, y un test que los lea y los cruce con el catálogo real (cada
-  carta nombrada existe, o está marcada como de fuera del formato).
-- **Ojo:** la Fe de Erratas es de **junio de 2022** y la Banlist de noviembre de
-  2025. Conviene confirmar con la fuente oficial que no haya una Fe de Erratas
-  más nueva antes de aplicar nada.
-- **Terminado cuando:** los dos JSON validan en `pnpm run check` y el test
-  falla si una carta nombrada no se encuentra.
-
 ### Aplicar las erratas y la banlist
 
-- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`.
+- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
+  ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
+  catálogo en `documentos.test.ts`.
 - **Erratas:** el catálogo tiene que mostrar el texto erratado. Ojo: al cargar
   Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
   cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
