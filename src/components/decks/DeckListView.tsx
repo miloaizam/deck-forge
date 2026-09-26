@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { copyShareLink, downloadDeck } from "./actions";
+import { ConfirmDialog } from "../ConfirmDialog";
 import { DeckTransfer } from "./DeckTransfer";
 import { useDecks, useHydrated } from "./use-decks";
 import { deckTitle, duplicateDeck } from "@/lib/deck";
@@ -56,7 +57,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
   const cargado = useHydrated();
   const [mensaje, setMensaje] = useState("");
   /** Que mazo esta esperando confirmacion de borrado. Borrar no tiene vuelta. */
-  const [porBorrar, setPorBorrar] = useState<string | null>(null);
+  const [porBorrar, setPorBorrar] = useState<Deck | null>(null);
 
   const index = useMemo(() => buildCardIndex(cards), [cards]);
 
@@ -235,39 +236,17 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     >
                       <Copy size={14} aria-hidden="true" />
                     </button>
-                    {/* Borrar pide confirmar en el mismo boton: el mazo solo
-                      vive aqui y no hay de donde recuperarlo. */}
-                    {porBorrar === deck.id ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => borrar(deck)}
-                          className={cn(
-                            ACCION,
-                            "border-brand-600 bg-accent-soft text-accent",
-                          )}
-                        >
-                          <Trash2 size={14} aria-hidden="true" />
-                          Confirmar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPorBorrar(null)}
-                          className={ACCION}
-                        >
-                          Cancelar
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPorBorrar(deck.id)}
-                        aria-label={`Borrar ${deckTitle(deck)}`}
-                        className={ACCION_ICONO}
-                      >
-                        <Trash2 size={14} aria-hidden="true" />
-                      </button>
-                    )}
+                    {/* Borrar pide confirmar en un modal: el mazo solo vive
+                      aqui y no hay de donde recuperarlo. */}
+                    <button
+                      type="button"
+                      onClick={() => setPorBorrar(deck)}
+                      aria-label={`Borrar ${deckTitle(deck)}`}
+                      title="Borrar"
+                      className={ACCION_ICONO}
+                    >
+                      <Trash2 size={14} aria-hidden="true" />
+                    </button>
                   </div>
                 </div>
               </li>
@@ -275,6 +254,19 @@ export function DeckListView({ cards }: DeckListViewProps) {
           })}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={porBorrar !== null}
+        titulo="¿Borrar el mazo?"
+        mensaje={
+          porBorrar
+            ? `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de donde recuperarlo.`
+            : ""
+        }
+        confirmar="Borrar el mazo"
+        onConfirm={() => porBorrar && borrar(porBorrar)}
+        onCancel={() => setPorBorrar(null)}
+      />
     </div>
   );
 }

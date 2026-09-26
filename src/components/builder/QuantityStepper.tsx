@@ -15,15 +15,32 @@ interface QuantityStepperProps {
   onBlocked?: (mensaje: string) => void;
 }
 
-const BOTON =
-  "flex size-11 shrink-0 items-center justify-center rounded-chip border border-line transition-colors focus-visible:outline-brand-500";
+/**
+ * El area que se pulsa: 44x44, como pide DESIGN.md, y transparente.
+ *
+ * El tamano tactil y el tamano VISIBLE de un boton son dos cosas distintas, y
+ * antes eran la misma: tres cajas con borde de 44px por fila pesaban mas que la
+ * carta que acompanan. El area se queda en 44 —el minimo no se toca— y lo que
+ * se ve es la caja de dentro, que mide la mitad.
+ *
+ * Lo usa tambien el boton de oro inicial, que va en la misma fila.
+ */
+export const BOTON_FILA =
+  "group/b flex size-11 shrink-0 items-center justify-center rounded-chip focus-visible:outline-brand-500";
+
+/**
+ * La caja que si se ve. En reposo es solo el icono: el borde y el fondo entran
+ * al apuntar el boton, que es cuando hace falta saber donde se va a pulsar.
+ */
+export const CAJA_FILA =
+  "flex size-7 items-center justify-center rounded-full border border-transparent transition-colors";
 
 /**
  * Los botones de mas y menos de una fila del mazo.
  *
  * DESIGN.md marca este componente como el punto donde mas se rompe el tamano
  * minimo tactil, asi que los dos botones son de 44x44 (`size-11`) y no se
- * encogen.
+ * encogen, aunque en reposo no se les vea la caja.
  */
 export function QuantityStepper({
   nombre,
@@ -33,19 +50,26 @@ export function QuantityStepper({
   onBlocked,
 }: QuantityStepperProps) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       <button
         type="button"
         onClick={() => onChange(value - 1)}
         aria-label={`Quitar una copia de ${nombre}`}
-        className={cn(BOTON, "text-muted hover:text-ink hover:border-brand-500")}
+        className={BOTON_FILA}
       >
-        <Minus size={15} aria-hidden="true" />
+        <span
+          className={cn(
+            CAJA_FILA,
+            "text-muted group-hover/b:border-line group-hover/b:bg-surface group-hover/b:text-ink",
+          )}
+        >
+          <Minus size={14} aria-hidden="true" />
+        </span>
       </button>
 
       <span
         aria-hidden="true"
-        className="text-ink min-w-6 text-center text-sm font-medium tabular-nums"
+        className="text-ink min-w-5 text-center text-sm font-semibold tabular-nums"
       >
         {value}
       </span>
@@ -58,14 +82,20 @@ export function QuantityStepper({
         aria-disabled={addBlocked ? true : undefined}
         title={addBlocked}
         aria-label={addBlocked ?? `Agregar una copia de ${nombre}`}
-        className={cn(
-          BOTON,
-          addBlocked
-            ? "text-muted/40 cursor-not-allowed"
-            : "text-accent hover:border-brand-500 hover:bg-brand-600 hover:text-white",
-        )}
+        className={cn(BOTON_FILA, addBlocked && "cursor-not-allowed")}
       >
-        <Plus size={15} aria-hidden="true" />
+        <span
+          className={cn(
+            CAJA_FILA,
+            addBlocked
+              ? "text-muted/30"
+              : // Sumar es LA accion de la fila, asi que al apuntarla se pinta
+                // entera: distingue el boton que agrega del que deshace.
+                "text-muted group-hover/b:border-brand-500 group-hover/b:bg-brand-600 group-hover/b:text-white",
+          )}
+        >
+          <Plus size={14} aria-hidden="true" />
+        </span>
       </button>
     </div>
   );

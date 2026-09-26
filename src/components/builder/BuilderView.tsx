@@ -251,6 +251,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
       index={index}
       onSetQuantity={(id, zone, n) => setDeck((d) => setQuantity(d, id, zone, n))}
       onSetStartingGold={(id) => setDeck((d) => setStartingGold(d, id))}
+      onVer={(id) => setSelected(cards.find((c) => c.id === id) ?? null)}
       onBlocked={mostrarAviso}
     />
   );

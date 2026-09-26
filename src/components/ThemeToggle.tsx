@@ -37,7 +37,9 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label="Cambiar entre tema claro y oscuro"
       title="Cambiar tema"
-      className="text-muted hover:text-ink focus-visible:outline-brand-500 flex size-11 shrink-0 items-center justify-center transition-colors"
+      // El borde circular solo aparece al apuntar, enfocar o pulsar: en reposo
+      // la navbar es una fila de iconos sin cajas, y un aro fijo la cargaria.
+      className="text-muted hover:text-ink hover:border-line focus-visible:outline-brand-500 active:border-brand-500 active:text-ink flex size-11 shrink-0 items-center justify-center rounded-full border border-transparent transition-colors"
     >
       <Sun size={16} aria-hidden="true" className="solo-oscuro" />
       <Moon size={16} aria-hidden="true" className="solo-claro" />

@@ -1,3 +1,4 @@
+import { sortCards } from "./card-order";
 import { copiesOf, totalCards, type DeckZone } from "./deck";
 import {
   ESCUELA_POR_RAZA,
@@ -63,10 +64,17 @@ export interface RuleCard {
    * hueco de oro inicial, y no tiene tope de copias.
    */
   oroSinHabilidad: boolean;
+  /**
+   * Lugar de la carta en el orden del catalogo (`compareCards`), ya resuelto:
+   * el mazo se pinta en ese mismo orden y aqui no queda mas que restar. Lo pone
+   * `buildCardIndex`, que es quien ve el catalogo entero.
+   */
+  orden: number;
 }
 
-export function toRuleCard(c: Card): RuleCard {
+export function toRuleCard(c: Card, orden = 0): RuleCard {
   return {
+    orden,
     id: c.id,
     identidad: c.identidad,
     nombre: c.nombre,
@@ -87,7 +95,10 @@ export interface CardIndex {
 
 /** Caro de construir y el catalogo no cambia en runtime: memorizar con useMemo. */
 export function buildCardIndex(cards: Card[]): CardIndex {
-  return { porId: new Map(cards.map((c) => [c.id, toRuleCard(c)])) };
+  // Se ordena aqui y no se da por hecho el orden en que llegaron: el indice es
+  // quien reparte el `orden` a cada carta, y de el sale el del mazo.
+  const ordenadas = sortCards(cards);
+  return { porId: new Map(ordenadas.map((c, i) => [c.id, toRuleCard(c, i)])) };
 }
 
 /* ------------------------------------------------------------------ *
@@ -268,14 +279,20 @@ export function resolveDeck(deck: Deck, index: CardIndex): ResolvedDeck {
   const desconocidos: string[] = [];
 
   const resolver = (zona: DeckZone): ResolvedEntry[] =>
-    deck[zona].flatMap((e) => {
-      const card = index.porId.get(e.id);
-      if (!card) {
-        desconocidos.push(e.id);
-        return [];
-      }
-      return [{ card, n: e.n }];
-    });
+    deck[zona]
+      .flatMap((e) => {
+        const card = index.porId.get(e.id);
+        if (!card) {
+          desconocidos.push(e.id);
+          return [];
+        }
+        return [{ card, n: e.n }];
+      })
+      // En el orden del catalogo y no en el que se agregaron: asi una carta
+      // ocupa siempre el mismo lugar y quitar una copia no mueve a las demas
+      // bajo el cursor. `orden` no sabe nada de cuantas copias hay, que es
+      // justo lo que hace falta para que la fila no se vaya al restar.
+      .sort((a, b) => a.card.orden - b.card.orden);
 
   return {
     principal: resolver("principal"),
@@ -499,6 +516,16 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
       mensaje: `${oro.nombre} es el oro inicial pero ya no está en el mazo. Elige otro.`,
       identidad: oro.identidad,
     });
+  } else if (copiesOf(deck, deck.oroInicial, "principal") > 1) {
+    // El oro inicial es UNA carta concreta que se aparta antes de empezar, asi
+    // que tiene que poder senalarse sin ambiguedad: con varias copias del mismo
+    // Oro en el mazo no se sabe cual quedo fuera del monton.
+    issues.push({
+      code: "oro-inicial-invalido",
+      gravedad: "error",
+      mensaje: `${oro.nombre} no puede ser el oro inicial: llevas ${copiesOf(deck, deck.oroInicial, "principal")} copias y el oro inicial tiene que ser un Oro con una sola.`,
+      identidad: oro.identidad,
+    });
   }
 
   if (stats.aliadosOTotems < MIN_ALIADOS_O_TOTEMS) {
@@ -622,7 +649,8 @@ export function canAdd(
 
 /** Los oros que pueden ocupar el hueco de oro inicial, para el selector. */
 export function orosInicialesPosibles(cards: Card[]): RuleCard[] {
-  return cards.map(toRuleCard).filter((c) => c.oroSinHabilidad);
+  // Sin el `orden`, que aqui no se usa: `map` pasaria el indice del arreglo.
+  return cards.map((c) => toRuleCard(c)).filter((c) => c.oroSinHabilidad);
 }
 
 export { totalCards };

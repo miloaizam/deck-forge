@@ -58,8 +58,7 @@ tres cosas que valen la pena:
 El catálogo se arma con los datos de la API oficial de MyL, pero **revisados
 carta por carta contra el arte impreso**: la API tiene textos cambiados, nombres
 mal escritos, números al revés y cartas que ni siquiera aparecen. Ese trabajo de
-corrección es buena parte del proyecto, y está documentado en
-[CLAUDE.md](CLAUDE.md).
+corrección es buena parte del proyecto.
 
 ## Estado
 

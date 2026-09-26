@@ -361,6 +361,19 @@ test("el oro inicial tiene que ser un Oro sin habilidad", () => {
   assert.ok(validateDeck(sinOro, index).some((i) => i.code === "oro-inicial-falta"));
 });
 
+test("el oro inicial tiene que ser un Oro con una sola copia en el mazo", () => {
+  const base = mazoLegal("Dragón");
+  assert.ok(isLegal(validateDeck(base, index)), "una sola copia de Shodo sirve");
+
+  // Se aparta UNA carta antes de empezar: con dos copias iguales en el mazo no
+  // hay forma de decir cual es la que quedo fuera del monton.
+  const dos = setQuantity(base, SHODO.id, "principal", 2);
+  assert.ok(
+    validateDeck(dos, index).some((i) => i.code === "oro-inicial-invalido"),
+    "dos copias del oro inicial no valen",
+  );
+});
+
 test("sacar el oro inicial del mazo limpia el puntero", () => {
   let deck = setStartingGold(createDeck(), SHODO.id);
   assert.equal(deck.oroInicial, SHODO.id);

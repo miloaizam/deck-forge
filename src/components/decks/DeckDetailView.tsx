@@ -16,6 +16,7 @@ import {
 
 import { DeckSections } from "./DeckSections";
 import { CardModal } from "../CardModal";
+import { ConfirmDialog } from "../ConfirmDialog";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
 import { deckTitle, duplicateDeck, setCover } from "@/lib/deck";
@@ -55,7 +56,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const [mensaje, setMensaje] = useState("");
   /** Que carta se esta mirando en el modal. */
   const [vista, setVista] = useState<Card | null>(null);
-  /** Borrar no tiene vuelta: se confirma en el mismo boton. */
+  /** Borrar no tiene vuelta: se confirma en un modal aparte. */
   const [porBorrar, setPorBorrar] = useState(false);
 
   const router = useRouter();
@@ -215,38 +216,15 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                 >
                   <Copy size={14} aria-hidden="true" />
                 </button>
-                {porBorrar ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        deleteDeck(deck.id);
-                        router.push("/mazos");
-                      }}
-                      className="border-brand-600 bg-accent-soft text-accent focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-3 text-[13px]"
-                    >
-                      <Trash2 size={14} aria-hidden="true" />
-                      Confirmar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPorBorrar(false)}
-                      className={BOTON}
-                    >
-                      Cancelar
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setPorBorrar(true)}
-                    aria-label="Borrar el mazo"
-                    title="Borrar"
-                    className={ICONO}
-                  >
-                    <Trash2 size={14} aria-hidden="true" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setPorBorrar(true)}
+                  aria-label="Borrar el mazo"
+                  title="Borrar"
+                  className={ICONO}
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
               </>
             )}
           </div>
@@ -280,6 +258,18 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       {/* El mismo modal del catalogo, sin el boton de agregar: aqui el mazo ya
           esta armado y se viene a mirar la carta, no a cambiarla. */}
       <CardModal card={vista} onClose={() => setVista(null)} />
+
+      <ConfirmDialog
+        open={porBorrar}
+        titulo="¿Borrar el mazo?"
+        mensaje={`"${deckTitle(deck)}" se borra de este navegador y no hay de donde recuperarlo.`}
+        confirmar="Borrar el mazo"
+        onConfirm={() => {
+          deleteDeck(deck.id);
+          router.push("/mazos");
+        }}
+        onCancel={() => setPorBorrar(false)}
+      />
     </div>
   );
 }

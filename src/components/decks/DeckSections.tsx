@@ -26,8 +26,11 @@ interface PilaItem {
 }
 
 /**
- * Reparte las cartas sobre la mesa: por tipo, y dentro de cada tipo las pilas
- * mas altas primero.
+ * Reparte las cartas sobre la mesa: por tipo, y dentro de cada tipo en el orden
+ * del catalogo (por edicion y frecuencia, que es el `orden` de la carta).
+ *
+ * No por altura de pila: si ordenaran las copias, quitar una carta reordenaria
+ * la mesa entera y habria que volver a buscar donde quedo todo.
  *
  * El oro inicial sale de su pila y va aparte al final. Cuenta dentro de las 50
  * y es una copia mas de un Oro cualquiera, pero en la mesa no se mezcla con las
@@ -60,8 +63,7 @@ function ordenarPilas(filas: ResolvedEntry[], oroInicial: string | null): PilaIt
   mesa.sort(
     (a, b) =>
       ORDEN_EN_MESA.indexOf(a.fila.card.tipo) - ORDEN_EN_MESA.indexOf(b.fila.card.tipo) ||
-      b.fila.n - a.fila.n ||
-      a.fila.card.nombre.localeCompare(b.fila.card.nombre, "es"),
+      a.fila.card.orden - b.fila.card.orden,
   );
 
   return inicial ? [...mesa, inicial] : mesa;
