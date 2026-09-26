@@ -30,7 +30,7 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Novedad",
     titulo: "22 cartas nuevas: las de los mazos especiales del formato",
     texto: [
-      "El catálogo suma las cartas que traen el Pack de Batalla: Dominio y el Pack América y que no están en ninguna de las diez ediciones, como Tiamat, Thor el Poderoso, Lahmu, Dante o Devastador. Salen con el arte de su mazo, y en el filtro de edición se encuentran por el nombre del mazo.",
+      "El catálogo suma las cartas que traen el Pack Batalla y el Pack América y que no están en ninguna de las diez ediciones, como Tiamat, Thor el Poderoso, Lahmu, Dante o Devastador. Salen con el arte de su mazo, y en el filtro de edición se encuentran por el nombre del mazo.",
       'Ocho cartas de Pack América y Árbol del Grito de Dominio de Tótems llegarán cuando consigamos la imagen de su impresión. El buscador ahora exige todas las palabras: "Thor el Poderoso" encuentra a Thor y no a cada carta que diga "el".',
     ],
   },

@@ -1335,8 +1335,8 @@ Tótems** (SD2). Se revisaron el 26-09-2026:
   Sumeria…, como ediciones `parcial`) y estaba mal: el formato admite la
   reimpresión del mazo, que tiene **otro diseño**, y en el filtro de edición
   la carta tiene que decir en qué mazo entró al formato. **No se agregan
-  ediciones viejas**. Las ediciones son `pack-de-batalla-dominio` (`pb`) y
-  `pack-america` (`pa`); `dominio-de-totems` (`dt`) tiene prefijo reservado
+  ediciones viejas**. Las ediciones son `pack-de-batalla-dominio` (`pb`, que
+  la interfaz llama **Pack Batalla**) y `pack-america` (`pa`); `dominio-de-totems` (`dt`) tiene prefijo reservado
   y entra en `editions.ts` con su primera carta.
 - **La API no tiene los mazos** (`/cards/edition/…` da `EDITION_NOT_FOUND`),
   así que se cargan a mano en `data-src/extras.json` con el arte del fandom

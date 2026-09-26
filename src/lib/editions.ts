@@ -52,9 +52,10 @@ export const EDITIONS: Edition[] = [
   { slug: "dominios-de-ra", titulo: "Dominios de Ra", cargada: true, parcial: true },
   { slug: "cruzadas", titulo: "Cruzadas", cargada: true, parcial: true },
   { slug: "furia", titulo: "Furia", cargada: true, parcial: true },
+  // El producto se llama "Pack de Batalla: Dominio"; en la interfaz, Pack Batalla.
   {
     slug: "pack-de-batalla-dominio",
-    titulo: "Pack de Batalla: Dominio",
+    titulo: "Pack Batalla",
     cargada: true,
     parcial: true,
   },
