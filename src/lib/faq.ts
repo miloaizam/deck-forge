@@ -154,6 +154,14 @@ export const FAQ: FaqSection[] = [
         ],
       },
       {
+        pregunta: "¿Se pierde la baraja si salgo del constructor sin guardar?",
+        respuesta: [
+          "No. Mientras armas, la baraja en curso se guarda sola como **borrador** en tu navegador: si recargas la página, vas a otra sección o cierras la pestaña, al volver al constructor **se retoma donde quedó**, con un aviso arriba del panel.",
+          "El aviso tiene **«Descartar»** por si prefieres empezar de cero (o volver a la versión guardada, si estabas editando una). Si abres otra baraja mientras hay un borrador pendiente, el aviso ofrece **«Retomar»** el borrador o descartarlo. Al **guardar**, el borrador se borra.",
+          "Hay un solo borrador a la vez: es la baraja que estabas armando, no una lista.",
+        ],
+      },
+      {
         pregunta: "¿Dónde quedan guardadas?",
         respuesta: [
           "En **tu navegador**, en este equipo. No se suben a ningún servidor. Por eso no aparecen en otro navegador ni en otro equipo, y **se pierden si borras los datos del sitio**. Para no perderlas, **expórtalas** a un archivo de vez en cuando.",

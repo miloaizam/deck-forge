@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Save } from "lucide-react";
 
 import { DeckClearButton, DeckPanel } from "./DeckPanel";
-import { DeckParamLoader } from "./DeckParamLoader";
+import { DeckParamLoader, type DraftState } from "./DeckParamLoader";
+import { DraftNotice } from "./DraftNotice";
 import { DeckSheet } from "./DeckSheet";
 import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
@@ -52,6 +53,7 @@ import {
   DECK_TOTAL,
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
+import { clearDraft, hayCambios, writeDraft } from "@/lib/deck-draft";
 import {
   mensajeNoGuardada,
   nombreOcupado,
@@ -167,6 +169,76 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const [zona, setZona] = useState<DeckZone>("principal");
   const router = useRouter();
 
+  /*
+   * El borrador (`deck-draft.ts`): la baraja en curso se guarda sola en el
+   * navegador, para que refrescar o cambiar de vista no la pierda.
+   *
+   * `listo` espera a que DeckParamLoader decida que baraja mostrar: el primer
+   * render trae una vacia, y escribirla pisaria el borrador antes de leerlo.
+   * `cargada` es la baraja tal como llego; mientras haya un borrador de OTRA
+   * en espera y no se toque la que llego, ese borrador no se pisa.
+   */
+  const [listo, setListo] = useState(false);
+  const [borrador, setBorrador] = useState<DraftState | null>(null);
+  const [cargada, setCargada] = useState<Deck | null>(null);
+
+  const alCargar = useCallback((d: Deck, estado: DraftState | null) => {
+    setDeck(d);
+    setCargada(d);
+    setBorrador(estado);
+  }, []);
+  const alEstarListo = useCallback(() => setListo(true), []);
+
+  const esperando = borrador?.tipo === "en-espera" && deck === cargada;
+  useEffect(() => {
+    if (!listo || esperando) return;
+    const guardada = readDeck(deck.id);
+    if (hayCambios(deck, guardada)) writeDraft(deck, guardada ? deck.id : null);
+    else clearDraft();
+  }, [deck, listo, esperando]);
+
+  // El aviso de un borrador en espera deja de tener sentido en cuanto se toca
+  // la baraja que llego: el borrador ya se piso.
+  const aviso = borrador?.tipo === "en-espera" && !esperando ? null : borrador;
+
+  const retomar = () => {
+    if (borrador?.tipo !== "en-espera") return;
+    setDeck(borrador.draft.deck);
+    setCargada(borrador.draft.deck);
+    setBorrador({ tipo: "recuperada" });
+  };
+
+  const descartar = () => {
+    if (borrador?.tipo === "en-espera") {
+      clearDraft();
+      setBorrador(null);
+      toast("Borrador descartado.", "delete");
+      return;
+    }
+    // La recuperada vuelve a como estaba guardada, o a empezar de cero.
+    const guardada = readDeck(deck.id);
+    clearDraft();
+    setDeck(guardada ?? createDeck());
+    setBorrador(null);
+    toast(
+      guardada
+        ? `Cambios sin guardar descartados: "${deckTitle(guardada)}" quedó como estaba guardada.`
+        : "Borrador descartado.",
+      "delete",
+    );
+  };
+
+  const avisoBorrador = (className?: string) =>
+    aviso && (
+      <DraftNotice
+        estado={aviso}
+        onRetomar={retomar}
+        onDescartar={descartar}
+        onCerrar={() => setBorrador(null)}
+        className={className}
+      />
+    );
+
   // Caros de construir y el catalogo no cambia en runtime.
   const search = useMemo(() => buildSearchIndex(cards), [cards]);
   const index = useMemo(() => buildCardIndex(cards), [cards]);
@@ -244,6 +316,8 @@ export function BuilderView({ cards }: BuilderViewProps) {
       return;
     }
     setGuardado(true);
+    clearDraft();
+    setBorrador(null);
     // El aviso se pide antes de navegar y se lee ya en la pagina de la baraja.
     toast(
       yaExistia
@@ -310,11 +384,13 @@ export function BuilderView({ cards }: BuilderViewProps) {
     <>
       {/* Aislar useSearchParams aqui deja prerenderizar todo lo de arriba. */}
       <Suspense fallback={null}>
-        <DeckParamLoader onLoad={setDeck} onError={avisarError} />
+        <DeckParamLoader onLoad={alCargar} onError={avisarError} onReady={alEstarListo} />
       </Suspense>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start lg:gap-6">
         <div className="flex flex-col gap-5">
+          {/* En el telefono el panel va en una hoja cerrada: el aviso sube aqui. */}
+          {avisoBorrador("lg:hidden")}
           <Filters
             filters={filters}
             facets={facets}
@@ -401,6 +477,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
             {/* El panel crece y se encoge con transicion al agregar o quitar
                 cartas, en vez de saltar (AutoHeight). */}
             <AutoHeight className="flex flex-col gap-4">
+              {avisoBorrador()}
               <input
                 value={deck.nombre}
                 onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}

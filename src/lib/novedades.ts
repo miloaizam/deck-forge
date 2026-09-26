@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-26",
     tipo: "Novedad",
+    titulo: "La baraja en curso ya no se pierde",
+    texto: [
+      "El constructor guarda solo un borrador de la baraja que estás armando. Si recargas la página, cambias de sección o cierras la pestaña, al volver se retoma donde quedó.",
+      "Un aviso sobre el panel lo indica y permite descartar el borrador. Al guardar la baraja, el borrador se borra.",
+    ],
+  },
+  {
+    fecha: "2026-09-26",
+    tipo: "Novedad",
     titulo: "La Fe de Erratas y la Banlist, en Documentos",
     texto: [
       "La sección Documentos ya tiene la Fe de Erratas y la Banlist Estándar, transcritas con el estilo de DeckForge. Se pueden leer en el sitio, con el cambio de cada carta resaltado, o abrir y descargar en PDF.",

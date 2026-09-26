@@ -1537,6 +1537,30 @@ El modal de una carta, abierto desde el constructor, suma y **quita** copias.
 Quitar sale de la zona elegida en "Agregar a" si la carta está ahí y, si no,
 de la otra: el modal cuenta las dos juntas.
 
+**El constructor guarda solo un borrador** (`src/lib/deck-draft.ts`) para
+que refrescar, cambiar de vista o cerrar la pestaña no pierda la baraja en
+curso. Va en su propia clave (`deckforge-borrador`), aparte de las barajas
+guardadas, y con **una sola ranura**: es "lo que estaba armando", no una
+lista (con dos pestañas del constructor, manda la última que escribió). Se
+valida con Zod al leerlo, como todo lo que sale de `localStorage`. Lleva
+`base`, el id de la baraja guardada que se editaba, o `null` si era nueva.
+Cuatro reglas que no son obvias:
+
+- **Se escribe solo si hay algo que recuperar** (`hayCambios`): una nueva con
+  una carta, un nombre o una nota; una editada, si difiere de la guardada.
+  Abrir una baraja y no tocarla no deja borrador (y si los cambios se
+  deshacen, se borra).
+- **No se escribe hasta que `DeckParamLoader` decidió qué mostrar**
+  (`onReady`): el primer render trae una baraja vacía y la pisaría.
+- **Quién decide es `DeckParamLoader`**: sin parámetros, retoma el borrador
+  ("recuperada"); con `?m=X` y un borrador de X, también; con `?m=` o `#d=` de
+  otra baraja, carga la pedida y deja el borrador **en espera**, sin pisarlo
+  hasta que se toque la que llegó. Un enlace roto retoma el borrador en vez de
+  costarlo.
+- El aviso (`DraftNotice.tsx`) va sobre el panel, y en el teléfono sobre los
+  filtros, porque la hoja de la baraja está cerrada. Guardar borra el
+  borrador.
+
 Las barajas viven en `localStorage` y se leen con `useSyncExternalStore`, no con
 un efecto que llame a `setState` — el compilador de React bloquea eso y tiene
 razón: es un sistema externo. Sale gratis la sincronización entre pestañas.

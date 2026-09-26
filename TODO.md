@@ -40,18 +40,6 @@ terminada. Van agrupadas por la parte del sitio que tocan.
 
 ## Constructor y barajas
 
-### Pre-guardado de la baraja en el constructor
-
-- **Qué:** un borrador automático mientras se arma la baraja, a modo de
-  salvoconducto: si se sale de `/constructor` sin guardar (otra pestaña, un
-  enlace, se cierra el navegador), al volver se recupera.
-- **Por qué:** hoy el constructor guarda a mano y lo no guardado se pierde.
-- **Por dónde:** el borrador va aparte de las barajas guardadas en
-  `localStorage` y se valida con Zod al leerlo, como el resto. Al volver, ofrecer
-  retomarlo o descartarlo.
-- **Terminado cuando:** salir y volver al constructor no pierde la baraja en
-  curso, y guardar o descartar borra el borrador.
-
 ### Distinguir los tres tipos de Oro
 
 - **Qué:** que el catálogo y el constructor distingan los Oros **sin
