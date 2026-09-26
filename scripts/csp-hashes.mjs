@@ -6,12 +6,14 @@
 // exactamente esos. Este script lo hace sobre out/ y reescribe out/_headers:
 //
 //   - La regla `/*` lleva los hashes de out/404.html, porque Cloudflare sirve
-//     esa pagina para cualquier ruta que no exista (`not_found_handling`).
+//     esa pagina para cualquier ruta que no exista (busca el 404.html mas
+//     cercano subiendo por la ruta, y el unico es el de la raiz).
 //   - Cada pagina lleva su propia regla, que QUITA la CSP de `/*` con
 //     `! Content-Security-Policy` y pone la suya. Sin el `!`, Cloudflare une
 //     las dos con una coma y el navegador aplica las dos politicas a la vez.
 //
-// Semantica leida en el asset worker de Cloudflare (@cloudflare/workers-shared):
+// Semantica leida en el codigo de Cloudflare Pages (@cloudflare/pages-shared,
+// asset-server/handler.ts, que usa el motor de reglas de workers-shared):
 // las reglas casan contra el pathname exacto, sin query string, en el orden
 // del archivo; una cabecera repetida se une con coma y `!` la borra.
 //

@@ -101,7 +101,7 @@ def hashes_inline(html: str) -> set[str]:
 
 
 def leer_reglas(texto: str) -> list[dict]:
-    """Parsea _headers como el asset worker de Cloudflare."""
+    """Parsea _headers como Cloudflare Pages (ver scripts/csp-hashes.mjs)."""
     reglas: list[dict] = []
     for linea in texto.splitlines():
         if not linea.strip() or linea.lstrip().startswith("#"):

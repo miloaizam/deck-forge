@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 /**
- * DeckForge se publica como sitio 100% estatico en Cloudflare Workers
- * (Static Assets, ver wrangler.jsonc).
+ * DeckForge se publica como sitio 100% estatico en Cloudflare Pages.
  * `output: "export"` genera HTML/CSS/JS puros en `out/`: sin servidor,
  * sin API routes y sin middleware. Ver CLAUDE.md antes de tocar esto.
  */

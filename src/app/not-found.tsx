@@ -12,7 +12,8 @@ export const metadata: Metadata = {
 
 /**
  * 404. El export la escribe en out/404.html, y Cloudflare la sirve para
- * cualquier ruta que no exista (`not_found_handling` en wrangler.jsonc).
+ * cualquier ruta que no exista: Pages busca el 404.html mas cercano subiendo
+ * por la ruta, y el unico que hay es el de la raiz.
  */
 export default function NotFound() {
   return (

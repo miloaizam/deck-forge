@@ -42,3 +42,24 @@ Ordenadas de más a menos importante.
 - **Arreglo:** conseguir el arte a tamaño completo, borrar
   `public/cards/do-00X.webp` y su `thumb/`, y volver a correr
   `pnpm run data:images`.
+
+## `wrangler.jsonc` describe un despliegue que no se usa
+
+- **Qué pasa:** el sitio se publica en **Cloudflare Pages**, pero
+  `wrangler.jsonc` configura un despliegue en **Workers** con Static Assets
+  (`assets.directory`, `not_found_handling`). Pages solo toma un archivo de
+  wrangler que declare `pages_build_output_dir`, y este no lo declara: lo más
+  probable es que Pages lo ignore (el log del build de Pages lo dice). Es
+  configuración muerta que hace creer que el hosting es otro, y así se
+  documentó mal hasta hace poco.
+- **Arreglo, a elegir:**
+  - **Borrarlo**, si Pages se configura solo desde su panel.
+  - **Convertirlo en configuración de Pages** (`name` +
+    `pages_build_output_dir: "./out"`). Ojo: si el archivo es válido para
+    Pages, pasa a mandar sobre lo que diga el panel.
+- **De paso, comprobar en el panel de Pages** que el build sea
+  `pnpm run build` con salida `out`. Con `next build` a secas el sitio
+  funciona, pero sin los hashes: sale con la CSP floja de antes.
+- **Arreglado cuando:** el repo no describe un hosting que no se usa, y el
+  build de Pages escribe los hashes (la CSP publicada no lleva
+  `'unsafe-inline'` en `script-src`).

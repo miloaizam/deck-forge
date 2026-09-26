@@ -1,5 +1,5 @@
-# Cabeceras de seguridad. Cloudflare (Workers con Static Assets) lee este
-# archivo desde la raiz del sitio publicado. Ver "Seguridad" en CLAUDE.md.
+# Cabeceras de seguridad. Cloudflare Pages lee este archivo desde la raiz
+# del sitio publicado. Ver "Seguridad" en CLAUDE.md.
 #
 # Esto es una PLANTILLA. `pnpm run build` corre scripts/csp-hashes.mjs, que
 # cambia el 'unsafe-inline' de script-src por los hashes de los <script>

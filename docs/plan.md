@@ -12,7 +12,6 @@ Objetivo: lanzar **gratis, sin servidor y sin base de datos**, con margen para c
 > | Vite + React, build a `dist/` | **Next.js 16** (App Router) con `output: "export"`, build a `out/` |
 > | `tailwind.config.js` | Tailwind v4 **CSS-first**, en `src/app/globals.css` |
 > | npm | **pnpm** (`packageManager` en `package.json`) |
-> | Cloudflare Pages | **Cloudflare Workers con Static Assets** (`wrangler.jsonc`) |
 > | lz-string en la URL, `?d=` | Código **binario** propio (`deck-code.ts`) en el **fragmento**, `#d=`; lz-string solo lee los enlaces viejos |
 > | Filtros de atributo y legalidad | El atributo se filtra desde *habilidad*; la legalidad espera a la banlist |
 >
@@ -440,11 +439,15 @@ git push -u origin main
 
 ## 11. Publicar en Cloudflare Pages (paso a paso, sin experiencia previa)
 
-> **Obsoleto.** El sitio se publica en Cloudflare **Workers** con Static
-> Assets: la configuración está en `wrangler.jsonc` (sirve `out/`, con
-> `out/404.html` para las rutas que no existen). El build que se publica tiene
-> que ser `pnpm run build`, no `next build` a secas: es el que escribe los
-> hashes de la CSP en `out/_headers`.
+> **Vigente, con otros valores de build.** El sitio se publica así, en
+> Cloudflare Pages, pero el paso 4 era para Vite. Con Next.js va:
+>
+> - **Framework preset**: `None`.
+> - **Build command**: `pnpm run build` (Pages usa pnpm solo al ver
+>   `pnpm-lock.yaml`). **No** `next build` a secas: el script de
+>   `package.json` es el que escribe los hashes de la CSP en `out/_headers`.
+>   Sin ellos el sitio funciona, pero con la CSP floja de antes.
+> - **Build output directory**: `out`.
 
 1. Entra a **cloudflare.com** y crea una cuenta gratis (o inicia sesión).
 2. En el panel, ve a **Workers & Pages** → **Create** → pestaña **Pages** → **Connect to Git**.
@@ -469,7 +472,7 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
 **Fase 0 — Esqueleto (1 edición piloto)** — hecha.
 - Proyecto corriendo (Next.js, no Vite), Tailwind con la marca, logo integrado.
 - Grilla de cartas con miniaturas + modal de detalle.
-- Publicado en Cloudflare (Workers, no Pages).
+- Publicado en Cloudflare Pages.
 
 **Fase 1 — Catálogo completo del formato** — hecha.
 - Las diez ediciones cargadas y revisadas contra el arte (2159 cartas).

@@ -43,7 +43,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
-| Hosting | Cloudflare Workers (Static Assets) — `wrangler.jsonc` sirve `out/` |
+| Hosting | **Cloudflare Pages**, conectado al repo: cada push a `main` publica `out/` |
 | Gestor de paquetes | **pnpm** (fijado en `packageManager`; `pnpm-lock.yaml` commiteado, ajustes en `pnpm-workspace.yaml`) |
 
 ---
@@ -790,7 +790,7 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 1. **Cabeceras HTTP** en [`public/_headers`](public/_headers): CSP,
    `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
    `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`.
-   Cloudflare (Workers con Static Assets) las aplica; la CSP la completa el
+   Cloudflare Pages las aplica; la CSP la completa el
    build con los hashes de cada página (ver "La CSP por hashes").
 
 2. **CSP**: `default-src 'self'`, `object-src 'none'`, `base-uri 'none'`,
@@ -904,7 +904,8 @@ cada bloque y reescribe `out/_headers`:
   `! Content-Security-Policy` y pone la suya. Sin el `!`, Cloudflare une las
   dos CSP con una coma y el navegador aplica **las dos a la vez**: la de `/*`
   bloquearía los scripts de la página. Esa semántica se leyó en el propio
-  asset worker de Cloudflare (`@cloudflare/workers-shared`): reglas en orden,
+  código de Cloudflare Pages (`@cloudflare/pages-shared`, que usa el motor de
+  reglas de `@cloudflare/workers-shared`): reglas en orden,
   ruta exacta sin query string, `!` borra y una cabecera repetida se une.
 - **La trampa que costó encontrar: `next/script` con `beforeInteractive` no
   deja un `<script>` en el HTML.** Deja el código como dato en
@@ -980,7 +981,8 @@ logotipo como salida a casa. En un sitio estático **solo ocurren dos**:
 
 - **404**, `src/app/not-found.tsx`. El export la escribe en `out/404.html` y
   Cloudflare la sirve para cualquier ruta que no exista
-  (`not_found_handling` en `wrangler.jsonc`).
+  (Pages busca el `404.html` más cercano subiendo por la ruta, y el único es
+  el de la raíz).
 - **500**, `src/app/error.tsx`: algo revienta al pintar en el navegador.
   Ofrece "Reintentar" con el `retry()` de Next 16 (ya no es `reset()`). Y
   `src/app/global-error.tsx` cubre el caso de que falle el propio layout raíz:
