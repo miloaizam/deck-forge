@@ -203,6 +203,7 @@ superficies, no de la sombra.
   | Panel y hoja de la baraja | `AutoHeight` (componente) | crece al agregar | se encoge al quitar |
   | Fila nueva del panel | `fila-entra` | fundido desde la izquierda | — |
   | Cartas de las grillas (catálogo, edición, constructor), cartas del detalle de una baraja, barajas de Mis barajas, novedades, mano de prueba | `aparece` | fundido y sube 4 px | — |
+  | Barras de la curva de coste | `scale` con retraso por columna | crecen desde abajo, una tras otra, al entrar en pantalla | — |
   | Imagen de carta que baja | `imagen-carga` | su hueco late hasta que llega | — |
 
   La entrada dura algo más que la salida (220 contra 160 ms en los modales):

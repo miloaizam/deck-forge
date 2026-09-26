@@ -88,22 +88,13 @@ function lineas(
   return out;
 }
 
-export interface DeckImageInfo {
-  deck: Deck;
-  res: ResolvedDeck;
-  total: number;
-  legal: boolean;
-  afinidad: string;
-}
-
-/** Dibuja la baraja y la baja como PNG. Lanza si el navegador no puede. */
-export async function downloadDeckImage({
-  deck,
-  res,
-  total,
-  legal,
-  afinidad,
-}: DeckImageInfo): Promise<void> {
+/**
+ * Dibuja la baraja y la baja como PNG. Lanza si el navegador no puede.
+ *
+ * Solo lleva el nombre, la nota y las cartas: sin conteo, legalidad ni
+ * afinidad, que en una imagen para compartir sobran (las cartas ya lo dicen).
+ */
+export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<void> {
   await document.fonts.ready;
   const fuente = getComputedStyle(document.body).fontFamily;
 
@@ -125,7 +116,7 @@ export async function downloadDeckImage({
   const nota = deck.descripcion.trim()
     ? lineas(ctx, deck.descripcion.trim(), ANCHO - MARGEN * 2, 2)
     : [];
-  const altoCabecera = 56 + 60 + nota.length * 30 + 44;
+  const altoCabecera = 34 + 70 + nota.length * 30 + 28;
   const altoTramo = (t: Tramo) =>
     40 + Math.ceil(t.filas.length / COLUMNAS) * (CARTA_H + HUECO) + 24;
   const alto =
@@ -141,7 +132,7 @@ export async function downloadDeckImage({
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, ANCHO, alto);
 
-  // Cabecera: etiqueta, nombre, nota y el resumen.
+  // Cabecera: etiqueta, nombre y nota.
   let y = MARGEN;
   ctx.textBaseline = "top";
   ctx.fillStyle = COLOR.acento;
@@ -160,13 +151,7 @@ export async function downloadDeckImage({
     ctx.fillText(l, MARGEN, y);
     y += 30;
   }
-  ctx.fillStyle = COLOR.ink;
-  ctx.font = f(500, 20);
-  const resumen = [`${total}/50 cartas`, legal ? "Legal" : "Incompleta", afinidad]
-    .filter(Boolean)
-    .join("  ·  ");
-  ctx.fillText(resumen, MARGEN, y);
-  y += 44;
+  y += 28;
 
   // Los tramos: titulo con su total y la grilla de cartas, con las copias.
   for (const t of lista) {

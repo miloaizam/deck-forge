@@ -1425,8 +1425,12 @@ arquetipo de atributo, aunque sigan entrando en cualquier baraja de su raza.
 baraja, y en el detalle de la baraja, en su propia tarjeta (`CostCurve.tsx`). La cuenta la hace `deckStats` —solo el principal,
 como los contadores por tipo— y `costCurve()` la pasa a columnas **fijas** de 0
 a 5 más una de "6+": si las columnas aparecieran según la baraja, las barras
-cambiarían de sitio al agregar una carta. Los Oros no tienen coste y se
-cuentan aparte, junto al título. `deck-rules.test.ts` lo comprueba contra el
+cambiarían de sitio al agregar una carta. Los Oros no tienen coste; en el
+constructor se cuentan aparte, junto al título, y en el detalle no se
+nombran (la tarjeta lleva icono y título centrados, como su vecina). **Las
+barras crecen escalonadas la primera vez que el gráfico entra en pantalla**
+(IntersectionObserver: en el detalle está al final de la página), con
+`scale` y no con `height`, que ya se anima al sumar o quitar copias. `deck-rules.test.ts` lo comprueba contra el
 catálogo real.
 
 **El mínimo de 15 lo cumple un tipo solo, no la suma de los dos**: 14 Aliados y
@@ -1507,8 +1511,9 @@ empezar; cada mulligan baraja de nuevo y roba una menos, hasta 1. Barajar es
 Fisher–Yates: el `sort` con un random que se ve por ahí no es uniforme.
 
 **La baraja se descarga como imagen** (`deck-image.ts`): un PNG de 1600 px de
-ancho dibujado en un `<canvas>`, con el nombre, la nota, el resumen, las cartas
-por tipo con sus copias y el oro inicial marcado. Sin servidor ni
+ancho dibujado en un `<canvas>`, con el nombre, la nota, las cartas por tipo
+con sus copias y el oro inicial marcado. Sin conteo, legalidad ni afinidad: en
+una imagen para compartir sobran. Sin servidor ni
 dependencias: las miniaturas son del propio origen, así que el canvas se puede
 exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
 colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee

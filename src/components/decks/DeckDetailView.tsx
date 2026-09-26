@@ -29,7 +29,6 @@ import { useSharedCode } from "./use-shared-code";
 import { deckTitle, duplicateDeck, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
-  affinityLabel,
   buildCardIndex,
   deckStats,
   isLegal,
@@ -207,13 +206,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             <button
               type="button"
               onClick={() =>
-                void downloadDeckImage({
-                  deck,
-                  res,
-                  total: stats.totalPrincipal,
-                  legal,
-                  afinidad: stats.afinidad.vacio ? "" : affinityLabel(stats.afinidad),
-                })
+                void downloadDeckImage(deck, res)
                   .then(() => toast(`Imagen de "${deckTitle(deck)}" descargada.`, "info"))
                   .catch(() =>
                     toast("No se pudo generar la imagen de la baraja.", "warning"),
@@ -305,6 +298,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
           <CostCurve
             curva={stats.curva}
             oros={stats.porTipo.Oro}
+            variante="tarjeta"
             barras="min-h-44 flex-1"
             className={PANEL_ANALISIS}
           />
