@@ -446,6 +446,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
                 copies={copiasPorId}
                 onAdd={(c) => agregar(c)}
                 addBlocked={bloqueoDe}
+                onBlocked={avisarError}
                 variante="constructor"
               />
               <Pagination
@@ -559,6 +560,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
         onAdd={selected ? () => agregar(selected) : undefined}
         onRemove={selected ? () => quitar(selected) : undefined}
         addBlocked={selected ? bloqueoDe(selected) : undefined}
+        onBlocked={avisarError}
       />
     </>
   );

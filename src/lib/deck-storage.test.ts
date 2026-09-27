@@ -11,7 +11,8 @@ import {
   parseDecks,
   MAX_BARAJAS,
 } from "./deck-storage";
-import { MAX_NOMBRE_BARAJA } from "./types";
+import { exportFile, importFile } from "./deck-code";
+import { deckSchema, MAX_DESCRIPCION_BARAJA, MAX_NOMBRE_BARAJA } from "./types";
 
 /**
  * `localStorage` lo puede editar el usuario o cualquier extension del
@@ -186,4 +187,44 @@ test("una baraja nueva entra primera si hay espacio", () => {
     lista?.map((d) => d.nombre),
     ["Nueva", "A", "B"],
   );
+});
+
+test("un respaldo con ids gigantes no entra: dejaria la lista sin poder leerse", () => {
+  // Menos de 1 MB (lo que admite el importador) y, sin tope en el id, mas de lo
+  // que parseDecks acepta leer despues: la lista salia vacia.
+  const hostil = {
+    ...createDeck("Hostil"),
+    principal: Array.from({ length: 60 }, (_, i) => ({ id: `a${i}`.repeat(1500), n: 1 })),
+  };
+  const archivo = exportFile([hostil]);
+  assert.ok(archivo.length < 1024 * 1024);
+  assert.deepEqual(importFile(archivo)?.barajas, []);
+});
+
+test("cincuenta barajas en el peor caso valido se siguen pudiendo leer", () => {
+  // Lo que mas crece al pasar a JSON: una mitad de surrogate suelta se escribe
+  // con 6 caracteres (\ud800) y una comilla con 2. Se pasa por el esquema,
+  // porque lo que se guarda es lo que el esquema deja pasar.
+  const larga = (i: number) =>
+    deckSchema.parse({
+      ...createDeck(`${'"'.repeat(MAX_NOMBRE_BARAJA)}${i}`.slice(-MAX_NOMBRE_BARAJA)),
+      descripcion: "\ud800".repeat(MAX_DESCRIPCION_BARAJA),
+      oroInicial: "x".repeat(40),
+      portada: "x".repeat(40),
+      principal: Array.from({ length: 60 }, (_, k) => ({
+        id: `${k}`.padStart(40, "x"),
+        n: 50,
+      })),
+      side: Array.from({ length: 20 }, (_, k) => ({
+        id: `${k}`.padStart(40, "y"),
+        n: 50,
+      })),
+    });
+  const barajas = Array.from({ length: MAX_BARAJAS }, (_, i) => larga(i));
+  assert.equal(
+    barajas[0].descripcion.length,
+    MAX_DESCRIPCION_BARAJA,
+    "el esquema no la recorto",
+  );
+  assert.equal(parseDecks(sobre(barajas)).length, MAX_BARAJAS);
 });

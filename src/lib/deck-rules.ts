@@ -596,10 +596,12 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
 
   if (stats.aliadosOTotems < MIN_ALIADOS_O_TOTEMS) {
     const falta = MIN_ALIADOS_O_TOTEMS - stats.aliadosOTotems;
+    const aliados = stats.porTipo.Aliado;
+    const totems = stats.porTipo["Tótem"];
     issues.push({
       code: "minimo-aliados",
       gravedad: "error",
-      mensaje: `Necesitas ${MIN_ALIADOS_O_TOTEMS} Aliados o ${MIN_ALIADOS_O_TOTEMS} Tótems, que no se suman entre sí. Llevas ${stats.porTipo.Aliado} Aliados y ${stats.porTipo["Tótem"]} Tótems: te faltan ${falta} de un tipo.`,
+      mensaje: `Necesitas ${MIN_ALIADOS_O_TOTEMS} Aliados o ${MIN_ALIADOS_O_TOTEMS} Tótems, que no se suman entre sí. Llevas ${aliados} ${aliados === 1 ? "Aliado" : "Aliados"} y ${totems} ${totems === 1 ? "Tótem" : "Tótems"}: ${falta === 1 ? "te falta" : "te faltan"} ${falta} de un tipo.`,
     });
   }
 

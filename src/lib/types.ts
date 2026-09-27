@@ -291,9 +291,18 @@ const MAX_COPIAS_REPRESENTABLES = 50;
 /** Id local de una baraja. Nunca sale del navegador ni viaja en el enlace. */
 const DECK_ID = /^[a-z0-9]{10}$/;
 
+/**
+ * Id de una carta dentro de una baraja. Los del catalogo tienen seis
+ * caracteres; el tope es holgado, pero TIENE que haberlo: sin el, un archivo
+ * de respaldo de menos de 1 MB con ids gigantes pasaba la importacion, dejaba
+ * lo guardado por encima de lo que `parseDecks` acepta leer, y la lista
+ * aparecia vacia —y el siguiente guardado la pisaba entera—.
+ */
+const cardRefSchema = z.string().max(40).regex(SLUG);
+
 export const deckEntrySchema = z.object({
   /** Id de IMPRESION: el usuario eligio ese arte y hay que respetarselo. */
-  id: z.string().regex(SLUG),
+  id: cardRefSchema,
   n: z.number().int().min(1).max(MAX_COPIAS_REPRESENTABLES),
 });
 
@@ -336,13 +345,13 @@ export const deckSchema = z.object({
    * `principal`, no una zona aparte: el oro inicial cuenta dentro de las 50,
    * y darle un hueco propio garantizaba un error de conteo de uno.
    */
-  oroInicial: z.string().regex(SLUG).nullable().default(null),
+  oroInicial: cardRefSchema.nullable().default(null),
   /**
    * Que carta de la baraja hace de portada en la lista. Presentacion pura: no
    * entra en las reglas ni en el enlace compartido, como `afinidadFijada`.
    * Lleva `.default(null)` para que las barajas ya guardados sigan leyendose.
    */
-  portada: z.string().regex(SLUG).nullable().default(null),
+  portada: cardRefSchema.nullable().default(null),
   principal: z.array(deckEntrySchema).max(MAX_ENTRADAS),
   side: z.array(deckEntrySchema).max(MAX_ENTRADAS_SIDE),
   /**

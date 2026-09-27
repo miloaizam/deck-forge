@@ -130,7 +130,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
           <p className="text-ink text-lg">Todavía no tienes barajas.</p>
           <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
             Las barajas que armes se guardan solo en este navegador. Si cambias de equipo,
-            expórtalos a un archivo y vuelve a importarlos allá.
+            expórtalas a un archivo y vuelve a importarlas allá.
           </p>
         </div>
       ) : (
@@ -265,7 +265,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
         titulo="¿Borrar la baraja?"
         mensaje={
           porBorrar
-            ? `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de donde recuperarlo.`
+            ? `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de dónde recuperarla.`
             : ""
         }
         confirmar="Borrar la baraja"

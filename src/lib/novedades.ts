@@ -26,11 +26,21 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-09-27",
+    tipo: "Arreglo",
+    titulo: "Arreglos al guardar, importar y agregar cartas",
+    texto: [
+      "Guardar varias veces una baraja compartida ya no crea copias repetidas: la segunda vez avisa que ya está en Mis barajas. Y un archivo de respaldo dañado ya no puede dejar vacía la lista de barajas.",
+      "En el constructor, pulsar el + de una carta que no se puede agregar ahora dice por qué, también en el teléfono, donde antes no pasaba nada.",
+      "Kotengu, Tomoe, Punzón de Hueso, Adapa y Nammu tenían impresiones que decían cosas distintas. Ahora todas sus impresiones llevan el mismo texto, así que la carta funciona igual la lleves con el arte que la lleves.",
+    ],
+  },
+  {
     fecha: "2026-09-26",
     tipo: "Novedad",
-    titulo: "22 cartas nuevas: las de los mazos especiales del formato",
+    titulo: "22 cartas nuevas: las de los packs especiales del formato",
     texto: [
-      "El catálogo suma las cartas que traen el Pack Batalla y el Pack América y que no están en ninguna de las diez ediciones, como Tiamat, Thor el Poderoso, Lahmu, Dante o Devastador. Salen con el arte de su mazo, y en el filtro de edición se encuentran por el nombre del mazo.",
+      "El catálogo suma las cartas que traen el Pack Batalla y el Pack América y que no están en ninguna de las diez ediciones, como Tiamat, Thor el Poderoso, Lahmu, Dante o Devastador. Salen con el arte de su pack, y en el filtro de edición se encuentran por el nombre del pack.",
       'Ocho cartas de Pack América y Árbol del Grito de Dominio de Tótems llegarán cuando consigamos la imagen de su impresión. El buscador ahora exige todas las palabras: "Thor el Poderoso" encuentra a Thor y no a cada carta que diga "el".',
     ],
   },

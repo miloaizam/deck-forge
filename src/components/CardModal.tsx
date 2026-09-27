@@ -22,6 +22,8 @@ interface CardModalProps {
   onRemove?: () => void;
   /** Por que no se puede agregar, si es que no se puede. */
   addBlocked?: string;
+  /** Explica el bloqueo al pulsar "Agregar" bloqueado, igual que en la grilla. */
+  onBlocked?: (mensaje: string) => void;
 }
 
 /** Dato con etiqueta. No se renderiza si el valor viene vacio. */
@@ -42,6 +44,7 @@ export function CardModal({
   onAdd,
   onRemove,
   addBlocked,
+  onBlocked,
 }: CardModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -156,9 +159,7 @@ export function CardModal({
                   <div className="border-line mt-5 flex flex-wrap items-center gap-3 border-t pt-5">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!addBlocked) onAdd();
-                      }}
+                      onClick={() => (addBlocked ? onBlocked?.(addBlocked) : onAdd())}
                       // aria-disabled y no disabled: sigue enfocable, y asi al
                       // pulsarlo puede explicar por que no se puede.
                       aria-disabled={addBlocked ? true : undefined}

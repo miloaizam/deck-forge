@@ -13,6 +13,8 @@ interface CardGridProps {
   onAdd?: (card: Card) => void;
   /** Por que no se puede agregar cada carta, si es que no se puede. */
   addBlocked?: (card: Card) => string | undefined;
+  /** Explica el bloqueo al pulsar un "+" bloqueado. */
+  onBlocked?: (mensaje: string) => void;
   /**
    * Cuantas columnas caben. El catalogo tiene la pagina entera; el constructor
    * cede casi medio metro de pantalla al panel de la baraja y cierra en seis.
@@ -50,6 +52,7 @@ export function CardGrid({
   copies,
   onAdd,
   addBlocked,
+  onBlocked,
   variante = "catalogo",
 }: CardGridProps) {
   return (
@@ -65,6 +68,7 @@ export function CardGrid({
             copies={copies?.get(card.id) ?? 0}
             onAdd={onAdd}
             addBlocked={addBlocked?.(card)}
+            onBlocked={onBlocked}
           />
         </li>
       ))}

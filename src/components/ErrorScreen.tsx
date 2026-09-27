@@ -22,7 +22,7 @@ const ERRORES = {
   500: {
     titulo: "Algo falló al cargar esta página",
     mensaje:
-      "Es un error nuestro, no tuyo. Tus mazos siguen guardados en este navegador. Prueba de nuevo y, si se repite, vuelve al inicio.",
+      "Es un error nuestro, no tuyo. Tus barajas siguen guardadas en este navegador. Prueba de nuevo y, si se repite, vuelve al inicio.",
   },
 } as const;
 

@@ -102,10 +102,10 @@ export function HandTester({ res, oroInicial, onVer, className }: HandTesterProp
           <>
             <p className="text-muted mb-3 text-center text-[13px] tabular-nums">
               {tamano === MANO_INICIAL
-                ? `Mano de ${mano.length} cartas`
+                ? `Mano de ${mano.length} ${mano.length === 1 ? "carta" : "cartas"}`
                 : `Mulligan: mano de ${mano.length} ${mano.length === 1 ? "carta" : "cartas"}`}
               {" · "}
-              {mazo.length - mano.length} en el mazo
+              {mazo.length - mano.length} en el Mazo Castillo
             </p>
             <ul className="flex flex-wrap justify-center gap-2">
               {mano.map((id, i) => {

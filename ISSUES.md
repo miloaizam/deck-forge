@@ -36,6 +36,29 @@ Ordenadas de más a menos importante.
   `productos.test.ts` (y Ataque de Dragón de `documentos.test.ts`).
 - **Arreglado cuando:** están las nueve, con la impresión del mazo.
 
+## Arte de Pack América y de las promos PB1 con esquinas blancas y marca de agua
+
+- **Qué pasa:** cinco cartas de los mazos llegan con el arte sin recortar a
+  sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
+  el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
+  interfaz (`rounded-card`). Son las tres de Pack América (`pa-001`
+  Devastador, `pa-006` Lambton Worm, `pa-013` Dragón de Magma) y las dos promos
+  PB1 (`pb-102` Dante, `pb-103` Gólem de Praga). Las tres de Pack América
+  llevan además la **marca de agua «Mitos y Leyendas»** sobre la ilustración,
+  que es como las publica el fandom. Los datos de las cinco están bien
+  (verificados contra el arte el 26-09-2026); es solo la imagen.
+- **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
+  hasta la pasada de imágenes de TODO.md ("Recortar el arte de la extensión de
+  Escuelas Elementales", "Revisar la resolución de las imágenes de las
+  cartas"…), y se arreglan ahí, todas juntas.
+- **Por dónde:** el mismo recorte que la extensión de Escuelas Elementales.
+  Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
+  CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
+  `imagen`, como `pb-002-tiamat.webp`. La marca de agua no se quita
+  recortando: hace falta otra fuente del arte.
+- **Arreglado cuando:** las cinco se ven con el mismo borde que el resto en la
+  grilla y el modal, y sin marca de agua.
+
 ## Cartas en observación de la Banlist, sin cargar
 
 - **Qué pasa:** la Banlist pone **en observación** nueve cartas de ediciones

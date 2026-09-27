@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Copy,
   Download,
@@ -26,7 +26,7 @@ import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
-import { deckTitle, duplicateDeck, setCover } from "@/lib/deck";
+import { deckTitle, duplicateDeck, newDeckId, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
   buildCardIndex,
@@ -74,13 +74,25 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const cargado = useHydrated();
   const index = useMemo(() => buildCardIndex(cards), [cards]);
 
+  // Aparte y solo con `d`, para no volver a decodificar cada vez que cambia
+  // el store (guardar la compartida lo cambia).
+  const compartida = useMemo(() => (d ? decodeDeck(d) : null), [d]);
+
+  /**
+   * Con que id se guardo ya ESTE enlace desde esta pagina. `decodeDeck` inventa
+   * un id en cada llamada, asi que no sirve para saber si ya se guardo: antes,
+   * pulsar "Guardar" tres veces dejaba tres barajas iguales.
+   */
+  const guardadaComo = useRef<{ codigo: string; id: string } | null>(null);
+
   // La baraja se DERIVA de la URL y del store, sin estado propio ni efectos: asi
   // cambiar de ?m=a a ?m=b no deja pegado el anterior y no hay renders en
   // cascada. El codigo compartido manda si vienen los dos parametros.
   const { deck, error } = useMemo((): { deck: Deck | null; error: string } => {
-    if (d) {
-      const r = decodeDeck(d);
-      return r.ok ? { deck: r.deck, error: "" } : { deck: null, error: r.mensaje };
+    if (compartida) {
+      return compartida.ok
+        ? { deck: compartida.deck, error: "" }
+        : { deck: null, error: compartida.mensaje };
     }
     if (m) {
       const guardado = decks.find((x) => x.id === m);
@@ -89,7 +101,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         : { deck: null, error: "No se encontró esa baraja en este navegador." };
     }
     return { deck: null, error: "Este enlace no contiene ninguna baraja." };
-  }, [m, d, decks]);
+  }, [m, compartida, decks]);
 
   /**
    * La portada se guarda al vuelo: la baraja sale del store, asi que escribirlo
@@ -104,16 +116,27 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   };
 
   const guardar = () => {
-    if (!deck) return;
-    // Una compartida puede llamarse como una tuya: entra como "X (copia)". Se
-    // excluye la propia, por si ya se habia guardado desde esta misma pagina.
-    const nombre = nombreLibre(
-      deck.nombre,
-      decks.filter((x) => x.id !== deck.id),
-    );
-    const aGuardar = nombre === deck.nombre ? deck : { ...deck, nombre };
+    if (!deck || !d) return;
+    // Ya guardada desde aqui y todavia en la lista: no se vuelve a escribir.
+    // Ni una copia nueva ni encima de la guardada, que pudo editarse despues
+    // en otra pestana.
+    const previa =
+      guardadaComo.current?.codigo === d
+        ? decks.find((x) => x.id === guardadaComo.current?.id)
+        : undefined;
+    if (previa) {
+      toast(`Esta baraja ya está en Mis barajas como "${deckTitle(previa)}".`, "info");
+      return;
+    }
+    // Una compartida puede llamarse como una tuya: entra como "X (copia)".
+    const aGuardar = {
+      ...deck,
+      id: newDeckId(),
+      nombre: nombreLibre(deck.nombre, decks),
+    };
     const r = saveDeck(aGuardar);
     if (r === "ok") {
+      guardadaComo.current = { codigo: d, id: aGuardar.id };
       toast(`Baraja "${deckTitle(aGuardar)}" guardada en Mis barajas.`, "success");
     } else toast(mensajeNoGuardada(r), "warning");
   };
@@ -307,7 +330,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
       <ConfirmDialog
         open={porBorrar}
         titulo="¿Borrar la baraja?"
-        mensaje={`"${deckTitle(deck)}" se borra de este navegador y no hay de donde recuperarlo.`}
+        mensaje={`"${deckTitle(deck)}" se borra de este navegador y no hay de dónde recuperarla.`}
         confirmar="Borrar la baraja"
         onConfirm={() => {
           deleteDeck(deck.id);

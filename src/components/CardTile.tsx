@@ -24,8 +24,10 @@ interface CardTileProps {
   copies?: number;
   /** Si viene, la carta muestra un boton para sumarla a la baraja. */
   onAdd?: (card: Card) => void;
-  /** Por que no se puede agregar. Si viene, el boton lo explica al pulsarlo. */
+  /** Por que no se puede agregar. Si viene, pulsar el boton llama a `onBlocked`. */
   addBlocked?: string;
+  /** Explica el bloqueo al pulsar un boton bloqueado (un aviso, en el constructor). */
+  onBlocked?: (mensaje: string) => void;
 }
 
 export function CardTile({
@@ -34,6 +36,7 @@ export function CardTile({
   copies = 0,
   onAdd,
   addBlocked,
+  onBlocked,
 }: CardTileProps) {
   return (
     // El boton de agregar va superpuesto y aparte: un <button> no puede anidar
@@ -94,9 +97,9 @@ export function CardTile({
       {onAdd && (
         <button
           type="button"
-          onClick={() => {
-            if (!addBlocked) onAdd(card);
-          }}
+          // Bloqueado, el clic explica el motivo. Antes se tragaba aqui y el
+          // motivo quedaba solo en el `title`, que en un telefono no se ve.
+          onClick={() => (addBlocked ? onBlocked?.(addBlocked) : onAdd(card))}
           // aria-disabled y no disabled: el boton sigue enfocable y al pulsarlo
           // puede EXPLICAR por que no se puede. Un disabled no dice nada.
           aria-disabled={addBlocked ? true : undefined}

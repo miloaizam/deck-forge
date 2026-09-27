@@ -274,7 +274,9 @@ export function DeckPanel({
           )}
           {legal
             ? "La baraja cumple las reglas del formato"
-            : `${errores.length} cosas por corregir`}
+            : errores.length === 1
+              ? "1 cosa por corregir"
+              : `${errores.length} cosas por corregir`}
         </p>
 
         <p className="text-ink shrink-0 text-2xl leading-none font-bold tabular-nums">

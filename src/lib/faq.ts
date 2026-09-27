@@ -49,7 +49,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué es DeckForge?",
         respuesta: [
-          "Un **constructor de barajas** para el formato **Escuelas Elementales** de Mitos y Leyendas. Tiene el catálogo completo de las diez ediciones del formato y te ayuda a armar una baraja que cumpla las reglas.",
+          "Un **constructor de barajas** para el formato **Escuelas Elementales** de Mitos y Leyendas. Tiene el catálogo completo de las diez ediciones del formato, más las cartas de sus packs especiales, y te ayuda a armar una baraja que cumpla las reglas.",
         ],
       },
       {

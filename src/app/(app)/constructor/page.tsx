@@ -20,7 +20,7 @@ export default async function ConstructorPage() {
       <p className="eyebrow mb-3">Barajas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Constructor</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Arma tu baraja del formato escuelas elementales. Presiona &apos;Guardar
+        Arma tu baraja del formato Escuelas Elementales. Presiona &apos;Guardar
         baraja&apos; para verla en la pestaña de Barajas.
       </p>
 

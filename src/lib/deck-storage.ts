@@ -133,8 +133,12 @@ export function getServerDecksSnapshot(): Deck[] {
 export function saveDecks(decks: Deck[]): boolean {
   if (!disponible()) return false;
   try {
-    const sobre = { v: 1, mazos: decks.slice(0, MAX_BARAJAS) };
-    localStorage.setItem(DECKS_KEY, JSON.stringify(sobre));
+    const sobre = JSON.stringify({ v: 1, mazos: decks.slice(0, MAX_BARAJAS) });
+    // Nunca se escribe lo que despues no se podria leer: `parseDecks` descarta
+    // entero lo que pase de MAX_CHARS, y la lista saldria vacia —y el siguiente
+    // guardado la pisaria—. Para quien llama es como una cuota llena.
+    if (sobre.length > MAX_CHARS) return false;
+    localStorage.setItem(DECKS_KEY, sobre);
     avisar();
     return true;
   } catch {
