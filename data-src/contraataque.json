@@ -2512,7 +2512,7 @@
     "coste": 1,
     "fuerza": null,
     "frecuencia": "Vasallo",
-    "habilidad": "El Aliado portador gana 1 a la Fuerza.\nEn la Fase Final, si el Aliado portador hizo daño al Mazo Castillo oponente, elige hasta dos cartas del Cementerio oponente y Destiérralas.",
+    "habilidad": "El Aliado portador gana 1 a la Fuerza.\nEn la Fase Final, si el Aliado portador hizo daño al Mazo Castillo oponente este turno, puedes elegir dos cartas del Cementerio oponente y Desterrarlas.",
     "ilustrador": "Badillafloyd",
     "imagen": "/cards/ca-125.webp",
     "thumb": "/cards/thumb/ca-125.webp",

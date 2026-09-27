@@ -1572,6 +1572,30 @@ más nueva"**. La API miente igual en todas. Leonardo lo demuestra: Dominio
 (`Única Guardián Cuando…`, sin los puntos). Aplicar "manda la última" leyendo la
 API habría propagado el error.
 
+**Cinco cartas no siguen "manda la última": su texto lo eligió el proyecto**
+(27-09-2026). Sus impresiones dicen cosas distintas en la carta misma —el
+arte, no la API— y dos son de la misma edición, así que no había "última"
+que aplicar. Todas sus impresiones dicen ahora lo mismo; en Adapa y Nammu
+quedan solo diferencias de forma ("tus Aliados" / "los que controles", "2" /
+"dos") y cada una conserva su estilo de declarar `Única`:
+
+- **Kotengu** (BU-020, BU-045): "elige un Aliado en juego para que pierda 1 de
+  Fuerza", como BU-045. BU-020 imprime "un Aliado pierde 1".
+- **Tomoe** (BU-024, BU-057): con "que no sea Oro", como BU-024. BU-057 no lo
+  imprime.
+- **Punzón de Hueso** (AI-008, CA-125): "este turno, puedes elegir dos cartas
+  … y Desterrarlas", como AI-008. CA-125 imprime "elige hasta dos".
+- **Adapa** (DO-001, CA-002): "Cuando un Aliado de Raza Sacerdote entra en
+  juego bajo tu control, puedes elegir hasta tres", como CA-002. DO-001
+  imprime "Cuando juegues… 3 cartas".
+- **Nammu** (DO-004, CA-005): sin "de su mano" en los dos descartes, como
+  CA-005.
+
+Una revisión contra el arte las va a marcar como erratas: **no se deshacen**.
+Salieron del barrido que compara el texto de las 352 cartas reimpresas sin
+contar los recordatorios; las únicas otras diferencias son de forma (Yasuke
+"1 Oro"/"un Oro", el orden de declaración de Luisón).
+
 **`Shuri` no es una carta reimpresa: son dos Tótems distintos que se llaman
 igual.** BU-218 da Fuerza a los Dragones de tu Línea de Ataque y DO-213 te
 devuelve un Oro del Cementerio; distinto arte, distinto ilustrador y distinto
