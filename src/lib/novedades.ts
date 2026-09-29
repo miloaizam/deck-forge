@@ -28,10 +28,11 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-29",
     tipo: "Novedad",
-    titulo: "Pack América completo",
+    titulo: "Las cartas de los packs, en su edición",
     texto: [
-      "Llegan Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón, Tugarín, Nube Incendiaria, Guadaña Dragón y Kyrenia, con el arte de su impresión de Pack América. Se encuentran en el filtro de edición, junto a las otras tres del pack. Ojo: Nube Incendiaria cuesta 2 en esta impresión.",
-      "Solo falta Árbol del Grito de Dominio de Tótems: llegará cuando tengamos la imagen de su impresión.",
+      "Las cartas de los packs especiales ya no tienen edición propia en el filtro. Las del Pack Batalla están en Dominio; Devastador, Dragón de Magma, Balaur y Ataque de Dragón, en ContraAtaque; y Lou Carcolh, Lambton Worm, Dama Dragón, Tugarín, Kyrenia, Nube Incendiaria y Guadaña Dragón, en una edición nueva: Templarios.",
+      "Llegan además Árbol del Grito y la promo de Sarras, las dos en Templarios, y con eso están todas las cartas de los packs del formato. Ojo: Nube Incendiaria cuesta 2 en su impresión de Pack América.",
+      "Las barajas que ya llevaban alguna de estas cartas no pierden nada: se leen igual, guardadas o compartidas por enlace.",
     ],
   },
   {

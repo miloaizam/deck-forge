@@ -10,9 +10,8 @@ import { catalogSchema, type Card } from "./types";
 /**
  * Los productos especiales del formato, segun la tabla de "Escuelas
  * Elementales (Formato)" del fandom: cada carta que traen tiene que estar en
- * el catalogo, con la impresion del mazo o con la de una de las diez
- * ediciones (ver CLAUDE.md, "Los productos especiales del formato"). Las que
- * faltan porque no hay arte de su impresion de pack van en `SIN_ARTE`.
+ * el catalogo, en una de las diez ediciones o en Templarios (ver CLAUDE.md,
+ * "Los mazos especiales del formato").
  *
  * Las listas son las del fandom, carta a carta. Kit Sanctum, Kit Terra
  * Orientalis y la extension de Escuelas Elementales no estan aqui: son
@@ -167,43 +166,20 @@ const PRODUCTOS: Record<string, string[]> = {
   ],
 };
 
-/**
- * Cartas de los mazos que solo existen en ediciones de fuera del formato y de
- * las que no se encontro el arte de la impresion del mazo (ver TODO.md). No
- * se cargan con la impresion vieja: el formato admite la del mazo, que tiene
- * otro diseno.
- */
-const SIN_ARTE: Record<string, string[]> = {
-  "Dominio de Tótems": ["Árbol del Grito"],
-};
-
 for (const [producto, cartas] of Object.entries(PRODUCTOS)) {
-  const pendientes = new Set((SIN_ARTE[producto] ?? []).map(claveDeNombre));
-
   test(`todas las cartas de ${producto} estan en el catalogo`, () => {
-    const faltan = cartas.filter(
-      (n) => !nombres.has(claveDeNombre(n)) && !pendientes.has(claveDeNombre(n)),
-    );
+    const faltan = cartas.filter((n) => !nombres.has(claveDeNombre(n)));
     assert.deepEqual(faltan, []);
-  });
-
-  test(`las cartas sin arte de ${producto} siguen sin cargar`, () => {
-    // Si una llega al catalogo, se borra de SIN_ARTE (y de TODO.md).
-    const cargadas = (SIN_ARTE[producto] ?? []).filter((n) =>
-      nombres.has(claveDeNombre(n)),
-    );
-    assert.deepEqual(cargadas, []);
   });
 }
 
-test("las cartas de los mazos que no son de las diez ediciones van con el mazo", () => {
-  // Nunca con la edicion vieja de donde salieron: el filtro de edicion dice el
-  // mazo en que entraron al formato.
-  const mazos = new Set(["pack-de-batalla-dominio", "pack-america", "dominio-de-totems"]);
+test("las cartas sueltas van en una de las diez ediciones o en Templarios", () => {
+  // Los packs no son edicion en el filtro: sus cartas van a Dominio,
+  // ContraAtaque o Templarios.
   const principales = new Set(EDITIONS.filter((e) => !e.parcial).map((e) => e.slug));
   for (const c of CATALOGO) {
     assert.ok(
-      principales.has(c.edicion) || mazos.has(c.edicion),
+      principales.has(c.edicion) || c.edicion === "templarios",
       `${c.id}: ${c.edicion}`,
     );
   }

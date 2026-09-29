@@ -1315,78 +1315,74 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **30 cartas sueltas** de
-los mazos especiales del formato (ver abajo): **2189** en total.
+Elementales (326, con las 11 de su extensión)—, más **32 cartas sueltas** en
+`data-src/extras.json` (ver abajo): **2191** en total. Con ellas, Dominio
+muestra 275 en su página y ContraAtaque 154.
 
 **Los mazos especiales del formato traen reimpresiones de ediciones que no son
-del formato, y entran con la impresión DEL MAZO.** La tabla oficial está en la
-página «Escuelas Elementales (Formato)» del fandom: además de las ediciones,
-cuenta Steampunk, Kit Sanctum y Kit Terra Orientalis (EE-301…315), Héroes del
-Dharma (la extensión, EE-316…326) y tres mazos: **Pack de Batalla: Dominio**
-(DO-RP, más tres promos buy-a-box PB1), **Pack América** (SD1) y **Dominio de
-Tótems** (SD2). Se revisaron el 26-09-2026:
+del formato.** La tabla oficial está en la página «Escuelas Elementales
+(Formato)» del fandom: además de las ediciones, cuenta Steampunk, Kit Sanctum y
+Kit Terra Orientalis (EE-301…315), Héroes del Dharma (la extensión,
+EE-316…326) y tres mazos: **Pack de Batalla: Dominio** (DO-RP, más tres promos
+buy-a-box PB1), **Pack América** (SD1) y **Dominio de Tótems** (SD2). Lo que ya
+está en las diez ediciones no se toca (Orochi, Acobardar, Carmina Burana…); las
+que no están se cargaron a mano, porque **la API no tiene los mazos**
+(`/cards/edition/…` da `EDITION_NOT_FOUND`).
 
-- **Lo que ya está en las diez ediciones no se toca**: Orochi, Acobardar o
-  Carmina Burana siguen con su impresión de Sol Naciente, ContraAtaque o
-  Dominio. Solo entran las que **no** están en ninguna de las diez.
-- **Esas entran con la impresión del mazo, y el mazo es su edición.** Un
-  primer intento las cargó con la impresión vieja (Templarios, Asgard,
-  Sumeria…, como ediciones `parcial`) y estaba mal: el formato admite la
-  reimpresión del mazo, que tiene **otro diseño**, y en el filtro de edición
-  la carta tiene que decir en qué mazo entró al formato. **No se agregan
-  ediciones viejas**. Las ediciones son `pack-de-batalla-dominio` (`pb`, que
-  la interfaz llama **Pack Batalla**) y `pack-america` (`pa`); `dominio-de-totems` (`dt`) tiene prefijo reservado
-  y entra en `editions.ts` con su primera carta.
-- **La API no tiene los mazos** (`/cards/edition/…` da `EDITION_NOT_FOUND`),
-  así que se cargan a mano en `data-src/extras.json` con el arte del fandom
-  (las páginas `X (DO)` y `X (SD)`, con `format=original` en la URL del
-  archivo para no bajar la WebP) y los datos **leídos de ese arte**. Salen
-  diferencias con la impresión vieja: el **Devastador y el Dragón de Magma de
-  SD1 son Dragón**, no Bestia (es el remake, y la carta lo imprime), el Dragón
-  de Magma es Cortesano y destierra el Tótem «objetivo», y el Lambton Worm roba
-  «Al comienzo de la Fase Final».
-- **El id sigue el código impreso**: `DO-RP-006` es `pb-006`, `SD1-13-39` es
-  `pa-013`, y las promos `PB1-0N` van en `pb-10N` para no chocar con DO-RP
-  (Dante `pb-102`, Gólem de Praga `pb-103`). Ojo: la numeración del fandom en
-  la página del mazo **no** siempre coincide con el pie de la carta
-  (Grindylow es `DO-RP-018` aunque el archivo se llame `DO-RP-017`): manda el
-  pie.
-- **Una URL de imagen publicada no se reutiliza para otra carta.**
+- **Dónde va cada una, por decisión del proyecto (29-09-2026).** Los packs
+  **no son edición** en el filtro. Las del Pack de Batalla van a **Dominio**
+  (`do-3NN` para `DO-RP-0NN`, `do-40N` para las promos `PB1-0N`: Dante
+  `do-402` y Gólem de Praga `do-403`). De Pack América, Devastador, Dragón de
+  Magma, Balaur y Ataque de Dragón van a **ContraAtaque** (`ca-151`…`ca-154`),
+  y el resto, con Árbol del Grito de Dominio de Tótems y la promo de Sarras
+  (`2017-012`, la `/static/cards/10/140.png` de Sol Naciente), a una edición
+  **Templarios** (`parcial`, prefijo `te`, con el número de TEM: `te-007` Lou
+  Carcolh… `te-127` Árbol del Grito, `te-129` Sarras). No se agregan más
+  ediciones viejas que esa.
+- **El arte es el de la impresión que entra al formato**: la de pack (DO-RP,
+  SD1), con su otro diseño, salvo Árbol del Grito, que va con el de Templarios
+  (`TEM-127-128`) porque el de SD2 no apareció, y Sarras, con el de su promo.
+  Los datos se **leyeron de ese arte**, y la impresión de pack cambia cosas
+  respecto de la vieja: el **Devastador y el Dragón de Magma de SD1 son
+  Dragón**, no Bestia (el remake lo imprime); «el Aliado oponente objetivo» en
+  Lou Carcolh, Dama Dragón, Ataque de Dragón y Guadaña Dragón; «Luego, Roba
+  dos cartas» en frase aparte en Lou Carcolh y Kyrenia; Lambton Worm roba «Al
+  comienzo de la Fase Final»; y **Nube Incendiaria cuesta 2**, no 3. Las
+  imágenes de Pack América llevan la marca de agua con que circulan (TODO).
+- **Los ids cambiaron dos veces y los viejos se traducen al leer.** Primero
+  existieron ediciones propias para los packs (`pb-`, `pa-`), publicadas unos
+  días. `src/lib/ids-anteriores.ts` guarda cada id viejo con su id de hoy y
+  `cardRefSchema` (`types.ts`) los traduce al leer una baraja guardada, un
+  respaldo o un enlace: ninguna baraja pierde cartas. Esa tabla **solo se
+  agrega** y su test exige que ningún id viejo vuelva a usarse.
+- **`PREFIJOS` no pierde entradas**: `su`, `re`, `cm`, `as`, `mi`, `pb`, `pa`
+  y `dt` quedan reservados sin edición, y `te` vuelve a ser Templarios.
+- **Una URL de imagen publicada no se reutiliza para otra imagen.**
   `/cards/*` va con 7 días de caché (`_headers`), así que el navegador y el
-  borde de Cloudflare siguen sirviendo la imagen vieja aunque el archivo
-  cambie. Pasó con `pb-002`: fue Dante unas horas y después Tiamat, y Tiamat
-  se veía con el arte de Dante. Tiamat lleva ahora `pb-002-tiamat.webp` (el
-  campo `imagen` no tiene por qué ser el id), y **`/cards/pb-002.webp` y
-  `/cards/pb-003.webp` quedan retiradas**: no se vuelven a usar.
-- **`su`, `re`, `cm`, `te`, `as` y `mi` quedan en `PREFIJOS` sin edición.** Se
-  publicaron unas horas con aquel primer intento y quitarlos correría el
-  código de `pb` y los que vengan detrás. Un enlace de esas horas con una de
-  aquellas cartas la pierde al abrirse, igual que cualquier id desconocido.
-- **Nueve cartas no tenían arte de su impresión de pack** en ninguna fuente
-  que se pueda bajar (ni el fandom, ni La Guarida, ni la API): ocho de Pack
-  América y Árbol del Grito de Dominio de Tótems. Se quedaron **fuera** antes
-  que cargarlas con el diseño viejo. El 29-09-2026 el proyecto entregó las
-  imágenes de las ocho de Pack América, cargadas leyendo el arte; falta Árbol
-  del Grito, en TODO.md y en `SIN_ARTE` de `productos.test.ts` (la imagen que
-  circula es la de Templarios, `TEM-127-128`, y no sirve). Otra vez la
-  impresión de pack cambia cosas: «el Aliado oponente objetivo» en Lou
-  Carcolh, Dama Dragón, Ataque de Dragón y Guadaña Dragón, «Luego, Roba dos
-  cartas» en frase aparte en Lou Carcolh y Kyrenia, y **Nube Incendiaria
-  cuesta 2**, no 3 como en Templarios.
+  borde de Cloudflare siguen sirviendo la vieja aunque el archivo cambie. Pasó
+  con `pb-002`: fue Dante unas horas y después Tiamat, y Tiamat se veía con el
+  arte de Dante. Por eso el campo `imagen` no siempre es el id: las de
+  Templarios con arte de pack van en `te-0NN-sd1.webp`, porque `te-0NN.webp`
+  ya sirvió el arte viejo en el primer intento. `te-127.webp` sí se reusa: es
+  la misma imagen de entonces. `pb-*` y `pa-*` quedan retiradas.
+- **La numeración del fandom en la página del mazo no siempre coincide con el
+  pie de la carta** (Grindylow es `DO-RP-018` aunque el archivo se llame
+  `DO-RP-017`): manda el pie. Y **la imagen que circula de Árbol del Grito
+  como si fuera de Dominio de Tótems es la de Templarios** (`TEM-127-128`).
 - **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
   arte dice Kojh. Ya estaba.
 - **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del
-  catálogo (TODO "Aplicar las erratas…"): Lahmu sigue con su texto impreso.
+  catálogo (TODO "Aplicar las erratas…"): Lahmu y Ataque de Dragón siguen con
+  su texto impreso.
 - Las **9 cartas en observación** de la Banlist (Wotan, Melusina…) **no se
   cargaron**, por decisión del proyecto; siguen en `FUERA_DEL_FORMATO` de
   `documentos.test.ts`. Tampoco el mazo **Furia Implacable** (SD4), que es de
   Bloque Furia y no figura en la tabla del formato.
 - `productos.test.ts` lista las cartas de los tres mazos, falla si falta
-  alguna que no esté en `SIN_ARTE`, y exige que toda carta de fuera de las
-  diez ediciones lleve un mazo como edición. Las seis `parcial` viejas de
-  `editions.ts` sin cartas (Helénica, Imperio, Espada Sagrada, Dominios de Ra,
-  Cruzadas, Furia) siguen vacías y no salen en el filtro: sus prefijos ya
-  están en `PREFIJOS` y no se pueden quitar.
+  alguna, y exige que toda carta vaya en una de las diez ediciones o en
+  Templarios. Las seis `parcial` viejas de `editions.ts` sin cartas (Helénica,
+  Imperio, Espada Sagrada, Dominios de Ra, Cruzadas, Furia) siguen vacías y no
+  salen en el filtro.
 
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.

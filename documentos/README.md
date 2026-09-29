@@ -81,7 +81,7 @@ Se hizo contra los dos originales:
   imagen dejó claro qué es cada cosa.
 - **Nombres contra el catálogo**:
   - Devastador, Dragón de Magma, Ataque de Dragón y Lahmu ya están, con su
-    impresión de pack (Pack América y Pack Batalla). No están, y está anotado
+    impresión de pack (en ContraAtaque y Dominio). No están, y está anotado
     en `TODO.md`, las nueve en observación, de ediciones fuera del formato (Wyvern Dorado, Raksasa
     Sombrío, Jarnvid, Melusina, Wotan, Muhammad Bin Qasim, Bibi Dalair Kaur,
     Anubis de Inpu y Mut).

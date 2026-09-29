@@ -66,13 +66,10 @@ EDITION_CODES = {
     "dominios-de-ra": "DR",
     "cruzadas": "CR",
     "furia": "FU",
-    # Los mazos especiales del formato (ver CLAUDE.md). La API no los tiene:
-    # sus cartas se cargan a mano, con el arte de la impresion del mazo. Van al
-    # final, como en PREFIJOS de deck-code.ts, donde SU, RE, CM, TE, AS y MI
-    # quedan reservados entre FU y PB sin edicion.
-    "pack-de-batalla-dominio": "PB",
-    "pack-america": "PA",
-    "dominio-de-totems": "DT",
+    # Templarios: aporta las reimpresiones de Pack America y Dominio de
+    # Totems (ver CLAUDE.md). En PREFIJOS de deck-code.ts va entre FU y los
+    # reservados SU, RE, CM, AS, MI, PB, PA y DT, que ya no tienen edicion.
+    "templarios": "TE",
 }
 
 # El slug de la API cuando NO coincide con el nuestro. Escuelas Elementales es

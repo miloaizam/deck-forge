@@ -20,10 +20,9 @@ export interface Edition {
   cargada: boolean;
   /**
    * No es una de las diez ediciones, pero aporta cartas sueltas que se juegan
-   * en el formato. Hoy son los mazos especiales (Pack de Batalla: Dominio,
-   * Pack America): sus cartas van con la impresion del mazo y el mazo como
-   * edicion, nunca con la edicion vieja de donde salieron. Viven en
-   * `data-src/extras.json`; ver CLAUDE.md.
+   * en el formato. Hoy es Templarios, con las reimpresiones de Pack America y
+   * Dominio de Totems que salieron de ella. Viven en `data-src/extras.json`;
+   * ver CLAUDE.md.
    *
    * Aparece en el filtro de edicion del catalogo, para que su nombre se lea
    * bien, pero NO tiene pagina propia: no vale la pena una ruta para tres
@@ -52,14 +51,7 @@ export const EDITIONS: Edition[] = [
   { slug: "dominios-de-ra", titulo: "Dominios de Ra", cargada: true, parcial: true },
   { slug: "cruzadas", titulo: "Cruzadas", cargada: true, parcial: true },
   { slug: "furia", titulo: "Furia", cargada: true, parcial: true },
-  // El producto se llama "Pack de Batalla: Dominio"; en la interfaz, Pack Batalla.
-  {
-    slug: "pack-de-batalla-dominio",
-    titulo: "Pack Batalla",
-    cargada: true,
-    parcial: true,
-  },
-  { slug: "pack-america", titulo: "Pack América", cargada: true, parcial: true },
+  { slug: "templarios", titulo: "Templarios", cargada: true, parcial: true },
 ];
 
 /**

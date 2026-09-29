@@ -16,23 +16,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Cartas por agregar
 
-### Árbol del Grito de Dominio de Tótems, sin arte de su impresión de pack
-
-- **Qué pasa:** el formato admite la reimpresión de Dominio de Tótems
-  (`SD2-23-37`), que tiene otro diseño que la de Templarios, y todavía no hay
-  imagen. Queda **fuera del catálogo** hasta tenerla (CLAUDE.md, "Los mazos
-  especiales del formato"). Es la última de las nueve que faltaban: las ocho
-  de Pack América se cargaron el 29-09-2026 con imágenes del proyecto.
-- **Ojo con la imagen:** la que circula es la de Templarios, con
-  `TEM-127-128 · © 2016` al pie. Esa **no** sirve; la de pack dice
-  `SD2-23-37`. El fandom, La Guarida y la API no la tienen; Cartoteca MyL
-  (Facebook) publica las cartas con su código.
-- **Por dónde:** ponerla en `images-src/dt-023.png`, cargar la carta en
-  `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems`
-  («Dominio de Tótems») a `editions.ts` y sacarla de `SIN_ARTE` en
-  `productos.test.ts`.
-- **Arreglado cuando:** está en el catálogo con su impresión de pack.
-
 ### Reimpresiones de otras ediciones
 
 - **Qué:** agregar otras impresiones de cartas que **ya están** en el catálogo
@@ -86,19 +69,20 @@ antes de regenerar), y **una URL de imagen ya publicada no se reutiliza**
 (`/cards/*` va con 7 días de caché: el arte nuevo va con otro nombre en el
 campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 
-### Arte de Pack América y de las promos PB1 con esquinas blancas y marca de agua
+### Arte de los packs y de la promo de Sarras con esquinas blancas y marca de agua
 
-- **Qué pasa:** trece cartas de los mazos llegan con el arte sin recortar a
+- **Qué pasa:** catorce cartas sueltas llegan con el arte sin recortar a
   sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
   el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
-  interfaz (`rounded-card`). Son las once de Pack América (`pa-001`
-  Devastador, `pa-004` Lou Carcolh, `pa-006` Lambton Worm, `pa-011` Dama
-  Dragón, `pa-013` Dragón de Magma, `pa-014` Balaur, `pa-016` Ataque de
-  Dragón, `pa-019` Nube Incendiaria, `pa-020` Guadaña Dragón, `pa-021`
-  Kyrenia, `pa-023` Tugarín) y las dos promos PB1 (`pb-102` Dante, `pb-103`
-  Gólem de Praga). Las de Pack América llevan además la **marca de agua «Mitos
-  y Leyendas»** sobre la ilustración, que es como circulan en internet. Los
-  datos de las trece están bien (verificados contra el arte); es solo la
+  interfaz (`rounded-card`). Son las once de Pack América —en ContraAtaque
+  `ca-151` Devastador, `ca-152` Dragón de Magma, `ca-153` Balaur y `ca-154`
+  Ataque de Dragón; en Templarios `te-007` Lou Carcolh, `te-030` Dama Dragón,
+  `te-032` Lambton Worm, `te-049` Nube Incendiaria, `te-059` Guadaña Dragón,
+  `te-061` Kyrenia y `te-063` Tugarín—, las dos promos PB1 de Dominio
+  (`do-402` Dante, `do-403` Gólem de Praga) y la promo de Sarras (`te-129`).
+  Las de Pack América y Sarras llevan además la **marca de agua «Mitos y
+  Leyendas»** sobre la ilustración, que es como circulan en internet. Los
+  datos de las catorce están bien (verificados contra el arte); es solo la
   imagen.
 - **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
   hasta la pasada de imágenes de este grupo, y se arreglan ahí, todas
@@ -106,10 +90,10 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 - **Por dónde:** el mismo recorte que la extensión de Escuelas Elementales.
   Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
   CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
-  `imagen`, como `pb-002-tiamat.webp`. La marca de agua no se quita
-  recortando: hace falta otra fuente del arte.
-- **Arreglado cuando:** las trece se ven con el mismo borde que el resto en la
-  grilla y el modal, y sin marca de agua.
+  `imagen`, como `te-007-sd1.webp`. La marca de agua no se quita recortando:
+  hace falta otra fuente del arte.
+- **Arreglado cuando:** las catorce se ven con el mismo borde que el resto en
+  la grilla y el modal, y sin marca de agua.
 
 ### Recortar el arte de la extensión de Escuelas Elementales
 
@@ -195,7 +179,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
   catálogo en `documentos.test.ts`.
 - **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, dos de
-  los packs: Lahmu (`pb-006`) y Ataque de Dragón (`pa-016`, que imprime
+  los packs: Lahmu (`do-306`) y Ataque de Dragón (`ca-154`, que imprime
   "Destruye el Aliado oponente objetivo." y la Fe de Erratas deja en
   "Destruye un Aliado oponente"). Devastador y Dragón de Magma ya
   son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar

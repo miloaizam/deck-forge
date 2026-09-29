@@ -103,17 +103,16 @@ const PREFIJOS: readonly string[] = [
   "dr",
   "cr",
   "fu",
-  // Reservados, sin edicion: se publicaron unas horas para cartas que luego
-  // se cambiaron por su impresion de pack. No se quitan porque correrian los
-  // codigos de las entradas siguientes.
+  // Reservados, sin edicion, salvo "te" (Templarios): se publicaron con
+  // cartas que despues cambiaron de edicion. No se quitan porque correrian los
+  // codigos de las entradas siguientes, y "pb" y "pa" los siguen leyendo los
+  // enlaces viejos, que `idVigente` (ids-anteriores.ts) traduce al id nuevo.
   "su",
   "re",
   "cm",
   "te",
   "as",
   "mi",
-  // Los mazos del formato: Pack de Batalla: Dominio, Pack America y Dominio
-  // de Totems (este ultimo reservado hasta que tenga cartas).
   "pb",
   "pa",
   "dt",
