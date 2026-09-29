@@ -28,10 +28,10 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-29",
     tipo: "Novedad",
-    titulo: "Cinco cartas más de Pack América",
+    titulo: "Pack América completo",
     texto: [
-      "Llegan Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón y Tugarín, con el arte de su impresión de Pack América. Se encuentran en el filtro de edición, junto a las otras tres del pack.",
-      "Faltan Nube Incendiaria, Guadaña Dragón y Kyrenia de Pack América, y Árbol del Grito de Dominio de Tótems: llegarán cuando tengamos la imagen de su impresión.",
+      "Llegan Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón, Tugarín, Nube Incendiaria, Guadaña Dragón y Kyrenia, con el arte de su impresión de Pack América. Se encuentran en el filtro de edición, junto a las otras tres del pack. Ojo: Nube Incendiaria cuesta 2 en esta impresión.",
+      "Solo falta Árbol del Grito de Dominio de Tótems: llegará cuando tengamos la imagen de su impresión.",
     ],
   },
   {

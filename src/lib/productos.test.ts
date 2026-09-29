@@ -174,7 +174,6 @@ const PRODUCTOS: Record<string, string[]> = {
  * otro diseno.
  */
 const SIN_ARTE: Record<string, string[]> = {
-  "Pack América": ["Nube Incendiaria", "Guadaña Dragón", "Kyrenia"],
   "Dominio de Tótems": ["Árbol del Grito"],
 };
 

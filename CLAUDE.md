@@ -1315,8 +1315,8 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **27 cartas sueltas** de
-los mazos especiales del formato (ver abajo): **2186** en total.
+Elementales (326, con las 11 de su extensión)—, más **30 cartas sueltas** de
+los mazos especiales del formato (ver abajo): **2189** en total.
 
 **Los mazos especiales del formato traen reimpresiones de ediciones que no son
 del formato, y entran con la impresión DEL MAZO.** La tabla oficial está en la
@@ -1366,11 +1366,13 @@ Tótems** (SD2). Se revisaron el 26-09-2026:
   que se pueda bajar (ni el fandom, ni La Guarida, ni la API): ocho de Pack
   América y Árbol del Grito de Dominio de Tótems. Se quedaron **fuera** antes
   que cargarlas con el diseño viejo. El 29-09-2026 el proyecto entregó las
-  imágenes de cinco (Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón y
-  Tugarín), cargadas leyendo el arte; faltan cuatro, en TODO.md y en
-  `SIN_ARTE` de `productos.test.ts`. Otra vez la impresión de pack cambia
-  texto: Lou Carcolh y Dama Dragón destruyen «el Aliado oponente objetivo» y
-  Lou Carcolh roba «Luego», en frase aparte.
+  imágenes de las ocho de Pack América, cargadas leyendo el arte; falta Árbol
+  del Grito, en TODO.md y en `SIN_ARTE` de `productos.test.ts` (la imagen que
+  circula es la de Templarios, `TEM-127-128`, y no sirve). Otra vez la
+  impresión de pack cambia cosas: «el Aliado oponente objetivo» en Lou
+  Carcolh, Dama Dragón, Ataque de Dragón y Guadaña Dragón, «Luego, Roba dos
+  cartas» en frase aparte en Lou Carcolh y Kyrenia, y **Nube Incendiaria
+  cuesta 2**, no 3 como en Templarios.
 - **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
   arte dice Kojh. Ya estaba.
 - **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del

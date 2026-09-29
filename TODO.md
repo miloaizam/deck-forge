@@ -16,28 +16,22 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Cartas por agregar
 
-### Cuatro cartas de los packs, sin arte de su impresión de pack
+### Árbol del Grito de Dominio de Tótems, sin arte de su impresión de pack
 
-- **Qué pasa:** el formato admite la reimpresión de Pack América y Dominio de
-  Tótems, que tiene otro diseño que la impresión original, y de estas cuatro
-  todavía no hay imagen. Quedan **fuera del catálogo** hasta tenerla
-  (CLAUDE.md, "Los mazos especiales del formato"):
-  - **Pack América (SD1):** Nube Incendiaria (SD1-19-39), Guadaña Dragón
-    (SD1-20-39) y Kyrenia (SD1-21-39).
-  - **Dominio de Tótems (SD2):** Árbol del Grito (SD2-23-37).
-- **Ya cargadas** con las imágenes que entregó el proyecto (29-09-2026): Lou
-  Carcolh, Dama Dragón, Balaur, Ataque de Dragón y Tugarín.
-- **Dónde buscar:** el fandom solo tiene páginas `(SD)` de Devastador,
-  Dragón de Magma, Lambton Worm, Cristalino Amarillo y Máscara de Oro; La
-  Guarida no vende los SD; la API no tiene los mazos. La página de Facebook
-  **Cartoteca MyL** publica cada carta con su código, pero no se puede bajar
-  sin sesión. Sirve la carta **con el código del pack al pie**: la de
-  Templarios (`TEM-…`) tiene otro diseño.
-- **Por dónde:** ponerlas en `images-src/pa-0NN.png` / `dt-023.png`, cargar la
-  carta en `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems`
-  a `editions.ts` con Árbol del Grito, y sacarlas de `SIN_ARTE` en
+- **Qué pasa:** el formato admite la reimpresión de Dominio de Tótems
+  (`SD2-23-37`), que tiene otro diseño que la de Templarios, y todavía no hay
+  imagen. Queda **fuera del catálogo** hasta tenerla (CLAUDE.md, "Los mazos
+  especiales del formato"). Es la última de las nueve que faltaban: las ocho
+  de Pack América se cargaron el 29-09-2026 con imágenes del proyecto.
+- **Ojo con la imagen:** la que circula es la de Templarios, con
+  `TEM-127-128 · © 2016` al pie. Esa **no** sirve; la de pack dice
+  `SD2-23-37`. El fandom, La Guarida y la API no la tienen; Cartoteca MyL
+  (Facebook) publica las cartas con su código.
+- **Por dónde:** ponerla en `images-src/dt-023.png`, cargar la carta en
+  `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems`
+  («Dominio de Tótems») a `editions.ts` y sacarla de `SIN_ARTE` en
   `productos.test.ts`.
-- **Arreglado cuando:** están las cuatro, con la impresión del mazo.
+- **Arreglado cuando:** está en el catálogo con su impresión de pack.
 
 ### Reimpresiones de otras ediciones
 
@@ -94,16 +88,17 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 
 ### Arte de Pack América y de las promos PB1 con esquinas blancas y marca de agua
 
-- **Qué pasa:** diez cartas de los mazos llegan con el arte sin recortar a
+- **Qué pasa:** trece cartas de los mazos llegan con el arte sin recortar a
   sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
   el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
-  interfaz (`rounded-card`). Son las ocho de Pack América (`pa-001`
+  interfaz (`rounded-card`). Son las once de Pack América (`pa-001`
   Devastador, `pa-004` Lou Carcolh, `pa-006` Lambton Worm, `pa-011` Dama
   Dragón, `pa-013` Dragón de Magma, `pa-014` Balaur, `pa-016` Ataque de
-  Dragón, `pa-023` Tugarín) y las dos promos PB1 (`pb-102` Dante, `pb-103`
+  Dragón, `pa-019` Nube Incendiaria, `pa-020` Guadaña Dragón, `pa-021`
+  Kyrenia, `pa-023` Tugarín) y las dos promos PB1 (`pb-102` Dante, `pb-103`
   Gólem de Praga). Las de Pack América llevan además la **marca de agua «Mitos
   y Leyendas»** sobre la ilustración, que es como circulan en internet. Los
-  datos de las diez están bien (verificados contra el arte); es solo la
+  datos de las trece están bien (verificados contra el arte); es solo la
   imagen.
 - **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
   hasta la pasada de imágenes de este grupo, y se arreglan ahí, todas
@@ -113,7 +108,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
   `imagen`, como `pb-002-tiamat.webp`. La marca de agua no se quita
   recortando: hace falta otra fuente del arte.
-- **Arreglado cuando:** las diez se ven con el mismo borde que el resto en la
+- **Arreglado cuando:** las trece se ven con el mismo borde que el resto en la
   grilla y el modal, y sin marca de agua.
 
 ### Recortar el arte de la extensión de Escuelas Elementales
