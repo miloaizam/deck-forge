@@ -1315,8 +1315,8 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **32 cartas sueltas** en
-`data-src/extras.json` (ver abajo): **2191** en total. Con ellas, Dominio
+Elementales (326, con las 11 de su extensión)—, más **42 cartas sueltas** en
+`data-src/extras.json` (ver abajo): **2201** en total. Con ellas, Dominio
 muestra 275 en su página y ContraAtaque 154.
 
 **Los mazos especiales del formato traen reimpresiones de ediciones que no son
@@ -1334,11 +1334,12 @@ que no están se cargaron a mano, porque **la API no tiene los mazos**
   (`do-3NN` para `DO-RP-0NN`, `do-40N` para las promos `PB1-0N`: Dante
   `do-402` y Gólem de Praga `do-403`). De Pack América, Devastador, Dragón de
   Magma, Balaur y Ataque de Dragón van a **ContraAtaque** (`ca-151`…`ca-154`),
-  y el resto, con Árbol del Grito de Dominio de Tótems y la promo de Sarras
-  (`2017-012`, la `/static/cards/10/140.png` de Sol Naciente), a una edición
+  y el resto, con Árbol del Grito de Dominio de Tótems, a una edición
   **Templarios** (`parcial`, prefijo `te`, con el número de TEM: `te-007` Lou
-  Carcolh… `te-127` Árbol del Grito, `te-129` Sarras). No se agregan más
-  ediciones viejas que esa.
+  Carcolh… `te-127` Árbol del Grito). La promo de Sarras (`2017-012`, la
+  `/static/cards/10/140.png` de Sol Naciente) va en **Camelot** (`cm-238`,
+  después de las 237 de la edición). Las ediciones extra son solo las que
+  el proyecto pide: Camelot, Templarios, Kemet y Dharma.
 - **El arte es el de la impresión que entra al formato**: la de pack (DO-RP,
   SD1), con su otro diseño, salvo Árbol del Grito, que va con el de Templarios
   (`TEM-127-128`) porque el de SD2 no apareció, y Sarras, con el de su promo.
@@ -1374,13 +1375,25 @@ que no están se cargaron a mano, porque **la API no tiene los mazos**
 - **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del
   catálogo (TODO "Aplicar las erratas…"): Lahmu y Ataque de Dragón siguen con
   su texto impreso.
-- Las **9 cartas en observación** de la Banlist (Wotan, Melusina…) **no se
-  cargaron**, por decisión del proyecto; siguen en `FUERA_DEL_FORMATO` de
-  `documentos.test.ts`. Tampoco el mazo **Furia Implacable** (SD4), que es de
+- **Las cartas en observación de la Banlist se cargan como cartas, sin
+  aplicar la Banlist** (29-09-2026): Wyvern Dorado en Camelot (`cm-041`),
+  Melusina en Templarios (`te-002`), Anubis de Inpu y Mut en **Kemet**
+  (`ke-002`, `ke-159`) y Bibi Dalair Kaur, Ráksasa Sombrío y Muhammad bin
+  Qasim en **Dharma** (`dh-054`, `dh-276`, `dh-028`), con su texto impreso y
+  sin la condición (Única, Errante, libre por tres) ni la errata que la
+  Banlist les pone. Con ellas llegaron las Milenarias de Templarios de
+  Lambton Worm, Dama Dragón y Guadaña Dragón (`te-019`, `te-020`,
+  `te-027`), que comparten identidad con sus otras impresiones. **Wotan y
+  Jarnvid quedan fuera por ahora** (TODO) y siguen en `FUERA_DEL_FORMATO` de
+  `documentos.test.ts`. Ráksasa lleva tilde, como la imprime el arte (la
+  Banlist escribe "Raksasa"), y el ilustrador leído del pie (`Brolken`: la
+  API trae relleno). Las ediciones extra van en `editions.ts` de la más
+  nueva a la más vieja —Dharma, Kemet, Templarios, Camelot—, que es el orden
+  en que salen tras las diez del formato. Tampoco el mazo **Furia Implacable** (SD4), que es de
   Bloque Furia y no figura en la tabla del formato.
 - `productos.test.ts` lista las cartas de los tres mazos, falla si falta
-  alguna, y exige que toda carta vaya en una de las diez ediciones o en
-  Templarios. Las seis `parcial` viejas de `editions.ts` sin cartas (Helénica,
+  alguna, y exige que toda carta vaya en una edición de `editions.ts` y
+  ninguna en un pack. Las seis `parcial` viejas de `editions.ts` sin cartas (Helénica,
   Imperio, Espada Sagrada, Dominios de Ra, Cruzadas, Furia) siguen vacías y no
   salen en el filtro.
 

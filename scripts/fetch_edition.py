@@ -66,10 +66,13 @@ EDITION_CODES = {
     "dominios-de-ra": "DR",
     "cruzadas": "CR",
     "furia": "FU",
-    # Templarios: aporta las reimpresiones de Pack America y Dominio de
-    # Totems (ver CLAUDE.md). En PREFIJOS de deck-code.ts va entre FU y los
-    # reservados SU, RE, CM, AS, MI, PB, PA y DT, que ya no tienen edicion.
+    # Ediciones de fuera del formato con cartas sueltas (ver CLAUDE.md). En
+    # PREFIJOS de deck-code.ts, CM y TE van entre los reservados SU, RE, AS,
+    # MI, PB, PA y DT, que ya no tienen edicion; KE y DH, al final.
+    "camelot": "CM",
     "templarios": "TE",
+    "kemet": "KE",
+    "dharma": "DH",
 }
 
 # El slug de la API cuando NO coincide con el nuestro. Escuelas Elementales es

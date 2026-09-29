@@ -8,7 +8,12 @@
  *
  * 29-09-2026: las cartas de los packs dejaron sus ediciones propias. Las del
  * Pack de Batalla (`pb-`) van a Dominio, las de Pack America (`pa-`) a
- * Templarios o a ContraAtaque. Ver CLAUDE.md.
+ * Templarios o a ContraAtaque, y la promo de Sarras pasa de Templarios a
+ * Camelot. Se suman tambien los ids del primer intento (26-09-2026), que las
+ * cargo unas horas con la impresion vieja en su edicion de origen (`su-`,
+ * `re-`, `fu-`, `as-`, `cm-`, `te-`, `mi-`). Los de Templarios que volvieron
+ * a nombrar la misma carta (`te-007`, `te-127`...) no estan: siguen en uso.
+ * Ver CLAUDE.md.
  */
 export const ID_ANTERIORES: Readonly<Record<string, string>> = {
   "pb-001": "do-301",
@@ -41,6 +46,28 @@ export const ID_ANTERIORES: Readonly<Record<string, string>> = {
   "pa-013": "ca-152",
   "pa-014": "ca-153",
   "pa-016": "ca-154",
+  "te-129": "cm-238",
+  "su-004": "do-302",
+  "su-086": "do-304",
+  "su-091": "do-305",
+  "re-029": "do-306",
+  "re-065": "do-307",
+  "re-069": "do-308",
+  "re-114": "do-309",
+  "fu-138": "do-301",
+  "as-002": "do-311",
+  "as-005": "do-312",
+  "as-085": "do-313",
+  "as-104": "do-323",
+  "cm-013": "do-315",
+  "cm-065": "do-316",
+  "cm-193": "do-318",
+  "te-081": "do-319",
+  "te-082": "do-320",
+  "fu-004": "ca-151",
+  "fu-033": "ca-152",
+  "mi-015": "ca-153",
+  "fu-038": "ca-154",
 };
 
 /** El id de hoy de una carta, o el mismo si nunca cambio. */

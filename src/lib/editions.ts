@@ -51,7 +51,12 @@ export const EDITIONS: Edition[] = [
   { slug: "dominios-de-ra", titulo: "Dominios de Ra", cargada: true, parcial: true },
   { slug: "cruzadas", titulo: "Cruzadas", cargada: true, parcial: true },
   { slug: "furia", titulo: "Furia", cargada: true, parcial: true },
+  // De la mas nueva a la mas vieja: en ese orden salen en el filtro y en la
+  // grilla, detras de las diez del formato.
+  { slug: "dharma", titulo: "Dharma", cargada: true, parcial: true },
+  { slug: "kemet", titulo: "Kemet", cargada: true, parcial: true },
   { slug: "templarios", titulo: "Templarios", cargada: true, parcial: true },
+  { slug: "camelot", titulo: "Camelot", cargada: true, parcial: true },
 ];
 
 /**

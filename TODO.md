@@ -42,23 +42,22 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
 
-### Cartas en observación de la Banlist, sin cargar
+### Wotan y Jarnvid, en observación en la Banlist y sin cargar
 
-- **Qué pasa:** la Banlist pone **en observación** nueve cartas de ediciones
-  que no son del formato, cada una con una condición: Wyvern Dorado (Camelot,
-  Única), Wotan (Midgard), Melusina (Templarios), Jarnvid (Asgard, Única),
-  Anubis de Inpu (Kemet, Única), Mut (Kemet, libre por tres copias), Bibi
-  Dalair Kaur (Dharma, Errante), Raksasa Sombrío y Muhammad Bin Qasim
-  (Dharma). **Por decisión del proyecto no se cargaron** al revisar las cartas
-  faltantes (26-09-2026): el catálogo cubre las diez ediciones y los productos
-  especiales del formato, y estas no son de ninguno.
-- **Por dónde, si se decide cargarlas:** `pnpm run data:card <edición>
-  <número>` (el buscador `POST https://api.myl.cl/cards/search` da la edición y
-  el número de cada una), sumar sus ediciones como `parcial` con el prefijo al
-  final de `PREFIJOS`, aplicar la condición de la Banlist y la errata, y
-  sacarlas de `FUERA_DEL_FORMATO` en `documentos.test.ts`.
-- **Arreglado cuando:** se cargan, o se confirma que no entran y esta entrada
-  pasa a CLAUDE.md como decisión.
+- **Qué pasa:** la Banlist pone en observación nueve cartas de fuera del
+  formato. Siete ya están en el catálogo (29-09-2026); **Wotan** (Midgard,
+  Eterno) y **Jarnvid** (Asgard, Eterno; la Banlist lo pide Única y lo errata
+  a Tótem de raza Eterno) quedaron fuera **por decisión del proyecto, por el
+  momento**. Siguen en `FUERA_DEL_FORMATO` de `documentos.test.ts`.
+- **Por dónde, si se decide cargarlas:** `pnpm run data:card midgard <número>`
+  y `asgard <número>` (el buscador `POST https://api.myl.cl/cards/search` da
+  el número), sumar Midgard y Asgard como `parcial` en `editions.ts` y a
+  `EDITION_CODES` (sus prefijos `mi` y `as` ya están en `PREFIJOS`), leer el
+  arte, y sacarlas de `FUERA_DEL_FORMATO`. **Ojo con los ids**: `mi-015`,
+  `as-002`, `as-005`, `as-085` y `as-104` ya están tomados en
+  `ids-anteriores.ts` y no se pueden reusar.
+- **Arreglado cuando:** están en el catálogo, o se decide que no entran y
+  esta entrada pasa a CLAUDE.md como decisión.
 
 ## Imágenes de las cartas
 
@@ -79,7 +78,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   Ataque de Dragón; en Templarios `te-007` Lou Carcolh, `te-030` Dama Dragón,
   `te-032` Lambton Worm, `te-049` Nube Incendiaria, `te-059` Guadaña Dragón,
   `te-061` Kyrenia y `te-063` Tugarín—, las dos promos PB1 de Dominio
-  (`do-402` Dante, `do-403` Gólem de Praga) y la promo de Sarras (`te-129`).
+  (`do-402` Dante, `do-403` Gólem de Praga) y la promo de Sarras (`cm-238`).
   Las de Pack América y Sarras llevan además la **marca de agua «Mitos y
   Leyendas»** sobre la ilustración, que es como circulan en internet. Los
   datos de las catorce están bien (verificados contra el arte); es solo la
@@ -91,7 +90,10 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
   CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
   `imagen`, como `te-007-sd1.webp`. La marca de agua no se quita recortando:
-  hace falta otra fuente del arte.
+  hace falta otra fuente del arte. Ojo: la marca de agua **no es solo de
+  estas**, la trae casi todo el arte de la API (Dominio, Hijos del Sol, las
+  ediciones extra…); Escuelas Elementales no. Quitarla en todo el catálogo
+  es otra tarea, más grande.
 - **Arreglado cuando:** las catorce se ven con el mismo borde que el resto en
   la grilla y el modal, y sin marca de agua.
 

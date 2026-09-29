@@ -173,14 +173,13 @@ for (const [producto, cartas] of Object.entries(PRODUCTOS)) {
   });
 }
 
-test("las cartas sueltas van en una de las diez ediciones o en Templarios", () => {
+test("toda carta va en una edicion conocida, y ningun pack es edicion", () => {
   // Los packs no son edicion en el filtro: sus cartas van a Dominio,
-  // ContraAtaque o Templarios.
-  const principales = new Set(EDITIONS.filter((e) => !e.parcial).map((e) => e.slug));
+  // ContraAtaque o Templarios. Las ediciones de fuera del formato son
+  // `parcial` en editions.ts.
+  const conocidas = new Set(EDITIONS.map((e) => e.slug));
   for (const c of CATALOGO) {
-    assert.ok(
-      principales.has(c.edicion) || c.edicion === "templarios",
-      `${c.id}: ${c.edicion}`,
-    );
+    assert.ok(conocidas.has(c.edicion), `${c.id}: ${c.edicion}`);
+    assert.ok(!c.edicion.startsWith("pack-"), `${c.id}: ${c.edicion}`);
   }
 });

@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-09-29",
     tipo: "Novedad",
+    titulo: "Diez cartas más, y tres ediciones nuevas en el filtro",
+    texto: [
+      "Llegan las cartas que la Banlist pone en observación: Wyvern Dorado (Camelot), Melusina (Templarios), Anubis de Inpu y Mut (Kemet), y Bibi Dalair Kaur, Ráksasa Sombrío y Muhammad bin Qasim (Dharma). Van con su texto impreso: las condiciones de la Banlist todavía no se aplican.",
+      "Templarios suma además las Milenarias de Lambton Worm, Dama Dragón y Guadaña Dragón, y la promo de Sarras pasa a Camelot. Wotan y Jarnvid quedan fuera por ahora.",
+    ],
+  },
+  {
+    fecha: "2026-09-29",
+    tipo: "Novedad",
     titulo: "Las cartas de los packs, en su edición",
     texto: [
       "Las cartas de los packs especiales ya no tienen edición propia en el filtro. Las del Pack Batalla están en Dominio; Devastador, Dragón de Magma, Balaur y Ataque de Dragón, en ContraAtaque; y Lou Carcolh, Lambton Worm, Dama Dragón, Tugarín, Kyrenia, Nube Incendiaria y Guadaña Dragón, en una edición nueva: Templarios.",

@@ -81,10 +81,9 @@ Se hizo contra los dos originales:
   imagen dejó claro qué es cada cosa.
 - **Nombres contra el catálogo**:
   - Devastador, Dragón de Magma, Ataque de Dragón y Lahmu ya están, con su
-    impresión de pack (en ContraAtaque y Dominio). No están, y está anotado
-    en `TODO.md`, las nueve en observación, de ediciones fuera del formato (Wyvern Dorado, Raksasa
-    Sombrío, Jarnvid, Melusina, Wotan, Muhammad Bin Qasim, Bibi Dalair Kaur,
-    Anubis de Inpu y Mut).
+    impresión de pack (en ContraAtaque y Dominio). De las nueve en
+    observación están siete (sin aplicarles la Banlist); Wotan y Jarnvid no,
+    y está anotado en `TODO.md`.
   - **«Traer el Terror» no existe**: la Banlist se equivoca de nombre y la
     carta es **Traer el Horror** (BU-081), que sí está en el catálogo. Se
     corrigió en `fuente/banlist-estandar.json` y en el PDF, y quedó en las

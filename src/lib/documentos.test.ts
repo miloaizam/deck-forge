@@ -34,20 +34,10 @@ for (const c of CATALOGO) {
 
 /**
  * Cartas de otras ediciones que la Banlist pone "en observacion" y que el
- * proyecto decidio NO cargar (ver TODO.md). Si alguna llega al catalogo,
- * se borra de aqui.
+ * proyecto decidio NO cargar por ahora (ver TODO.md). Las otras siete si
+ * estan. Si alguna llega al catalogo, se borra de aqui.
  */
-const FUERA_DEL_FORMATO = [
-  "Wyvern Dorado",
-  "Raksasa Sombrío",
-  "Jarnvid",
-  "Melusina",
-  "Wotan",
-  "Muhammad Bin Qasim",
-  "Bibi Dalair Kaur",
-  "Anubis de Inpu",
-  "Mut",
-];
+const FUERA_DEL_FORMATO = ["Wotan", "Jarnvid"];
 
 /**
  * Entradas de la banlist que no son una carta sino una regla de construccion:
