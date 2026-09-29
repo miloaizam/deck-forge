@@ -16,7 +16,7 @@ Objetivo: lanzar **gratis, sin servidor y sin base de datos**, con margen para c
 > | Filtros de atributo y legalidad | El atributo se filtra desde *habilidad*; la legalidad espera a la banlist |
 >
 > Cómo se trabaja hoy: [DEVELOPMENT.md](../DEVELOPMENT.md) y [CLAUDE.md](../CLAUDE.md).
-> Lo que falta: [TODO.md](../TODO.md). Lo que está mal: [ISSUES.md](../ISSUES.md).
+> Lo que falta y lo que está mal: [TODO.md](../TODO.md).
 
 ---
 

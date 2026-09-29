@@ -34,7 +34,7 @@ for (const c of CATALOGO) {
 
 /**
  * Cartas de otras ediciones que la Banlist pone "en observacion" y que el
- * proyecto decidio NO cargar (ver ISSUES.md). Si alguna llega al catalogo,
+ * proyecto decidio NO cargar (ver TODO.md). Si alguna llega al catalogo,
  * se borra de aqui.
  */
 const FUERA_DEL_FORMATO = [
@@ -51,7 +51,7 @@ const FUERA_DEL_FORMATO = [
 
 /**
  * Cartas de los mazos del formato que no se cargaron porque no hay arte de su
- * impresion de pack (ver ISSUES.md). Se borran de aqui al cargarlas.
+ * impresion de pack (ver TODO.md). Se borran de aqui al cargarlas.
  */
 const SIN_ARTE = ["Ataque de Dragón"];
 
@@ -98,7 +98,7 @@ test("cada carta nombrada esta en el catalogo, o se sabe por que no", () => {
 
 test("las excepciones siguen siendo excepciones", () => {
   // Si una carta de fuera del formato llega al catalogo, la lista miente: hay
-  // que sacarla de aqui (y de ISSUES.md).
+  // que sacarla de aqui (y de TODO.md).
   const nombres = new Set(
     [...FE.entradas.map((e) => e.nombre), ...cartasDeLaBanlist(BAN)].map(claveDeNombre),
   );

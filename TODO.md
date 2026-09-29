@@ -1,48 +1,42 @@
 # TODO
 
-Funcionalidades y cambios **por hacer**: lo que todavía no existe. Los errores y
-las cosas que existen pero están mal van en [ISSUES.md](ISSUES.md).
+Todo lo pendiente del proyecto, en **una sola lista**: lo que falta hacer y lo
+que existe pero está mal. Va agrupado por tema, para trabajar de a un grupo.
 
-**Cómo se usa.** Al implementar algo de esta lista, en el **mismo commit** se
-borra su entrada. No se tacha ni se marca como hecho: lo hecho ya queda en el
-historial de git y en [CLAUDE.md](CLAUDE.md), y aquí solo vive lo que falta. Si
-se implementa a medias, se reescribe la entrada con lo que queda.
+**Cómo se usa.** Al hacer o arreglar algo de esta lista, en el **mismo commit**
+se borra su entrada. No se tacha ni se marca como hecho: lo hecho ya queda en
+el historial de git y en [CLAUDE.md](CLAUDE.md), y aquí solo vive lo que falta.
+Si queda a medias, se reescribe la entrada con lo que queda. Y lo que se
+descubra roto y no se arregle en el momento se anota aquí, en su grupo, en vez
+de perderse.
 
-Cada entrada lleva qué es, por qué importa, por dónde empezar y cuándo se da por
-terminada. Van agrupadas por la parte del sitio que tocan.
+Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Erratas y banlist
+## Cartas por agregar
 
-### Aplicar las erratas y la banlist
+### Nueve cartas de los packs, sin arte de su impresión de pack
 
-- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
-  ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
-  catálogo en `documentos.test.ts`.
-- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, la de
-  Lahmu (`pb-006`, texto), de un mazo especial. Devastador y Dragón de Magma ya
-  son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar
-  Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
-  cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
-  Erratas y cuáles no.
-- **Banlist:** el campo `legalidad` (`libre` / `restringida` / `prohibida`) ya
-  existe en `src/lib/types.ts` y `scripts/schema.py`, y `validateDeck`
-  (`src/lib/deck-rules.ts`) ya tiene las reglas `carta-prohibida` y
-  `carta-restringida`. Hoy no disparan porque todas las cartas son `libre`.
-  Falta cargar los datos, decidir qué limita `restringida` y mostrarlo en el
-  catálogo y el constructor. La banlist además declara **31 cartas Únicas**
-  (una copia) y 37 erratas de reglas, algunas de construcción ("Mazo
-  Desafiante y/o Guerrero").
-- **Ya publicadas:** se leen y descargan en `/documentos`. Al aplicarlas, que
-  esas páginas y la ayuda dejen de decir "todavía no se aplican".
-- **Terminado cuando:** el catálogo muestra el texto erratado, el validador
-  rechaza o limita las cartas de la banlist y hay tests contra el catálogo
-  real que lo comprueban.
-
-## Constructor y barajas
-
-## Catálogo y cartas
+- **Qué pasa:** el formato admite la reimpresión de Pack América y Dominio de
+  Tótems, que tiene otro diseño que la impresión original, y de estas nueve no
+  se encontró esa imagen en ninguna fuente que se pueda bajar. Quedaron
+  **fuera del catálogo** (CLAUDE.md, "Los mazos especiales del formato"):
+  - **Pack América (SD1):** Lou Carcolh (SD1-04), Dama Dragón (SD1-11),
+    Balaur (SD1-14), Ataque de Dragón (SD1-16), Nube Incendiaria (SD1-19),
+    Guadaña Dragón (SD1-20), Kyrenia (SD1-21) y Tugarín (SD1-23).
+  - **Dominio de Tótems (SD2):** Árbol del Grito.
+- **Dónde se buscó:** el fandom solo tiene páginas `(SD)` de Devastador,
+  Dragón de Magma, Lambton Worm, Cristalino Amarillo y Máscara de Oro; La
+  Guarida no vende los SD; la API no tiene los mazos. La página de Facebook
+  **Cartoteca MyL** publica cada carta con su código (`SD1-04-39 Lou
+  Carcolh`), pero no se puede bajar sin sesión.
+- **Por dónde:** conseguir las imágenes (escaneo propio o Cartoteca MyL),
+  ponerlas en `images-src/pa-0NN.png` / `dt-0NN.png`, cargar la carta en
+  `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems` a
+  `editions.ts` con la primera, y sacarlas de `SIN_ARTE` en
+  `productos.test.ts` (y Ataque de Dragón de `documentos.test.ts`).
+- **Arreglado cuando:** están las nueve, con la impresión del mazo.
 
 ### Reimpresiones de otras ediciones
 
@@ -69,6 +63,55 @@ terminada. Van agrupadas por la parte del sitio que tocan.
   forzar el nombre.
 - **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
   como oros iniciales y sirven de oro inicial en el constructor.
+
+### Cartas en observación de la Banlist, sin cargar
+
+- **Qué pasa:** la Banlist pone **en observación** nueve cartas de ediciones
+  que no son del formato, cada una con una condición: Wyvern Dorado (Camelot,
+  Única), Wotan (Midgard), Melusina (Templarios), Jarnvid (Asgard, Única),
+  Anubis de Inpu (Kemet, Única), Mut (Kemet, libre por tres copias), Bibi
+  Dalair Kaur (Dharma, Errante), Raksasa Sombrío y Muhammad Bin Qasim
+  (Dharma). **Por decisión del proyecto no se cargaron** al revisar las cartas
+  faltantes (26-09-2026): el catálogo cubre las diez ediciones y los productos
+  especiales del formato, y estas no son de ninguno.
+- **Por dónde, si se decide cargarlas:** `pnpm run data:card <edición>
+  <número>` (el buscador `POST https://api.myl.cl/cards/search` da la edición y
+  el número de cada una), sumar sus ediciones como `parcial` con el prefijo al
+  final de `PREFIJOS`, aplicar la condición de la Banlist y la errata, y
+  sacarlas de `FUERA_DEL_FORMATO` en `documentos.test.ts`.
+- **Arreglado cuando:** se cargan, o se confirma que no entran y esta entrada
+  pasa a CLAUDE.md como decisión.
+
+## Imágenes de las cartas
+
+Conviene hacer este grupo **en una sola pasada**: las cinco entradas tocan las
+mismas WebP y el mismo `scripts/convert_images.py`. Dos cosas que valen para
+todas: `data:images` **se salta las WebP que ya existen** (hay que borrarlas
+antes de regenerar), y **una URL de imagen ya publicada no se reutiliza**
+(`/cards/*` va con 7 días de caché: el arte nuevo va con otro nombre en el
+campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
+
+### Arte de Pack América y de las promos PB1 con esquinas blancas y marca de agua
+
+- **Qué pasa:** cinco cartas de los mazos llegan con el arte sin recortar a
+  sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
+  el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
+  interfaz (`rounded-card`). Son las tres de Pack América (`pa-001`
+  Devastador, `pa-006` Lambton Worm, `pa-013` Dragón de Magma) y las dos promos
+  PB1 (`pb-102` Dante, `pb-103` Gólem de Praga). Las tres de Pack América
+  llevan además la **marca de agua «Mitos y Leyendas»** sobre la ilustración,
+  que es como las publica el fandom. Los datos de las cinco están bien
+  (verificados contra el arte el 26-09-2026); es solo la imagen.
+- **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
+  hasta la pasada de imágenes de este grupo, y se arreglan ahí, todas
+  juntas.
+- **Por dónde:** el mismo recorte que la extensión de Escuelas Elementales.
+  Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
+  CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
+  `imagen`, como `pb-002-tiamat.webp`. La marca de agua no se quita
+  recortando: hace falta otra fuente del arte.
+- **Arreglado cuando:** las cinco se ven con el mismo borde que el resto en la
+  grilla y el modal, y sin marca de agua.
 
 ### Recortar el arte de la extensión de Escuelas Elementales
 
@@ -145,6 +188,33 @@ terminada. Van agrupadas por la parte del sitio que tocan.
   que ya existen) y volver a correr `pnpm run data:images`.
 - **Terminado cuando:** las seis se ven tan nítidas como el resto de Dominio
   en la grilla y en el modal.
+
+## Erratas y banlist
+
+### Aplicar las erratas y la banlist
+
+- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
+  ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
+  catálogo en `documentos.test.ts`.
+- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, la de
+  Lahmu (`pb-006`, texto), de un mazo especial. Devastador y Dragón de Magma ya
+  son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar
+  Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
+  cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
+  Erratas y cuáles no.
+- **Banlist:** el campo `legalidad` (`libre` / `restringida` / `prohibida`) ya
+  existe en `src/lib/types.ts` y `scripts/schema.py`, y `validateDeck`
+  (`src/lib/deck-rules.ts`) ya tiene las reglas `carta-prohibida` y
+  `carta-restringida`. Hoy no disparan porque todas las cartas son `libre`.
+  Falta cargar los datos, decidir qué limita `restringida` y mostrarlo en el
+  catálogo y el constructor. La banlist además declara **31 cartas Únicas**
+  (una copia) y 37 erratas de reglas, algunas de construcción ("Mazo
+  Desafiante y/o Guerrero").
+- **Ya publicadas:** se leen y descargan en `/documentos`. Al aplicarlas, que
+  esas páginas y la ayuda dejen de decir "todavía no se aplican".
+- **Terminado cuando:** el catálogo muestra el texto erratado, el validador
+  rechaza o limita las cartas de la banlist y hay tests contra el catálogo
+  real que lo comprueban.
 
 ## Grande y con decisiones previas
 

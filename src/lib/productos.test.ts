@@ -169,7 +169,7 @@ const PRODUCTOS: Record<string, string[]> = {
 
 /**
  * Cartas de los mazos que solo existen en ediciones de fuera del formato y de
- * las que no se encontro el arte de la impresion del mazo (ver ISSUES.md). No
+ * las que no se encontro el arte de la impresion del mazo (ver TODO.md). No
  * se cargan con la impresion vieja: el formato admite la del mazo, que tiene
  * otro diseno.
  */
@@ -198,7 +198,7 @@ for (const [producto, cartas] of Object.entries(PRODUCTOS)) {
   });
 
   test(`las cartas sin arte de ${producto} siguen sin cargar`, () => {
-    // Si una llega al catalogo, se borra de SIN_ARTE (y de ISSUES.md).
+    // Si una llega al catalogo, se borra de SIN_ARTE (y de TODO.md).
     const cargadas = (SIN_ARTE[producto] ?? []).filter((n) =>
       nombres.has(claveDeNombre(n)),
     );

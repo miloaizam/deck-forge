@@ -16,16 +16,16 @@ Todo corre en el navegador del usuario.
 
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
-**Lo que falta y lo que está roto tiene su lista**, en la raíz:
-
-- [`TODO.md`](TODO.md): funcionalidades por hacer.
-- [`ISSUES.md`](ISSUES.md): errores, bugs y mejoras de lo que ya existe.
+**Lo que falta y lo que está roto tiene una sola lista**, en la raíz:
+[`TODO.md`](TODO.md), agrupada por tema (cartas por agregar, imágenes,
+erratas y banlist…). Hubo una segunda lista, `ISSUES.md`, para los errores;
+se fundió con esta para trabajar de a un grupo.
 
 Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
-arreglar algo de esas listas, su entrada se borra en el mismo commit** (no se
+arreglar algo de la lista, su entrada se borra en el mismo commit** (no se
 tacha: lo hecho queda en git). Si queda a medias, se reescribe con lo que
 falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
-`ISSUES.md` en vez de perderse.
+`TODO.md`, en su grupo, en vez de perderse.
 
 ---
 
@@ -112,11 +112,10 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 ## 4. Estructura
 
 ```
-TODO.md        funcionalidades por hacer (se borra la entrada al hacerla)
+TODO.md        todo lo pendiente, por grupos (se borra la entrada al hacerla)
 documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
                fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
-ISSUES.md      errores y mejoras abiertas (se borra la entrada al arreglarla)
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
                extras.json con las cartas sueltas de fuera del formato
@@ -975,8 +974,8 @@ portada, cadena de datos completa (API → `data-src` → WebP → `cards.json`)
 catálogo con grilla, modal de detalle con keywords resaltadas, buscador
 (MiniSearch), filtros por faceta con selector propio y paginación; constructor
 con las reglas del formato, lista y detalle de barajas, exportar e importar, y
-enlace para compartir. Lo que falta está en [TODO.md](TODO.md) y lo que está
-mal, en [ISSUES.md](ISSUES.md).
+enlace para compartir. Lo que falta y lo que está mal, en
+[TODO.md](TODO.md).
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
@@ -1367,7 +1366,7 @@ Tótems** (SD2). Se revisaron el 26-09-2026:
   que se pueda bajar (ni el fandom, ni La Guarida, ni la API): ocho de Pack
   América y Árbol del Grito de Dominio de Tótems. Se quedaron **fuera** hasta
   conseguirlo, antes que cargarlas con el diseño viejo; la lista está en
-  ISSUES.md y en `SIN_ARTE` de `productos.test.ts`.
+  TODO.md y en `SIN_ARTE` de `productos.test.ts`.
 - **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
   arte dice Kojh. Ya estaba.
 - **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del
