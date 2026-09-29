@@ -50,20 +50,12 @@ const FUERA_DEL_FORMATO = [
 ];
 
 /**
- * Cartas de los mazos del formato que no se cargaron porque no hay arte de su
- * impresion de pack (ver TODO.md). Se borran de aqui al cargarlas.
- */
-const SIN_ARTE = ["Ataque de Dragón"];
-
-/**
  * Entradas de la banlist que no son una carta sino una regla de construccion:
  * "Mazo Desafiante y/o Guerrero" dice como se pueden llevar Shingas y Karna.
  */
 const NO_SON_CARTAS = ["Mazo Desafiante y/o Guerrero"];
 
-const EXCEPCIONES = new Set(
-  [...FUERA_DEL_FORMATO, ...SIN_ARTE, ...NO_SON_CARTAS].map(claveDeNombre),
-);
+const EXCEPCIONES = new Set([...FUERA_DEL_FORMATO, ...NO_SON_CARTAS].map(claveDeNombre));
 
 test("los conteos son los de la revision contra los originales", () => {
   assert.equal(FE.entradas.length, 63);
@@ -102,7 +94,7 @@ test("las excepciones siguen siendo excepciones", () => {
   const nombres = new Set(
     [...FE.entradas.map((e) => e.nombre), ...cartasDeLaBanlist(BAN)].map(claveDeNombre),
   );
-  for (const n of [...FUERA_DEL_FORMATO, ...SIN_ARTE, ...NO_SON_CARTAS]) {
+  for (const n of [...FUERA_DEL_FORMATO, ...NO_SON_CARTAS]) {
     assert.ok(!porNombre.has(claveDeNombre(n)), `${n} ya está en el catálogo`);
     assert.ok(nombres.has(claveDeNombre(n)), `${n} ya no sale en ningún documento`);
   }

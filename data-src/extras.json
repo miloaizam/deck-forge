@@ -396,6 +396,25 @@
     ]
   },
   {
+    "id": "pa-004",
+    "codigo": "PA-004",
+    "nombre": "Lou Carcolh",
+    "edicion": "pack-america",
+    "tipo": "Aliado",
+    "raza": "Dragón",
+    "escuela": null,
+    "atributo": null,
+    "coste": 3,
+    "fuerza": 3,
+    "frecuencia": "Mega Real",
+    "habilidad": "Cuando este Aliado entra en juego, puedes Destruir el Aliado oponente objetivo de coste 2 o menos.\nEn tu Fase de Vigilia, una vez por turno, puedes Descartar un Aliado de Raza Dragón. Luego, Roba dos cartas.",
+    "ilustrador": "Feig",
+    "imagen": "/cards/pa-004.webp",
+    "thumb": "/cards/thumb/pa-004.webp",
+    "legalidad": "libre",
+    "keywords": []
+  },
+  {
     "id": "pa-006",
     "codigo": "PA-006",
     "nombre": "Lambton Worm",
@@ -417,6 +436,25 @@
     ]
   },
   {
+    "id": "pa-011",
+    "codigo": "PA-011",
+    "nombre": "Dama Dragón",
+    "edicion": "pack-america",
+    "tipo": "Aliado",
+    "raza": "Dragón",
+    "escuela": null,
+    "atributo": null,
+    "coste": 3,
+    "fuerza": 3,
+    "frecuencia": "Cortesano",
+    "habilidad": "Cuando este Aliado entra en juego, puedes Destruir el Aliado oponente objetivo que no sea de Raza Dragón ni Sombra.",
+    "ilustrador": "Mauricio Herrera",
+    "imagen": "/cards/pa-011.webp",
+    "thumb": "/cards/thumb/pa-011.webp",
+    "legalidad": "libre",
+    "keywords": []
+  },
+  {
     "id": "pa-013",
     "codigo": "PA-013",
     "nombre": "Dragón de Magma",
@@ -434,5 +472,66 @@
     "thumb": "/cards/thumb/pa-013.webp",
     "legalidad": "libre",
     "keywords": []
+  },
+  {
+    "id": "pa-014",
+    "codigo": "PA-014",
+    "nombre": "Balaur",
+    "edicion": "pack-america",
+    "tipo": "Aliado",
+    "raza": "Dragón",
+    "escuela": null,
+    "atributo": null,
+    "coste": 3,
+    "fuerza": 3,
+    "frecuencia": "Cortesano",
+    "habilidad": "Furia.\nMientras este Aliado esté en juego, los Aliados de Raza Dragón que controles ganan 1 a la Fuerza y sólo pueden ser bloqueados por Aliados de Raza Héroe o Caballero.",
+    "ilustrador": "Draco",
+    "imagen": "/cards/pa-014.webp",
+    "thumb": "/cards/thumb/pa-014.webp",
+    "legalidad": "libre",
+    "keywords": [
+      "Furia"
+    ]
+  },
+  {
+    "id": "pa-016",
+    "codigo": "PA-016",
+    "nombre": "Ataque de Dragón",
+    "edicion": "pack-america",
+    "tipo": "Talismán",
+    "raza": null,
+    "escuela": null,
+    "atributo": null,
+    "coste": 2,
+    "fuerza": null,
+    "frecuencia": "Cortesano",
+    "habilidad": "Destruye el Aliado oponente objetivo.",
+    "ilustrador": "Draco",
+    "imagen": "/cards/pa-016.webp",
+    "thumb": "/cards/thumb/pa-016.webp",
+    "legalidad": "libre",
+    "keywords": []
+  },
+  {
+    "id": "pa-023",
+    "codigo": "PA-023",
+    "nombre": "Tugarín",
+    "edicion": "pack-america",
+    "tipo": "Aliado",
+    "raza": "Dragón",
+    "escuela": null,
+    "atributo": null,
+    "coste": 1,
+    "fuerza": 2,
+    "frecuencia": "Vasallo",
+    "habilidad": "Furia.\nCuando este Aliado entra en juego, puedes Robar una carta.",
+    "ilustrador": "Mauricio Herrera",
+    "imagen": "/cards/pa-023.webp",
+    "thumb": "/cards/thumb/pa-023.webp",
+    "legalidad": "libre",
+    "keywords": [
+      "Furia"
+    ]
   }
 ]

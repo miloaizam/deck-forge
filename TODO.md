@@ -16,27 +16,28 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Cartas por agregar
 
-### Nueve cartas de los packs, sin arte de su impresión de pack
+### Cuatro cartas de los packs, sin arte de su impresión de pack
 
 - **Qué pasa:** el formato admite la reimpresión de Pack América y Dominio de
-  Tótems, que tiene otro diseño que la impresión original, y de estas nueve no
-  se encontró esa imagen en ninguna fuente que se pueda bajar. Quedaron
-  **fuera del catálogo** (CLAUDE.md, "Los mazos especiales del formato"):
-  - **Pack América (SD1):** Lou Carcolh (SD1-04), Dama Dragón (SD1-11),
-    Balaur (SD1-14), Ataque de Dragón (SD1-16), Nube Incendiaria (SD1-19),
-    Guadaña Dragón (SD1-20), Kyrenia (SD1-21) y Tugarín (SD1-23).
-  - **Dominio de Tótems (SD2):** Árbol del Grito.
-- **Dónde se buscó:** el fandom solo tiene páginas `(SD)` de Devastador,
+  Tótems, que tiene otro diseño que la impresión original, y de estas cuatro
+  todavía no hay imagen. Quedan **fuera del catálogo** hasta tenerla
+  (CLAUDE.md, "Los mazos especiales del formato"):
+  - **Pack América (SD1):** Nube Incendiaria (SD1-19-39), Guadaña Dragón
+    (SD1-20-39) y Kyrenia (SD1-21-39).
+  - **Dominio de Tótems (SD2):** Árbol del Grito (SD2-23-37).
+- **Ya cargadas** con las imágenes que entregó el proyecto (29-09-2026): Lou
+  Carcolh, Dama Dragón, Balaur, Ataque de Dragón y Tugarín.
+- **Dónde buscar:** el fandom solo tiene páginas `(SD)` de Devastador,
   Dragón de Magma, Lambton Worm, Cristalino Amarillo y Máscara de Oro; La
   Guarida no vende los SD; la API no tiene los mazos. La página de Facebook
-  **Cartoteca MyL** publica cada carta con su código (`SD1-04-39 Lou
-  Carcolh`), pero no se puede bajar sin sesión.
-- **Por dónde:** conseguir las imágenes (escaneo propio o Cartoteca MyL),
-  ponerlas en `images-src/pa-0NN.png` / `dt-0NN.png`, cargar la carta en
-  `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems` a
-  `editions.ts` con la primera, y sacarlas de `SIN_ARTE` en
-  `productos.test.ts` (y Ataque de Dragón de `documentos.test.ts`).
-- **Arreglado cuando:** están las nueve, con la impresión del mazo.
+  **Cartoteca MyL** publica cada carta con su código, pero no se puede bajar
+  sin sesión. Sirve la carta **con el código del pack al pie**: la de
+  Templarios (`TEM-…`) tiene otro diseño.
+- **Por dónde:** ponerlas en `images-src/pa-0NN.png` / `dt-023.png`, cargar la
+  carta en `data-src/extras.json` leyendo el arte, sumar `dominio-de-totems`
+  a `editions.ts` con Árbol del Grito, y sacarlas de `SIN_ARTE` en
+  `productos.test.ts`.
+- **Arreglado cuando:** están las cuatro, con la impresión del mazo.
 
 ### Reimpresiones de otras ediciones
 
@@ -93,15 +94,17 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 
 ### Arte de Pack América y de las promos PB1 con esquinas blancas y marca de agua
 
-- **Qué pasa:** cinco cartas de los mazos llegan con el arte sin recortar a
+- **Qué pasa:** diez cartas de los mazos llegan con el arte sin recortar a
   sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
   el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
-  interfaz (`rounded-card`). Son las tres de Pack América (`pa-001`
-  Devastador, `pa-006` Lambton Worm, `pa-013` Dragón de Magma) y las dos promos
-  PB1 (`pb-102` Dante, `pb-103` Gólem de Praga). Las tres de Pack América
-  llevan además la **marca de agua «Mitos y Leyendas»** sobre la ilustración,
-  que es como las publica el fandom. Los datos de las cinco están bien
-  (verificados contra el arte el 26-09-2026); es solo la imagen.
+  interfaz (`rounded-card`). Son las ocho de Pack América (`pa-001`
+  Devastador, `pa-004` Lou Carcolh, `pa-006` Lambton Worm, `pa-011` Dama
+  Dragón, `pa-013` Dragón de Magma, `pa-014` Balaur, `pa-016` Ataque de
+  Dragón, `pa-023` Tugarín) y las dos promos PB1 (`pb-102` Dante, `pb-103`
+  Gólem de Praga). Las de Pack América llevan además la **marca de agua «Mitos
+  y Leyendas»** sobre la ilustración, que es como circulan en internet. Los
+  datos de las diez están bien (verificados contra el arte); es solo la
+  imagen.
 - **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
   hasta la pasada de imágenes de este grupo, y se arreglan ahí, todas
   juntas.
@@ -110,7 +113,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
   `imagen`, como `pb-002-tiamat.webp`. La marca de agua no se quita
   recortando: hace falta otra fuente del arte.
-- **Arreglado cuando:** las cinco se ven con el mismo borde que el resto en la
+- **Arreglado cuando:** las diez se ven con el mismo borde que el resto en la
   grilla y el modal, y sin marca de agua.
 
 ### Recortar el arte de la extensión de Escuelas Elementales
@@ -196,8 +199,10 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 - **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
   ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
   catálogo en `documentos.test.ts`.
-- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, la de
-  Lahmu (`pb-006`, texto), de un mazo especial. Devastador y Dragón de Magma ya
+- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, dos de
+  los packs: Lahmu (`pb-006`) y Ataque de Dragón (`pa-016`, que imprime
+  "Destruye el Aliado oponente objetivo." y la Fe de Erratas deja en
+  "Destruye un Aliado oponente"). Devastador y Dragón de Magma ya
   son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar
   Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
   cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de

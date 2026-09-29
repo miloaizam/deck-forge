@@ -1315,8 +1315,8 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **22 cartas sueltas** de
-los mazos especiales del formato (ver abajo): **2181** en total.
+Elementales (326, con las 11 de su extensión)—, más **27 cartas sueltas** de
+los mazos especiales del formato (ver abajo): **2186** en total.
 
 **Los mazos especiales del formato traen reimpresiones de ediciones que no son
 del formato, y entran con la impresión DEL MAZO.** La tabla oficial está en la
@@ -1362,11 +1362,15 @@ Tótems** (SD2). Se revisaron el 26-09-2026:
   publicaron unas horas con aquel primer intento y quitarlos correría el
   código de `pb` y los que vengan detrás. Un enlace de esas horas con una de
   aquellas cartas la pierde al abrirse, igual que cualquier id desconocido.
-- **Nueve cartas no tienen arte de su impresión de pack** en ninguna fuente
+- **Nueve cartas no tenían arte de su impresión de pack** en ninguna fuente
   que se pueda bajar (ni el fandom, ni La Guarida, ni la API): ocho de Pack
-  América y Árbol del Grito de Dominio de Tótems. Se quedaron **fuera** hasta
-  conseguirlo, antes que cargarlas con el diseño viejo; la lista está en
-  TODO.md y en `SIN_ARTE` de `productos.test.ts`.
+  América y Árbol del Grito de Dominio de Tótems. Se quedaron **fuera** antes
+  que cargarlas con el diseño viejo. El 29-09-2026 el proyecto entregó las
+  imágenes de cinco (Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón y
+  Tugarín), cargadas leyendo el arte; faltan cuatro, en TODO.md y en
+  `SIN_ARTE` de `productos.test.ts`. Otra vez la impresión de pack cambia
+  texto: Lou Carcolh y Dama Dragón destruyen «el Aliado oponente objetivo» y
+  Lou Carcolh roba «Luego», en frase aparte.
 - **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
   arte dice Kojh. Ya estaba.
 - **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del

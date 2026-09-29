@@ -26,6 +26,15 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-09-29",
+    tipo: "Novedad",
+    titulo: "Cinco cartas más de Pack América",
+    texto: [
+      "Llegan Lou Carcolh, Dama Dragón, Balaur, Ataque de Dragón y Tugarín, con el arte de su impresión de Pack América. Se encuentran en el filtro de edición, junto a las otras tres del pack.",
+      "Faltan Nube Incendiaria, Guadaña Dragón y Kyrenia de Pack América, y Árbol del Grito de Dominio de Tótems: llegarán cuando tengamos la imagen de su impresión.",
+    ],
+  },
+  {
     fecha: "2026-09-27",
     tipo: "Arreglo",
     titulo: "Arreglos al guardar, importar y agregar cartas",

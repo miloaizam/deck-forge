@@ -80,10 +80,9 @@ Se hizo contra los dos originales:
   texto extraído mezclaba la lista de prohibidas con la de observación; la
   imagen dejó claro qué es cada cosa.
 - **Nombres contra el catálogo**:
-  - Devastador, Dragón de Magma y Lahmu ya están, con su impresión de pack
-    (Pack América y Pack Batalla). No están, y está anotado en `TODO.md`:
-    Ataque de Dragón (Pack América, sin arte de su impresión) y las nueve en
-    observación, de ediciones fuera del formato (Wyvern Dorado, Raksasa
+  - Devastador, Dragón de Magma, Ataque de Dragón y Lahmu ya están, con su
+    impresión de pack (Pack América y Pack Batalla). No están, y está anotado
+    en `TODO.md`, las nueve en observación, de ediciones fuera del formato (Wyvern Dorado, Raksasa
     Sombrío, Jarnvid, Melusina, Wotan, Muhammad Bin Qasim, Bibi Dalair Kaur,
     Anubis de Inpu y Mut).
   - **«Traer el Terror» no existe**: la Banlist se equivoca de nombre y la
