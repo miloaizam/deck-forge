@@ -27,6 +27,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-04",
+    tipo: "Mejora",
+    titulo: "Cartas más nítidas",
+    texto: [
+      "En pantallas de alta densidad, como la de la mayoría de los notebooks y teléfonos, la grilla muestra las cartas con la imagen grande y ya no se ven borrosas.",
+      "Las cartas de Pack América, Dante, Gólem de Praga y la extensión de Escuelas Elementales ya no tienen esquinas blancas ni un marco distinto al del resto.",
+    ],
+  },
+  {
+    fecha: "2026-10-04",
     tipo: "Novedad",
     titulo: "Elige el arte de cada carta",
     texto: [

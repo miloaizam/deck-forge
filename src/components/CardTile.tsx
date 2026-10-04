@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Plus, Sparkles } from "lucide-react";
 
 import { CardRibbons } from "./CardRibbons";
@@ -52,14 +51,26 @@ export function CardTile({
         className="focus-visible:outline-brand-500 block w-full text-left"
       >
         <span className="relative block">
-          <Image
+          {/* <img> y no next/image: con `unoptimized` (no hay servidor),
+              next/image pisa el srcSet. La miniatura de 200 px se ve borrosa
+              en una pantalla 2x, que pide ~370 px fisicos: ahi baja la imagen
+              de 420. Una pagina de 35 cartas pasa de ~0,5 MB a ~2,2 MB solo
+              en esas pantallas, y con carga diferida. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={card.thumb}
+            srcSet={`${card.thumb} 1x, ${card.imagen} 2x`}
             alt={`Carta: ${card.nombre}`}
             width={200}
             height={286}
             loading="lazy"
+            decoding="async"
             // Mientras baja la imagen, su hueco late (`.imagen-carga`).
             onLoad={marcarCargada}
+            // Si la imagen llego antes de hidratar, onLoad ya no salta.
+            ref={(el) => {
+              if (el?.complete && el.naturalWidth) el.dataset.cargada = "";
+            }}
             className="imagen-carga w-full"
             style={{ aspectRatio: CARD_RATIO }}
           />

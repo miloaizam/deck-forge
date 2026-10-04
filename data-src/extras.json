@@ -347,8 +347,8 @@
     "frecuencia": "Promocional",
     "habilidad": "Guardián.\nCuando un Aliado de coste 1 o menos sea declarado atacante, Destruye ese Aliado.",
     "ilustrador": "Marcos Villarroel",
-    "imagen": "/cards/ad-018.webp",
-    "thumb": "/cards/thumb/ad-018.webp",
+    "imagen": "/cards/ad-018-recorte.webp",
+    "thumb": "/cards/thumb/ad-018-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Guardián"
@@ -368,8 +368,8 @@
     "frecuencia": "Promocional",
     "habilidad": "Mientras este Aliado esté en juego, cada jugador sólo puede Robar una carta por turno.\nSi este Aliado está en tu Cementerio, puedes Destruir un Aliado de Raza Ancestral que controles para ponerlo en tu mano.",
     "ilustrador": "Genzo",
-    "imagen": "/cards/ad-019.webp",
-    "thumb": "/cards/thumb/ad-019.webp",
+    "imagen": "/cards/ad-019-recorte.webp",
+    "thumb": "/cards/thumb/ad-019-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -387,8 +387,8 @@
     "frecuencia": "Mega Real",
     "habilidad": "Cuando este Aliado entra en juego, puedes Destruir el Aliado oponente objetivo de coste 2 o menos.\nEn tu Fase de Vigilia, una vez por turno, puedes Descartar un Aliado de Raza Dragón. Luego, Roba dos cartas.",
     "ilustrador": "Feig",
-    "imagen": "/cards/ad-020.webp",
-    "thumb": "/cards/thumb/ad-020.webp",
+    "imagen": "/cards/ad-020-recorte.webp",
+    "thumb": "/cards/thumb/ad-020-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -406,8 +406,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "Cuando este Aliado entra en juego, puedes Destruir el Aliado oponente objetivo que no sea de Raza Dragón ni Sombra.",
     "ilustrador": "Mauricio Herrera",
-    "imagen": "/cards/ad-021.webp",
-    "thumb": "/cards/thumb/ad-021.webp",
+    "imagen": "/cards/ad-021-recorte.webp",
+    "thumb": "/cards/thumb/ad-021-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -425,8 +425,8 @@
     "frecuencia": "Real",
     "habilidad": "Furia.\nAl comienzo de la Fase Final, si este Aliado hizo daño al Mazo Castillo oponente, puedes Robar una carta.",
     "ilustrador": "Wolf",
-    "imagen": "/cards/ad-022.webp",
-    "thumb": "/cards/thumb/ad-022.webp",
+    "imagen": "/cards/ad-022-recorte.webp",
+    "thumb": "/cards/thumb/ad-022-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Furia"
@@ -446,8 +446,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "Busca un Aliado de Raza Dragón de coste 2 o menos en tu Mazo Castillo y juégalo sin pagar su coste.",
     "ilustrador": "Thor Odenson",
-    "imagen": "/cards/ad-023.webp",
-    "thumb": "/cards/thumb/ad-023.webp",
+    "imagen": "/cards/ad-023-recorte.webp",
+    "thumb": "/cards/thumb/ad-023-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -465,8 +465,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "El Aliado portador gana 2 a la Fuerza.\nCuando esta Arma entra en juego, si el Aliado portador es de Raza Dragón, puedes Destruir el Aliado oponente objetivo.",
     "ilustrador": "Claudio Montoya",
-    "imagen": "/cards/ad-024.webp",
-    "thumb": "/cards/thumb/ad-024.webp",
+    "imagen": "/cards/ad-024-recorte.webp",
+    "thumb": "/cards/thumb/ad-024-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -484,8 +484,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "En tu Fase de Vigilia, una vez por turno, puedes Desterrar un Aliado de Raza Dragón de tu Cementerio. Luego, Roba dos cartas.",
     "ilustrador": "Joyce Maureira",
-    "imagen": "/cards/ad-025.webp",
-    "thumb": "/cards/thumb/ad-025.webp",
+    "imagen": "/cards/ad-025-recorte.webp",
+    "thumb": "/cards/thumb/ad-025-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -503,8 +503,8 @@
     "frecuencia": "Vasallo",
     "habilidad": "Furia.\nCuando este Aliado entra en juego, puedes Robar una carta.",
     "ilustrador": "Mauricio Herrera",
-    "imagen": "/cards/ad-026.webp",
-    "thumb": "/cards/thumb/ad-026.webp",
+    "imagen": "/cards/ad-026-recorte.webp",
+    "thumb": "/cards/thumb/ad-026-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Furia"
@@ -524,8 +524,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Única.\nFuria.\nCuando este Aliado entra en juego, Destruye todos los demás Aliados en juego.\nEn tu Fase Final, si este Aliado está en juego, Destiérralo.",
     "ilustrador": "Draco",
-    "imagen": "/cards/ad-027.webp",
-    "thumb": "/cards/thumb/ad-027.webp",
+    "imagen": "/cards/ad-027-recorte.webp",
+    "thumb": "/cards/thumb/ad-027-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Única",
@@ -546,8 +546,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "Cuando este Aliado entra en juego, puedes Desterrar el Tótem oponente objetivo en juego.",
     "ilustrador": "Mauricio Herrera",
-    "imagen": "/cards/ad-028.webp",
-    "thumb": "/cards/thumb/ad-028.webp",
+    "imagen": "/cards/ad-028-recorte.webp",
+    "thumb": "/cards/thumb/ad-028-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -565,8 +565,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "Furia.\nMientras este Aliado esté en juego, los Aliados de Raza Dragón que controles ganan 1 a la Fuerza y sólo pueden ser bloqueados por Aliados de Raza Héroe o Caballero.",
     "ilustrador": "Draco",
-    "imagen": "/cards/ad-029.webp",
-    "thumb": "/cards/thumb/ad-029.webp",
+    "imagen": "/cards/ad-029-recorte.webp",
+    "thumb": "/cards/thumb/ad-029-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Furia"
@@ -586,8 +586,8 @@
     "frecuencia": "Cortesano",
     "habilidad": "Destruye el Aliado oponente objetivo.",
     "ilustrador": "Draco",
-    "imagen": "/cards/ad-030.webp",
-    "thumb": "/cards/thumb/ad-030.webp",
+    "imagen": "/cards/ad-030-recorte.webp",
+    "thumb": "/cards/thumb/ad-030-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },

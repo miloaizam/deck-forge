@@ -6377,8 +6377,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Única.\nCuando este Aliado entra en juego, si todos los Aliados que controlas son de Raza Ancestral, mira la mano de tu oponente y elige hasta tantas cartas de su mano como Oros controles y Descártalas.\nUna vez por turno, puedes jugar una carta del Cementerio oponente pagando su coste, si es un Talismán, Destiérralo.",
     "ilustrador": "Feig",
-    "imagen": "/cards/ee-316.webp",
-    "thumb": "/cards/thumb/ee-316.webp",
+    "imagen": "/cards/ee-316-recorte.webp",
+    "thumb": "/cards/thumb/ee-316-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Única"
@@ -6398,8 +6398,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Errante. Guardián. Indestructible.\nEn respuesta a que tu oponente fuera a Robar una o más cartas por un efecto, puedes Barajar una carta de tu mano para jugarlo sin pagar su coste.\nCuando este Aliado entra en juego, tu oponente Descarta una carta al azar de su mano. Luego, Roba dos cartas y Descarta una carta.\nEn tu Fase de Vigilia, una vez por turno, puedes Barajar una carta oponente de coste 2 o menos. Luego, Roba una carta.",
     "ilustrador": "Loreto Díaz",
-    "imagen": "/cards/ee-317.webp",
-    "thumb": "/cards/thumb/ee-317.webp",
+    "imagen": "/cards/ee-317-recorte.webp",
+    "thumb": "/cards/thumb/ee-317-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Errante",
@@ -6421,8 +6421,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Errante. Espectral.\nEn tu Fase de Vigilia, una vez por turno, puedes jugar una carta de coste 2 o menos de tu Cementerio sin pagar su coste. Luego, si es un Talismán, Destiérralo.\nEn tu Fase de Vigilia, una vez por turno, puedes Desterrar un Aliado que controles para que tu oponente Destierre tantas cartas del tope de su Mazo Castillo como Fuerza tenga ese Aliado.",
     "ilustrador": "Marcos Villarroel",
-    "imagen": "/cards/ee-318.webp",
-    "thumb": "/cards/thumb/ee-318.webp",
+    "imagen": "/cards/ee-318-recorte.webp",
+    "thumb": "/cards/thumb/ee-318-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Errante",
@@ -6443,8 +6443,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Única.\nCuando este Aliado entra en juego, puedes jugar un Aliado de Raza Sacerdote de tu Cementerio de coste 3 o menos sin pagar su coste.\nEn tu Fase de Vigilia, una vez por turno, puedes Desterrar la carta objetivo en juego de coste 3 o menos y ponerla bajo este Aliado.\nPuedes jugar las cartas Desterradas bajo tus Aliados de Raza Sacerdote como si estuvieran en tu mano.",
     "ilustrador": "Wolf",
-    "imagen": "/cards/ee-319.webp",
-    "thumb": "/cards/thumb/ee-319.webp",
+    "imagen": "/cards/ee-319-recorte.webp",
+    "thumb": "/cards/thumb/ee-319-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Única"
@@ -6464,8 +6464,8 @@
     "frecuencia": "Ultra Real",
     "habilidad": "Única.\nCuando juegues este Talismán, Destiérralo.\nSólo puedes jugar este Talismán desde tu mano y en tu Fase de Vigilia.\nBusca dos cartas en el Mazo Castillo oponente con diferente nombre y Destiérralas.\nNo puedes jugar más cartas por el resto del turno.",
     "ilustrador": "Matías Cabezas",
-    "imagen": "/cards/ee-320.webp",
-    "thumb": "/cards/thumb/ee-320.webp",
+    "imagen": "/cards/ee-320-recorte.webp",
+    "thumb": "/cards/thumb/ee-320-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Única"
@@ -6485,8 +6485,8 @@
     "frecuencia": "Mega Real",
     "habilidad": "Errante. Guardián.\nCuando este Aliado entra en juego, muestra cartas de tu Mazo Castillo hasta que muestres dos Aliados de Raza Héroe que no sean Aryuna, ponlos en tu mano y Baraja el resto.\nEn tu Fase de Vigilia, una vez por turno, puedes mostrar un Aliado de tu mano para Robar una carta.",
     "ilustrador": "Cristián Huerta",
-    "imagen": "/cards/ee-321.webp",
-    "thumb": "/cards/thumb/ee-321.webp",
+    "imagen": "/cards/ee-321-recorte.webp",
+    "thumb": "/cards/thumb/ee-321-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Errante",
@@ -6507,8 +6507,8 @@
     "frecuencia": "Mega Real",
     "habilidad": "Retador.\nCuando este Aliado entra en juego, si todos los Aliados que controlas son de Raza Guerrero y/o Dragón, busca un Aliado en tu Mazo Castillo y ponlo en tu mano. Luego, tu oponente Bota dos cartas.\nEn tu Fase Final, puedes Desterrar hasta una carta del Cementerio oponente. Luego, tu oponente Bota una carta.",
     "ilustrador": "JP Aguirre",
-    "imagen": "/cards/ee-322.webp",
-    "thumb": "/cards/thumb/ee-322.webp",
+    "imagen": "/cards/ee-322-recorte.webp",
+    "thumb": "/cards/thumb/ee-322-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Retador"
@@ -6528,8 +6528,8 @@
     "frecuencia": "Mega Real",
     "habilidad": "Errante.\nUna vez por turno, puedes moverlo a tu Zona de Oro Pagado para Robar una carta. Luego, pon un contador de Tiempo en este Oro.\nSi tiene 3 o más contadores de Tiempo, súbelo a tu mano.",
     "ilustrador": "Joyce Maureira",
-    "imagen": "/cards/ee-323.webp",
-    "thumb": "/cards/thumb/ee-323.webp",
+    "imagen": "/cards/ee-323-recorte.webp",
+    "thumb": "/cards/thumb/ee-323-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Errante"
@@ -6549,8 +6549,8 @@
     "frecuencia": "Real",
     "habilidad": "Al comienzo de tu Vigilia, si este Aliado está en tu Cementerio, puedes Desterrar un Aliado de Raza Oni en juego para subirlo a tu mano.\nCuando este Aliado entra en juego, Roba dos cartas y Descarta una carta.\nAl comienzo de tu Fase Final, si controlas tres o más Aliados de Raza Oni y/o Sombra, tu oponente Destierra la primera carta de su Mazo Castillo.",
     "ilustrador": "Javier Bahamonde",
-    "imagen": "/cards/ee-324.webp",
-    "thumb": "/cards/thumb/ee-324.webp",
+    "imagen": "/cards/ee-324-recorte.webp",
+    "thumb": "/cards/thumb/ee-324-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   },
@@ -6568,8 +6568,8 @@
     "frecuencia": "Real",
     "habilidad": "Furia.\nCuando este Aliado haga daño de combate, puedes Robar una carta o poner un Oro de tu Cementerio, en tu Zona de Oro Pagado como un Oro sin habilidad.",
     "ilustrador": "Sara Contreras",
-    "imagen": "/cards/ee-325.webp",
-    "thumb": "/cards/thumb/ee-325.webp",
+    "imagen": "/cards/ee-325-recorte.webp",
+    "thumb": "/cards/thumb/ee-325-recorte.webp",
     "legalidad": "libre",
     "keywords": [
       "Furia"
@@ -6589,8 +6589,8 @@
     "frecuencia": "Real",
     "habilidad": "Cuando el portador sea declarado atacante, tu oponente Bota dos cartas. Luego, Purifica hasta dos cartas de los Cementerios.",
     "ilustrador": "Fabián Mayta",
-    "imagen": "/cards/ee-326.webp",
-    "thumb": "/cards/thumb/ee-326.webp",
+    "imagen": "/cards/ee-326-recorte.webp",
+    "thumb": "/cards/thumb/ee-326-recorte.webp",
     "legalidad": "libre",
     "keywords": []
   }

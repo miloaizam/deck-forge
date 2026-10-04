@@ -1100,6 +1100,19 @@ carta y el último texto. Los cambios de alto (el panel de la baraja al
 agregar una carta) los anima `AutoHeight.tsx`, porque `height: auto` no tiene
 transición en CSS.
 
+**La grilla elige la imagen según la pantalla.** `CardTile` pinta un
+`<img>` con `srcSet` (miniatura de 200 px a 1x, imagen de 420 a 2x) y no
+`next/image`, que con `unoptimized` pisa el `srcSet`. En una pantalla de alta
+densidad la carta pide ~370 px físicos y la miniatura se veía borrosa. El
+costo, medido: una página de 35 cartas pasa de ~0,5 MB a ~2,2 MB, solo en
+esas pantallas y con carga diferida. La revisión de resolución por edición
+(04-10-2026, recortes del cuadro de texto a 2×) no encontró ninguna edición
+peor que Escuelas Elementales salvo las seis Legendarias de Dominio, que
+están en TODO.md. Las 24 imágenes de packs y de la extensión de Escuelas
+Elementales que traían esquinas blancas o el borde impreso se limpiaron y
+estrenan URL (`ad-0NN-recorte.webp`, `ee-3NN-recorte.webp`): se recorta el
+filete y el fondo de cada esquina pasa a negro, como en el arte de la API.
+
 **Mientras algo carga se ve su forma** (`Skeleton.tsx`), nunca un spinner:
 cada ruta de `(app)` tiene su `loading.tsx` con la silueta de su página y el
 mismo `<main>` —mismo ancho y márgenes, para que nada salte al llegar—, las

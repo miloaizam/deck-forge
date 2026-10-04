@@ -16,115 +16,41 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Imágenes de las cartas
 
-Conviene hacer este grupo **en una sola pasada**: las cinco entradas tocan las
-mismas WebP y el mismo `scripts/convert_images.py`. Dos cosas que valen para
-todas: `data:images` **se salta las WebP que ya existen** (hay que borrarlas
-antes de regenerar), y **una URL de imagen ya publicada no se reutiliza**
-(`/cards/*` va con 7 días de caché: el arte nuevo va con otro nombre en el
-campo `imagen`; ver CLAUDE.md).
+Dos cosas que valen para todo este grupo: `data:images` **se salta las WebP
+que ya existen** (hay que borrarlas antes de regenerar), y **una URL de imagen
+ya publicada no se reutiliza** (`/cards/*` va con 7 días de caché: el arte
+nuevo va con otro nombre en el campo `imagen`; ver CLAUDE.md).
 
-### Arte de los packs y de la promo de Sarras con esquinas blancas y marca de agua
+Las dos entradas que quedan esperan **otra fuente del arte**: lo que se pudo
+hacer con el que hay ya está hecho (04-10-2026).
 
-- **Qué pasa:** catorce cartas sueltas llegan con el arte sin recortar a
-  sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
-  el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
-  interfaz (`rounded-card`). Son las once de Pack América, todas en
-  Adicionales —`ad-020` Lou Carcolh, `ad-021` Dama Dragón, `ad-022` Lambton
-  Worm, `ad-023` Nube Incendiaria, `ad-024` Guadaña Dragón, `ad-025`
-  Kyrenia, `ad-026` Tugarín, `ad-027` Devastador, `ad-028` Dragón de Magma,
-  `ad-029` Balaur y `ad-030` Ataque de Dragón—, las dos promos PB1 (`ad-018`
-  Dante, `ad-019` Gólem de Praga) y la promo de Sarras (`aa-001`).
-  Las de Pack América y Sarras llevan además la **marca de agua «Mitos y
-  Leyendas»** sobre la ilustración, que es como circulan en internet. Los
-  datos de las catorce están bien (verificados contra el arte); es solo la
-  imagen.
-- **Por decisión del proyecto no se arreglan sueltas**: se quedan como están
-  hasta la pasada de imágenes de este grupo, y se arreglan ahí, todas
-  juntas.
-- **Por dónde:** el mismo recorte que la extensión de Escuelas Elementales.
-  Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
-  CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
-  `imagen`, como `ad-020-recorte.webp`. La marca de agua no se quita recortando:
-  hace falta otra fuente del arte. Ojo: la marca de agua **no es solo de
-  estas**, la trae casi todo el arte de la API (Dominio, Hijos del Sol, las
-  ediciones extra…); Escuelas Elementales no. Quitarla en todo el catálogo
-  es otra tarea, más grande.
-- **Arreglado cuando:** las catorce se ven con el mismo borde que el resto en
-  la grilla y el modal, y sin marca de agua.
+### Marca de agua en Pack América y en la promo de Sarras
 
-### Recortar el arte de la extensión de Escuelas Elementales
-
-- **Qué pasa:** las 11 cartas de la extensión (`ee-316` a `ee-326`: Visnu,
-  Krisna, Harionna, Siddhattha Gotama, El Dharma, Aryuna, Karna, Loto Sagrado,
-  Otakemaru Kijin, Arjumand Banu Begum y Divina Parashu) se ven con un marco
-  raro en la grilla y en el modal. Su arte no viene de la API sino de La
-  Guarida (534×760), y esas imágenes traen **el borde negro impreso de la
-  carta y las esquinas redondeadas con el fondo de la foto**. Las de la API
-  llegan recortadas a sangre, con esquinas rectas, y el redondeo lo pone la
-  interfaz (`rounded-card`). Resultado: un marco oscuro más grueso que el del
-  resto y restos grises en las esquinas. Revisado a ojo contra el resto del
-  catálogo: solo estas 11 lo tienen.
-- **Por dónde:** recortar esas 11 al mismo encuadre que las cartas de la API.
-  La referencia buena es una carta de Escuelas Elementales con la misma
-  plantilla (por ejemplo `ee-315`): medir en las dos cuánto sobra por lado y
-  recortar en `scripts/convert_images.py` o antes, sobre el original. Ojo:
-  los originales de `images-src/` no están en el repo (git-ignorado), así que
-  hay que volver a bajarlos de La Guarida. Y `data:images` **se salta las
-  WebP que ya existen**: borrar `public/cards/ee-3{16..26}.webp` y sus
-  `thumb/` antes de regenerar.
-- **Terminado cuando:** en una plancha junto a cartas de la API, las 11 se
-  ven con el mismo borde y esquinas, en la grilla y en el modal, y en los dos
-  temas.
-
-### Cartas borrosas en la grilla del catálogo
-
-- **Qué pasa:** en `/catalogo` las cartas se muestran grandes para que se lean,
-  y a ese tamaño se ven un poco borrosas.
-- **Medido:** la grilla usa las miniaturas de **200 px** (`card.thumb` en
-  `CardTile.tsx`). En escritorio la carta ocupa 183 px de CSS: en una pantalla
-  normal alcanza, pero en una de alta densidad (la mayoría de notebooks y
-  teléfonos) son **366 px físicos**, y en un teléfono de 390 px de ancho,
-  **507**. El navegador estira la miniatura 1,8 a 2,5 veces: de ahí lo
-  borroso. La imagen grande del modal (420 px) tampoco llega a 2× en todas
-  las pantallas.
-- **Opciones a evaluar:** `srcset` con la miniatura y la imagen de 420 px, para
-  que cada pantalla baje la que necesita (sin servidor funciona igual: son
-  archivos estáticos); o miniaturas más grandes. Las dos cuestan descarga: la
-  grilla pagina de a muchas cartas y hay que medir cuánto sube el peso de la
-  página. Recordar que `next/image` va con `unoptimized` (no hay servidor que
-  redimensione), así que el `srcset` se escribe a mano.
-- **Terminado cuando:** se decide qué hacer con los números de peso delante y,
-  si se hace, la grilla se ve nítida en una pantalla 2×.
-
-### Revisar la resolución de las imágenes de las cartas
-
-- **Qué:** que todas las cartas se vean con buena resolución. Hay que hacer
-  una revisión edición por edición; **Escuelas Elementales se ve excelente** y
-  sirve de referencia de lo que se busca.
-- **Lo que ya se sabe:** todas las WebP salen a **420 px** de ancho y las
-  miniaturas a **200 px** (`resize_to_width()`), pero el original de cada
-  edición no es igual. La API entrega 512×732 casi siempre; las Legendarias de
-  Axis Mundi, 709×1016; Legado Gótico, 419×600; y las seis Legendarias de
-  Dominio, 354×508 (esas, ampliadas: tienen entrada propia, la siguiente).
-  A mismo tamaño en pantalla, lo que cambia es cuánto detalle
-  traía el original y cuánto se perdió al comprimir.
-- **Por dónde:** una plancha por edición con la misma carta a tamaño real y
-  ampliada, comparada contra Escuelas Elementales. Mirar también la calidad de
-  compresión de `scripts/convert_images.py` y si conviene servir más de 420 px
-  donde el original lo permite.
-- **Terminado cuando:** ninguna edición se ve claramente peor que Escuelas
-  Elementales, o la diferencia está explicada (un original que no existe a más
-  resolución).
+- **Qué pasa:** las once de Pack América (`ad-020`…`ad-030`) y la promo de
+  Sarras (`aa-001`) llevan la marca de agua «Mitos y Leyendas» sobre la
+  ilustración, que es como circulan en internet. Las esquinas blancas ya se
+  limpiaron (`*-recorte.webp`); la marca no sale recortando.
+- **Ya buscado, sin suerte:** la API, La Guarida y el fandom (Sarras_2017.png
+  trae la misma marca). La marca la trae además casi todo el arte de la API
+  (Dominio, Hijos del Sol, las ediciones extra…); Escuelas Elementales no.
+  Quitarla en todo el catálogo es otra tarea, más grande.
+- **Arreglado cuando:** aparece el arte limpio (un escaneo propio, por ejemplo)
+  y las doce se ven sin marca.
 
 ### Arte a tamaño completo para las seis Legendarias de Dominio
 
 - **Qué:** DO-001 a DO-006 (Adapa, Caída del Sol, Devorar, Nammu, Xolotl y
   Carpa Dragón) no existen en la API, y su arte se consiguió aparte a
   **354×508**. `resize_to_width()` lo amplía a 420 de ancho, así que se ven
-  más blandas que el resto.
-- **Por dónde:** conseguir el arte a tamaño completo, borrar
-  `public/cards/do-00X.webp` y su `thumb/` (`data:images` se salta las WebP
-  que ya existen) y volver a correr `pnpm run data:images`.
+  más blandas que el resto: en la revisión de resolución (04-10-2026) fueron
+  las únicas claramente peores que Escuelas Elementales.
+- **Ya buscado, sin suerte:** el fandom solo las tiene a 354×508
+  (`Adapa_DO.jpg`, `Nammu_DO.jpg`; `Xolotl_DO.jpg` incluso a 320×458). Las
+  imágenes grandes con el mismo nombre (`Adapa.png`, `Xolotl.jpg`) son de
+  otras impresiones, con otro arte o plantilla.
+- **Por dónde:** conseguir el arte a tamaño completo (un escaneo), dejarlo en
+  `images-src/do-00X-v2.png`, correr `pnpm run data:images` y apuntar
+  `imagen` y `thumb` de `data-src/dominio.json` al nombre nuevo.
 - **Terminado cuando:** las seis se ven tan nítidas como el resto de Dominio
   en la grilla y en el modal.
 
