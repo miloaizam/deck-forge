@@ -17,7 +17,7 @@ Todo corre en el navegador del usuario.
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
 **Lo que falta y lo que está roto tiene una sola lista**, en la raíz:
-[`TODO.md`](TODO.md), agrupada por tema (cartas por agregar, imágenes,
+[`TODO.md`](TODO.md), agrupada por tema (imágenes,
 erratas y banlist…). Hubo una segunda lista, `ISSUES.md`, para los errores;
 se fundió con esta para trabajar de a un grupo.
 
@@ -1353,8 +1353,11 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   página con la impresión y la carta lado a lado: **415 aprobadas, 43 no**.
   Las rechazadas son los Oros sin habilidad de Furia, Sumeria, Asgard y
   Kilimanjaro y los homónimos que son otra carta (Hain, Ryujin, Pa Kua,
-  Dilong, Wangliang, Templo Shaolin…). Las otras cuatro son de la fase
-  anterior: la promo de Sarras (`aa-001`, origen `promo-2017`) y las
+  Dilong, Wangliang, Templo Shaolin…). **Don Ancestral** (el Talismán con
+  estrella de Sumeria) tampoco entra: no tiene carta en el catálogo y el
+  proyecto decidió no cargarlo. Las otras cuatro son de la fase
+  anterior: la promo de Sarras (`aa-001`, que salió en la tanda de 2017 y
+  por decisión del proyecto va con origen **Templarios**) y las
   Milenarias de Templarios de Lambton Worm, Dama Dragón y Guadaña Dragón.
 - **Detalles de la carga**:
   - La API rotula **«Viriato» a la 280 de Tierra Austral, que es Venatio**.
@@ -1393,7 +1396,9 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   los reconoce `esOroInicial()`: van en la misma clase «Oro inicial» que los
   de edición.
   Ilustradores leídos del pie (la API no trae ninguno); `MYL` es `Mitos y
-  Leyendas`, como en los oros de edición.
+  Leyendas`, como en los oros de edición. **Conjuros también tiene oros de
+  raza, pero no están en la API** (81 cartas, imágenes hasta la 080) y el
+  proyecto decidió no cargarlos.
 - **Wotan y Járnvid** traían errores de la API corregidos contra el arte:
   «Unica» sin tilde y pegada al texto, y «un aliado» en minúscula.
 - **Las cartas en observación se cargan sin aplicar la Banlist**: con su texto

@@ -14,19 +14,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Cartas por agregar
-
-### Oros iniciales de raza de Conjuros
-
-- **Qué:** el proyecto dice que Conjuros trae oros iniciales por raza, como
-  Dinastía del Dragón (los 33 de esa ya están en Adicionales). **La API no
-  los tiene**: el listado de Conjuros son 81 cartas (`edid` 000–080) y
-  `/static/cards/41/081.png` en adelante da 404.
-- **Por dónde:** conseguir el arte por otro lado y cargarlos como los de
-  Dinastía: `Oro Inicial <raza>` en Adicionales, frecuencia `Oro`, sin
-  habilidad, ilustrador leído del pie.
-- **Terminado cuando:** están en Adicionales, o se confirma que no existen.
-
 ## Imágenes de las cartas
 
 Conviene hacer este grupo **en una sola pasada**: las cinco entradas tocan las

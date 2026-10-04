@@ -105,10 +105,10 @@ test("Arte Alternativo va por origen, de la edicion mas nueva a la mas vieja", (
     rangos,
     [...rangos].sort((a, b) => a - b),
   );
-  // Dentro de un mismo origen manda la frecuencia, como en cualquier edicion.
-  const promo = aa.findIndex((c) => c.origen === "promo-2017");
-  const templarios = aa.findIndex((c) => c.origen === "templarios");
-  assert.ok(promo < templarios);
+  // Dentro de un mismo origen manda la frecuencia, como en cualquier edicion:
+  // la promo de Sarras abre Templarios.
+  const templarios = aa.filter((c) => c.origen === "templarios");
+  assert.equal(templarios[0].id, "aa-001");
 });
 
 test("el orden no depende de con que cartas se compare", () => {

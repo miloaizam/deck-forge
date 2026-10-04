@@ -85,8 +85,7 @@ export const LOADED_EDITIONS = EDITIONS.filter(
  * De donde sale cada impresion de Arte Alternativo (campo `origen` de la
  * carta), de la edicion mas NUEVA a la mas vieja: en ese orden se presentan.
  * Son ediciones del juego que no son del formato, asi que no estan en
- * `EDITIONS`. "Promo 2017" es la tanda promocional de ese ano, que la API
- * guarda dentro de Sol Naciente.
+ * `EDITIONS`.
  */
 export const ORIGENES = [
   { slug: "conjuros", titulo: "Conjuros" },
@@ -100,7 +99,6 @@ export const ORIGENES = [
   { slug: "olimpia", titulo: "Olimpia" },
   { slug: "dharma", titulo: "Dharma" },
   { slug: "kemet", titulo: "Kemet" },
-  { slug: "promo-2017", titulo: "Promo 2017" },
   { slug: "templarios", titulo: "Templarios" },
   { slug: "camelot", titulo: "Camelot" },
   { slug: "midgard", titulo: "Midgard" },
