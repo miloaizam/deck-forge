@@ -6,7 +6,14 @@ import path from "node:path";
 import { compareCards, esOroInicial, sortCards } from "./card-order";
 import { claseDeOro } from "./oros";
 import { EDITIONS, ORIGENES } from "./editions";
-import { catalogSchema, FRECUENCIAS, type Card, type Frecuencia } from "./types";
+import {
+  catalogSchema,
+  FRECUENCIAS,
+  RAZAS,
+  type Card,
+  type Frecuencia,
+  type Raza,
+} from "./types";
 
 /**
  * El orden del catalogo lo comparten tres vistas —/catalogo, la grilla del
@@ -67,7 +74,11 @@ test("el tramo de Oros abre con el oro inicial y cierra con los normales", () =>
     assert.deepEqual(rangos, [...rangos].sort(), `${slug} mezcla sus Oros`);
     // Como mucho hay un oro inicial DE EDICION por edicion. Los de raza son
     // tres por raza y viven todos en Adicionales.
-    const deEdicion = oros.filter((c) => claseDeOro(c) === "inicial-edicion");
+    const deEdicion = oros.filter(
+      (c) =>
+        claseDeOro(c) === "inicial" &&
+        !RAZAS.includes(c.nombre.slice("Oro Inicial ".length) as Raza),
+    );
     assert.ok(deEdicion.length <= 1, slug);
   }
 });

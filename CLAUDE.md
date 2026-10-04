@@ -1126,28 +1126,27 @@ Los filtros del catálogo van plegados detrás de un botón con embudo, que llev
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
 ocho facetas: edición (solo en `/catalogo`, porque en la página de una edición
 no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
-y fuerza. **Los cuatro tipos de Oro van dentro de Tipo**, no en un filtro
+y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro
 aparte: para el jugador son tipos de carta. La lista es `OPCIONES_DE_TIPO`
 (`oros.ts`): los tipos en orden alfabético y, justo bajo «Oro» (que sigue
-dando los 258), sus cuatro clases; `coincideTipo()` resuelve las dos clases de
+dando los 258), sus tres clases; `coincideTipo()` resuelve las dos clases de
 opción. Una clase que la edición no tiene no se ofrece: Escuelas Elementales
 solo trae Oros **con** habilidad (34), así que en su página no salen «Oro sin
-habilidad» ni los iniciales.
+habilidad» ni «Oro inicial».
 
-**Los Oros son de cuatro tipos** (`src/lib/oros.ts`), y cada uno cae en uno
+**Los Oros son de tres tipos** (`src/lib/oros.ts`), y cada uno cae en uno
 solo: **con habilidad** (104: cartas como cualquier otra, tope de 3 o 1 si es
 Única), **sin habilidad** (111: sin tope, y cualquiera puede ser el oro
-inicial de la baraja), **Oro inicial de edición** (10: las cartas «Oro
-Inicial <edición>» a arte completo, que reconoce `esOroInicial()`) y **Oro
-inicial de raza** (33: «Oro Inicial <raza>», de Dinastía del Dragón, en
-Adicionales). Los iniciales funcionan exactamente como los sin habilidad; se
-separan para filtrarlos y lucirlos, y en la grilla llevan una pastilla
-(«Inicial de edición», «Inicial de raza»). **Ojo con el nombre**: «oro
-inicial» a secas es el ROL en la baraja (`Deck.oroInicial`, la moneda del
-panel), que cumple cualquiera de los tres últimos tipos; por eso los otros se
-dicen siempre «de edición» o «de raza», y en el panel el rol manda sobre la
-clase («Oro inicial · de raza»). Las reglas no miran la clase:
-`oroSinHabilidad` cubre a los tres. `RuleCard` lleva `claseOro` solo para
+inicial de la baraja) y **Oro inicial** (43: las cartas a arte completo «Oro
+Inicial <edición>», 10, y «Oro Inicial <raza>», 33 de Dinastía del Dragón en
+Adicionales, que reconoce `esOroInicial()`). Por decisión del proyecto
+(04-10-2026) los de edición y los de raza van **juntos en una sola clase**.
+Funcionan exactamente como los sin habilidad; se separan para filtrarlos y
+lucirlos, y en la grilla llevan la pastilla «Oro inicial». La clase y el ROL
+en la baraja (`Deck.oroInicial`, la moneda del panel, que cumple cualquier
+Oro de los dos últimos tipos) se llaman igual, y en el panel el rol manda
+sobre la clase. Las reglas no miran la clase: `oroSinHabilidad` cubre a los
+dos. `RuleCard` lleva `claseOro` solo para
 mostrarla.
 
 **Cada filtro ofrece sus opciones en un orden decidido**, en `buildFacets()`
@@ -1367,7 +1366,8 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
 - **Los oros de raza** imprimen «Oro Inicial» y la raza, con código `CR-0NN` al
   pie; el tercero de cada raza es un diseño de emblema que no imprime «Oro
   Inicial», pero es la misma carta. Van como **`Oro Inicial <raza>`**, y así
-  los reconoce `claseDeOro()` como cuarta clase de Oro, «Oro inicial de raza».
+  los reconoce `esOroInicial()`: van en la misma clase «Oro inicial» que los
+  de edición.
   Ilustradores leídos del pie (la API no trae ninguno); `MYL` es `Mitos y
   Leyendas`, como en los oros de edición.
 - **Wotan y Járnvid** traían errores de la API corregidos contra el arte:

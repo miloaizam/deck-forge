@@ -1,5 +1,5 @@
 import { esOroInicial } from "./card-order";
-import { RAZAS, TIPOS, type Card } from "./types";
+import { TIPOS, type Card } from "./types";
 
 /**
  * Los tres tipos de Oro, que el catalogo y el constructor distinguen:
@@ -8,43 +8,32 @@ import { RAZAS, TIPOS, type Card } from "./types";
  *   si es Unica.
  * - **Sin habilidad**: el recurso con que se paga todo. Sin tope de copias, y
  *   cualquiera puede ser el oro inicial de una baraja.
- * - **Oro inicial de edicion**: las cartas "Oro Inicial <edicion>", a arte
- *   completo. Funcionan igual que las sin habilidad; se separan para poder
- *   filtrarlas y lucirlas.
- * - **Oro inicial de raza**: lo mismo, pero "Oro Inicial <raza>". Salieron en
- *   Dinastia del Dragon, tres por raza, y viven en Adicionales.
+ * - **Oro inicial**: las cartas a arte completo "Oro Inicial <edicion>" y
+ *   "Oro Inicial <raza>" (estas de Dinastia del Dragon, tres por raza, en
+ *   Adicionales). Funcionan igual que las sin habilidad; se separan para
+ *   poder filtrarlas y lucirlas.
  *
- * Ojo con el nombre: "oro inicial" a secas es el ROL dentro de la baraja (el
- * Oro sin habilidad que se aparta antes de empezar, `Deck.oroInicial`), y lo
- * puede cumplir cualquiera de los tres ultimos tipos. Por eso los iniciales
- * se llaman "de edicion" y "de raza" en toda la interfaz. Las reglas no miran esta clase:
- * `oroSinHabilidad` (deck-rules.ts) cubre a los dos.
+ * La clase y el ROL dentro de la baraja (el Oro sin habilidad que se aparta
+ * antes de empezar, `Deck.oroInicial`) se llaman igual: el rol lo puede
+ * cumplir cualquier Oro de los dos ultimos tipos. Las reglas no miran esta
+ * clase: `oroSinHabilidad` (deck-rules.ts) cubre a los dos.
  *
  * Los tres grupos no se pisan: cada Oro cae en uno solo.
  */
 
-export const CLASES_DE_ORO = [
-  "con-habilidad",
-  "sin-habilidad",
-  "inicial-edicion",
-  "inicial-raza",
-] as const;
+export const CLASES_DE_ORO = ["con-habilidad", "sin-habilidad", "inicial"] as const;
 export type ClaseDeOro = (typeof CLASES_DE_ORO)[number];
 
 export const ETIQUETA_ORO: Record<ClaseDeOro, string> = {
   "con-habilidad": "Oro con habilidad",
   "sin-habilidad": "Oro sin habilidad",
-  "inicial-edicion": "Oro inicial de edición",
-  "inicial-raza": "Oro inicial de raza",
+  inicial: "Oro inicial",
 };
 
-/** La pastilla que llevan en la grilla los dos tipos de oro inicial. */
+/** La pastilla que llevan en la grilla los oros iniciales. */
 export const PASTILLA_ORO: Partial<Record<ClaseDeOro, string>> = {
-  "inicial-edicion": "Inicial de edición",
-  "inicial-raza": "Inicial de raza",
+  inicial: "Oro inicial",
 };
-
-const RAZAS_DE_ORO = new Set<string>(RAZAS);
 
 export function esClaseDeOro(v: string): v is ClaseDeOro {
   return (CLASES_DE_ORO as readonly string[]).includes(v);
@@ -55,9 +44,7 @@ export function claseDeOro(
 ): ClaseDeOro | null {
   if (card.tipo !== "Oro") return null;
   if (card.habilidad.trim() !== "") return "con-habilidad";
-  if (!esOroInicial(card)) return "sin-habilidad";
-  const sufijo = card.nombre.slice("Oro Inicial ".length);
-  return RAZAS_DE_ORO.has(sufijo) ? "inicial-raza" : "inicial-edicion";
+  return esOroInicial(card) ? "inicial" : "sin-habilidad";
 }
 
 /** Lo que se escribe bajo el nombre de una carta: su clase si es Oro, si no raza o tipo. */

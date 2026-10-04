@@ -145,11 +145,7 @@ function Fila({
           <span className="text-muted block truncate text-[11px]">
             {/* El rol en la baraja manda sobre la clase de la carta. */}
             {esOroInicial
-              ? entry.card.claseOro === "inicial-edicion"
-                ? "Oro inicial · de edición"
-                : entry.card.claseOro === "inicial-raza"
-                  ? "Oro inicial · de raza"
-                  : "Oro inicial"
+              ? "Oro inicial"
               : entry.card.claseOro
                 ? ETIQUETA_ORO[entry.card.claseOro]
                 : (entry.card.raza ?? entry.card.tipo)}
