@@ -8,6 +8,7 @@ import { buildCardIndex, canAdd, limiteDeCopias, validateDeck } from "./deck-rul
 import { claveDeNombre } from "./documentos";
 import {
   efectoEnReglas,
+  errataUnica,
   erratasDe,
   estaBaneada,
   nombresConErrata,
@@ -131,4 +132,30 @@ test("el panel de erratas no explica las keywords", () => {
     .flatMap((n) => erratasDe({ nombre: n }))
     .some((e) => e.despues.includes("(Los Aliados, Armas o Tótem jugados"));
   assert.ok(conRegla);
+});
+
+test("una sola errata por carta, con solo lo que cambia", () => {
+  // La Banlist repite la Unica que ya suma la Fe de Erratas: sale una vez.
+  const hidro = errataUnica({ nombre: "Hidromancia" })!;
+  assert.deepEqual(hidro.cambios, [{ tipo: "texto", sale: "", entra: "Única." }]);
+  // Solo el trozo que cambia, no la carta entera.
+  const carmina = errataUnica({ nombre: "Carmina Burana" })!;
+  assert.equal(carmina.cambios.length, 1);
+  assert.match(JSON.stringify(carmina.cambios[0]), /Guerra de Talismanes/);
+  // Lo que la Banlist agrega de verdad se queda, en la misma errata.
+  const adapa = errataUnica({ nombre: "Adapa" })!;
+  assert.deepEqual(adapa.fuentes.sort(), ["banlist", "fe-de-erratas"]);
+  assert.ok(adapa.cambios.some((c) => c.tipo === "nota" && /a sí mismo/.test(c.texto)));
+  // Raza: un solo cambio, aunque la Banlist tambien la nombre.
+  const devastador = errataUnica({ nombre: "Devastador" })!;
+  assert.deepEqual(devastador.cambios, [
+    { tipo: "dato", etiqueta: "Raza", sale: "Bestia", entra: "Dragón" },
+  ]);
+  // Ningun cambio que sea solo un punto o una mayuscula.
+  for (const n of nombresConErrata()) {
+    for (const c of errataUnica({ nombre: n })?.cambios ?? []) {
+      if (c.tipo === "texto")
+        assert.notEqual(c.sale.toLowerCase(), c.entra.toLowerCase(), n);
+    }
+  }
 });

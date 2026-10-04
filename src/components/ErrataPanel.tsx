@@ -4,19 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { Ban, ChevronDown, FileWarning } from "lucide-react";
 
-import { AbilityText } from "./AbilityText";
-import { DiffText } from "./documentos/DiffText";
-import { ETIQUETA_CAMBIO } from "@/lib/documentos";
+import { MARCA_ENTRA, MARCA_SALE } from "./documentos/DiffText";
 import {
-  erratasDe,
+  errataUnica,
   estaBaneada,
-  NOMBRE_DE_FUENTE,
   RUTA_DE_FUENTE,
-  type ErrataDeCarta,
+  type CambioDeErrata,
 } from "@/lib/erratas";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { wordDiff } from "@/lib/word-diff";
 
 /**
  * Lo que la Fe de Erratas y la Banlist dicen de una carta, en su modal.
@@ -31,9 +27,9 @@ import { wordDiff } from "@/lib/word-diff";
 export function ErrataPanel({ card }: { card: Card }) {
   const [abiertaPara, setAbiertaPara] = useState<string | null>(null);
   const abierto = abiertaPara === card.id;
-  const erratas = erratasDe(card);
+  const errata = errataUnica(card);
   const baneada = estaBaneada(card);
-  if (erratas.length === 0 && !baneada) return null;
+  if (!errata && !baneada) return null;
 
   return (
     <div className="border-line mt-5 border-t pt-5">
@@ -44,7 +40,7 @@ export function ErrataPanel({ card }: { card: Card }) {
           formato.
         </p>
       )}
-      {erratas.length > 0 && (
+      {errata && (
         <>
           <button
             type="button"
@@ -67,13 +63,32 @@ export function ErrataPanel({ card }: { card: Card }) {
           {/* `.pliegue` (globals.css): se abre empujando lo de abajo. */}
           <div id={`errata-${card.id}`} className={cn("pliegue", abierto && "abierto")}>
             <div>
-              <ul className="mt-3 grid gap-3">
-                {erratas.map((e, i) => (
-                  <li key={i} className="bg-panel border-line rounded-card border p-3.5">
-                    <Errata errata={e} />
-                  </li>
-                ))}
-              </ul>
+              {/* Una sola errata por carta: solo lo que cambia, con la Fe de
+                  Erratas y la Banlist juntas (`errataUnica`). */}
+              <div className="bg-panel border-line rounded-card mt-3 border p-3.5 text-[14px]">
+                <ul className="grid gap-2">
+                  {errata.cambios.map((c, i) => (
+                    <li key={i}>
+                      <Cambio cambio={c} />
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted mt-3 text-[12px]">
+                  Según{" "}
+                  {errata.fuentes.map((f, i) => (
+                    <span key={f}>
+                      {i > 0 && " y "}
+                      <Link
+                        href={RUTA_DE_FUENTE[f]}
+                        className="hover:text-accent underline underline-offset-2"
+                      >
+                        {f === "banlist" ? "la Banlist" : "la Fe de Erratas"}
+                      </Link>
+                    </span>
+                  ))}
+                  .
+                </p>
+              </div>
             </div>
           </div>
         </>
@@ -82,44 +97,36 @@ export function ErrataPanel({ card }: { card: Card }) {
   );
 }
 
-function Errata({ errata: e }: { errata: ErrataDeCarta }) {
-  const etiqueta = e.cambio === "nota" ? "Errata" : ETIQUETA_CAMBIO[e.cambio];
-  return (
-    <div className="text-[14px]">
-      <p className="text-muted mb-2 text-[11px] tracking-[0.18em] uppercase">
-        {etiqueta} ·{" "}
-        <Link
-          href={RUTA_DE_FUENTE[e.fuente]}
-          className="hover:text-accent underline-offset-2 hover:underline"
-        >
-          {NOMBRE_DE_FUENTE[e.fuente]}
-        </Link>
+function Cambio({ cambio: c }: { cambio: CambioDeErrata }) {
+  if (c.tipo === "nota") return <p className="leading-relaxed">{c.texto}</p>;
+  const sale = c.sale ? <del className={MARCA_SALE}>{c.sale}</del> : null;
+  const entra = <ins className={MARCA_ENTRA}>{c.entra}</ins>;
+  if (c.tipo === "dato") {
+    return (
+      <p className="leading-relaxed">
+        <span className="text-muted">{c.etiqueta}:</span> {sale}
+        {sale && " → "}
+        {entra}
       </p>
-      {e.cambio === "habilidad" ? (
-        <TextoArreglado antes={e.antes} despues={e.despues} />
-      ) : e.cambio === "nota" ? (
-        <p className="leading-relaxed">{e.despues}</p>
-      ) : (
-        <p className="leading-relaxed">
-          {e.antes && (
-            <>
-              <del className="text-muted">{e.antes}</del> →{" "}
-            </>
-          )}
-          <strong className="text-ink font-medium">{e.despues}</strong>
-        </p>
-      )}
-      {e.nota && <p className="text-muted mt-2 text-[13px]">{e.nota}</p>}
-    </div>
+    );
+  }
+  if (!c.sale) {
+    return (
+      <p className="leading-relaxed">
+        <span className="text-muted">Se agrega:</span> {entra}
+      </p>
+    );
+  }
+  if (!c.entra) {
+    return (
+      <p className="leading-relaxed">
+        <span className="text-muted">Se quita:</span> {sale}
+      </p>
+    );
+  }
+  return (
+    <p className="leading-relaxed">
+      {sale} → {entra}
+    </p>
   );
-}
-
-/**
- * El "debe decir" con lo que cambia resaltado, como en la pagina de la Fe de
- * Erratas. Si el documento no da el "donde dice", va el texto a secas con las
- * keywords resaltadas.
- */
-function TextoArreglado({ antes, despues }: { antes: string | null; despues: string }) {
-  if (!antes) return <AbilityText text={despues} />;
-  return <DiffText tramos={wordDiff(antes, despues).despues} />;
 }

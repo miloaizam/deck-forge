@@ -77,3 +77,65 @@ function limpiar(lado: Tramo[]): Tramo[] {
   }
   return out;
 }
+
+/** Un cambio suelto de una errata: lo que sale y lo que entra en su lugar. */
+export interface Cambio {
+  sale: string;
+  entra: string;
+}
+
+/**
+ * Solo lo que cambia entre dos textos, sin el resto: la lista de trozos que
+ * salen y entran. Es lo que muestra el panel de una carta, donde el texto
+ * entero ya esta arriba. Dos cambios separados por hasta cuatro palabras
+ * iguales se funden: "Cuando [juegues] un Aliado de Raza [Sacerdote]" se lee
+ * mejor como un solo cambio que como dos pedazos sueltos.
+ */
+const PUENTE = 4;
+
+export function cambiosDeTexto(a: string, b: string): Cambio[] {
+  const A = a.split(/\s+/).filter(Boolean);
+  const B = b.split(/\s+/).filter(Boolean);
+  const n = A.length;
+  const m = B.length;
+  const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+
+  // Secuencia de pasos: igual, sale o entra, palabra por palabra.
+  const pasos: { tipo: TipoTramo; palabra: string }[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < n || j < m) {
+    if (i < n && j < m && A[i] === B[j]) {
+      pasos.push({ tipo: "igual", palabra: A[i++] });
+      j++;
+    } else if (j >= m || (i < n && L[i + 1][j] >= L[i][j + 1]))
+      pasos.push({ tipo: "sale", palabra: A[i++] });
+    else pasos.push({ tipo: "entra", palabra: B[j++] });
+  }
+
+  const out: Cambio[] = [];
+  let actual: { sale: string[]; entra: string[] } | null = null;
+  let iguales: string[] = [];
+  for (const p of pasos) {
+    if (p.tipo === "igual") {
+      iguales.push(p.palabra);
+      continue;
+    }
+    if (actual && iguales.length <= PUENTE) {
+      // Un puente corto: se queda dentro del mismo cambio.
+      actual.sale.push(...iguales);
+      actual.entra.push(...iguales);
+    } else if (actual) {
+      out.push({ sale: actual.sale.join(" "), entra: actual.entra.join(" ") });
+      actual = null;
+    }
+    iguales = [];
+    actual ??= { sale: [], entra: [] };
+    (p.tipo === "sale" ? actual.sale : actual.entra).push(p.palabra);
+  }
+  if (actual) out.push({ sale: actual.sale.join(" "), entra: actual.entra.join(" ") });
+  return out;
+}

@@ -28,6 +28,14 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-04",
     tipo: "Mejora",
+    titulo: "Erratas más cortas",
+    texto: [
+      "El botón «Errata» de cada carta muestra solo lo que cambia, en una sola errata que junta la Fe de Erratas y la Banlist, sin repetir lo que dicen las dos.",
+    ],
+  },
+  {
+    fecha: "2026-10-04",
+    tipo: "Mejora",
     titulo: "Cartas más nítidas",
     texto: [
       "En pantallas de alta densidad, como la de la mayoría de los notebooks y teléfonos, la grilla muestra las cartas con la imagen grande y ya no se ven borrosas.",

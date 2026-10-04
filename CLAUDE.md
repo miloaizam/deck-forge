@@ -1780,6 +1780,14 @@ si cambia uno, se cambia el otro.
   un botón «Errata» en el modal (`ErrataPanel.tsx`) que abre el texto
   arreglado, con lo que cambia resaltado. `cards.json` no cambia: el texto de
   `data-src` es el impreso, verificado contra el arte.
+  **Una sola errata por carta, y solo lo que cambia** (`errataUnica()`):
+  la Fe de Erratas y la Banlist se juntan en un bloque, sin secciones por
+  fuente. De la habilidad salen los trozos que cambian (`cambiosDeTexto()`
+  de `word-diff.ts`), no el texto entero; si la errata reescribe más de la
+  mitad, va el texto nuevo completo. Una nota de la Banlist que repite lo
+  que ya dijo la Fe de Erratas («Carta Única.», «Raza Dragón.», la misma
+  habilidad copiada) se omite: se mide por cuántas de sus palabras ya están
+  dichas. Un punto o una mayúscula de diferencia no cuentan como cambio.
   El panel **tampoco explica las keywords**: la Fe de Erratas copia la carta
   con sus recordatorios («Única (Sólo puedes tener…)», «Guardián. (…)») y
   `erratas.ts` los quita con `sinRecordatorios()` de `ability.ts`, el mismo

@@ -103,7 +103,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué significan los lazos «Errata» y «Baneada»?",
         respuesta: [
-          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. La carta muestra su texto impreso, y el botón **«Errata»** de su detalle muestra el texto arreglado. El constructor juega con el arreglado: si la errata la vuelve **Única**, admite una sola copia.",
+          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. La carta muestra su texto impreso, y el botón **«Errata»** de su detalle muestra solo lo que cambia, juntando la Fe de Erratas y la Banlist. El constructor juega con el arreglado: si la errata la vuelve **Única**, admite una sola copia.",
           "**Baneada**: la Banlist la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
         ],
       },

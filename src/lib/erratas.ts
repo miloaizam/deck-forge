@@ -5,10 +5,12 @@ import {
   banlistSchema,
   claveDeNombre,
   DOCUMENTOS,
+  ETIQUETA_CAMBIO,
   feDeErratasSchema,
   type Cambio,
 } from "./documentos";
 import { ATRIBUTOS, RAZAS, type Atributo, type Card, type Raza } from "./types";
+import { cambiosDeTexto } from "./word-diff";
 
 /**
  * La Fe de Erratas y la Banlist, aplicadas a las cartas.
@@ -209,4 +211,104 @@ export function efectoEnReglas(card: Pick<Card, "nombre">): EfectoEnReglas {
 /** Todos los nombres con alguna errata o efecto, para los tests. */
 export function nombresConErrata(): string[] {
   return [...POR_NOMBRE.keys(), ...BANEADAS];
+}
+
+/** Un cambio de la errata unica de una carta, listo para mostrar. */
+export type CambioDeErrata =
+  | { tipo: "texto"; sale: string; entra: string }
+  | { tipo: "dato"; etiqueta: string; sale: string | null; entra: string }
+  | { tipo: "nota"; texto: string };
+
+/** La errata de una carta, juntando la Fe de Erratas y la Banlist. */
+export interface ErrataUnica {
+  cambios: CambioDeErrata[];
+  fuentes: FuenteErrata[];
+}
+
+/** Las palabras de un texto, sin tildes, mayusculas ni puntuacion. */
+const palabras = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((p) => p && p !== "carta");
+
+/**
+ * Si la nota de la Banlist ya la dice otra errata: "Carta Unica." cuando la
+ * Fe de Erratas suma "Unica", "Raza Dragon." cuando cambia la raza, o la misma
+ * habilidad copiada casi palabra por palabra. Se mide por cuantas de sus
+ * palabras estan en lo otro.
+ */
+function yaDicha(nota: string, otros: string[]): boolean {
+  if (/^Se corrige su texto/.test(nota) && otros.length > 0) return true;
+  const propias = palabras(nota);
+  if (propias.length === 0) return true;
+  return otros.some((o) => {
+    const set = new Set(palabras(o));
+    return propias.filter((p) => set.has(p)).length / propias.length >= 0.75;
+  });
+}
+
+/** Un punto pegado a la frase siguiente ("Errante.En") se separa para el diff. */
+const separarFrases = (s: string) => s.replace(/\.(?=\p{Lu})/gu, ". ");
+
+/**
+ * La errata de la carta en UNA sola lista: solo lo que cambia, sin el texto
+ * entero (ese ya esta en el modal), y sin repetir lo que la Banlist dice de
+ * nuevo cuando la Fe de Erratas ya lo dijo. Null si no tiene errata.
+ */
+export function errataUnica(card: Pick<Card, "nombre">): ErrataUnica | null {
+  const todas = erratasDe(card);
+  if (todas.length === 0) return null;
+  const cambios: CambioDeErrata[] = [];
+  const fuentes = new Set<FuenteErrata>();
+  const dichas: string[] = [];
+
+  for (const e of todas) {
+    if (e.cambio === "nota") continue;
+    fuentes.add(e.fuente);
+    if (e.cambio === "habilidad") {
+      dichas.push(e.despues);
+      if (!e.antes) {
+        cambios.push({ tipo: "nota", texto: e.despues });
+        continue;
+      }
+      const antes = separarFrases(e.antes);
+      const despues = separarFrases(e.despues);
+      const trozos = cambiosDeTexto(antes, despues);
+      // Si la errata reescribe media carta, los trozos sueltos no se leen:
+      // va el texto nuevo entero.
+      const nuevas = trozos.reduce((n, c) => n + palabras(c.entra).length, 0);
+      if (nuevas > palabras(despues).length * 0.5) {
+        cambios.push({ tipo: "nota", texto: despues });
+      } else {
+        for (const c of trozos) {
+          // Un punto o una mayuscula de diferencia no es lo que cambia.
+          if (palabras(c.sale).join(" ") === palabras(c.entra).join(" ")) continue;
+          cambios.push({ tipo: "texto", ...c });
+        }
+      }
+    } else {
+      dichas.push(`${ETIQUETA_CAMBIO[e.cambio]} ${e.despues}`);
+      cambios.push({
+        tipo: "dato",
+        etiqueta: ETIQUETA_CAMBIO[e.cambio],
+        sale: e.antes,
+        entra: e.despues,
+      });
+    }
+  }
+  // Las notas de la Banlist, de la mas larga a la mas corta: asi "Carta
+  // Unica." cae como repetida cuando otra nota ya la dice.
+  const notas = todas
+    .filter((e) => e.cambio === "nota")
+    .sort((a, b) => b.despues.length - a.despues.length);
+  for (const e of notas) {
+    if (yaDicha(e.despues, dichas)) continue;
+    dichas.push(e.despues);
+    fuentes.add(e.fuente);
+    cambios.push({ tipo: "nota", texto: e.despues });
+  }
+  return { cambios, fuentes: [...fuentes] };
 }
