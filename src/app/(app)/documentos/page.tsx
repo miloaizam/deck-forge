@@ -47,7 +47,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.banlist}
           icono={<Ban size={20} aria-hidden="true" />}
           titulo="Banlist Estándar"
-          descripcion="Las cartas prohibidas, las que van con una sola copia, las erratas que aplica al formato y las cartas de otras ediciones en observación."
+          descripcion="Las cartas prohibidas, las que van con una sola copia y las erratas que aplica al formato."
           cifras={[
             [BANLIST.prohibidas.length, "prohibidas"],
             [BANLIST.unicas.length, "Únicas"],

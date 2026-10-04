@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 import { CatalogView } from "@/components/CatalogView";
-import { getCardsByEdition } from "@/lib/cards";
+import { getCardsByEdition, getOtherPrintings } from "@/lib/cards";
 import { findEdition, LOADED_EDITIONS } from "@/lib/editions";
 
 /** Una pagina estatica por edicion ya cargada. */
@@ -27,6 +27,7 @@ export default async function EdicionPage({ params }: PageProps<"/catalogo/[edic
   if (!ed?.cargada) notFound();
 
   const cards = await getCardsByEdition(edicion);
+  const otras = await getOtherPrintings(edicion);
 
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
@@ -38,7 +39,7 @@ export default async function EdicionPage({ params }: PageProps<"/catalogo/[edic
       </p>
 
       <div className="mt-10">
-        <CatalogView cards={cards} />
+        <CatalogView cards={cards} otrasImpresiones={otras} />
       </div>
     </main>
   );

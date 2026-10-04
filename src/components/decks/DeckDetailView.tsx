@@ -26,6 +26,7 @@ import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
+import { agruparImpresiones } from "@/lib/card-order";
 import { deckTitle, duplicateDeck, newDeckId, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
@@ -73,6 +74,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
   const decks = useDecks();
   const cargado = useHydrated();
   const index = useMemo(() => buildCardIndex(cards), [cards]);
+  const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   // Aparte y solo con `d`, para no volver a decodificar cada vez que cambia
   // el store (guardar la compartida lo cambia).
@@ -325,7 +327,12 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
       {/* El mismo modal del catalogo, sin el boton de agregar: aqui la baraja ya
           esta armado y se viene a mirar la carta, no a cambiarla. */}
-      <CardModal card={vista} onClose={() => setVista(null)} />
+      <CardModal
+        card={vista}
+        onClose={() => setVista(null)}
+        impresiones={vista ? impresiones.get(vista.identidad) : undefined}
+        onChangeCard={setVista}
+      />
 
       <ConfirmDialog
         open={porBorrar}

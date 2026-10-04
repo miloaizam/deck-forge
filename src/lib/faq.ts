@@ -108,6 +108,13 @@ export const FAQ: FaqSection[] = [
         ],
       },
       {
+        pregunta: "¿Puedo elegir otro arte de una carta?",
+        respuesta: [
+          "Sí. Si la carta tiene más de una impresión, su detalle muestra bajo la imagen la fila **Impresiones**, con sus artes alternativos y reimpresiones. Al pulsar una, el detalle pasa a esa impresión, y en el constructor **«Agregar a la baraja»** agrega la elegida.",
+          "Todas las impresiones son la misma carta: cuentan juntas para el tope de copias.",
+        ],
+      },
+      {
         pregunta: "¿Qué tipos de Oro hay?",
         respuesta: [
           "Tres, y cada uno tiene su opción en **Filtros → Tipo**, bajo «Oro» (que los muestra todos):",

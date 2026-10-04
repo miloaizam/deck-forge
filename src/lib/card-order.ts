@@ -114,3 +114,17 @@ export function compareCards(a: Card, b: Card): number {
 export function sortCards(cards: Card[]): Card[] {
   return [...cards].sort(compareCards);
 }
+
+/**
+ * Las impresiones de cada carta (todas las que comparten `identidad`), en el
+ * orden del catalogo. Es lo que ofrece el selector de impresiones del modal.
+ */
+export function agruparImpresiones(cards: Card[]): Map<string, Card[]> {
+  const grupos = new Map<string, Card[]>();
+  for (const c of sortCards(cards)) {
+    const grupo = grupos.get(c.identidad);
+    if (grupo) grupo.push(c);
+    else grupos.set(c.identidad, [c]);
+  }
+  return grupos;
+}

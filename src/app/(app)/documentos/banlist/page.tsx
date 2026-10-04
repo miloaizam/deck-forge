@@ -8,7 +8,7 @@ import { BANLIST, pesoDelPdf } from "@/lib/documentos-data";
 export const metadata: Metadata = {
   title: "Banlist Estándar",
   description:
-    "Las cartas prohibidas, las Únicas, las erratas y las cartas en observación del formato Estándar RE MyL (Escuelas Elementales).",
+    "Las cartas prohibidas, las Únicas y las erratas del formato Estándar RE MyL (Escuelas Elementales).",
 };
 
 const col = new Intl.Collator("es");
@@ -29,17 +29,14 @@ const ITEM =
  */
 export default function BanlistPage() {
   const doc = BANLIST;
-  const edicion = new Map(
-    doc.observacion.porRaza.flatMap((r) => r.cartas.map((c) => [c.carta, c.edicion])),
-  );
 
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <DocumentHeader
         doc={DOCUMENTOS.banlist}
         titulo="Banlist Estándar"
-        bajada="Qué cartas no se pueden jugar, cuáles van con una sola copia, las erratas que se aplican al formato y las cartas de otras ediciones en observación."
-        origen={`Transcripción de DeckForge del documento oficial «${doc.original.titulo}», modificado el ${fechaLarga(doc.original.modificado)}. Versión del ${fechaLarga(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo; el detalle está al final, en las notas de la transcripción.`}
+        bajada="Qué cartas no se pueden jugar, cuáles van con una sola copia y las erratas que se aplican al formato."
+        origen={`Transcripción de DeckForge del documento oficial «${doc.original.titulo}», modificado el ${fechaLarga(doc.original.modificado)}. Versión del ${fechaLarga(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo.`}
         peso={pesoDelPdf(DOCUMENTOS.banlist)}
       />
 
@@ -89,10 +86,7 @@ export default function BanlistPage() {
         <h2 id="erratas" className={TITULO}>
           Erratas <span className={CUENTA}>{doc.erratas.length}</span>
         </h2>
-        <p className={BAJADA}>
-          Cambios que la banlist aplica a cartas del formato y a las cartas en
-          observación.
-        </p>
+        <p className={BAJADA}>Cambios que la banlist aplica a cartas del formato.</p>
         <dl className="border-line bg-panel rounded-card mt-4 divide-y divide-(--color-line) border">
           {doc.erratas.map((e) => (
             <div
@@ -111,66 +105,6 @@ export default function BanlistPage() {
             </div>
           ))}
         </dl>
-      </section>
-
-      <section aria-labelledby="observacion" className={SECCION}>
-        <h2 id="observacion" className={TITULO}>
-          Cartas en observación
-        </h2>
-        <p className={BAJADA}>{doc.observacion.descripcion}</p>
-        <ul className="mt-4 grid gap-2 md:grid-cols-2">
-          {doc.observacion.condiciones.map((c) => (
-            <li key={c.carta} className={`${ITEM} flex-wrap justify-between`}>
-              <span>
-                {c.carta}
-                {edicion.has(c.carta) && (
-                  <span className="text-muted font-normal">
-                    {" "}
-                    · {edicion.get(c.carta)}
-                  </span>
-                )}
-              </span>
-              {c.condicion && (
-                <span className="bg-accent-soft text-accent rounded-chip px-2 py-0.5 text-[12px]">
-                  {c.condicion}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        <h3 className="text-ink mt-8 text-[16px] font-semibold">Por raza</h3>
-        <p className={BAJADA}>Las mismas cartas, con la edición de la que vienen.</p>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {doc.observacion.porRaza.map((r) => (
-            <li
-              key={r.raza}
-              className="bg-panel border-line rounded-card border px-4 py-3"
-            >
-              <p className="text-accent text-[11px] font-semibold tracking-[0.2em] uppercase">
-                {r.raza}
-              </p>
-              <ul className="mt-1.5 space-y-0.5 text-[14px]">
-                {r.cartas.map((c) => (
-                  <li key={c.carta}>
-                    {c.carta} <span className="text-muted">· {c.edicion}</span>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="notas" className={SECCION}>
-        <h2 id="notas" className="text-ink text-[16px] font-semibold">
-          Notas de la transcripción
-        </h2>
-        <ul className="text-muted mt-3 max-w-[90ch] list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed">
-          {doc.correcciones.map((c) => (
-            <li key={c}>{c}</li>
-          ))}
-        </ul>
       </section>
     </main>
   );

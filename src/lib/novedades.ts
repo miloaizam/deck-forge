@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-04",
     tipo: "Novedad",
+    titulo: "Elige el arte de cada carta",
+    texto: [
+      "El detalle de una carta muestra todas sus impresiones bajo la imagen: artes alternativos y reimpresiones. Al elegir una, el detalle pasa a esa impresión, y en el constructor se agrega a la baraja la que elegiste.",
+      "La Banlist queda más corta, en la página y en el PDF: solo las prohibidas, las Únicas y las erratas.",
+    ],
+  },
+  {
+    fecha: "2026-10-04",
+    tipo: "Novedad",
     titulo: "La Fe de Erratas y la Banlist, aplicadas",
     texto: [
       "Las cartas con errata llevan un lazo «Errata» en la esquina, y en su detalle el botón «Errata» muestra el texto arreglado. Las cartas siguen mostrando su texto impreso.",

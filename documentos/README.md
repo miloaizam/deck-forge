@@ -10,7 +10,7 @@ se aplican** al catálogo ni al validador de barajas (ver `TODO.md`).
 | Archivo | Qué es | Original |
 |---|---|---|
 | `public/reglas/FeDeErratas-260926.pdf` | 63 cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado. | *Fe de Erratas: Escuelas Elementales*, junio de 2022 (20 páginas) |
-| `public/reglas/BanlistEstandar-260926.pdf` | 9 prohibidas, 31 Únicas, 37 erratas y ajustes, y las cartas de otras ediciones en observación. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
+| `public/reglas/BanlistEstandar-260926.pdf` | 9 prohibidas, 31 Únicas, y 37 erratas y ajustes. Las cartas en observación siguen en el JSON (se aplican) pero no se publican. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
 
 El sufijo es la fecha de la transcripción (AAMMDD). Una versión nueva del
 documento oficial es un archivo nuevo, no se pisa el anterior: al cambiarlo,

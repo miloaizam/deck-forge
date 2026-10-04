@@ -174,7 +174,7 @@ export const DOCUMENTOS = {
   banlist: {
     ruta: "/documentos/banlist",
     pdf: "/reglas/BanlistEstandar-260926.pdf",
-    paginas: 6,
+    paginas: 5,
   },
 } as const satisfies Record<string, Documento>;
 

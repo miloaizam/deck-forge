@@ -26,6 +26,10 @@ interface CardModalProps {
   addBlocked?: string;
   /** Explica el bloqueo al pulsar "Agregar" bloqueado, igual que en la grilla. */
   onBlocked?: (mensaje: string) => void;
+  /** Todas las impresiones de la carta, en el orden del catalogo. */
+  impresiones?: Card[];
+  /** Si viene, el modal ofrece cambiar de impresion. */
+  onChangeCard?: (card: Card) => void;
 }
 
 /** Dato con etiqueta. No se renderiza si el valor viene vacio. */
@@ -47,6 +51,8 @@ export function CardModal({
   onRemove,
   addBlocked,
   onBlocked,
+  impresiones,
+  onChangeCard,
 }: CardModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -99,18 +105,27 @@ export function CardModal({
             <div className="grid gap-6 p-5 sm:grid-cols-[minmax(0,17rem)_1fr] sm:gap-8 sm:p-8">
               {/* Contenedor del ancho de la imagen: los lazos (`CardRibbons`)
                   se apoyan en su esquina. */}
-              <div className="rounded-card relative mx-auto w-full max-w-[13rem] self-start overflow-hidden sm:max-w-none">
-                <Image
-                  src={mostrada.imagen}
-                  alt={`Carta: ${mostrada.nombre}`}
-                  width={420}
-                  height={600}
-                  priority
-                  onLoad={marcarCargada}
-                  className="imagen-carga border-line rounded-card w-full border"
-                  style={{ aspectRatio: CARD_RATIO }}
-                />
-                <CardRibbons card={mostrada} grande />
+              <div className="mx-auto w-full max-w-[13rem] self-start sm:max-w-none">
+                <div className="rounded-card relative w-full overflow-hidden">
+                  <Image
+                    src={mostrada.imagen}
+                    alt={`Carta: ${mostrada.nombre}`}
+                    width={420}
+                    height={600}
+                    priority
+                    onLoad={marcarCargada}
+                    className="imagen-carga border-line rounded-card w-full border"
+                    style={{ aspectRatio: CARD_RATIO }}
+                  />
+                  <CardRibbons card={mostrada} grande />
+                </div>
+                {onChangeCard && impresiones && impresiones.length > 1 && (
+                  <Impresiones
+                    impresiones={impresiones}
+                    actual={mostrada}
+                    onChange={onChangeCard}
+                  />
+                )}
               </div>
 
               <div className="min-w-0">
@@ -213,5 +228,63 @@ export function CardModal({
         </div>
       )}
     </dialog>
+  );
+}
+
+/**
+ * Las otras impresiones de la carta (Arte Alternativo y reimpresiones), para
+ * elegir el arte. Comparten identidad: cambiar de impresion no cambia la carta
+ * de cara a las reglas, solo cual se ve y cual se agrega.
+ */
+function Impresiones({
+  impresiones,
+  actual,
+  onChange,
+}: {
+  impresiones: Card[];
+  actual: Card;
+  onChange: (card: Card) => void;
+}) {
+  return (
+    <div className="mt-4">
+      <p className="text-muted text-[11px] tracking-[0.18em] uppercase">
+        Impresiones ({impresiones.length})
+      </p>
+      <ul className="scrollbar-slim mt-2 flex gap-2 overflow-x-auto pb-2">
+        {impresiones.map((c) => {
+          const elegida = c.id === actual.id;
+          const etiqueta = c.origen
+            ? `${editionTitle(c.edicion)} · Arte de ${origenTitle(c.origen)}`
+            : editionTitle(c.edicion);
+          return (
+            <li key={c.id} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => onChange(c)}
+                aria-pressed={elegida}
+                aria-label={`${etiqueta} (${c.frecuencia})`}
+                title={etiqueta}
+                className={cn(
+                  "rounded-chip focus-visible:outline-brand-500 block overflow-hidden border-2 transition-colors",
+                  elegida
+                    ? "border-brand-500"
+                    : "hover:border-line border-transparent opacity-80 hover:opacity-100",
+                )}
+              >
+                <Image
+                  src={c.thumb}
+                  alt=""
+                  width={56}
+                  height={80}
+                  onLoad={marcarCargada}
+                  className="imagen-carga w-14"
+                  style={{ aspectRatio: CARD_RATIO }}
+                />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

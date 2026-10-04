@@ -26,3 +26,16 @@ export async function getCardsByEdition(slug: string): Promise<Card[]> {
   const cards = await getCards();
   return cards.filter((c) => c.edicion === slug);
 }
+
+/**
+ * Las impresiones de OTRAS ediciones de las cartas de una edicion: la pagina
+ * de una edicion solo lleva sus cartas, y el selector de impresiones del modal
+ * necesita tambien las demas. Viajan solo las que comparten identidad.
+ */
+export async function getOtherPrintings(slug: string): Promise<Card[]> {
+  const cards = await getCards();
+  const identidades = new Set(
+    cards.filter((c) => c.edicion === slug).map((c) => c.identidad),
+  );
+  return cards.filter((c) => c.edicion !== slug && identidades.has(c.identidad));
+}

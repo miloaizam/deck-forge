@@ -17,17 +17,20 @@ import {
   paginate,
   type CatalogFilters,
 } from "@/lib/catalog";
+import { agruparImpresiones } from "@/lib/card-order";
 import type { Card } from "@/lib/types";
 
 interface CatalogViewProps {
   cards: Card[];
+  /** Impresiones de otras ediciones, para el selector del modal. */
+  otrasImpresiones?: Card[];
 }
 
 /**
  * Isla interactiva del catalogo. La busqueda y los filtros corren en memoria:
  * no hay servidor al que preguntarle.
  */
-export function CatalogView({ cards }: CatalogViewProps) {
+export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Card | null>(null);
@@ -35,6 +38,10 @@ export function CatalogView({ cards }: CatalogViewProps) {
   // El indice es caro de construir y el catalogo no cambia en runtime.
   const index = useMemo(() => buildSearchIndex(cards), [cards]);
   const facets = useMemo(() => buildFacets(cards), [cards]);
+  const impresiones = useMemo(
+    () => agruparImpresiones(otrasImpresiones ? [...cards, ...otrasImpresiones] : cards),
+    [cards, otrasImpresiones],
+  );
 
   const results = useMemo(
     () => applyFilters(cards, filters, index),
@@ -96,7 +103,12 @@ export function CatalogView({ cards }: CatalogViewProps) {
         </>
       )}
 
-      <CardModal card={selected} onClose={() => setSelected(null)} />
+      <CardModal
+        card={selected}
+        onClose={() => setSelected(null)}
+        impresiones={selected ? impresiones.get(selected.identidad) : undefined}
+        onChangeCard={setSelected}
+      />
     </div>
   );
 }

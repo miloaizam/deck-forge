@@ -337,12 +337,6 @@ h2.seccion.peligro { color: var(--danger); }
 .errata { display: grid; grid-template-columns: 44mm 1fr; gap: 4mm; padding: 2.6mm 0; border-bottom: 1px solid var(--line); break-inside: avoid; }
 .errata b { color: var(--accent); }
 .errata .ed { display: block; color: var(--muted); font-size: 7.8pt; font-weight: 400; }
-.cond { display: flex; justify-content: space-between; gap: 3mm; }
-.razas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3mm; }
-.raza { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 3mm 4mm; break-inside: avoid; }
-.raza h3 { font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2mm; }
-.raza p { margin: 0 0 .6mm; }
-.raza .ed { color: var(--muted); }
 `;
 
 function banlist() {
@@ -351,22 +345,18 @@ function banlist() {
   );
   const col = new Intl.Collator("es");
   const ordenar = (l) => [...l].sort(col.compare);
-  const edicion = new Map(
-    doc.observacion.porRaza.flatMap((r) => r.cartas.map((c) => [c.carta, c.edicion])),
-  );
-
   const html = [
     portada({
       eyebrow: "Formato Estándar RE MyL · Escuelas Elementales",
       titulo: "Banlist<br><em>Estándar</em>",
       bajada:
-        "Qué cartas no se pueden jugar, cuáles van con una sola copia, las erratas que se aplican al formato y las cartas de otras ediciones en observación.",
+        "Qué cartas no se pueden jugar, cuáles van con una sola copia y las erratas que se aplican al formato.",
       fichas: [
         [String(doc.prohibidas.length), "prohibidas"],
         [String(doc.unicas.length), "cartas Únicas"],
         [String(doc.erratas.length), "erratas y ajustes"],
       ],
-      aviso: `Transcripción de DeckForge del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo; el detalle está en «Notas de la transcripción».`,
+      aviso: `Transcripción de DeckForge del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo.`,
     }),
     `<section>
       <div class="regla"><span>Construcción del mazo</span>${esc(doc.construccion)}</div>
@@ -382,37 +372,13 @@ function banlist() {
         .join("")}</div>
     </section>`,
     `<section class="bloque"><h2 class="seccion">Erratas <span class="cuenta">${doc.erratas.length}</span></h2>
-      <p class="seccion-bajada">Cambios que la banlist aplica a cartas del formato y a las cartas en observación.</p>
+      <p class="seccion-bajada">Cambios que la banlist aplica a cartas del formato.</p>
       ${doc.erratas
         .map(
           (e) =>
             `<div class="errata"><b>${esc(e.carta)}${e.edicion ? `<span class="ed">${esc(e.edicion)}</span>` : ""}</b><span>${esc(e.texto)}</span></div>`,
         )
         .join("")}
-    </section>`,
-    `<section class="bloque"><h2 class="seccion">Cartas en observación</h2>
-      <p class="seccion-bajada">${esc(doc.observacion.descripcion)}</p>
-      <div class="rejilla" style="grid-template-columns:1fr 1fr">${doc.observacion.condiciones
-        .map(
-          (c) =>
-            `<div class="item cond"><span>${esc(c.carta)}${edicion.has(c.carta) ? ` <span class="ed" style="color:var(--muted);font-weight:400">· ${esc(edicion.get(c.carta))}</span>` : ""}</span>${c.condicion ? `<span class="pastilla acento">${esc(c.condicion)}</span>` : ""}</div>`,
-        )
-        .join("")}</div>
-      <h2 class="seccion" style="font-size:13pt">Por raza</h2>
-      <p class="seccion-bajada">Las mismas cartas, con la edición de la que vienen.</p>
-      <div class="razas">${doc.observacion.porRaza
-        .map(
-          (r) =>
-            `<div class="raza"><h3>${esc(r.raza)}</h3>${r.cartas
-              .map(
-                (c) =>
-                  `<p>${esc(c.carta)} <span class="ed">· ${esc(c.edicion)}</span></p>`,
-              )
-              .join("")}</div>`,
-        )
-        .join("")}</div>
-      <h2 class="seccion" style="font-size:13pt;margin-top:9mm">Notas de la transcripción</h2>
-      <ul class="notas">${doc.correcciones.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
     </section>`,
   ].join("\n");
   return { html, css: CSS_BANLIST, doc };

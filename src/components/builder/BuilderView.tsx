@@ -53,6 +53,7 @@ import {
   DECK_TOTAL,
   SIDE_TOTAL,
 } from "@/lib/deck-rules";
+import { agruparImpresiones } from "@/lib/card-order";
 import { clearDraft, hayCambios, writeDraft } from "@/lib/deck-draft";
 import {
   mensajeNoGuardada,
@@ -242,6 +243,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
   // Caros de construir y el catalogo no cambia en runtime.
   const search = useMemo(() => buildSearchIndex(cards), [cards]);
   const index = useMemo(() => buildCardIndex(cards), [cards]);
+  const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   const res = useMemo(() => resolveDeck(deck, index), [deck, index]);
   const stats = useMemo(() => deckStats(res), [res]);
@@ -563,6 +565,10 @@ export function BuilderView({ cards }: BuilderViewProps) {
         onRemove={selected ? () => quitar(selected) : undefined}
         addBlocked={selected ? bloqueoDe(selected) : undefined}
         onBlocked={avisarError}
+        // Elegir otra impresion cambia la carta del modal: agregar y quitar
+        // actuan sobre la elegida.
+        impresiones={selected ? impresiones.get(selected.identidad) : undefined}
+        onChangeCard={setSelected}
       />
     </>
   );

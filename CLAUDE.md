@@ -1372,6 +1372,12 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
     Estrada`, `Javier Bahamonde`, `Francisco Ruiz`…).
   - **Siete heredan una keyword condicional** de su carta (Dorian Grey,
     Lozen, Freya…): `keywords.test.ts` la acepta por identidad.
+- **El modal de carta tiene un selector de impresiones** (`Impresiones` en
+  `CardModal.tsx`): todas las cartas de la misma `identidad`, agrupadas con
+  `agruparImpresiones()` (`card-order.ts`). Elegir una cambia la carta del
+  modal, así que en el constructor agregar y quitar actúan sobre la elegida.
+  La página de una edición recibe además las impresiones de otras ediciones
+  (`getOtherPrintings`), porque solo lleva las suyas.
 - **Requisito de un arte alternativo**: que la habilidad, keywords incluidas,
   sea igual o casi igual a la cargada. Si cambia, es otra carta o una errata,
   y se consulta.
@@ -1778,6 +1784,10 @@ si cambia uno, se cambia el otro.
   cumple». Lo dicen el panel del constructor, el detalle y la imagen PNG, que
   la nombra bajo el título y la marca en rojo. El campo `legalidad` de
   `cards.json` sigue en `libre`: manda la Banlist.
+- **El documento de la Banlist no publica las cartas en observación** (ni su
+  lista por raza ni las notas de la transcripción; decisión del proyecto,
+  04-10-2026), pero sus condiciones **siguen aplicándose**: el JSON las
+  conserva y `erratas.ts` las lee.
 - **La regla de construcción «Mazo Desafiante y/o Guerrero»**: con Shingas en
   la baraja, Karna topa en una copia (`shingas-karna`).
 - Las entradas se asocian **por nombre** (`claveDeNombre`), así que alcanzan a

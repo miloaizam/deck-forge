@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { compareCards, esOroInicial, sortCards } from "./card-order";
+import { agruparImpresiones, compareCards, esOroInicial, sortCards } from "./card-order";
 import { claseDeOro } from "./oros";
 import { EDITIONS, ORIGENES } from "./editions";
 import {
@@ -132,4 +132,20 @@ test("ninguna pareja de cartas queda empatada", () => {
       `${ORDENADO[i - 1].codigo} y ${ORDENADO[i].codigo} empatan`,
     );
   }
+});
+
+test("el selector de impresiones agrupa por identidad, en el orden del catalogo", () => {
+  const grupos = agruparImpresiones(CATALOGO);
+  let total = 0;
+  for (const [identidad, cartas] of grupos) {
+    total += cartas.length;
+    assert.ok(
+      cartas.every((c) => c.identidad === identidad),
+      identidad,
+    );
+    assert.deepEqual(cartas, sortCards(cartas), identidad);
+  }
+  assert.equal(total, CATALOGO.length);
+  const sarras = CATALOGO.find((c) => c.nombre === "Sarras")!;
+  assert.ok(grupos.get(sarras.identidad)!.some((c) => c.edicion === "arte-alternativo"));
 });
