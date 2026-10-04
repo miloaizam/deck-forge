@@ -18,7 +18,7 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 
 **Lo que falta y lo que está roto tiene una sola lista**, en la raíz:
 [`TODO.md`](TODO.md), agrupada por tema (imágenes,
-erratas y banlist…). Hubo una segunda lista, `ISSUES.md`, para los errores;
+lo grande…). Hubo una segunda lista, `ISSUES.md`, para los errores;
 se fundió con esta para trabajar de a un grupo.
 
 Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
@@ -1745,15 +1745,44 @@ contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los
 imports sin extensión que espera el bundler de Next.
 
-**La banlist y la Fe de Erratas se publican pero todavía no se aplican**: se
-leen y se descargan en `/documentos`, pero el catálogo y el validador no las
-usan. Los datos están en `documentos/fuente/*.json`, se validan con los
+**La Fe de Erratas y la Banlist se aplican** (decisión del proyecto,
+04-10-2026). Los datos están en `documentos/fuente/*.json`, se validan con los
 esquemas de `src/lib/documentos.ts` y `documentos.test.ts` los cruza con el
-catálogo real; las páginas los leen en el build con `documentos-data.ts`
-(solo Server Components: importa los JSON y `node:fs`), así que un JSON roto
-tumba el build. El diff resaltado (`word-diff.ts`) es la misma lógica que el
-`diff()` del generador de los PDF: si cambia uno, se cambia el otro. La Fe de
-Erratas tiene ahora
-material de sobra: al cargar Escuelas Elementales quedaron **66 cartas cuyo
-texto cambió entre impresiones**, y el catálogo muestra el vigente sin decir en
-ninguna parte que la impresión vieja decía otra cosa.
+catálogo real. Las páginas de `/documentos` los leen en el build con
+`documentos-data.ts` (solo Server Components: importa `node:fs`), y todo lo
+demás con **`src/lib/erratas.ts`**, que importa los mismos JSON sin `node:fs`
+y sirve en el cliente, en el build y en los tests (`scripts/ts-imports.mjs` les
+pone el atributo `type: "json"` que Node exige). El diff resaltado
+(`word-diff.ts`) es la misma lógica que el `diff()` del generador de los PDF:
+si cambia uno, se cambia el otro.
+
+- **El catálogo muestra el texto ORIGINAL** y la errata va aparte: un lazo
+  «Errata» en la esquina de la imagen (grilla y modal, `CardRibbons.tsx`) y
+  un botón «Errata» en el modal (`ErrataPanel.tsx`) que abre el texto
+  arreglado, con lo que cambia resaltado. `cards.json` no cambia: el texto de
+  `data-src` es el impreso, verificado contra el arte.
+- **Las reglas juegan con lo erratado.** `toRuleCard` (`deck-rules.ts`) toma
+  de `efectoEnReglas()` la Única, la raza, el atributo y el coste: las **31
+  Únicas de la Banlist** y las de observación topan en una copia, Tsukuyomi
+  deja de ser Única, Arjumand Banu Begum cuesta 1 y Harionna es Oscuridad. Lo
+  que no sale del texto de forma mecánica va en `EFECTOS_A_MANO`, comentado
+  carta por carta. De la Fe de Erratas solo se SUMA la Única: su «debe decir»
+  a veces es un trozo de la habilidad.
+- **Una baneada se puede agregar.** `canAdd` la deja pasar con un `aviso`
+  (el constructor lo dice en un `toast`), y `validateDeck` la marca como
+  `carta-prohibida` con gravedad `error`: la baraja se guarda, pero «no
+  cumple». Lo dicen el panel del constructor, el detalle y la imagen PNG, que
+  la nombra bajo el título y la marca en rojo. El campo `legalidad` de
+  `cards.json` sigue en `libre`: manda la Banlist.
+- **La regla de construcción «Mazo Desafiante y/o Guerrero»**: con Shingas en
+  la baraja, Karna topa en una copia (`shingas-karna`).
+- Las entradas se asocian **por nombre** (`claveDeNombre`), así que alcanzan a
+  todas las impresiones, Arte Alternativo incluido. `erratas.test.ts` exige
+  que cada una encuentre su carta; la única que no es «Caída de Sol», el
+  nombre nuevo de una errata de nombre.
+- **Revisión previa (04-10-2026)**: antes de aplicarlas se comprobó que las
+  571 cartas con más de una impresión digan lo mismo en todas (texto, tipo,
+  raza, coste, Fuerza y keywords). Solo difieren en la forma Yasuke («1 Oro» /
+  «un Oro») y el orden de declaración de Luisón, ya documentados; ninguna
+  palabra declarada al comienzo de una línea queda fuera de
+  `KEYWORDS_IMPRESAS`.

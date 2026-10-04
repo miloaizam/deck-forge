@@ -1,3 +1,4 @@
+import { efectoEnReglas, estaBaneada } from "./erratas";
 import { claseDeOro, type ClaseDeOro } from "./oros";
 import { sortCards } from "./card-order";
 import { copiesOf, totalCards, type DeckZone } from "./deck";
@@ -84,19 +85,26 @@ export interface RuleCard {
   orden: number;
 }
 
+/**
+ * La carta tal como la ven las reglas: con la Fe de Erratas y la Banlist ya
+ * aplicadas (`erratas.ts`). El catalogo muestra el texto original; aqui manda
+ * el erratado, que es el que se juega: una carta que la Banlist declara Unica
+ * topa en una copia, y una baneada queda `prohibida`.
+ */
 export function toRuleCard(c: Card, orden = 0): RuleCard {
+  const errata = efectoEnReglas(c);
   return {
     orden,
     id: c.id,
     identidad: c.identidad,
     nombre: c.nombre,
     tipo: c.tipo,
-    raza: c.raza,
-    atributo: c.atributo,
-    coste: c.coste,
+    raza: errata.raza ?? c.raza,
+    atributo: errata.atributo ?? c.atributo,
+    coste: errata.coste ?? c.coste,
     thumb: c.thumb,
-    legalidad: c.legalidad,
-    unica: c.keywords.includes("Única"),
+    legalidad: estaBaneada(c) ? "prohibida" : c.legalidad,
+    unica: errata.unica ?? c.keywords.includes("Única"),
     oroSinHabilidad: c.tipo === "Oro" && c.habilidad.trim() === "",
     mercenario: c.keywords.includes("Mercenario"),
     claseOro: claseDeOro(c),
@@ -457,7 +465,8 @@ export type IssueCode =
   | "tamano-side"
   | "carta-desconocida"
   | "carta-prohibida"
-  | "carta-restringida";
+  | "carta-restringida"
+  | "shingas-karna";
 
 export interface DeckIssue {
   code: IssueCode;
@@ -633,14 +642,18 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     });
   }
 
-  // Banlist: hoy todas las cartas son "libre", asi que esto no dispara. Queda
-  // escrito para que cuando lleguen las prohibidas sea solo cambiar los datos.
+  // Banlist. Una baneada se deja agregar (el jugador puede armar lo que
+  // quiera), pero la baraja queda fuera del formato: por eso es `error`. Se
+  // nombra una vez por carta aunque vaya en principal y side.
+  const nombradas = new Set<string>();
   for (const { card } of [...res.principal, ...res.side]) {
+    if (nombradas.has(card.identidad)) continue;
+    nombradas.add(card.identidad);
     if (card.legalidad === "prohibida") {
       issues.push({
         code: "carta-prohibida",
         gravedad: "error",
-        mensaje: `${card.nombre} está prohibida en el formato.`,
+        mensaje: `${card.nombre} está baneada en la Banlist.`,
         identidad: card.identidad,
       });
     } else if (card.legalidad === "restringida") {
@@ -653,7 +666,28 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     }
   }
 
+  const karna = mensajeShingasKarna(copiasPorIdentidad(res));
+  if (karna) issues.push(karna);
+
   return issues;
+}
+
+/**
+ * Regla de construccion de la Banlist ("Mazo Desafiante y/o Guerrero"): o
+ * Shingas mas Karna como Carta Unica, o solo Karna hasta tres copias. O sea,
+ * con Shingas en la baraja Karna topa en una.
+ */
+const SHINGAS = "shingas";
+const KARNA = "karna";
+function mensajeShingasKarna(copias: Map<string, number>): DeckIssue | null {
+  const karna = copias.get(KARNA) ?? 0;
+  if ((copias.get(SHINGAS) ?? 0) === 0 || karna <= 1) return null;
+  return {
+    code: "shingas-karna",
+    gravedad: "error",
+    mensaje: `Con Shingas en la baraja, Karna es Única (Banlist): se admite 1 copia y la baraja lleva ${karna}.`,
+    identidad: KARNA,
+  };
 }
 
 export function isLegal(issues: DeckIssue[]): boolean {
@@ -664,7 +698,7 @@ export function isLegal(issues: DeckIssue[]): boolean {
  * Agregar una carta
  * ------------------------------------------------------------------ */
 
-export type AddCheck = { ok: true } | { ok: false; mensaje: string };
+export type AddCheck = { ok: true; aviso?: string } | { ok: false; mensaje: string };
 
 /** Como se nombra un Aliado al explicar por que no entra: "Sombra Oscuridad". */
 function describirCarta(card: RuleCard): string {
@@ -708,8 +742,20 @@ export function canAdd(
     };
   }
 
+  // Banlist: con Shingas, Karna topa en una copia; y Shingas no entra si ya
+  // hay mas de una Karna.
+  const tras = new Map(copiasPorIdentidad(res));
+  tras.set(card.identidad, copias + 1);
+  const karna = mensajeShingasKarna(tras);
+  if (karna) return { ok: false, mensaje: karna.mensaje };
+
+  // Una baneada SI se agrega: la baraja queda fuera del formato y el
+  // validador lo dice. Quien llama avisa al agregarla (`aviso`).
   if (card.legalidad === "prohibida") {
-    return { ok: false, mensaje: `${card.nombre} está prohibida en el formato.` };
+    return {
+      ok: true,
+      aviso: `${card.nombre} está baneada en la Banlist: la baraja no cumplirá el formato.`,
+    };
   }
 
   return { ok: true };

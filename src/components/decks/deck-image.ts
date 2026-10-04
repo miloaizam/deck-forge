@@ -28,6 +28,8 @@ const COLOR = {
   muted: "#9a93b5",
   acento: "#a78bfa",
   marca: "#7c3aed",
+  /** Las cartas baneadas: el mismo rojo del lazo `.lazo-baneada`. */
+  baneada: "#b91c1c",
 } as const;
 
 const ANCHO = 1600;
@@ -93,6 +95,9 @@ function lineas(
  *
  * Solo lleva el nombre, la nota y las cartas: sin conteo, legalidad ni
  * afinidad, que en una imagen para compartir sobran (las cartas ya lo dicen).
+ * La excepcion son las cartas baneadas: quien recibe la imagen tiene que
+ * saber que esa baraja no se puede jugar en el formato, asi que van
+ * nombradas bajo el titulo y marcadas en rojo en la grilla.
  */
 export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<void> {
   await document.fonts.ready;
@@ -116,7 +121,14 @@ export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<
   const nota = deck.descripcion.trim()
     ? lineas(ctx, deck.descripcion.trim(), ANCHO - MARGEN * 2, 2)
     : [];
-  const altoCabecera = 34 + 70 + nota.length * 30 + 28;
+  const baneadas = [
+    ...new Set(
+      lista.flatMap((t) =>
+        t.filas.filter((e) => e.card.legalidad === "prohibida").map((e) => e.card.nombre),
+      ),
+    ),
+  ];
+  const altoCabecera = 34 + 70 + nota.length * 30 + (baneadas.length ? 52 : 0) + 28;
   const altoTramo = (t: Tramo) =>
     40 + Math.ceil(t.filas.length / COLUMNAS) * (CARTA_H + HUECO) + 24;
   const alto =
@@ -150,6 +162,18 @@ export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<
   for (const l of nota) {
     ctx.fillText(l, MARGEN, y);
     y += 30;
+  }
+  if (baneadas.length) {
+    const aviso = `Baneada${baneadas.length > 1 ? "s" : ""} en la Banlist: ${baneadas.join(", ")}`;
+    ctx.font = f(700, 18);
+    const w = Math.min(ctx.measureText(aviso).width + 32, ANCHO - MARGEN * 2);
+    ctx.fillStyle = COLOR.baneada;
+    ctx.beginPath();
+    ctx.roundRect(MARGEN, y + 6, w, 38, 19);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(aviso, MARGEN + 16, y + 16, w - 32);
+    y += 52;
   }
   y += 28;
 
@@ -187,11 +211,23 @@ export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<
         ctx.fillRect(x, cy, CARTA_W, CARTA_H);
       }
       ctx.restore();
-      ctx.strokeStyle = COLOR.linea;
-      ctx.lineWidth = 1;
+      const baneada = fila.card.legalidad === "prohibida";
+      ctx.strokeStyle = baneada ? COLOR.baneada : COLOR.linea;
+      ctx.lineWidth = baneada ? 4 : 1;
       ctx.beginPath();
       ctx.roundRect(x + 0.5, cy + 0.5, CARTA_W - 1, CARTA_H - 1, 9);
       ctx.stroke();
+      ctx.lineWidth = 1;
+      if (baneada) {
+        // La misma etiqueta que el lazo de la grilla, arriba de la carta.
+        ctx.fillStyle = COLOR.baneada;
+        ctx.fillRect(x + 2, cy + 10, CARTA_W - 4, 26);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = f(700, 14);
+        ctx.textAlign = "center";
+        ctx.fillText("BANEADA", x + CARTA_W / 2, cy + 15);
+        ctx.textAlign = "left";
+      }
 
       // Las copias, en una pastilla abajo a la derecha.
       const esOroInicial = t.titulo !== "Side deck" && fila.card.id === deck.oroInicial;

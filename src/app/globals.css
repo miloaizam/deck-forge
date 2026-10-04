@@ -437,6 +437,54 @@
     }
   }
 
+  /* Los lazos de la esquina superior derecha de una carta: "Errata" y
+     "Baneada" (`CardRibbons.tsx`). Una banda en diagonal que recorta el
+     contenedor; con dos, la segunda va un paso mas adentro. Los colores van
+     fijos y oscuros en los dos temas, porque llevan texto blanco encima del
+     arte y el rojo del token `danger` del tema oscuro es demasiado claro. */
+  .lazos {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5.25rem;
+    height: 5.25rem;
+    overflow: hidden;
+    pointer-events: none;
+    border-top-right-radius: inherit;
+  }
+  .lazo {
+    position: absolute;
+    top: calc(1.05rem + var(--paso, 0) * 1.3rem);
+    right: calc(-2.35rem - var(--paso, 0) * 1.3rem);
+    width: 8.5rem;
+    rotate: 45deg;
+    padding-block: 2px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
+  }
+  .lazo-errata {
+    background: #6d28d9;
+  }
+  .lazo-baneada {
+    background: #b91c1c;
+  }
+  .lazos-grande {
+    width: 7rem;
+    height: 7rem;
+  }
+  .lazos-grande .lazo {
+    top: calc(1.45rem + var(--paso, 0) * 1.6rem);
+    right: calc(-2.6rem - var(--paso, 0) * 1.6rem);
+    width: 10.5rem;
+    font-size: 12px;
+    padding-block: 3px;
+  }
+
   /* Las preguntas de la ayuda: la respuesta se abre y se cierra en vez de
      saltar. `::details-content` e `interpolate-size` son recientes; donde no
      existen, la regla se ignora y el <details> abre de golpe, como siempre. */

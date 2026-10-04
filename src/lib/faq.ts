@@ -97,6 +97,14 @@ export const FAQ: FaqSection[] = [
           "Hasta **3 copias** de cada carta, o **1 si es Única**. Los **Oros sin habilidad** y los **Mercenarios** no tienen tope.",
           "Una sola **afinidad** para todos tus Aliados.",
           "Un **side deck** de hasta 10 cartas.",
+          "La **Banlist**: sin cartas **baneadas**, y con las cartas que declara Únicas a una copia.",
+        ],
+      },
+      {
+        pregunta: "¿Qué significan los lazos «Errata» y «Baneada»?",
+        respuesta: [
+          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. La carta muestra su texto impreso, y el botón **«Errata»** de su detalle muestra el texto arreglado. El constructor juega con el arreglado: si la errata la vuelve **Única**, admite una sola copia.",
+          "**Baneada**: la Banlist la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
         ],
       },
       {
@@ -220,7 +228,7 @@ export const FAQ: FaqSection[] = [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
           "**Mis barajas:** las barajas que guardaste en este navegador.",
-          "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar. Por ahora son de consulta: el catálogo y el constructor todavía no las aplican.",
+          "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya las aplican.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
       },

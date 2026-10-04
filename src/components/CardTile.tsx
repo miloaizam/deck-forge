@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Plus, Sparkles } from "lucide-react";
 
+import { CardRibbons } from "./CardRibbons";
 import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ export function CardTile({
           {/* Los Oros iniciales de edicion y de raza se lucen: son la carta
               que se elige por gusto. La pastilla es adorno; el texto de abajo
               ya dice la clase para el lector de pantalla. */}
+          <CardRibbons card={card} />
           {pastilla && (
             <span
               aria-hidden="true"

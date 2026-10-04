@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { Minus, Plus, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
+import { CardRibbons } from "./CardRibbons";
 import { CARD_RATIO, marcarCargada } from "./CardTile";
+import { ErrataPanel } from "./ErrataPanel";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
@@ -95,16 +97,21 @@ export function CardModal({
               scroll no se encadene a la pagina de atras. */}
           <div className="scrollbar-slim max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
             <div className="grid gap-6 p-5 sm:grid-cols-[minmax(0,17rem)_1fr] sm:gap-8 sm:p-8">
-              <Image
-                src={mostrada.imagen}
-                alt={`Carta: ${mostrada.nombre}`}
-                width={420}
-                height={600}
-                priority
-                onLoad={marcarCargada}
-                className="imagen-carga border-line rounded-card mx-auto w-full max-w-[13rem] border sm:max-w-none"
-                style={{ aspectRatio: CARD_RATIO }}
-              />
+              {/* Contenedor del ancho de la imagen: los lazos (`CardRibbons`)
+                  se apoyan en su esquina. */}
+              <div className="rounded-card relative mx-auto w-full max-w-[13rem] self-start overflow-hidden sm:max-w-none">
+                <Image
+                  src={mostrada.imagen}
+                  alt={`Carta: ${mostrada.nombre}`}
+                  width={420}
+                  height={600}
+                  priority
+                  onLoad={marcarCargada}
+                  className="imagen-carga border-line rounded-card w-full border"
+                  style={{ aspectRatio: CARD_RATIO }}
+                />
+                <CardRibbons card={mostrada} grande />
+              </div>
 
               <div className="min-w-0">
                 <p className="text-muted pr-12 text-[11px] tracking-[0.22em] uppercase">
@@ -150,6 +157,8 @@ export function CardModal({
                     </div>
                   </div>
                 )}
+
+                <ErrataPanel card={mostrada} />
 
                 {mostrada.ilustrador && (
                   <p className="text-muted border-line mt-5 border-t pt-5 text-[13px]">

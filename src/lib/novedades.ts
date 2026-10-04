@@ -28,6 +28,16 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-04",
     tipo: "Novedad",
+    titulo: "La Fe de Erratas y la Banlist, aplicadas",
+    texto: [
+      "Las cartas con errata llevan un lazo «Errata» en la esquina, y en su detalle el botón «Errata» muestra el texto arreglado. Las cartas siguen mostrando su texto impreso.",
+      "El constructor ya juega con las erratas: las cartas que la Banlist declara Únicas admiten una sola copia, y con Shingas en la baraja Karna también.",
+      "Las cartas baneadas llevan el lazo «Baneada». Se pueden agregar, pero la baraja queda fuera del formato y lo dicen el constructor, la página de la baraja y la imagen descargada.",
+    ],
+  },
+  {
+    fecha: "2026-10-04",
+    tipo: "Novedad",
     titulo: "415 artes alternativos para elegir",
     texto: [
       "Arte Alternativo suma 415 impresiones de veinte ediciones del juego, de Furia a Conjuros: las de 20 años, Milenarias, promos y Legendarias de cartas que ya están en el catálogo. Van agrupadas por la edición de donde sale cada arte, de la más nueva a la más vieja, y al abrir una carta se ve de cuál viene.",

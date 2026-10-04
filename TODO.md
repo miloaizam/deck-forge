@@ -128,35 +128,6 @@ campo `imagen`; ver CLAUDE.md).
 - **Terminado cuando:** las seis se ven tan nítidas como el resto de Dominio
   en la grilla y en el modal.
 
-## Erratas y banlist
-
-### Aplicar las erratas y la banlist
-
-- **Datos:** `documentos/fuente/fe-de-erratas.json` y `banlist-estandar.json`,
-  ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
-  catálogo en `documentos.test.ts`.
-- **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, dos de
-  los packs: Lahmu (`ad-005`) y Ataque de Dragón (`ad-030`, que imprime
-  "Destruye el Aliado oponente objetivo." y la Fe de Erratas deja en
-  "Destruye un Aliado oponente"). Devastador y Dragón de Magma ya
-  son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar
-  Escuelas Elementales ya se propagó hacia atrás el texto vigente de **66
-  cartas** (CLAUDE.md, "manda la última"); hay que ver cuáles cubre la Fe de
-  Erratas y cuáles no.
-- **Banlist:** el campo `legalidad` (`libre` / `restringida` / `prohibida`) ya
-  existe en `src/lib/types.ts` y `scripts/schema.py`, y `validateDeck`
-  (`src/lib/deck-rules.ts`) ya tiene las reglas `carta-prohibida` y
-  `carta-restringida`. Hoy no disparan porque todas las cartas son `libre`.
-  Falta cargar los datos, decidir qué limita `restringida` y mostrarlo en el
-  catálogo y el constructor. La banlist además declara **31 cartas Únicas**
-  (una copia) y 37 erratas de reglas, algunas de construcción ("Mazo
-  Desafiante y/o Guerrero").
-- **Ya publicadas:** se leen y descargan en `/documentos`. Al aplicarlas, que
-  esas páginas y la ayuda dejen de decir "todavía no se aplican".
-- **Terminado cuando:** el catálogo muestra el texto erratado, el validador
-  rechaza o limita las cartas de la banlist y hay tests contra el catálogo
-  real que lo comprueban.
-
 ## Grande y con decisiones previas
 
 ### Base de datos y cuentas de usuario

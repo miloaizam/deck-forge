@@ -346,6 +346,8 @@ export function BuilderView({ cards }: BuilderViewProps) {
     // addCard cuenta las copias de ESA zona; copiasPorId suma las dos y aqui
     // daria la cuenta equivocada si la carta ya estuviera en el side.
     setDeck((d) => addCard(d, card.id, zone));
+    // Una baneada entra igual, pero avisando que la baraja sale del formato.
+    if (check.aviso) toast(check.aviso, "warning");
   };
 
   /**

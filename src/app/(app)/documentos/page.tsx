@@ -60,8 +60,9 @@ export default function DocumentosPage() {
 
       <p className="text-muted mt-8 flex max-w-[80ch] items-start gap-2 text-[13px] leading-relaxed">
         <Info size={15} aria-hidden="true" className="text-accent mt-0.5 shrink-0" />
-        Por ahora son para consulta: el catálogo y el constructor todavía no aplican las
-        erratas ni la banlist.
+        El catálogo y el constructor las aplican: las cartas con errata o baneadas llevan
+        un lazo en la esquina, la errata se lee con el botón «Errata» de cada carta y el
+        constructor juega con el texto erratado.
       </p>
     </main>
   );

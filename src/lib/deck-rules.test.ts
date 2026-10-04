@@ -17,6 +17,7 @@ import {
   buildCardIndex,
   canAdd,
   costCurve,
+  limiteDeCopias,
   deckAffinity,
   deckStats,
   isLegal,
@@ -90,11 +91,20 @@ function mazoConAliados(elegir: (c: Card) => boolean): Deck {
   // dos impresiones cada una, y llenar 3 de cada una serian 6 de la misma
   // carta. Este helper tiene que respetar la regla que va a comprobar.
   const puestas = new Map<string, number>([[SHODO.identidad, 1]]);
-  const cabe = (c: Card) => (c.keywords.includes("Única") ? 1 : 3);
+  // El tope sale de las reglas, con la Banlist aplicada: hay Aliados que la
+  // Banlist volvio Unicos. Y las baneadas no entran en una baraja legal.
+  const regla = (c: Card) => index.porId.get(c.id)!;
+  const cabe = (c: Card) => Math.min(3, limiteDeCopias(regla(c)));
 
-  const aliados = cards.filter((c) => c.tipo === "Aliado" && elegir(c));
+  const aliados = cards.filter(
+    (c) => c.tipo === "Aliado" && elegir(c) && regla(c).legalidad !== "prohibida",
+  );
   const neutrales = cards.filter(
-    (c) => c.raza === null && c.tipo !== "Oro" && c.id !== SHODO.id,
+    (c) =>
+      c.raza === null &&
+      c.tipo !== "Oro" &&
+      c.id !== SHODO.id &&
+      regla(c).legalidad !== "prohibida",
   );
 
   // Primero los Aliados, para pasar el minimo con holgura; luego relleno.
@@ -162,8 +172,9 @@ test("dos Únicas distintas en el misma baraja son legales", () => {
 });
 
 test("una carta normal admite 3 copias entre sus impresiones, no 6", () => {
-  // Ieyasu no es Única y tiene dos impresiones.
-  const impresiones = porNombre("Ieyasu");
+  // Harii no es Única y tiene dos impresiones. (Ieyasu lo era hasta que la
+  // Banlist la volvio Unica.)
+  const impresiones = porNombre("Harii");
   assert.equal(impresiones.length, 2);
 
   let deck = createDeck();
@@ -178,15 +189,15 @@ test("una carta normal admite 3 copias entre sus impresiones, no 6", () => {
 });
 
 test("el side suma al limite de copias", () => {
-  const [ieyasu] = porNombre("Ieyasu");
+  const [harii] = porNombre("Harii");
   let deck = createDeck();
-  deck = setQuantity(deck, ieyasu.id, "principal", 3);
+  deck = setQuantity(deck, harii.id, "principal", 3);
   assert.ok(
     !validateDeck(deck, index).some((i) => i.code === "copias-exceso"),
     "3 copias en principal son legales",
   );
 
-  const otro = porNombre("Ieyasu")[1];
+  const otro = porNombre("Harii")[1];
   deck = setQuantity(deck, otro.id, "side", 1);
   assert.ok(
     validateDeck(deck, index).some((i) => i.code === "copias-exceso"),
