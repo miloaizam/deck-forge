@@ -49,9 +49,22 @@ test("las ediciones van de la ultima en salir a la primera", () => {
 test("dentro de una edicion las frecuencias van de la mas rara a la mas comun", () => {
   const rango = new Map(FRECUENCIAS.map((f, i) => [f, i]));
 
-  for (const { slug } of EDITIONS) {
+  // En Arte Alternativo manda antes el origen: los tramos van por origen.
+  const grupos = [
+    ...EDITIONS.filter((e) => e.slug !== "arte-alternativo").map(({ slug }) => ({
+      slug,
+      cartas: ORDENADO.filter((c) => c.edicion === slug),
+    })),
+    ...ORIGENES.map(({ slug }) => ({
+      slug: `arte-alternativo/${slug}`,
+      cartas: ORDENADO.filter(
+        (c) => c.edicion === "arte-alternativo" && c.origen === slug,
+      ),
+    })),
+  ];
+  for (const { slug, cartas } of grupos) {
     const tramos: Frecuencia[] = [];
-    for (const c of ORDENADO.filter((c) => c.edicion === slug)) {
+    for (const c of cartas) {
       if (tramos.at(-1) !== c.frecuencia) tramos.push(c.frecuencia);
     }
     // Cada frecuencia aparece en un tramo unico y en el orden de FRECUENCIAS.

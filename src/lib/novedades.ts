@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-04",
     tipo: "Novedad",
+    titulo: "415 artes alternativos para elegir",
+    texto: [
+      "Arte Alternativo suma 415 impresiones de veinte ediciones del juego, de Furia a Conjuros: las de 20 años, Milenarias, promos y Legendarias de cartas que ya están en el catálogo. Van agrupadas por la edición de donde sale cada arte, de la más nueva a la más vieja, y al abrir una carta se ve de cuál viene.",
+      "Son la misma carta con otro dibujo: dicen lo mismo, cuestan lo mismo y cuentan juntas para el máximo de copias. Lo único propio de cada una es su frecuencia y su ilustrador.",
+    ],
+  },
+  {
+    fecha: "2026-10-04",
+    tipo: "Novedad",
     titulo: "Adicionales y Arte Alternativo",
     texto: [
       "Las cartas que no son de las diez ediciones se juntan en dos ediciones nuevas, cada una con su página. Adicionales tiene las de los packs especiales del formato, las nueve que la Banlist pone en observación (llegan Wotan y Járnvid) y los oros iniciales de raza de Dinastía del Dragón, tres por raza, que en el filtro Tipo salen junto a los de edición, en «Oro inicial». Camelot, Templarios, Kemet y Dharma dejan de ser ediciones del catálogo.",

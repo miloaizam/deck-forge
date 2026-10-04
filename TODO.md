@@ -16,24 +16,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Cartas por agregar
 
-### Arte Alternativo: cargar las reimpresiones aprobadas
-
-- **Qué:** la edición **Arte Alternativo** (`aa-`) junta otras impresiones de
-  cartas que **ya están** en el catálogo, para que el jugador elija con qué
-  arte lleva la carta. Hoy tiene cuatro (la promo de Sarras y las tres
-  Milenarias de Templarios). Faltan las de diecinueve ediciones del juego
-  (Furia … Conjuros, la lista y el orden están en `ORIGENES` de
-  `editions.ts`): 467 candidatas por nombre, de las que 106 traen el texto
-  bastante distinto.
-- **Por dónde:** el proyecto las marca Sí/No en una página de revisión; lo
-  aprobado se baja con un script que copia los datos de la carta base
-  (tipo, raza, coste, Fuerza, habilidad, keywords e **`identidad`**) y deja
-  propios la frecuencia, el ilustrador, la imagen y el `origen`. El
-  ilustrador de la API suele venir de relleno: se lee del pie.
-- **Terminado cuando:** las aprobadas salen en Arte Alternativo ordenadas por
-  origen, de la más nueva a la más vieja, y cuentan como la misma carta en el
-  constructor.
-
 ### Oros iniciales de raza de Conjuros
 
 - **Qué:** el proyecto dice que Conjuros trae oros iniciales por raza, como

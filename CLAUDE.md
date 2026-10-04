@@ -118,7 +118,7 @@ documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
                public/reglas/). Ver documentos/README.md
 docs/          plan y guía de marca (documentación, no se compila)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
-               extras.json con las cartas sueltas de fuera del formato
+               extras.json (Adicionales) y arte-alternativo.json
 images-src/    originales pesados de las cartas (git-ignorado; su .gitkeep
                es el único que queda, para que la carpeta exista en el repo)
 scripts/       herramientas Python: validan datos y convierten imágenes
@@ -1317,10 +1317,10 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **78 cartas** en
-`data-src/extras.json` repartidas en dos ediciones del catálogo que no son
-ediciones del juego (ver abajo): **Adicionales** (74) y **Arte Alternativo**
-(4). **2237** en total.
+Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
+que no son ediciones del juego (ver abajo): **Adicionales** (74, en
+`data-src/extras.json`) y **Arte Alternativo** (419, en
+`data-src/arte-alternativo.json`). **2652** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1336,15 +1336,39 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
   de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`).
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte. Comparten `identidad` con su
-  carta base y copian sus datos; propios son solo la imagen, la frecuencia, el
-  ilustrador y el campo **`origen`**, la edición del juego de donde sale la
-  impresión. La edición se ordena por `origen`, de la más nueva a la más vieja
-  (`ORIGENES` en `editions.ts`), y el modal lo dice ("Arte de Templarios").
-  Hoy tiene cuatro: la promo de Sarras (`aa-001`, origen `promo-2017`, la
-  `/static/cards/10/140.png` de Sol Naciente) y las Milenarias de Templarios
-  de Lambton Worm, Dama Dragón y Guadaña Dragón. Faltan las de diecinueve
-  ediciones, que el proyecto aprueba una a una (TODO).
+  cargadas, para que el jugador elija el arte: 419, de veinte ediciones del
+  juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
+  copias. La edición se ordena por **`origen`** —la edición del juego de donde
+  sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
+  `editions.ts`), y el modal lo dice ("Arte de Templarios").
+- **Qué toma de la reimpresión y qué no** (decisión del proyecto, 04-10-2026):
+  **todo se copia de la carta de DeckForge** —nombre, texto, keywords, tipo,
+  raza, escuela, coste y Fuerza, de su impresión más nueva— aunque la
+  reimpresión imprima otra cosa. Lo único propio es la **imagen**, el
+  **ilustrador**, el **origen** y la **frecuencia**: si en DeckForge es Ultra
+  Real y la reimpresión es Legendaria, el arte alternativo queda Legendaria.
+  `productos.test.ts` lo exige carta por carta.
+- **Cómo se eligieron.** 458 candidatas salieron por nombre de diecinueve
+  ediciones (Furia … Conjuros) y el proyecto las revisó una a una en una
+  página con la impresión y la carta lado a lado: **415 aprobadas, 43 no**.
+  Las rechazadas son los Oros sin habilidad de Furia, Sumeria, Asgard y
+  Kilimanjaro y los homónimos que son otra carta (Hain, Ryujin, Pa Kua,
+  Dilong, Wangliang, Templo Shaolin…). Las otras cuatro son de la fase
+  anterior: la promo de Sarras (`aa-001`, origen `promo-2017`) y las
+  Milenarias de Templarios de Lambton Worm, Dama Dragón y Guadaña Dragón.
+- **Detalles de la carga**:
+  - La API rotula **«Viriato» a la 280 de Tierra Austral, que es Venatio**.
+  - **Las 17 de los mazos raciales de Dinastía del Dragón** (código
+    `CR-0NN`, como Alfa) no traen frecuencia en la API ni en el arte —el
+    escudo lleva el emblema de la raza—: quedan **Promocional**.
+  - **El ilustrador llega de relleno («Mitos y Leyendas») en 220 de 415**
+    —todo Arsenal, Conjuros, Kilimanjaro, Dinastía— y en dos el `profile` da
+    404. Se leyeron del arte: al pie, salvo en las «Edición Limitada» de
+    2021 (las de 20 años), que lo imprimen **en vertical junto al nombre**.
+    Las grafías se unificaron con el catálogo (`CristianAC`, `Alvaro
+    Estrada`, `Javier Bahamonde`, `Francisco Ruiz`…).
+  - **Siete heredan una keyword condicional** de su carta (Dorian Grey,
+    Lozen, Freya…): `keywords.test.ts` la acepta por identidad.
 - **Requisito de un arte alternativo**: que la habilidad, keywords incluidas,
   sea igual o casi igual a la cargada. Si cambia, es otra carta o una errata,
   y se consulta.
@@ -1403,8 +1427,11 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   arte dice Kojh. Ya estaba.
 - `productos.test.ts` lista las cartas de los tres mazos y falla si falta
   alguna; exige que toda carta vaya en una edición de `editions.ts`, ninguna
-  en un pack ni en las cuatro borradas, y que cada arte alternativo tenga
-  `origen` y una carta base con su `identidad`. Las seis `parcial` viejas de
+  en un pack ni en las cuatro borradas, que cada arte alternativo tenga
+  `origen` y diga lo mismo que una impresión de su carta, y que toda carta de
+  una raza de escuela lleve su escuela: los Dragones de Pack América se
+  cargaron a mano sin «Clan Desafiante» y nadie lo vio hasta los artes
+  alternativos. Las seis `parcial` viejas de
   `editions.ts` sin cartas (Helénica, Imperio, Espada Sagrada, Dominios de Ra,
   Cruzadas, Furia) siguen vacías y no salen en el filtro.
 

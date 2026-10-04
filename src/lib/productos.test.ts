@@ -5,7 +5,7 @@ import path from "node:path";
 
 import { claveDeNombre } from "./documentos";
 import { EDITIONS, ORIGENES } from "./editions";
-import { catalogSchema, type Card } from "./types";
+import { catalogSchema, RAZAS_POR_ESCUELA, type Card } from "./types";
 
 /**
  * Los productos especiales del formato, segun la tabla de "Escuelas
@@ -201,4 +201,37 @@ test("un arte alternativo es otra impresion de una carta ya cargada", () => {
       assert.equal(c.origen, undefined, `${c.id} lleva origen sin ser arte alternativo`);
     }
   }
+});
+
+test("un arte alternativo dice lo mismo que su carta en DeckForge", () => {
+  // Decision del proyecto: de la reimpresion solo valen la imagen, la
+  // frecuencia, el ilustrador y el origen. Texto, tipo, raza, coste y Fuerza
+  // son los de la carta ya cargada.
+  const fuera = CATALOGO.filter((c) => c.edicion !== "arte-alternativo");
+  for (const c of CATALOGO.filter((c) => c.edicion === "arte-alternativo")) {
+    const base = fuera.find(
+      (b) =>
+        b.identidad === c.identidad &&
+        b.nombre === c.nombre &&
+        b.habilidad === c.habilidad &&
+        b.tipo === c.tipo &&
+        b.raza === c.raza &&
+        b.coste === c.coste &&
+        b.fuerza === c.fuerza,
+    );
+    assert.ok(base, `${c.id} (${c.nombre}) no coincide con ninguna impresion cargada`);
+  }
+});
+
+test("toda carta de una raza de escuela lleva esa escuela", () => {
+  // Las cartas cargadas a mano (Adicionales) no pasan por el fetch, que es
+  // quien deduce la escuela de la raza: aqui se vigila que no se olvide.
+  const escuelaDe = new Map<string, string>();
+  for (const [escuela, razas] of Object.entries(RAZAS_POR_ESCUELA)) {
+    for (const r of razas) escuelaDe.set(r, escuela);
+  }
+  const malas = CATALOGO.filter(
+    (c) => c.raza !== null && (escuelaDe.get(c.raza) ?? null) !== c.escuela,
+  ).map((c) => `${c.id} ${c.nombre}: ${c.raza} / ${c.escuela}`);
+  assert.deepEqual(malas, []);
 });

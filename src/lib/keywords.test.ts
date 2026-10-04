@@ -51,11 +51,25 @@ const CONDICIONALES: Record<string, string[]> = {
   "EE-258": ["Retador"], // la misma Lozen, reimpresa en Escuelas Elementales
 };
 
+/**
+ * Las de arriba, por identidad: un arte alternativo copia el texto y las
+ * keywords de su carta, asi que hereda tambien la keyword condicional.
+ */
+const CONDICIONALES_POR_IDENTIDAD = new Map<string, string[]>();
+for (const c of CATALOGO) {
+  const extra = CONDICIONALES[c.codigo];
+  if (extra) CONDICIONALES_POR_IDENTIDAD.set(c.identidad, extra);
+}
+
 test("ninguna carta lleva una keyword que no se declara a si misma", () => {
   const sobran = CATALOGO.flatMap((c) => {
     const propias = new Set([
       ...keywordsPropias(c.habilidad),
-      ...(CONDICIONALES[c.codigo] ?? []),
+      ...(CONDICIONALES[c.codigo] ??
+        (c.edicion === "arte-alternativo"
+          ? CONDICIONALES_POR_IDENTIDAD.get(c.identidad)
+          : []) ??
+        []),
     ]);
     return c.keywords
       .filter((k) => !propias.has(k))
