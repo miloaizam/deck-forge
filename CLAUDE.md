@@ -1761,6 +1761,10 @@ si cambia uno, se cambia el otro.
   un botón «Errata» en el modal (`ErrataPanel.tsx`) que abre el texto
   arreglado, con lo que cambia resaltado. `cards.json` no cambia: el texto de
   `data-src` es el impreso, verificado contra el arte.
+  El panel **tampoco explica las keywords**: la Fe de Erratas copia la carta
+  con sus recordatorios («Única (Sólo puedes tener…)», «Guardián. (…)») y
+  `erratas.ts` los quita con `sinRecordatorios()` de `ability.ts`, el mismo
+  regex del catálogo.
 - **Las reglas juegan con lo erratado.** `toRuleCard` (`deck-rules.ts`) toma
   de `efectoEnReglas()` la Única, la raza, el atributo y el coste: las **31
   Únicas de la Banlist** y las de observación topan en una copia, Tsukuyomi

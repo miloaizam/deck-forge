@@ -1,6 +1,6 @@
 import banlistJson from "../../documentos/fuente/banlist-estandar.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
-import { keywordsPropias } from "./ability";
+import { keywordsPropias, sinRecordatorios } from "./ability";
 import {
   banlistSchema,
   claveDeNombre,
@@ -68,7 +68,18 @@ const REGLAS_DE_CONSTRUCCION: Record<string, string[]> = {
 const POR_NOMBRE = new Map<string, ErrataDeCarta[]>();
 function agregar(nombre: string, e: ErrataDeCarta) {
   const k = claveDeNombre(nombre);
-  POR_NOMBRE.set(k, [...(POR_NOMBRE.get(k) ?? []), e]);
+  // Lo que hace cada keyword no se explica, igual que en el catalogo: la Fe de
+  // Erratas copia la carta con sus recordatorios ("Única (Sólo puedes tener
+  // una copia…)") y en el panel ahogan lo que cambia.
+  const limpia =
+    e.cambio === "habilidad" || e.cambio === "nota"
+      ? {
+          ...e,
+          antes: e.antes && sinRecordatorios(e.antes),
+          despues: sinRecordatorios(e.despues),
+        }
+      : e;
+  POR_NOMBRE.set(k, [...(POR_NOMBRE.get(k) ?? []), limpia]);
 }
 
 for (const e of FE.entradas) {

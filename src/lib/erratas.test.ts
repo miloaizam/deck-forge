@@ -13,7 +13,7 @@ import {
   nombresConErrata,
   tieneErrata,
 } from "./erratas";
-import { catalogSchema, type Card } from "./types";
+import { catalogSchema, KEYWORDS_IMPRESAS, type Card } from "./types";
 
 /** La Fe de Erratas y la Banlist aplicadas, contra el catalogo real. */
 const CATALOGO: Card[] = catalogSchema.parse(
@@ -108,4 +108,27 @@ test("con Shingas en la baraja, Karna topa en una copia", () => {
   // Y con Shingas y una Karna, no entra la segunda.
   const una = { ...deck, principal: [deck.principal[0], { id: karna.id, n: 1 }] };
   assert.equal(canAdd(una, karna, "principal", INDEX).ok, false);
+});
+
+test("el panel de erratas no explica las keywords", () => {
+  const recordatorio = new RegExp(
+    `(?:${KEYWORDS_IMPRESAS.join("|")})\\.?\\s*\\((?!Cartas)`,
+    "u",
+  );
+  for (const nombre of nombresConErrata()) {
+    for (const e of erratasDe({ nombre })) {
+      for (const t of [e.antes, e.despues]) {
+        if (t) assert.doesNotMatch(t, recordatorio, `${nombre}: ${t}`);
+      }
+    }
+  }
+  const [wyrm] = erratasDe({ nombre: "Wyrm de la Plaga" });
+  assert.match(wyrm.despues, /^Única\. Furia\. Cuando/);
+  const yaoguai = erratasDe({ nombre: "Yaoguai" }).find((e) => e.cambio === "habilidad");
+  assert.match(yaoguai?.despues ?? "", /^Errante\. Espectral\. Una vez/);
+  // Un parentesis que es regla de la carta, y no recordatorio, se queda.
+  const conRegla = nombresConErrata()
+    .flatMap((n) => erratasDe({ nombre: n }))
+    .some((e) => e.despues.includes("(Los Aliados, Armas o Tótem jugados"));
+  assert.ok(conRegla);
 });

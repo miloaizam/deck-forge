@@ -115,7 +115,8 @@ const MECANICAS = ["Alimenta", "Alimento", "Purifica", "Purifíca", "Honor"]
  * medio: "Esos Aliados ganan Furia hasta la Fase Final (No necesitan pasar por
  * una Fase de Agrupación...)". `[^.\n]` es lo que la acota: no se cruza un
  * punto, asi que el parentesis solo se va si lo que explica esta en su propia
- * frase.
+ * frase. La unica excepcion es el punto pegado al parentesis ("Guardián.
+ * (Este Aliado...)"), que la Fe de Erratas escribe asi.
  *
  * Eso deja en pie los parentesis que son reglas de verdad y no explicaciones
  * —"(El nuevo objetivo debe ser válido)", "(Si tienes cero cartas pierdes el
@@ -123,9 +124,32 @@ const MECANICAS = ["Alimenta", "Alimento", "Purifica", "Purifíca", "Honor"]
  * hay que conservar: son de la carta, no del formato.
  */
 const RECORDATORIO_EN_EL_CUERPO = new RegExp(
-  `((?:${ALTERNATIVA}|${MECANICAS})[^.\\n]*?)\\s*\\([^)]*\\)`,
+  `((?:${ALTERNATIVA}|${MECANICAS})(?:\\.(?=\\s*\\()|[^.\\n]*?))\\s*\\([^)]*\\)`,
   "gu",
 );
+
+/**
+ * El texto sin los recordatorios de reglas, linea por linea y sin separar las
+ * declaraciones. Lo usa el panel de erratas, cuyo texto sale de la Fe de
+ * Erratas y trae la explicacion de cada keyword como la imprime la carta.
+ */
+export function sinRecordatorios(text: string): string {
+  return text
+    .split("\n")
+    .map((linea) =>
+      linea
+        // "Única (…) Furia (…)." tampoco lleva punto tras el recordatorio:
+        // sin el parentesis, la keyword queda pegada a la frase que sigue.
+        .replace(RECORDATORIO_EN_EL_CUERPO, (_, antes: string, i: number) =>
+          !antes.endsWith(".") && /^\s+\p{Lu}/u.test(linea.slice(i + _.length))
+            ? `${antes}.`
+            : antes,
+        )
+        // "Guardián. (…)." deja dos puntos seguidos al quitar el parentesis.
+        .replace(/\.\.(?!\.)/g, "."),
+    )
+    .join("\n");
+}
 
 export interface KeywordDeclarada {
   /** La keyword impresa, tal cual, para el filtro y el resaltado. */
