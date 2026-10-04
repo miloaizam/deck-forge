@@ -26,6 +26,16 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-04",
+    tipo: "Novedad",
+    titulo: "Adicionales y Arte Alternativo",
+    texto: [
+      "Las cartas que no son de las diez ediciones se juntan en dos ediciones nuevas, cada una con su página. Adicionales tiene las de los packs especiales del formato, las nueve que la Banlist pone en observación (llegan Wotan y Járnvid) y los oros iniciales de raza de Dinastía del Dragón, tres por raza. Camelot, Templarios, Kemet y Dharma dejan de ser ediciones del catálogo.",
+      "Arte Alternativo reúne otras impresiones de cartas que ya están, para que elijas con qué arte llevas cada una: cuentan como la misma carta. Por ahora son la promo de Sarras y las Milenarias de Lambton Worm, Dama Dragón y Guadaña Dragón; vienen más.",
+      "Tus barajas guardadas y los enlaces que ya compartiste siguen abriéndose con todas sus cartas.",
+    ],
+  },
+  {
     fecha: "2026-09-29",
     tipo: "Novedad",
     titulo: "Diez cartas más, y tres ediciones nuevas en el filtro",

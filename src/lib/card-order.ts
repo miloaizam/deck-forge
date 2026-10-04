@@ -1,4 +1,4 @@
-import { EDITIONS } from "./editions";
+import { EDITIONS, ORIGENES } from "./editions";
 import { FRECUENCIAS, type Card } from "./types";
 
 /**
@@ -12,6 +12,17 @@ import { FRECUENCIAS, type Card } from "./types";
  */
 
 const RANGO_FRECUENCIA = new Map(FRECUENCIAS.map((f, i) => [f, i]));
+
+/**
+ * Arte Alternativo junta impresiones de veinte ediciones del juego: se agrupan
+ * por la edicion de donde salen, de la mas nueva a la mas vieja (`ORIGENES`).
+ * Las demas cartas no llevan origen y empatan aqui.
+ */
+const RANGO_ORIGEN = new Map<string, number>(ORIGENES.map((o, i) => [o.slug, i]));
+function rangoOrigen(card: Card): number {
+  if (card.origen === undefined) return -1;
+  return RANGO_ORIGEN.get(card.origen) ?? ORIGENES.length;
+}
 
 /**
  * Ediciones de la ultima en salir a la primera: Escuelas Elementales arriba y
@@ -43,9 +54,10 @@ export function compareEditions(a: string, b: string): number {
 }
 
 /**
- * El oro inicial de una edicion: la carta a arte completo, sin habilidad, con
- * que empieza la partida. Va nombrada "Oro Inicial <edicion>" en `data-src/`
- * (ver la seccion de datos de CLAUDE.md), que es lo que la reconoce aqui.
+ * El oro inicial de una edicion o de una raza: la carta a arte completo, sin
+ * habilidad, con que empieza la partida. Va nombrada "Oro Inicial <edicion>"
+ * u "Oro Inicial <raza>" en `data-src/` (ver la seccion de datos de
+ * CLAUDE.md), que es lo que la reconoce aqui.
  *
  * La API le pone el numero mas alto de la edicion, asi que por codigo caeria
  * al final de los Oros; en la practica es el primero que se busca.
@@ -69,7 +81,8 @@ function rangoDentroDeOro(card: Card): number {
 }
 
 /**
- * Por edicion (de la ultima a la primera) y dentro de ella por frecuencia, de
+ * Por edicion (de la ultima a la primera), en Arte Alternativo por el origen
+ * de la impresion, y dentro de eso por frecuencia, de
  * la mas rara a la mas comun, que es el orden de `FRECUENCIAS`.
  *
  * Los JSON de `data-src/` vienen en el orden en que los entrega la API, que
@@ -81,6 +94,9 @@ function rangoDentroDeOro(card: Card): number {
 export function compareCards(a: Card, b: Card): number {
   const edicion = compareEditions(a.edicion, b.edicion);
   if (edicion !== 0) return edicion;
+
+  const origen = rangoOrigen(a) - rangoOrigen(b);
+  if (origen !== 0) return origen;
 
   const frecuencia =
     RANGO_FRECUENCIA.get(a.frecuencia)! - RANGO_FRECUENCIA.get(b.frecuencia)!;

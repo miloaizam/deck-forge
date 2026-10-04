@@ -4,13 +4,13 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { claveDeNombre } from "./documentos";
-import { EDITIONS } from "./editions";
+import { EDITIONS, ORIGENES } from "./editions";
 import { catalogSchema, type Card } from "./types";
 
 /**
  * Los productos especiales del formato, segun la tabla de "Escuelas
  * Elementales (Formato)" del fandom: cada carta que traen tiene que estar en
- * el catalogo, en una de las diez ediciones o en Templarios (ver CLAUDE.md,
+ * el catalogo, en una de las diez ediciones o en Adicionales (ver CLAUDE.md,
  * "Los mazos especiales del formato").
  *
  * Las listas son las del fandom, carta a carta. Kit Sanctum, Kit Terra
@@ -174,12 +174,31 @@ for (const [producto, cartas] of Object.entries(PRODUCTOS)) {
 }
 
 test("toda carta va en una edicion conocida, y ningun pack es edicion", () => {
-  // Los packs no son edicion en el filtro: sus cartas van a Dominio,
-  // ContraAtaque o Templarios. Las ediciones de fuera del formato son
-  // `parcial` en editions.ts.
+  // Los packs no son edicion en el filtro: sus cartas van a Adicionales. Las
+  // ediciones de fuera del formato que hubo unos dias (Camelot, Templarios,
+  // Kemet, Dharma) ya no existen.
   const conocidas = new Set(EDITIONS.map((e) => e.slug));
   for (const c of CATALOGO) {
     assert.ok(conocidas.has(c.edicion), `${c.id}: ${c.edicion}`);
     assert.ok(!c.edicion.startsWith("pack-"), `${c.id}: ${c.edicion}`);
+  }
+  for (const slug of ["camelot", "templarios", "kemet", "dharma"]) {
+    assert.ok(!conocidas.has(slug), slug);
+  }
+});
+
+test("un arte alternativo es otra impresion de una carta ya cargada", () => {
+  const origenes = new Set<string>(ORIGENES.map((o) => o.slug));
+  const fuera = new Set(
+    CATALOGO.filter((c) => c.edicion !== "arte-alternativo").map((c) => c.identidad),
+  );
+  for (const c of CATALOGO) {
+    if (c.edicion === "arte-alternativo") {
+      assert.ok(c.origen && origenes.has(c.origen), `${c.id}: origen ${c.origen}`);
+      // Sin la carta base, el arte alternativo seria una carta nueva.
+      assert.ok(fuera.has(c.identidad), `${c.id}: ${c.nombre} no tiene carta base`);
+    } else {
+      assert.equal(c.origen, undefined, `${c.id} lleva origen sin ser arte alternativo`);
+    }
   }
 });

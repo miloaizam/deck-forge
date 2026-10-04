@@ -49,7 +49,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué es DeckForge?",
         respuesta: [
-          "Un **constructor de barajas** para el formato **Escuelas Elementales** de Mitos y Leyendas. Tiene el catálogo completo de las diez ediciones del formato, más las cartas de sus packs especiales, y te ayuda a armar una baraja que cumpla las reglas.",
+          "Un **constructor de barajas** para el formato **Escuelas Elementales** de Mitos y Leyendas. Tiene el catálogo completo de las diez ediciones del formato, más las cartas de sus packs especiales (en **Adicionales**) y otros artes de cartas que ya están (en **Arte Alternativo**), y te ayuda a armar una baraja que cumpla las reglas.",
         ],
       },
       {
@@ -73,7 +73,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿En qué orden salen las cartas?",
         respuesta: [
-          "Primero la **edición más nueva**, Escuelas Elementales, y al final Bushido. Dentro de cada edición, de la **frecuencia más rara** a la más común.",
+          "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
         ],
       },
     ],
@@ -102,18 +102,19 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué tipos de Oro hay?",
         respuesta: [
-          "Tres, y cada uno tiene su opción en **Filtros → Tipo**, bajo «Oro» (que los muestra todos):",
+          "Cuatro, y cada uno tiene su opción en **Filtros → Tipo**, bajo «Oro» (que los muestra todos):",
         ],
         lista: [
           "**Con habilidad:** cartas como cualquier otra. Hasta **3 copias**, o **1** si es Única.",
           "**Sin habilidad:** los Oros con que se paga todo. **Sin tope** de copias, y cualquiera puede ser el **oro inicial** de la baraja.",
           "**Oro inicial de edición:** los «Oro Inicial» de cada edición, a arte completo. Funcionan **igual** que los sin habilidad; están aparte para elegir un oro inicial vistoso.",
+          "**Oro inicial de raza:** lo mismo, con el emblema de una raza: tres por raza, en **Adicionales**.",
         ],
       },
       {
         pregunta: "¿Cómo elijo el oro inicial?",
         respuesta: [
-          "En el panel de la baraja, cada **Oro sin habilidad** o **Oro inicial de edición** de la baraja (no del side deck) lleva un **botón con una moneda**: tócalo y ese Oro pasa a ser el inicial. Tiene que ser un Oro del que lleves **una sola copia**.",
+          "En el panel de la baraja, cada **Oro sin habilidad**, **Oro inicial de edición** u **Oro inicial de raza** de la baraja (no del side deck) lleva un **botón con una moneda**: tócalo y ese Oro pasa a ser el inicial. Tiene que ser un Oro del que lleves **una sola copia**.",
         ],
       },
       {

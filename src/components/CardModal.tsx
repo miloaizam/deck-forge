@@ -6,7 +6,7 @@ import { Minus, Plus, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
 import { CARD_RATIO, marcarCargada } from "./CardTile";
-import { editionTitle } from "@/lib/editions";
+import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -109,6 +109,8 @@ export function CardModal({
               <div className="min-w-0">
                 <p className="text-muted pr-12 text-[11px] tracking-[0.22em] uppercase">
                   {editionTitle(mostrada.edicion)}
+                  {/* Un arte alternativo dice de que edicion sale su impresion. */}
+                  {mostrada.origen && ` · Arte de ${origenTitle(mostrada.origen)}`}
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-[-0.01em] sm:text-3xl">
                   {mostrada.nombre}

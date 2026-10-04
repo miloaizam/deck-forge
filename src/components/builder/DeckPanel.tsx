@@ -147,7 +147,9 @@ function Fila({
             {esOroInicial
               ? entry.card.claseOro === "inicial-edicion"
                 ? "Oro inicial · de edición"
-                : "Oro inicial"
+                : entry.card.claseOro === "inicial-raza"
+                  ? "Oro inicial · de raza"
+                  : "Oro inicial"
               : entry.card.claseOro
                 ? ETIQUETA_ORO[entry.card.claseOro]
                 : (entry.card.raza ?? entry.card.tipo)}

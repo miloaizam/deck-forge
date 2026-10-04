@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Plus, Sparkles } from "lucide-react";
 
-import { claseDeOro, subtituloDeCarta } from "@/lib/oros";
+import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +38,8 @@ export function CardTile({
   addBlocked,
   onBlocked,
 }: CardTileProps) {
+  const clase = claseDeOro(card);
+  const pastilla = clase ? PASTILLA_ORO[clase] : undefined;
   return (
     // El boton de agregar va superpuesto y aparte: un <button> no puede anidar
     // otro <button>. Mismo apano que en Select.tsx con el boton de limpiar.
@@ -60,16 +62,16 @@ export function CardTile({
             className="imagen-carga w-full"
             style={{ aspectRatio: CARD_RATIO }}
           />
-          {/* Los nueve Oros iniciales de edicion se lucen: son la carta que
-              se elige por gusto. La pastilla es adorno; el texto de abajo ya
-              dice la clase para el lector de pantalla. */}
-          {claseDeOro(card) === "inicial-edicion" && (
+          {/* Los Oros iniciales de edicion y de raza se lucen: son la carta
+              que se elige por gusto. La pastilla es adorno; el texto de abajo
+              ya dice la clase para el lector de pantalla. */}
+          {pastilla && (
             <span
               aria-hidden="true"
               className="bg-surface/85 text-accent rounded-chip absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium backdrop-blur"
             >
               <Sparkles size={12} />
-              Inicial de edición
+              {pastilla}
             </span>
           )}
         </span>

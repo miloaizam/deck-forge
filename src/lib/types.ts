@@ -179,6 +179,12 @@ export const cardSchema = z.object({
   thumb: z.string().regex(CARD_IMAGE, "el thumb debe vivir en /cards/thumb/"),
   legalidad: z.enum(LEGALIDADES).default("libre"),
   keywords: z.array(z.string()).default([]),
+  /**
+   * Solo en Arte Alternativo: la edicion del juego de donde sale esa
+   * impresion (un slug de `ORIGENES`, editions.ts). Ordena la edicion y se
+   * muestra en el modal. Las demas cartas no lo llevan.
+   */
+  origen: z.string().regex(SLUG, "el origen debe ser un slug seguro").optional(),
 });
 
 export const catalogSchema = z.array(cardSchema);

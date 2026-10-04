@@ -103,11 +103,10 @@ const PREFIJOS: readonly string[] = [
   "dr",
   "cr",
   "fu",
-  // Reservados, sin edicion, salvo "cm" (Camelot) y "te" (Templarios): se
-  // publicaron con cartas que despues cambiaron de edicion. No se quitan
-  // porque correrian los codigos de las entradas siguientes, y los enlaces
-  // viejos los siguen trayendo: `idVigente` (ids-anteriores.ts) los traduce
-  // al id nuevo.
+  // Reservados, sin edicion: se publicaron con cartas que despues cambiaron
+  // de edicion. No se quitan porque correrian los codigos de las entradas
+  // siguientes, y los enlaces viejos los siguen trayendo: `idVigente`
+  // (ids-anteriores.ts) los traduce al id nuevo.
   "su",
   "re",
   "cm",
@@ -119,6 +118,9 @@ const PREFIJOS: readonly string[] = [
   "dt",
   "ke",
   "dh",
+  // Adicionales y Arte Alternativo.
+  "ad",
+  "aa",
 ];
 
 const ANCHO_VERSION = 8;

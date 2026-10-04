@@ -33,11 +33,11 @@ for (const c of CATALOGO) {
 }
 
 /**
- * Cartas de otras ediciones que la Banlist pone "en observacion" y que el
- * proyecto decidio NO cargar por ahora (ver TODO.md). Las otras siete si
- * estan. Si alguna llega al catalogo, se borra de aqui.
+ * Cartas que la Banlist nombra y que el catalogo no tiene. Hoy ninguna: las
+ * nueve "en observacion" estan en Adicionales desde que llegaron Wotan y
+ * Jarnvid. Si se nombra otra que no se cargue, va aqui.
  */
-const FUERA_DEL_FORMATO = ["Wotan", "Jarnvid"];
+const FUERA_DEL_FORMATO: string[] = [];
 
 /**
  * Entradas de la banlist que no son una carta sino una regla de construccion:

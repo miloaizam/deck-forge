@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { compareCards, esOroInicial, sortCards } from "./card-order";
-import { EDITIONS } from "./editions";
+import { claseDeOro } from "./oros";
+import { EDITIONS, ORIGENES } from "./editions";
 import { catalogSchema, FRECUENCIAS, type Card, type Frecuencia } from "./types";
 
 /**
@@ -64,9 +65,26 @@ test("el tramo de Oros abre con el oro inicial y cierra con los normales", () =>
     // 0 el oro inicial, 1 los que traen habilidad, 2 los normales.
     const rangos = oros.map((c) => (esOroInicial(c) ? 0 : c.habilidad === "" ? 2 : 1));
     assert.deepEqual(rangos, [...rangos].sort(), `${slug} mezcla sus Oros`);
-    // Como mucho hay un oro inicial por edicion.
-    assert.ok(rangos.filter((r) => r === 0).length <= 1);
+    // Como mucho hay un oro inicial DE EDICION por edicion. Los de raza son
+    // tres por raza y viven todos en Adicionales.
+    const deEdicion = oros.filter((c) => claseDeOro(c) === "inicial-edicion");
+    assert.ok(deEdicion.length <= 1, slug);
   }
+});
+
+test("Arte Alternativo va por origen, de la edicion mas nueva a la mas vieja", () => {
+  const rango = new Map<string, number>(ORIGENES.map((o, i) => [o.slug, i]));
+  const aa = ORDENADO.filter((c) => c.edicion === "arte-alternativo");
+  assert.ok(aa.length > 0);
+  const rangos = aa.map((c) => rango.get(c.origen!)!);
+  assert.deepEqual(
+    rangos,
+    [...rangos].sort((a, b) => a - b),
+  );
+  // Dentro de un mismo origen manda la frecuencia, como en cualquier edicion.
+  const promo = aa.findIndex((c) => c.origen === "promo-2017");
+  const templarios = aa.findIndex((c) => c.origen === "templarios");
+  assert.ok(promo < templarios);
 });
 
 test("el orden no depende de con que cartas se compare", () => {

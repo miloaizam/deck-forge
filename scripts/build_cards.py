@@ -85,7 +85,12 @@ def main() -> int:
                 print(f"[ERROR] id duplicado: {card.id} en {f.name}")
                 continue
             ids.add(card.id)
-            cards.append(card.model_dump(mode="json"))
+            dumped = card.model_dump(mode="json")
+            # `origen` solo lo llevan los artes alternativos: un null en las
+            # otras 2200 cartas solo engordaria el JSON.
+            if dumped["origen"] is None:
+                del dumped["origen"]
+            cards.append(dumped)
 
     choques, avisos = revisar_identidades(cards)
     for a in avisos:

@@ -1126,26 +1126,28 @@ Los filtros del catálogo van plegados detrás de un botón con embudo, que llev
 el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
 ocho facetas: edición (solo en `/catalogo`, porque en la página de una edición
 no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
-y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro
+y fuerza. **Los cuatro tipos de Oro van dentro de Tipo**, no en un filtro
 aparte: para el jugador son tipos de carta. La lista es `OPCIONES_DE_TIPO`
 (`oros.ts`): los tipos en orden alfabético y, justo bajo «Oro» (que sigue
-dando los 224), sus tres clases; `coincideTipo()` resuelve las dos clases de
+dando los 258), sus cuatro clases; `coincideTipo()` resuelve las dos clases de
 opción. Una clase que la edición no tiene no se ofrece: Escuelas Elementales
 solo trae Oros **con** habilidad (34), así que en su página no salen «Oro sin
-habilidad» ni «Oro inicial de edición».
+habilidad» ni los iniciales.
 
-**Los Oros son de tres tipos** (`src/lib/oros.ts`), y cada uno cae en uno
+**Los Oros son de cuatro tipos** (`src/lib/oros.ts`), y cada uno cae en uno
 solo: **con habilidad** (104: cartas como cualquier otra, tope de 3 o 1 si es
 Única), **sin habilidad** (111: sin tope, y cualquiera puede ser el oro
-inicial de la baraja) y **Oro inicial de edición** (9: las cartas «Oro Inicial
-<edición>» a arte completo, que reconoce `esOroInicial()`). Los de edición
-funcionan exactamente como los sin habilidad; se separan para filtrarlos y
-lucirlos, y en la grilla llevan una pastilla «Inicial de edición». **Ojo con el
-nombre**: «oro inicial» a secas es el ROL en la baraja (`Deck.oroInicial`, la
-moneda del panel), que cumple cualquiera de los dos últimos tipos; por eso el
-tercero se dice siempre «de edición», y en el panel el rol manda sobre la
-clase («Oro inicial · de edición»). Las reglas no miran la clase:
-`oroSinHabilidad` cubre a los dos. `RuleCard` lleva `claseOro` solo para
+inicial de la baraja), **Oro inicial de edición** (10: las cartas «Oro
+Inicial <edición>» a arte completo, que reconoce `esOroInicial()`) y **Oro
+inicial de raza** (33: «Oro Inicial <raza>», de Dinastía del Dragón, en
+Adicionales). Los iniciales funcionan exactamente como los sin habilidad; se
+separan para filtrarlos y lucirlos, y en la grilla llevan una pastilla
+(«Inicial de edición», «Inicial de raza»). **Ojo con el nombre**: «oro
+inicial» a secas es el ROL en la baraja (`Deck.oroInicial`, la moneda del
+panel), que cumple cualquiera de los tres últimos tipos; por eso los otros se
+dicen siempre «de edición» o «de raza», y en el panel el rol manda sobre la
+clase («Oro inicial · de raza»). Las reglas no miran la clase:
+`oroSinHabilidad` cubre a los tres. `RuleCard` lleva `claseOro` solo para
 mostrarla.
 
 **Cada filtro ofrece sus opciones en un orden decidido**, en `buildFacets()`
@@ -1175,13 +1177,14 @@ primero el **oro inicial** de la edición (se reconoce por el nombre, `Oro
 Inicial <edición>`, porque la API le pone el número más alto de la edición y
 por código caería al final), después los Oros **con** habilidad, que son cartas
 como cualquier otra, y al final los normales, que son el montón con que se paga
-todo. Y las ediciones **`parcial`** —las de fuera del formato, que solo aportan
-cartas sueltas— se quedan al final: son cuatro cartas y encabezar el catálogo
-con ellas mentiría sobre lo que es el formato.
+todo. Y las ediciones **`parcial`** —Adicionales y Arte Alternativo— se
+quedan al final: encabezar el catálogo con ellas mentiría sobre lo que es el
+formato. Arte Alternativo, además, se agrupa por `origen` antes que por
+frecuencia, de la edición del juego más nueva a la más vieja.
 
 `card-order.test.ts` corre contra el catálogo real y vigila cuatro cosas: que
 cada edición salga una sola vez y en ese orden, que las frecuencias formen
-tramos contiguos en las dieciséis ediciones, que el tramo de Oros abra y cierre
+tramos contiguos en todas las ediciones, que el tramo de Oros abra y cierre
 donde debe, y que **no queden dos cartas empatadas** —un empate deja el
 desempate en manos del `sort` y de ahí salen los saltos de posición—. Comprueba
 además que ordenar el catálogo al revés dé el mismo resultado: un comparador no
@@ -1315,87 +1318,95 @@ en `src/lib/theme.ts` y no en el componente.
 Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
-Elementales (326, con las 11 de su extensión)—, más **42 cartas sueltas** en
-`data-src/extras.json` (ver abajo): **2201** en total. Con ellas, Dominio
-muestra 275 en su página y ContraAtaque 154.
+Elementales (326, con las 11 de su extensión)—, más **78 cartas** en
+`data-src/extras.json` repartidas en dos ediciones del catálogo que no son
+ediciones del juego (ver abajo): **Adicionales** (74) y **Arte Alternativo**
+(4). **2237** en total.
 
-**Los mazos especiales del formato traen reimpresiones de ediciones que no son
-del formato.** La tabla oficial está en la página «Escuelas Elementales
-(Formato)» del fandom: además de las ediciones, cuenta Steampunk, Kit Sanctum y
-Kit Terra Orientalis (EE-301…315), Héroes del Dharma (la extensión,
-EE-316…326) y tres mazos: **Pack de Batalla: Dominio** (DO-RP, más tres promos
-buy-a-box PB1), **Pack América** (SD1) y **Dominio de Tótems** (SD2). Lo que ya
-está en las diez ediciones no se toca (Orochi, Acobardar, Carmina Burana…); las
-que no están se cargaron a mano, porque **la API no tiene los mazos**
-(`/cards/edition/…` da `EDITION_NOT_FOUND`).
+**Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
+las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
+el filtro y con página en `/catalogo/<slug>`. Reemplazan a las ediciones
+Camelot, Templarios, Kemet y Dharma, que existieron unos días y se borraron, y
+a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
 
-- **Dónde va cada una, por decisión del proyecto (29-09-2026).** Los packs
-  **no son edición** en el filtro. Las del Pack de Batalla van a **Dominio**
-  (`do-3NN` para `DO-RP-0NN`, `do-40N` para las promos `PB1-0N`: Dante
-  `do-402` y Gólem de Praga `do-403`). De Pack América, Devastador, Dragón de
-  Magma, Balaur y Ataque de Dragón van a **ContraAtaque** (`ca-151`…`ca-154`),
-  y el resto, con Árbol del Grito de Dominio de Tótems, a una edición
-  **Templarios** (`parcial`, prefijo `te`, con el número de TEM: `te-007` Lou
-  Carcolh… `te-127` Árbol del Grito). La promo de Sarras (`2017-012`, la
-  `/static/cards/10/140.png` de Sol Naciente) va en **Camelot** (`cm-238`,
-  después de las 237 de la edición). Las ediciones extra son solo las que
-  el proyecto pide: Camelot, Templarios, Kemet y Dharma.
+- **Adicionales** (`ad-`) son cartas que se juegan en el formato y no están en
+  las diez: las 17 del **Pack de Batalla: Dominio** (DO-RP) y sus dos promos
+  PB1, Dante y Gólem de Praga (`ad-001`…`ad-019`); las 11 de **Pack América**
+  (SD1, `ad-020`…`ad-030`); **Árbol del Grito** de Dominio de Tótems
+  (`ad-031`); las **nueve en observación de la Banlist** (`ad-032`…`ad-040`,
+  Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
+  de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`).
+- **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
+  cargadas, para que el jugador elija el arte. Comparten `identidad` con su
+  carta base y copian sus datos; propios son solo la imagen, la frecuencia, el
+  ilustrador y el campo **`origen`**, la edición del juego de donde sale la
+  impresión. La edición se ordena por `origen`, de la más nueva a la más vieja
+  (`ORIGENES` en `editions.ts`), y el modal lo dice ("Arte de Templarios").
+  Hoy tiene cuatro: la promo de Sarras (`aa-001`, origen `promo-2017`, la
+  `/static/cards/10/140.png` de Sol Naciente) y las Milenarias de Templarios
+  de Lambton Worm, Dama Dragón y Guadaña Dragón. Faltan las de diecinueve
+  ediciones, que el proyecto aprueba una a una (TODO).
+- **Requisito de un arte alternativo**: que la habilidad, keywords incluidas,
+  sea igual o casi igual a la cargada. Si cambia, es otra carta o una errata,
+  y se consulta.
+- **Los packs no son edición** en el filtro: la API no los tiene
+  (`/cards/edition/…` da `EDITION_NOT_FOUND`), así que se cargaron a mano. Lo
+  que ya estaba en las diez ediciones no se toca (Orochi, Acobardar, Carmina
+  Burana…). Fuera queda el mazo **Furia Implacable** (SD4), que es de Bloque
+  Furia y no figura en la tabla del formato.
 - **El arte es el de la impresión que entra al formato**: la de pack (DO-RP,
   SD1), con su otro diseño, salvo Árbol del Grito, que va con el de Templarios
-  (`TEM-127-128`) porque el de SD2 no apareció, y Sarras, con el de su promo.
-  Los datos se **leyeron de ese arte**, y la impresión de pack cambia cosas
-  respecto de la vieja: el **Devastador y el Dragón de Magma de SD1 son
-  Dragón**, no Bestia (el remake lo imprime); «el Aliado oponente objetivo» en
-  Lou Carcolh, Dama Dragón, Ataque de Dragón y Guadaña Dragón; «Luego, Roba
-  dos cartas» en frase aparte en Lou Carcolh y Kyrenia; Lambton Worm roba «Al
-  comienzo de la Fase Final»; y **Nube Incendiaria cuesta 2**, no 3. Las
-  imágenes de Pack América llevan la marca de agua con que circulan (TODO).
-- **Los ids cambiaron dos veces y los viejos se traducen al leer.** Primero
-  existieron ediciones propias para los packs (`pb-`, `pa-`), publicadas unos
-  días. `src/lib/ids-anteriores.ts` guarda cada id viejo con su id de hoy y
-  `cardRefSchema` (`types.ts`) los traduce al leer una baraja guardada, un
-  respaldo o un enlace: ninguna baraja pierde cartas. Esa tabla **solo se
-  agrega** y su test exige que ningún id viejo vuelva a usarse.
-- **`PREFIJOS` no pierde entradas**: `su`, `re`, `cm`, `as`, `mi`, `pb`, `pa`
-  y `dt` quedan reservados sin edición, y `te` vuelve a ser Templarios.
+  (`TEM-127-128`) porque el de SD2 no apareció. Los datos se **leyeron de ese
+  arte**, y la impresión de pack cambia cosas respecto de la vieja: el
+  **Devastador y el Dragón de Magma de SD1 son Dragón**, no Bestia (el remake
+  lo imprime); «el Aliado oponente objetivo» en Lou Carcolh, Dama Dragón,
+  Ataque de Dragón y Guadaña Dragón; «Luego, Roba dos cartas» en frase aparte
+  en Lou Carcolh y Kyrenia; Lambton Worm roba «Al comienzo de la Fase Final»; y
+  **Nube Incendiaria cuesta 2**, no 3. Las imágenes de Pack América llevan la
+  marca de agua con que circulan (TODO).
+- **Los oros de raza** imprimen «Oro Inicial» y la raza, con código `CR-0NN` al
+  pie; el tercero de cada raza es un diseño de emblema que no imprime «Oro
+  Inicial», pero es la misma carta. Van como **`Oro Inicial <raza>`**, y así
+  los reconoce `claseDeOro()` como cuarta clase de Oro, «Oro inicial de raza».
+  Ilustradores leídos del pie (la API no trae ninguno); `MYL` es `Mitos y
+  Leyendas`, como en los oros de edición.
+- **Wotan y Járnvid** traían errores de la API corregidos contra el arte:
+  «Unica» sin tilde y pegada al texto, y «un aliado» en minúscula.
+- **Las cartas en observación se cargan sin aplicar la Banlist**: con su texto
+  impreso y sin la condición (Única, Errante, libre por tres) ni la errata que
+  la Banlist les pone. Ráksasa lleva tilde, como la imprime el arte (la Banlist
+  escribe "Raksasa"), y el ilustrador leído del pie (`Brolken`: la API trae
+  relleno). **Las erratas de la Fe de Erratas tampoco se aplican**: Lahmu y
+  Ataque de Dragón siguen con su texto impreso.
+- **Los ids cambiaron tres veces y los viejos se traducen al leer.**
+  `src/lib/ids-anteriores.ts` guarda cada id viejo (`pb-`, `pa-`, `do-3NN`,
+  `ca-15N`, `cm-`, `te-`, `ke-`, `dh-`…) con su id de hoy, y `cardRefSchema`
+  (`types.ts`) los traduce al leer una baraja guardada, un respaldo o un
+  enlace: ninguna baraja pierde cartas. La tabla **solo se agrega**, **no
+  encadena** (cada entrada apunta directo al id de hoy) y su test exige que
+  ningún id viejo vuelva a usarse.
+- **`PREFIJOS` no pierde entradas**: `su`, `re`, `cm`, `te`, `as`, `mi`, `pb`,
+  `pa`, `dt`, `ke` y `dh` quedan reservados sin edición; `ad` y `aa` van al
+  final.
 - **Una URL de imagen publicada no se reutiliza para otra imagen.**
   `/cards/*` va con 7 días de caché (`_headers`), así que el navegador y el
   borde de Cloudflare siguen sirviendo la vieja aunque el archivo cambie. Pasó
   con `pb-002`: fue Dante unas horas y después Tiamat, y Tiamat se veía con el
-  arte de Dante. Por eso el campo `imagen` no siempre es el id: las de
-  Templarios con arte de pack van en `te-0NN-sd1.webp`, porque `te-0NN.webp`
-  ya sirvió el arte viejo en el primer intento. `te-127.webp` sí se reusa: es
-  la misma imagen de entonces. `pb-*` y `pa-*` quedan retiradas.
+  arte de Dante. Por eso el campo `imagen` puede no ser el id. Las de
+  Adicionales y Arte Alternativo estrenan URL (`ad-NNN.webp`, `aa-NNN.webp`);
+  las viejas quedan retiradas.
 - **La numeración del fandom en la página del mazo no siempre coincide con el
   pie de la carta** (Grindylow es `DO-RP-018` aunque el archivo se llame
   `DO-RP-017`): manda el pie. Y **la imagen que circula de Árbol del Grito
   como si fuera de Dominio de Tótems es la de Templarios** (`TEM-127-128`).
 - **«Kojn» de Dominio de Tótems es Kojh** (HS-135): el fandom se equivoca, el
   arte dice Kojh. Ya estaba.
-- **Las erratas de la Fe de Erratas NO se aplican**, igual que al resto del
-  catálogo (TODO "Aplicar las erratas…"): Lahmu y Ataque de Dragón siguen con
-  su texto impreso.
-- **Las cartas en observación de la Banlist se cargan como cartas, sin
-  aplicar la Banlist** (29-09-2026): Wyvern Dorado en Camelot (`cm-041`),
-  Melusina en Templarios (`te-002`), Anubis de Inpu y Mut en **Kemet**
-  (`ke-002`, `ke-159`) y Bibi Dalair Kaur, Ráksasa Sombrío y Muhammad bin
-  Qasim en **Dharma** (`dh-054`, `dh-276`, `dh-028`), con su texto impreso y
-  sin la condición (Única, Errante, libre por tres) ni la errata que la
-  Banlist les pone. Con ellas llegaron las Milenarias de Templarios de
-  Lambton Worm, Dama Dragón y Guadaña Dragón (`te-019`, `te-020`,
-  `te-027`), que comparten identidad con sus otras impresiones. **Wotan y
-  Jarnvid quedan fuera por ahora** (TODO) y siguen en `FUERA_DEL_FORMATO` de
-  `documentos.test.ts`. Ráksasa lleva tilde, como la imprime el arte (la
-  Banlist escribe "Raksasa"), y el ilustrador leído del pie (`Brolken`: la
-  API trae relleno). Las ediciones extra van en `editions.ts` de la más
-  nueva a la más vieja —Dharma, Kemet, Templarios, Camelot—, que es el orden
-  en que salen tras las diez del formato. Tampoco el mazo **Furia Implacable** (SD4), que es de
-  Bloque Furia y no figura en la tabla del formato.
-- `productos.test.ts` lista las cartas de los tres mazos, falla si falta
-  alguna, y exige que toda carta vaya en una edición de `editions.ts` y
-  ninguna en un pack. Las seis `parcial` viejas de `editions.ts` sin cartas (Helénica,
-  Imperio, Espada Sagrada, Dominios de Ra, Cruzadas, Furia) siguen vacías y no
-  salen en el filtro.
+- `productos.test.ts` lista las cartas de los tres mazos y falla si falta
+  alguna; exige que toda carta vaya en una edición de `editions.ts`, ninguna
+  en un pack ni en las cuatro borradas, y que cada arte alternativo tenga
+  `origen` y una carta base con su `identidad`. Las seis `parcial` viejas de
+  `editions.ts` sin cartas (Helénica, Imperio, Espada Sagrada, Dominios de Ra,
+  Cruzadas, Furia) siguen vacías y no salen en el filtro.
 
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.

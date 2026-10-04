@@ -16,48 +16,34 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Cartas por agregar
 
-### Reimpresiones de otras ediciones
+### Arte Alternativo: cargar las reimpresiones aprobadas
 
-- **Qué:** agregar otras impresiones de cartas que **ya están** en el catálogo
-  (Atavismo, Karma, las Legendarias de Trempulcahue, etc.). Son la misma carta:
-  el objetivo es que el jugador **elija con qué arte la lleva** en su baraja.
-- **De dónde:** la lista y las imágenes las entrega el proyecto. No hay que
-  salir a buscarlas.
-- **Por dónde:** cada reimpresión **comparte `identidad`** con su carta, para
-  que el tope de copias las cuente juntas. Va en `data-src/extras.json` con los
-  datos leídos de su arte, y su edición es la del producto donde salió, con su
-  prefijo **al final** de `PREFIJOS` (`deck-code.ts`). Nunca se reutiliza una
-  URL de imagen ya publicada (CLAUDE.md, caché de `/cards/*`).
-- **Terminado cuando:** las reimpresiones salen en el catálogo, se pueden
-  agregar a una baraja y cuentan como la misma carta.
+- **Qué:** la edición **Arte Alternativo** (`aa-`) junta otras impresiones de
+  cartas que **ya están** en el catálogo, para que el jugador elija con qué
+  arte lleva la carta. Hoy tiene cuatro (la promo de Sarras y las tres
+  Milenarias de Templarios). Faltan las de diecinueve ediciones del juego
+  (Furia … Conjuros, la lista y el orden están en `ORIGENES` de
+  `editions.ts`): 467 candidatas por nombre, de las que 106 traen el texto
+  bastante distinto.
+- **Por dónde:** el proyecto las marca Sí/No en una página de revisión; lo
+  aprobado se baja con un script que copia los datos de la carta base
+  (tipo, raza, coste, Fuerza, habilidad, keywords e **`identidad`**) y deja
+  propios la frecuencia, el ilustrador, la imagen y el `origen`. El
+  ilustrador de la API suele venir de relleno: se lee del pie.
+- **Terminado cuando:** las aprobadas salen en Arte Alternativo ordenadas por
+  origen, de la más nueva a la más vieja, y cuentan como la misma carta en el
+  constructor.
 
-### Oros iniciales por raza
+### Oros iniciales de raza de Conjuros
 
-- **Qué:** agregar los oros iniciales de raza que salieron en ediciones
-  posteriores.
-- **Ojo:** `esOroInicial()` los reconoce por el nombre "Oro Inicial
-  <edición>". Si estos se llaman distinto, hay que cambiar el criterio (por
-  ejemplo, un campo en el esquema, en `types.ts` y `schema.py` a la vez) y no
-  forzar el nombre.
-- **Terminado cuando:** están en el catálogo, se ordenan en el tramo de Oros
-  como oros iniciales y sirven de oro inicial en el constructor.
-
-### Wotan y Jarnvid, en observación en la Banlist y sin cargar
-
-- **Qué pasa:** la Banlist pone en observación nueve cartas de fuera del
-  formato. Siete ya están en el catálogo (29-09-2026); **Wotan** (Midgard,
-  Eterno) y **Jarnvid** (Asgard, Eterno; la Banlist lo pide Única y lo errata
-  a Tótem de raza Eterno) quedaron fuera **por decisión del proyecto, por el
-  momento**. Siguen en `FUERA_DEL_FORMATO` de `documentos.test.ts`.
-- **Por dónde, si se decide cargarlas:** `pnpm run data:card midgard <número>`
-  y `asgard <número>` (el buscador `POST https://api.myl.cl/cards/search` da
-  el número), sumar Midgard y Asgard como `parcial` en `editions.ts` y a
-  `EDITION_CODES` (sus prefijos `mi` y `as` ya están en `PREFIJOS`), leer el
-  arte, y sacarlas de `FUERA_DEL_FORMATO`. **Ojo con los ids**: `mi-015`,
-  `as-002`, `as-005`, `as-085` y `as-104` ya están tomados en
-  `ids-anteriores.ts` y no se pueden reusar.
-- **Arreglado cuando:** están en el catálogo, o se decide que no entran y
-  esta entrada pasa a CLAUDE.md como decisión.
+- **Qué:** el proyecto dice que Conjuros trae oros iniciales por raza, como
+  Dinastía del Dragón (los 33 de esa ya están en Adicionales). **La API no
+  los tiene**: el listado de Conjuros son 81 cartas (`edid` 000–080) y
+  `/static/cards/41/081.png` en adelante da 404.
+- **Por dónde:** conseguir el arte por otro lado y cargarlos como los de
+  Dinastía: `Oro Inicial <raza>` en Adicionales, frecuencia `Oro`, sin
+  habilidad, ilustrador leído del pie.
+- **Terminado cuando:** están en Adicionales, o se confirma que no existen.
 
 ## Imágenes de las cartas
 
@@ -66,19 +52,19 @@ mismas WebP y el mismo `scripts/convert_images.py`. Dos cosas que valen para
 todas: `data:images` **se salta las WebP que ya existen** (hay que borrarlas
 antes de regenerar), y **una URL de imagen ya publicada no se reutiliza**
 (`/cards/*` va con 7 días de caché: el arte nuevo va con otro nombre en el
-campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
+campo `imagen`; ver CLAUDE.md).
 
 ### Arte de los packs y de la promo de Sarras con esquinas blancas y marca de agua
 
 - **Qué pasa:** catorce cartas sueltas llegan con el arte sin recortar a
   sangre: **esquinas redondeadas blancas y un filete claro** alrededor, donde
   el resto del catálogo viene con esquinas rectas y el redondeo lo pone la
-  interfaz (`rounded-card`). Son las once de Pack América —en ContraAtaque
-  `ca-151` Devastador, `ca-152` Dragón de Magma, `ca-153` Balaur y `ca-154`
-  Ataque de Dragón; en Templarios `te-007` Lou Carcolh, `te-030` Dama Dragón,
-  `te-032` Lambton Worm, `te-049` Nube Incendiaria, `te-059` Guadaña Dragón,
-  `te-061` Kyrenia y `te-063` Tugarín—, las dos promos PB1 de Dominio
-  (`do-402` Dante, `do-403` Gólem de Praga) y la promo de Sarras (`cm-238`).
+  interfaz (`rounded-card`). Son las once de Pack América, todas en
+  Adicionales —`ad-020` Lou Carcolh, `ad-021` Dama Dragón, `ad-022` Lambton
+  Worm, `ad-023` Nube Incendiaria, `ad-024` Guadaña Dragón, `ad-025`
+  Kyrenia, `ad-026` Tugarín, `ad-027` Devastador, `ad-028` Dragón de Magma,
+  `ad-029` Balaur y `ad-030` Ataque de Dragón—, las dos promos PB1 (`ad-018`
+  Dante, `ad-019` Gólem de Praga) y la promo de Sarras (`aa-001`).
   Las de Pack América y Sarras llevan además la **marca de agua «Mitos y
   Leyendas»** sobre la ilustración, que es como circulan en internet. Los
   datos de las catorce están bien (verificados contra el arte); es solo la
@@ -89,7 +75,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
 - **Por dónde:** el mismo recorte que la extensión de Escuelas Elementales.
   Ojo: **no se puede reutilizar la URL** (`/cards/*` va con 7 días de caché,
   CLAUDE.md), así que el arte recortado va con un nombre nuevo en el campo
-  `imagen`, como `te-007-sd1.webp`. La marca de agua no se quita recortando:
+  `imagen`, como `ad-020-recorte.webp`. La marca de agua no se quita recortando:
   hace falta otra fuente del arte. Ojo: la marca de agua **no es solo de
   estas**, la trae casi todo el arte de la API (Dominio, Hijos del Sol, las
   ediciones extra…); Escuelas Elementales no. Quitarla en todo el catálogo
@@ -181,7 +167,7 @@ campo `imagen`, como `pb-002-tiamat.webp`; ver CLAUDE.md).
   ya validados con los esquemas de `src/lib/documentos.ts` y cruzados con el
   catálogo en `documentos.test.ts`.
 - **Erratas:** el catálogo tiene que mostrar el texto erratado. Entre ellas, dos de
-  los packs: Lahmu (`do-306`) y Ataque de Dragón (`ca-154`, que imprime
+  los packs: Lahmu (`ad-005`) y Ataque de Dragón (`ad-030`, que imprime
   "Destruye el Aliado oponente objetivo." y la Fe de Erratas deja en
   "Destruye un Aliado oponente"). Devastador y Dragón de Magma ya
   son Dragón porque su impresión de Pack América lo imprime. Ojo: al cargar

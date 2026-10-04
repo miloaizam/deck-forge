@@ -32,15 +32,17 @@ test("una baraja guardada con ids viejos se lee con los nuevos", () => {
     principal: [
       { id: "pb-002", n: 1 },
       { id: "pa-004", n: 2 },
+      { id: "dh-028", n: 1 },
+      { id: "te-019", n: 1 },
     ],
     side: [{ id: "pa-001", n: 1 }],
   };
   const leida = deckSchema.parse(guardada);
   assert.deepEqual(
     leida.principal.map((e) => e.id),
-    ["do-302", "te-007"],
+    ["ad-002", "ad-020", "ad-036", "aa-002"],
   );
-  assert.equal(leida.side[0].id, "ca-151");
+  assert.equal(leida.side[0].id, "ad-027");
   assert.equal(idVigente("bu-001"), "bu-001");
 });
 
@@ -49,5 +51,13 @@ test("un enlace compartido con ids viejos se abre con los nuevos", () => {
   const codigo = encodeDeck(baraja);
   const res = decodeDeck(codigo);
   assert.ok(res.ok);
-  assert.equal(res.ok && res.deck.principal[0].id, "do-402");
+  assert.equal(res.ok && res.deck.principal[0].id, "ad-018");
+});
+
+test("ninguna traduccion lleva a otro id viejo", () => {
+  // La tabla no encadena: si un destino fuera a su vez un id viejo, la
+  // carta se perderia en el segundo salto.
+  for (const nuevo of Object.values(ID_ANTERIORES)) {
+    assert.ok(!Object.hasOwn(ID_ANTERIORES, nuevo), nuevo);
+  }
 });

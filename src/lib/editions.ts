@@ -10,25 +10,26 @@
  *
  * `cargada` marca si su JSON ya existe en `data-src/`.
  *
- * La lista lleva ademas las ediciones de FUERA del formato que aportan cartas
- * sueltas, marcadas con `parcial`. Estan aqui para que `editionTitle()` sepa
- * como se llaman: sin eso, el filtro del catalogo mostraria el slug pelado.
+ * La lista lleva ademas las ediciones de FUERA del formato, marcadas con
+ * `parcial`. Estan aqui para que `editionTitle()` sepa como se llaman: sin
+ * eso, el filtro del catalogo mostraria el slug pelado.
  */
 export interface Edition {
   slug: string;
   titulo: string;
   cargada: boolean;
   /**
-   * No es una de las diez ediciones, pero aporta cartas sueltas que se juegan
-   * en el formato. Hoy es Templarios, con las reimpresiones de Pack America y
-   * Dominio de Totems que salieron de ella. Viven en `data-src/extras.json`;
-   * ver CLAUDE.md.
-   *
-   * Aparece en el filtro de edicion del catalogo, para que su nombre se lea
-   * bien, pero NO tiene pagina propia: no vale la pena una ruta para tres
-   * cartas.
+   * No es una de las diez ediciones. Va detras de ellas en la grilla y en el
+   * filtro, y sin pagina propia salvo que lleve `paginaPropia`. Sus cartas
+   * viven en `data-src/extras.json`; ver CLAUDE.md.
    */
   parcial?: boolean;
+  /**
+   * Una `parcial` que si tiene pagina en /catalogo/<slug>: Adicionales y Arte
+   * Alternativo, que reunen decenas de cartas. Las demas parciales son de
+   * cuatro cartas o ninguna, y no valen una ruta.
+   */
+  paginaPropia?: boolean;
 }
 
 export const EDITIONS: Edition[] = [
@@ -43,30 +44,77 @@ export const EDITIONS: Edition[] = [
   { slug: "legado-gotico", titulo: "Legado Gótico", cargada: true },
   { slug: "escuelas-elementales", titulo: "Escuelas Elementales", cargada: true },
 
-  // De fuera del formato: solo aportan las cartas sueltas que se agregaron por
-  // balance. Estan aqui para que su nombre se lea bien en el filtro.
+  // Las dos que no son ediciones del juego sino del catalogo: Adicionales
+  // (cartas de packs y de ediciones de fuera del formato que se juegan en el)
+  // y Arte Alternativo (otras impresiones de cartas que ya estan cargadas).
+  // Salen en este orden detras de las diez.
+  {
+    slug: "adicionales",
+    titulo: "Adicionales",
+    cargada: true,
+    parcial: true,
+    paginaPropia: true,
+  },
+  {
+    slug: "arte-alternativo",
+    titulo: "Arte Alternativo",
+    cargada: true,
+    parcial: true,
+    paginaPropia: true,
+  },
+
+  // De fuera del formato, sin cartas hoy. Se quedan para que el nombre se lea
+  // bien si alguna vuelve a aportar una carta suelta.
   { slug: "helenica", titulo: "Helénica", cargada: true, parcial: true },
   { slug: "imperio", titulo: "Imperio", cargada: true, parcial: true },
   { slug: "espada-sagrada", titulo: "Espada Sagrada", cargada: true, parcial: true },
   { slug: "dominios-de-ra", titulo: "Dominios de Ra", cargada: true, parcial: true },
   { slug: "cruzadas", titulo: "Cruzadas", cargada: true, parcial: true },
   { slug: "furia", titulo: "Furia", cargada: true, parcial: true },
-  // De la mas nueva a la mas vieja: en ese orden salen en el filtro y en la
-  // grilla, detras de las diez del formato.
-  { slug: "dharma", titulo: "Dharma", cargada: true, parcial: true },
-  { slug: "kemet", titulo: "Kemet", cargada: true, parcial: true },
-  { slug: "templarios", titulo: "Templarios", cargada: true, parcial: true },
-  { slug: "camelot", titulo: "Camelot", cargada: true, parcial: true },
 ];
 
 /**
- * Las que tienen pagina propia de catalogo.
- *
- * Una edicion `parcial` queda fuera aunque aporte cartas: no vale la pena una
- * ruta entera para las tres o cuatro que entraron por balance. Se llega a ellas
- * por el filtro de edicion.
+ * Las que tienen pagina propia de catalogo: las diez y las `parcial` que
+ * llevan `paginaPropia`.
  */
-export const LOADED_EDITIONS = EDITIONS.filter((e) => e.cargada && !e.parcial);
+export const LOADED_EDITIONS = EDITIONS.filter(
+  (e) => e.cargada && (!e.parcial || e.paginaPropia),
+);
+
+/**
+ * De donde sale cada impresion de Arte Alternativo (campo `origen` de la
+ * carta), de la edicion mas NUEVA a la mas vieja: en ese orden se presentan.
+ * Son ediciones del juego que no son del formato, asi que no estan en
+ * `EDITIONS`. "Promo 2017" es la tanda promocional de ese ano, que la API
+ * guarda dentro de Sol Naciente.
+ */
+export const ORIGENES = [
+  { slug: "conjuros", titulo: "Conjuros" },
+  { slug: "tierra-austral", titulo: "Tierra Austral" },
+  { slug: "cuentos-de-ultratumba", titulo: "Cuentos de Ultratumba" },
+  { slug: "dinastia-del-dragon", titulo: "Dinastía del Dragón" },
+  { slug: "invasion-oscura", titulo: "Invasión Oscura" },
+  { slug: "terrores-nocturnos", titulo: "Terrores Nocturnos" },
+  { slug: "arsenal", titulo: "Arsenal" },
+  { slug: "kilimanjaro", titulo: "Kilimanjaro" },
+  { slug: "olimpia", titulo: "Olimpia" },
+  { slug: "dharma", titulo: "Dharma" },
+  { slug: "kemet", titulo: "Kemet" },
+  { slug: "promo-2017", titulo: "Promo 2017" },
+  { slug: "templarios", titulo: "Templarios" },
+  { slug: "camelot", titulo: "Camelot" },
+  { slug: "midgard", titulo: "Midgard" },
+  { slug: "asgard", titulo: "Asgard" },
+  { slug: "rebelion", titulo: "Sumeria Rebelión" },
+  { slug: "sumeria", titulo: "Sumeria" },
+  { slug: "furiaext", titulo: "Furia Extensión" },
+  { slug: "furia", titulo: "Furia" },
+] as const;
+
+/** Titulo legible del origen de un arte alternativo. */
+export function origenTitle(slug: string): string {
+  return ORIGENES.find((o) => o.slug === slug)?.titulo ?? slug;
+}
 
 export function findEdition(slug: string): Edition | undefined {
   return EDITIONS.find((e) => e.slug === slug);

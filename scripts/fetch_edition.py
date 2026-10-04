@@ -66,13 +66,12 @@ EDITION_CODES = {
     "dominios-de-ra": "DR",
     "cruzadas": "CR",
     "furia": "FU",
-    # Ediciones de fuera del formato con cartas sueltas (ver CLAUDE.md). En
-    # PREFIJOS de deck-code.ts, CM y TE van entre los reservados SU, RE, AS,
-    # MI, PB, PA y DT, que ya no tienen edicion; KE y DH, al final.
-    "camelot": "CM",
-    "templarios": "TE",
-    "kemet": "KE",
-    "dharma": "DH",
+    # Las dos ediciones del catalogo que no son ediciones del juego (ver
+    # CLAUDE.md). Sus cartas vienen de muchas ediciones y llevan numeracion
+    # propia, asi que `fetch_card.py` no sirve para ellas: se cargan a mano.
+    # En PREFIJOS de deck-code.ts van al final, detras de los reservados.
+    "adicionales": "AD",
+    "arte-alternativo": "AA",
 }
 
 # El slug de la API cuando NO coincide con el nuestro. Escuelas Elementales es

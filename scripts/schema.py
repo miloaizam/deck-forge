@@ -107,6 +107,9 @@ class Card(BaseModel):
     thumb: str
     legalidad: Legalidad = Legalidad.libre
     keywords: list[str] = []
+    # Solo en Arte Alternativo: la edicion de donde sale la impresion. Espejo
+    # de `origen` en src/lib/types.ts; build_cards.py no lo escribe si es None.
+    origen: Optional[str] = None
 
     @field_validator("id")
     @classmethod
