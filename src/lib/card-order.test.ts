@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { agruparImpresiones, compareCards, esOroInicial, sortCards } from "./card-order";
+import {
+  agruparImpresiones,
+  compareCards,
+  esOroInicial,
+  ORDENES,
+  ordenarCartas,
+  sortCards,
+} from "./card-order";
 import { claseDeOro } from "./oros";
 import { EDITIONS, ORIGENES } from "./editions";
 import {
@@ -148,4 +155,43 @@ test("el selector de impresiones agrupa por identidad, en el orden del catalogo"
   assert.equal(total, CATALOGO.length);
   const sarras = CATALOGO.find((c) => c.nombre === "Sarras")!;
   assert.ok(grupos.get(sarras.identidad)!.some((c) => c.edicion === "arte-alternativo"));
+});
+
+test("los ordenes elegibles: monotonos, sin perder cartas y con empates en orden de catalogo", () => {
+  const base = sortCards(CATALOGO);
+  for (const o of ORDENES) {
+    const r = ordenarCartas(base, o);
+    assert.equal(r.length, base.length, o);
+    assert.notEqual(r, base); // copia, no el mismo arreglo
+  }
+  assert.equal(ordenarCartas(base, ""), base);
+
+  const costes = ordenarCartas(base, "coste-asc").map((c) => c.coste);
+  const conCoste = costes.filter((c) => c !== null);
+  assert.deepEqual(
+    conCoste,
+    [...conCoste].sort((a, b) => a! - b!),
+  );
+  // Los que no tienen coste (Oros) van al final en los dos sentidos.
+  assert.equal(costes.indexOf(null), conCoste.length);
+  assert.equal(ordenarCartas(base, "coste-desc").at(-1)!.coste, null);
+
+  const fuerzas = ordenarCartas(base, "fuerza-desc")
+    .map((c) => c.fuerza)
+    .filter((f) => f !== null);
+  assert.deepEqual(
+    fuerzas,
+    [...fuerzas].sort((a, b) => b! - a!),
+  );
+
+  // Dos cartas del mismo coste conservan el orden del catalogo.
+  const posicion = new Map(base.map((c, i) => [c.id, i]));
+  const dos = ordenarCartas(base, "coste-asc").filter((c) => c.coste === 2);
+  for (let i = 1; i < dos.length; i++) {
+    assert.ok(posicion.get(dos[i - 1].id)! < posicion.get(dos[i].id)!);
+  }
+
+  // Por nombre, sin que las tildes manden al final ("Águila" junto a "Aguja").
+  const nombres = ordenarCartas(base, "nombre").map((c) => c.nombre);
+  assert.ok(!/^[ÁÉÍÓÚ]/.test(nombres.at(-1)!));
 });

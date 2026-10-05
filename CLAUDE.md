@@ -977,7 +977,8 @@ con las reglas del formato, lista y detalle de barajas, exportar e importar, y
 enlace para compartir. Lo que falta y lo que está mal, en
 [TODO.md](TODO.md).
 
-Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
+Rutas: `/` portada (sin navbar, con «Entrar a la forja» y dos accesos directos, al
+catálogo y al constructor) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
 `/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
@@ -1261,6 +1262,16 @@ donde debe, y que **no queden dos cartas empatadas** —un empate deja el
 desempate en manos del `sort` y de ahí salen los saltos de posición—. Comprueba
 además que ordenar el catálogo al revés dé el mismo resultado: un comparador no
 transitivo pondría la misma carta en distinto sitio en cada vista.
+
+**El catálogo deja elegir otro orden** (05-10-2026): el botón «Ordenar»
+(`SortMenu.tsx`, un menú de `menuitemradio` junto al de filtros) ofrece
+nombre, coste y Fuerza en los dos sentidos (`ORDENES` y `ordenarCartas()` de
+`card-order.ts`). Vale **solo en `/catalogo` y en la página de cada edición**,
+y va en la URL (`?orden=`). El constructor y el contenido de una baraja se
+quedan con el orden fijo: ahí una carta que cambia de sitio obliga a buscarla.
+Los empates conservan el orden de catálogo (el `sort` es estable), las cartas
+sin coste o sin Fuerza van al final en los dos sentidos, y un orden elegido
+manda sobre la relevancia de la búsqueda.
 
 **Los selectores con muchas opciones abren con buscador** (`Select.tsx`, a
 partir de ocho opciones: habilidad, raza, edición, frecuencia y los rangos de

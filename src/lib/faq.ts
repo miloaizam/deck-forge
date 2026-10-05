@@ -74,6 +74,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿En qué orden salen las cartas?",
         respuesta: [
           "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
+          "En el catálogo puedes cambiarlo con el botón **«Ordenar»**, junto a los filtros: por **nombre**, por **coste** o por **Fuerza**, de menor a mayor o al revés. Las cartas sin coste, como los Oros, van al final. El constructor y tus barajas siguen siempre el orden de edición y frecuencia, para que una carta no cambie de sitio.",
         ],
       },
       {

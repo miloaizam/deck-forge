@@ -28,6 +28,15 @@ export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-05",
     tipo: "Mejora",
+    titulo: "Ordena el catálogo",
+    texto: [
+      "El botón «Ordenar», junto a los filtros del catálogo, ordena las cartas por nombre, por coste o por Fuerza. El orden se guarda en el enlace, igual que los filtros.",
+      "La portada suma dos accesos directos bajo «Entrar a la forja»: al catálogo y al constructor.",
+    ],
+  },
+  {
+    fecha: "2026-10-05",
+    tipo: "Mejora",
     titulo: "Erratas dentro de la carta",
     texto: [
       "Las cartas con errata muestran directamente el texto corregido por la Fe de Erratas y la Banlist, con sus keywords: ya no hay que abrir un panel aparte. El lazo «Errata» de la imagen sigue avisando que el texto no es el impreso, y el buscador y los filtros encuentran las cartas por el texto corregido.",

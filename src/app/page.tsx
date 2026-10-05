@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { Flame, Hammer, LibraryBig } from "lucide-react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
+
+const ACCESO =
+  "text-muted hover:text-ink focus-visible:outline-brand-500 inline-flex h-11 items-center gap-1.5 rounded-chip px-3 underline-offset-4 transition-colors hover:underline";
 
 export default function Home() {
   return (
@@ -64,6 +67,25 @@ export default function Home() {
             Entrar a la forja
           </Link>
         </div>
+
+        {/* Accesos directos para quien ya sabe a que viene. Van como enlaces
+            de texto, chicos y sin fondo, para no competir con el boton. */}
+        <nav
+          aria-label="Accesos directos"
+          className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[15px]"
+        >
+          <Link href="/catalogo" className={ACCESO}>
+            <LibraryBig size={16} aria-hidden="true" />
+            Ver el catálogo
+          </Link>
+          <span aria-hidden="true" className="text-muted/60">
+            ·
+          </span>
+          <Link href="/constructor" className={ACCESO}>
+            <Hammer size={16} aria-hidden="true" />
+            Armar una baraja
+          </Link>
+        </nav>
       </div>
     </main>
   );

@@ -14,36 +14,21 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Funciones nuevas
+## Diseño
 
-### La colección en las barajas
+### Evaluar una mejora visual
 
-- **Qué:** que el constructor y el detalle de una baraja marquen las cartas
-  que el jugador no tiene en su colección (`/coleccion`), y que de ahí se
-  puedan sumar a «Me faltan».
-- **Por dónde:** `useColeccion()` ya se puede leer desde cualquier vista; las
-  copias se comparan por `identidad`, sumando todas las impresiones, porque
-  para jugar cualquier arte vale.
-- **Terminado cuando:** una baraja dice qué cartas faltan y se pueden copiar
-  como lista.
-
-### Ordenar el catálogo
-
-- **Qué:** elegir el orden de la grilla (nombre, coste, Fuerza) además del
-  orden fijo de hoy, por edición y frecuencia.
-- **A decidir antes:** hoy el orden es uno solo y lo comparten las cuatro
-  vistas (`card-order.ts`, CLAUDE.md) para que una carta no cambie de sitio
-  entre ellas. Un orden elegible rompe eso a propósito: decidir si vale solo
-  en el catálogo o también en el constructor, y si va en la URL.
-- **Terminado cuando:** el orden se elige en el catálogo, se conserva al ir y
-  volver, y el orden por defecto sigue siendo el de hoy.
-
-### Portada con accesos directos
-
-- **Qué:** la portada solo tiene «Entrar a la forja». Sumar dos accesos
-  secundarios, al catálogo y al constructor, para quien ya sabe a qué viene.
-- **Terminado cuando:** la portada lleva los dos enlaces sin restarle peso al
-  botón principal, en escritorio y en teléfono.
+- **Qué:** revisar el aspecto del sitio entero y decidir si conviene una
+  mejora visual: jerarquía, espaciados, contraste en los dos temas,
+  consistencia entre páginas (catálogo, constructor, barajas, colección,
+  documentos) y cómo se ve en el teléfono.
+- **Por dónde:** recorrer cada ruta en escritorio y teléfono, con tema claro
+  y oscuro, capturar lo que desentona y contrastarlo con
+  [DESIGN.md](DESIGN.md) y la guía de marca (`docs/brand.html`).
+- **A decidir antes:** si es un repaso puntual (arreglar lo que desentona)
+  o una renovación, que tocaría DESIGN.md.
+- **Terminado cuando:** hay una lista de cambios acordada y aplicada, o la
+  decisión de que no hace falta.
 
 ## Grande y con decisiones previas
 

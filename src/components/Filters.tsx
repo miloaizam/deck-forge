@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Funnel, Search, X } from "lucide-react";
 
 import { Select } from "./Select";
@@ -16,6 +16,8 @@ interface FiltersProps {
   facets: Facets;
   onChange: (next: CatalogFilters) => void;
   onReset: () => void;
+  /** Un control mas junto al boton de filtros: el orden, en el catalogo. */
+  extra?: ReactNode;
 }
 
 /**
@@ -25,7 +27,7 @@ interface FiltersProps {
  * pantalla, sobre todo en el telefono; plegados, la primera cosa que se ve al
  * entrar al catalogo son las cartas.
  */
-export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
+export function Filters({ filters, facets, onChange, onReset, extra }: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const buscador = useRef<HTMLInputElement>(null);
@@ -99,6 +101,8 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
               <span className="hidden sm:inline">Limpiar filtros</span>
             </button>
           )}
+
+          {extra}
 
           <button
             type="button"
