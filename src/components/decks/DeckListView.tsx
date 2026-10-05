@@ -3,31 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  Check,
-  Copy,
-  Download,
-  Hammer,
-  Layers,
-  Link2,
-  Plus,
-  Trash2,
-  TriangleAlert,
-} from "lucide-react";
+import { Copy, Download, Hammer, Layers, Link2, Plus, Trash2 } from "lucide-react";
 
 import { copyShareLink, downloadDeck } from "./actions";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import { DeckTransfer } from "./DeckTransfer";
 import { DeckListSkeleton } from "../Skeleton";
+import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
 import { deckTitle, duplicateDeck } from "@/lib/deck";
 import {
   buildCardIndex,
   deckStats,
-  isLegal,
   resolveDeck,
   validateDeck,
+  DECK_TOTAL,
 } from "@/lib/deck-rules";
 import {
   deleteDeck,
@@ -38,7 +29,6 @@ import {
   saveDecks,
 } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { CARD_RATIO } from "../CardTile";
 
 interface DeckListViewProps {
@@ -138,7 +128,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
           {decks.map((deck) => {
             const res = resolveDeck(deck, index);
             const stats = deckStats(res);
-            const legal = isLegal(validateDeck(deck, index));
+            const estado = estadoDeBaraja(validateDeck(deck, index));
             const portada = deck.portada ? index.porId.get(deck.portada) : undefined;
 
             return (
@@ -177,7 +167,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                         {deckTitle(deck)}
                       </Link>
                       <p className="text-muted mt-0.5 text-[13px] tabular-nums">
-                        {stats.totalPrincipal} cartas
+                        {stats.totalPrincipal}/{DECK_TOTAL} cartas
                         {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
                         {" · "}
                         {formatFecha(deck.actualizado)}
@@ -192,19 +182,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     </div>
 
                     {/* Icono y texto: el color no puede ser el unico indicador. */}
-                    <span
-                      className={cn(
-                        "flex shrink-0 items-center gap-1 text-[13px]",
-                        legal ? "text-accent" : "text-muted",
-                      )}
-                    >
-                      {legal ? (
-                        <Check size={14} aria-hidden="true" />
-                      ) : (
-                        <TriangleAlert size={14} aria-hidden="true" />
-                      )}
-                      {legal ? "Legal" : "Incompleto"}
-                    </span>
+                    <EstadoPastilla estado={estado} />
                   </div>
 
                   {/* `mt-auto` los manda al fondo: la portada fija el alto de

@@ -26,6 +26,18 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-05",
+    tipo: "Mejora",
+    titulo: "Un constructor más cómodo",
+    texto: [
+      "Cada carta del constructor lleva al pie su contador con − y +: se suman y se quitan copias sin abrirla, y ya no tapan el coste, la Fuerza ni el lazo de errata.",
+      "Si la baraja lleva una carta con un arte y eliges otro en su detalle, «Usar este arte en la baraja» cambia todas sus copias de una vez.",
+      "El estado de la baraja se ve mejor: una barra hacia las 50 cartas, en ámbar lo que falta y en rojo las cartas baneadas. En Mis barajas, cada baraja lleva su pastilla «Legal», «Incompleta» o «Con baneada».",
+      "El detalle de una baraja copia su lista en texto («3 Akiko Yamamoto…») para pegarla en Discord o WhatsApp.",
+      "El catálogo recuerda la búsqueda y los filtros al ir y volver, y se pueden compartir con el enlace. La tecla «/» lleva al buscador, y el botón «atrás» del teléfono cierra la carta abierta en vez de salir de la página.",
+    ],
+  },
+  {
     fecha: "2026-10-04",
     tipo: "Mejora",
     titulo: "Erratas más cortas",

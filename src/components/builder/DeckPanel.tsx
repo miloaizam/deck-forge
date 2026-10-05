@@ -1,15 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Check, Coins, Trash2, TriangleAlert } from "lucide-react";
+import { Coins, Trash2 } from "lucide-react";
 
 import { CostCurve } from "../CostCurve";
+import { DeckIssues } from "../decks/DeckIssues";
 import { BOTON_FILA, CAJA_FILA, QuantityStepper } from "./QuantityStepper";
 import { CARD_RATIO } from "../CardTile";
 import type { DeckZone } from "@/lib/deck";
 import {
   canAdd,
-  isLegal,
   type CardIndex,
   type DeckIssue,
   type DeckStats,
@@ -235,9 +235,7 @@ export function DeckPanel({
   onVer,
   onBlocked,
 }: DeckPanelProps) {
-  const legal = isLegal(issues);
-  const errores = issues.filter((i) => i.gravedad === "error");
-  const avisos = issues.filter((i) => i.gravedad === "aviso");
+  const vacia = res.principal.length === 0 && res.side.length === 0;
 
   const porTipo = (t: Tipo) => res.principal.filter((e) => e.card.tipo === t);
   const comun = {
@@ -252,57 +250,19 @@ export function DeckPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Estado siempre a la vista: si la baraja es legal y cuantas cartas lleva.
-          Van en la misma fila y la cuenta a la derecha, alineada con los totales
-          de cada tramo: asi ocupa un solo sitio, lo diga lo que diga el estado.
-          Antes iba encima y en su propia linea, y el numero se corria hacia
-          abajo segun cuantas cosas hubiera por corregir. */}
-      <div className="flex items-center justify-between gap-3">
-        {/* El color nunca es el unico indicador: siempre icono y texto. */}
-        <p
-          className={cn(
-            "flex items-center gap-2 text-[13px]",
-            legal ? "text-accent" : "text-muted",
-          )}
-        >
-          {legal ? (
-            <Check size={15} aria-hidden="true" className="shrink-0" />
-          ) : (
-            <TriangleAlert size={15} aria-hidden="true" className="shrink-0" />
-          )}
-          {legal
-            ? "La baraja cumple las reglas del formato"
-            : errores.length === 1
-              ? "1 cosa por corregir"
-              : `${errores.length} cosas por corregir`}
-        </p>
-
+      {/* El conteo, siempre a la vista y alineado con los totales de cada
+          tramo; debajo, el estado con su color y lo que falta. */}
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-muted text-[13px]">Cartas en la baraja</p>
         <p className="text-ink shrink-0 text-2xl leading-none font-bold tabular-nums">
           {stats.totalPrincipal}
           <span className="text-muted text-base font-normal">/{DECK_TOTAL}</span>
         </p>
       </div>
 
-      {(errores.length > 0 || avisos.length > 0) && (
-        <ul className="text-muted flex flex-col gap-1.5 text-[13px] leading-snug">
-          {[...errores, ...avisos].map((i, n) => (
-            <li key={`${i.code}-${n}`} className="aparece flex gap-2">
-              <span aria-hidden="true" className="text-muted/60">
-                ·
-              </span>
-              {i.mensaje}
-            </li>
-          ))}
-        </ul>
-      )}
+      <DeckIssues issues={issues} total={stats.totalPrincipal} vacia={vacia} />
 
-      {res.principal.length === 0 && res.side.length === 0 ? (
-        <p className="text-muted border-line rounded-card border border-dashed px-4 py-10 text-center text-[13px] leading-relaxed">
-          La baraja está vacía. Agrega cartas desde el catálogo con el botón
-          <span className="text-accent"> + </span>
-          de cada una.
-        </p>
-      ) : (
+      {!vacia && (
         <>
           {/* Solo del principal, como los contadores: el side no se juega de
               salida. Con el side solo no hay curva que mirar. */}

@@ -11,6 +11,7 @@ interface CardGridProps {
   /** Copias en la baraja por id de carta. Solo lo pasa el constructor. */
   copies?: Map<string, number>;
   onAdd?: (card: Card) => void;
+  onRemove?: (card: Card) => void;
   /** Por que no se puede agregar cada carta, si es que no se puede. */
   addBlocked?: (card: Card) => string | undefined;
   /** Explica el bloqueo al pulsar un "+" bloqueado. */
@@ -51,6 +52,7 @@ export function CardGrid({
   onSelect,
   copies,
   onAdd,
+  onRemove,
   addBlocked,
   onBlocked,
   variante = "catalogo",
@@ -67,6 +69,7 @@ export function CardGrid({
             onSelect={onSelect}
             copies={copies?.get(card.id) ?? 0}
             onAdd={onAdd}
+            onRemove={onRemove}
             addBlocked={addBlocked?.(card)}
             onBlocked={onBlocked}
           />

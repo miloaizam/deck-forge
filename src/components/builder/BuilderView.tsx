@@ -8,6 +8,7 @@ import { DeckClearButton, DeckPanel } from "./DeckPanel";
 import { DeckParamLoader, type DraftState } from "./DeckParamLoader";
 import { DraftNotice } from "./DraftNotice";
 import { DeckSheet } from "./DeckSheet";
+import { estadoDeBaraja } from "../decks/DeckIssues";
 import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
@@ -38,6 +39,7 @@ import {
   renameDeck,
   setQuantity,
   setStartingGold,
+  swapPrinting,
   type DeckZone,
 } from "@/lib/deck";
 import {
@@ -47,7 +49,6 @@ import {
   buildCardIndex,
   canAdd,
   deckStats,
-  isLegal,
   resolveDeck,
   validateDeck,
   DECK_TOTAL,
@@ -248,7 +249,6 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const res = useMemo(() => resolveDeck(deck, index), [deck, index]);
   const stats = useMemo(() => deckStats(res), [res]);
   const issues = useMemo(() => validateDeck(deck, index), [deck, index]);
-  const legal = isLegal(issues);
 
   // El nombre choca con otra baraja guardada: se avisa mientras se escribe, no
   // recien al pulsar Guardar.
@@ -363,6 +363,26 @@ export function BuilderView({ cards }: BuilderViewProps) {
     setDeck((d) => removeCard(d, card.id, desde));
   };
 
+  /**
+   * Las copias que la baraja lleva de OTRAS impresiones de la carta del modal:
+   * el modal ofrece pasarlas todas al arte que se esta viendo.
+   */
+  const otrasImpresiones = (card: Card) => {
+    const ids = (impresiones.get(card.identidad) ?? [])
+      .map((c) => c.id)
+      .filter((id) => id !== card.id);
+    return { ids, copias: ids.reduce((s, id) => s + (copiasPorId.get(id) ?? 0), 0) };
+  };
+
+  const cambiarArte = (card: Card) => {
+    const { ids, copias } = otrasImpresiones(card);
+    setDeck((d) => swapPrinting(d, ids, card.id));
+    toast(
+      `${copias} ${copias === 1 ? "copia" : "copias"} de ${card.nombre} con el arte nuevo.`,
+      "success",
+    );
+  };
+
   const bloqueoDe = (card: Card): string | undefined => {
     const rc = index.porId.get(card.id);
     if (!rc) return undefined;
@@ -449,6 +469,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
                 onSelect={setSelected}
                 copies={copiasPorId}
                 onAdd={(c) => agregar(c)}
+                onRemove={quitar}
                 addBlocked={bloqueoDe}
                 onBlocked={avisarError}
                 variante="constructor"
@@ -522,7 +543,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
 
       <DeckSheet
         total={stats.totalPrincipal}
-        legal={legal}
+        estado={estadoDeBaraja(issues)}
         afinidad={affinityLabel(stats.afinidad)}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
@@ -569,6 +590,15 @@ export function BuilderView({ cards }: BuilderViewProps) {
         // actuan sobre la elegida.
         impresiones={selected ? impresiones.get(selected.identidad) : undefined}
         onChangeCard={setSelected}
+        copiasDe={(id) => copiasPorId.get(id) ?? 0}
+        cambiarArte={
+          selected
+            ? {
+                copias: otrasImpresiones(selected).copias,
+                onCambiar: () => cambiarArte(selected),
+              }
+            : undefined
+        }
       />
     </>
   );

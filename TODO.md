@@ -34,6 +34,24 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 - **Terminado cuando:** se puede marcar una carta, ver qué falta de una
   edición, recargar sin perderlo y llevarlo a otro navegador con el respaldo.
 
+### Ordenar el catálogo
+
+- **Qué:** elegir el orden de la grilla (nombre, coste, Fuerza) además del
+  orden fijo de hoy, por edición y frecuencia.
+- **A decidir antes:** hoy el orden es uno solo y lo comparten las cuatro
+  vistas (`card-order.ts`, CLAUDE.md) para que una carta no cambie de sitio
+  entre ellas. Un orden elegible rompe eso a propósito: decidir si vale solo
+  en el catálogo o también en el constructor, y si va en la URL.
+- **Terminado cuando:** el orden se elige en el catálogo, se conserva al ir y
+  volver, y el orden por defecto sigue siendo el de hoy.
+
+### Portada con accesos directos
+
+- **Qué:** la portada solo tiene «Entrar a la forja». Sumar dos accesos
+  secundarios, al catálogo y al constructor, para quien ya sabe a qué viene.
+- **Terminado cuando:** la portada lleva los dos enlaces sin restarle peso al
+  botón principal, en escritorio y en teléfono.
+
 ## Grande y con decisiones previas
 
 ### Base de datos y cuentas de usuario

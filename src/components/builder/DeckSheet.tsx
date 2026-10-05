@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { Check, ChevronUp, TriangleAlert, X } from "lucide-react";
+import { ChevronUp, X } from "lucide-react";
 
 import { AutoHeight } from "../AutoHeight";
+import { EstadoPastilla, type EstadoDeBaraja } from "../decks/DeckIssues";
 import { DECK_TOTAL } from "@/lib/deck-rules";
-import { cn } from "@/lib/utils";
 
 interface DeckSheetProps {
   total: number;
-  legal: boolean;
+  estado: EstadoDeBaraja;
   /** Resumen corto de la afinidad, del estilo "Dragón" o "Clan Desafiante". */
   afinidad: string;
   open: boolean;
@@ -30,7 +30,7 @@ interface DeckSheetProps {
  */
 export function DeckSheet({
   total,
-  legal,
+  estado,
   afinidad,
   open,
   onOpenChange,
@@ -59,20 +59,7 @@ export function DeckSheet({
             <span className="text-muted text-sm font-normal">/{DECK_TOTAL}</span>
           </span>
 
-          {/* Icono y texto, nunca solo color. */}
-          <span
-            className={cn(
-              "flex items-center gap-1.5 text-[13px]",
-              legal ? "text-accent" : "text-muted",
-            )}
-          >
-            {legal ? (
-              <Check size={14} aria-hidden="true" />
-            ) : (
-              <TriangleAlert size={14} aria-hidden="true" />
-            )}
-            {legal ? "Legal" : "Incompleto"}
-          </span>
+          <EstadoPastilla estado={estado} />
 
           <span className="text-muted ml-auto truncate text-[13px]">{afinidad}</span>
           <ChevronUp size={16} aria-hidden="true" className="text-muted shrink-0" />

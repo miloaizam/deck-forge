@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CardGrid } from "./CardGrid";
 import { CardModal } from "./CardModal";
@@ -11,6 +11,8 @@ import {
   buildFacets,
   buildSearchIndex,
   EMPTY_FILTERS,
+  filtersFromSearch,
+  filtersToSearch,
   hasActiveFilters,
   pageCount,
   pageRange,
@@ -42,6 +44,25 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
     () => agruparImpresiones(otrasImpresiones ? [...cards, ...otrasImpresiones] : cards),
     [cards, otrasImpresiones],
   );
+
+  // Los filtros viven tambien en la URL: se leen una vez al montar (el HTML
+  // estatico no conoce la query) y se escriben con replaceState, que no suma
+  // entradas al historial por cada letra tecleada. Hasta leerla no se escribe:
+  // el primer render trae los filtros vacios y borraria la URL que llego.
+  const [leidaUrl, setLeidaUrl] = useState(false);
+  useEffect(() => {
+    const { filters: f, page: p } = filtersFromSearch(window.location.search, facets);
+    // Sincroniza con un sistema externo (la URL) una sola vez, al montar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFilters(f);
+    setPage(p);
+    setLeidaUrl(true);
+  }, [facets]);
+  useEffect(() => {
+    if (!leidaUrl) return;
+    const url = `${window.location.pathname}${filtersToSearch(filters, page)}`;
+    history.replaceState(history.state, "", url);
+  }, [leidaUrl, filters, page]);
 
   const results = useMemo(
     () => applyFilters(cards, filters, index),
@@ -92,6 +113,13 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
         </div>
       ) : (
         <>
+          {/* Cuantas quedan, arriba y no solo al pie: es lo primero que se
+              quiere saber al filtrar. */}
+          <p className="text-muted -mt-1 text-[13px] tabular-nums">
+            {results.length === cards.length
+              ? `${cards.length} cartas`
+              : `${results.length} de ${cards.length} cartas`}
+          </p>
           <CardGrid cards={visible} onSelect={setSelected} />
           <Pagination
             page={currentPage}

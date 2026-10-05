@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { buildFacets, buildSearchIndex } from "./catalog";
+import {
+  buildFacets,
+  buildSearchIndex,
+  EMPTY_FILTERS,
+  filtersFromSearch,
+  filtersToSearch,
+} from "./catalog";
 import { EDITIONS } from "./editions";
 import { esClaseDeOro } from "./oros";
 import { catalogSchema, FRECUENCIAS, type Card } from "./types";
@@ -78,4 +84,16 @@ test("el buscador completa la palabra que se esta escribiendo, sin tildes", () =
   assert.ok(nombres("kyu").some((n) => n.startsWith("Kyubi")));
   assert.deepEqual(nombres("golem de praga"), nombres("Gólem de Praga"));
   assert.ok(nombres("Thor el Pode").includes("Thor el Poderoso"));
+});
+
+test("los filtros van y vuelven por la URL, y lo que no es opcion se descarta", () => {
+  const f = buildFacets(CATALOGO);
+  const filtros = { ...EMPTY_FILTERS, query: "dragón", tipo: "Aliado", raza: f.razas[0] };
+  const search = filtersToSearch(filtros, 3);
+  assert.deepEqual(filtersFromSearch(search, f), { filters: filtros, page: 3 });
+  const malo = filtersFromSearch("?tipo=<script>&raza=Nada&p=-4&q=" + "x".repeat(500), f);
+  assert.equal(malo.filters.tipo, "");
+  assert.equal(malo.filters.raza, "");
+  assert.equal(malo.page, 1);
+  assert.equal(malo.filters.query.length, 100);
 });

@@ -111,6 +111,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Puedo elegir otro arte de una carta?",
         respuesta: [
           "Sí. Si la carta tiene más de una impresión, su detalle muestra bajo la imagen la fila **Impresiones**, con sus artes alternativos y reimpresiones. Al pulsar una, el detalle pasa a esa impresión, y en el constructor **«Agregar a la baraja»** agrega la elegida.",
+          "Si la baraja ya lleva la carta con otro arte, el detalle ofrece **«Usar este arte en la baraja»**, que pasa todas sus copias a la impresión elegida. Las miniaturas marcan cuántas copias llevas de cada una.",
           "Todas las impresiones son la misma carta: cuentan juntas para el tope de copias.",
         ],
       },
@@ -145,7 +146,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo quito una carta?",
         respuesta: [
-          "En el panel de la baraja, con el botón **−** de su fila. También desde el detalle de la carta: tócala en el catálogo del constructor y usa **«Quitar una copia»**.",
+          "Con el botón **−** del pie de la carta en el catálogo del constructor, o con el **−** de su fila en el panel de la baraja. También desde el detalle de la carta, con **«Quitar una copia»**.",
         ],
       },
       {

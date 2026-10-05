@@ -36,8 +36,7 @@ export function ErrataPanel({ card }: { card: Card }) {
       {baneada && (
         <p className="text-danger flex items-center gap-2 text-sm font-medium">
           <Ban size={16} aria-hidden="true" />
-          Prohibida en la Banlist: se puede armar con ella, pero la baraja queda fuera del
-          formato.
+          Prohibida en la Banlist
         </p>
       )}
       {errata && (

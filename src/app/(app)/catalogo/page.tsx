@@ -18,8 +18,8 @@ export default async function CatalogoPage() {
       <p className="eyebrow mb-3">Todo</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Catálogo completo</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Catálogo completo con {cards.length} cartas. Busca por nombre o texto de
-        habilidad, o utiliza los filtros para una mejor búsqueda.
+        {cards.length} cartas del formato. Busca por nombre o texto de habilidad, o afina
+        con los filtros.
       </p>
 
       <div className="mt-10">

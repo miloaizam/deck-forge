@@ -16,8 +16,8 @@ export default async function BarajasPage() {
       <p className="eyebrow mb-3">Barajas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Mis barajas</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Puedes visualizar las barajas, compartirlas por un enlace y
-        exportarlas/importarlas utilizando un archivo JSON.
+        Tus barajas guardadas en este navegador. Compártelas por enlace o pásalas a otro
+        equipo con un archivo de respaldo.
       </p>
 
       <div className="mt-10">

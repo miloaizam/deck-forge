@@ -161,3 +161,29 @@ export function duplicateDeck(deck: Deck, nombre?: string): Deck {
 export function clearDeck(deck: Deck): Deck {
   return touch(deck, { principal: [], side: [], oroInicial: null, portada: null });
 }
+
+/**
+ * Pasa todas las copias de unas impresiones a otra de la misma carta: es
+ * "cambiar el arte" desde el modal del constructor. Las copias se suman en la
+ * misma zona donde estaban, y el oro inicial y la portada siguen a la carta.
+ *
+ * No mira reglas: las impresiones de una carta comparten identidad, asi que el
+ * total por carta no cambia y la baraja sigue tan legal como estaba.
+ */
+export function swapPrinting(deck: Deck, desde: string[], hacia: string): Deck {
+  const mover = new Set(desde.filter((id) => id !== hacia));
+  if (mover.size === 0) return deck;
+  const zona = (entries: DeckEntry[]): DeckEntry[] => {
+    const movidas = entries.filter((e) => mover.has(e.id)).reduce((s, e) => s + e.n, 0);
+    if (movidas === 0) return entries;
+    const resto = entries.filter((e) => !mover.has(e.id) && e.id !== hacia);
+    const ya = entries.find((e) => e.id === hacia)?.n ?? 0;
+    return [...resto, { id: hacia, n: ya + movidas }];
+  };
+  return touch(deck, {
+    principal: zona(deck.principal),
+    side: zona(deck.side),
+    oroInicial: deck.oroInicial && mover.has(deck.oroInicial) ? hacia : deck.oroInicial,
+    portada: deck.portada && mover.has(deck.portada) ? hacia : deck.portada,
+  });
+}

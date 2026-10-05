@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Funnel, Search, X } from "lucide-react";
 
 import { Select } from "./Select";
@@ -28,6 +28,26 @@ interface FiltersProps {
 export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const buscador = useRef<HTMLInputElement>(null);
+
+  // "/" lleva al buscador, como en la mayoria de los sitios con busqueda. No
+  // se roba la tecla si ya se esta escribiendo en un campo.
+  useEffect(() => {
+    const alTeclear = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (
+        t instanceof HTMLElement &&
+        (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))
+      ) {
+        return;
+      }
+      e.preventDefault();
+      buscador.current?.focus();
+    };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, []);
 
   const set = (key: keyof CatalogFilters) => (value: string) =>
     onChange({ ...filters, [key]: value });
@@ -36,34 +56,47 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
 
   return (
     <section aria-label="Buscar y filtrar" className="flex flex-col gap-4">
-      {/* En un telefono los dos botones no caben junto al buscador, asi que la
-          fila envuelve: buscador arriba y botones abajo, siempre a la derecha. */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-0 basis-full sm:basis-1/2">
+      {/* Una sola fila tambien en el telefono: ahi los botones quedan solo con
+          su icono, y la primera carta sube los ~60 px que costaba la segunda
+          fila. */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="relative min-w-0 flex-1 sm:flex-none sm:basis-1/2">
           <Search
             size={17}
             aria-hidden="true"
             className="text-muted pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2"
           />
           <input
+            ref={buscador}
             type="search"
             value={filters.query}
             onChange={(e) => set("query")(e.target.value)}
             placeholder="Buscar por nombre o habilidad…"
+            aria-keyshortcuts="/"
             aria-label="Buscar cartas"
             className={cn(TEXT_FIELD, "pr-4 pl-10")}
           />
+          {/* La pista del atajo, solo con teclado a mano y con el campo vacio. */}
+          {filters.query === "" && (
+            <kbd
+              aria-hidden="true"
+              className="border-line text-muted pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border px-1.5 text-[11px] sm:block"
+            >
+              /
+            </kbd>
+          )}
         </div>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           {(activos > 0 || filters.query !== "") && (
             <button
               type="button"
               onClick={onReset}
-              className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 shrink-0 items-center gap-1.5 border px-4 text-[13px] whitespace-nowrap transition-colors"
+              aria-label="Limpiar filtros"
+              className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 border px-3 text-[13px] whitespace-nowrap transition-colors sm:px-4"
             >
               <X size={14} aria-hidden="true" />
-              Limpiar filtros
+              <span className="hidden sm:inline">Limpiar filtros</span>
             </button>
           )}
 
@@ -73,14 +106,14 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
             aria-expanded={open}
             aria-controls={panelId}
             className={cn(
-              "focus-visible:outline-brand-500 rounded-chip inline-flex h-11 shrink-0 items-center gap-2 border px-4 text-sm whitespace-nowrap transition-colors",
+              "focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 border px-3 text-sm whitespace-nowrap transition-colors sm:px-4",
               open || activos > 0
                 ? "border-brand-600 bg-accent-soft text-ink"
                 : "border-line text-muted hover:border-brand-500 hover:text-ink",
             )}
           >
             <Funnel size={15} aria-hidden="true" />
-            Filtros
+            <span className="sr-only sm:not-sr-only">Filtros</span>
             {activos > 0 && (
               <span
                 aria-label={`${activos} filtros aplicados`}

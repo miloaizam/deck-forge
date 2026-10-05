@@ -215,3 +215,57 @@ export function pageRange(
   if (total === 0) return { from: 0, to: 0 };
   return { from: (page - 1) * size + 1, to: Math.min(page * size, total) };
 }
+
+/**
+ * Los filtros del catalogo en la URL (`?q=dragon&tipo=Aliado&p=2`), para que
+ * sobrevivan a ir y volver, al recargar y al compartir el enlace.
+ *
+ * La URL es una entrada de afuera (seguridad #4 de CLAUDE.md): cada valor se
+ * acepta solo si es una opcion que el filtro ofrece, el texto se acota y la
+ * pagina se lee como entero positivo. Lo demas se ignora en silencio.
+ */
+const CLAVES_URL: Record<
+  Exclude<keyof CatalogFilters, "query">,
+  [string, keyof Facets]
+> = {
+  edicion: ["ed", "ediciones"],
+  habilidad: ["hab", "habilidades"],
+  tipo: ["tipo", "tipos"],
+  raza: ["raza", "razas"],
+  escuela: ["esc", "escuelas"],
+  frecuencia: ["frec", "frecuencias"],
+  coste: ["coste", "costes"],
+  fuerza: ["fuerza", "fuerzas"],
+};
+
+const MAX_BUSQUEDA_URL = 100;
+
+export function filtersFromSearch(
+  search: string,
+  facets: Facets,
+): { filters: CatalogFilters; page: number } {
+  const params = new URLSearchParams(search);
+  const filters: CatalogFilters = { ...EMPTY_FILTERS };
+  filters.query = (params.get("q") ?? "").slice(0, MAX_BUSQUEDA_URL);
+  for (const [clave, [param, faceta]] of Object.entries(CLAVES_URL)) {
+    const valor = params.get(param);
+    if (valor && facets[faceta].includes(valor)) {
+      // `clave` sale de las claves de CLAVES_URL, que son claves de CatalogFilters.
+      filters[clave as keyof CatalogFilters] = valor;
+    }
+  }
+  const p = Number.parseInt(params.get("p") ?? "", 10);
+  return { filters, page: Number.isFinite(p) && p > 1 && p < 10_000 ? p : 1 };
+}
+
+export function filtersToSearch(filters: CatalogFilters, page: number): string {
+  const params = new URLSearchParams();
+  if (filters.query.trim()) params.set("q", filters.query.slice(0, MAX_BUSQUEDA_URL));
+  for (const [clave, [param]] of Object.entries(CLAVES_URL)) {
+    const valor = filters[clave as keyof CatalogFilters]; // ver arriba
+    if (valor) params.set(param, valor);
+  }
+  if (page > 1) params.set("p", String(page));
+  const s = params.toString();
+  return s ? `?${s}` : "";
+}

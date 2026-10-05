@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, Replace, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
 import { CardRibbons } from "./CardRibbons";
@@ -30,7 +30,17 @@ interface CardModalProps {
   impresiones?: Card[];
   /** Si viene, el modal ofrece cambiar de impresion. */
   onChangeCard?: (card: Card) => void;
+  /**
+   * Si la baraja lleva otra impresion de esta carta, cuantas copias pasarian a
+   * la que se ve y como hacerlo. Solo lo pasa el constructor.
+   */
+  cambiarArte?: { copias: number; onCambiar: () => void };
+  /** Copias en la baraja de cada impresion, para marcarlas en el selector. */
+  copiasDe?: (id: string) => number;
 }
+
+/** Marca de la entrada de historial que pone el modal al abrirse. */
+const MARCA_HISTORIAL = "deckforgeCarta";
 
 /** Dato con etiqueta. No se renderiza si el valor viene vacio. */
 function Stat({ label, value }: { label: string; value: string | number | null }) {
@@ -53,6 +63,8 @@ export function CardModal({
   onBlocked,
   impresiones,
   onChangeCard,
+  cambiarArte,
+  copiasDe,
 }: CardModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -67,14 +79,34 @@ export function CardModal({
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (card && !dialog.open) dialog.showModal();
+    if (card && !dialog.open) {
+      dialog.showModal();
+      // "Atras" cierra la carta en vez de sacar de la pagina: en el telefono es
+      // el gesto natural para cerrar una ficha. Se conserva el estado que deja
+      // el router de Next, que al volver a esta entrada lo necesita.
+      history.pushState({ ...history.state, [MARCA_HISTORIAL]: true }, "");
+    }
     if (!card && dialog.open) dialog.close();
   }, [card]);
+
+  // El "atras" del navegador saca la entrada del modal: se cierra.
+  useEffect(() => {
+    const alVolver = () => {
+      if (ref.current?.open) ref.current.close();
+    };
+    window.addEventListener("popstate", alVolver);
+    return () => window.removeEventListener("popstate", alVolver);
+  }, []);
 
   return (
     <dialog
       ref={ref}
-      onClose={onClose}
+      onClose={() => {
+        // Cerrado con la X, Esc o el fondo: la entrada que se puso al abrir
+        // sobra. Si se cerro con "atras", ya no esta y no se toca.
+        if (history.state?.[MARCA_HISTORIAL]) history.back();
+        onClose();
+      }}
       onClick={(e) => {
         // Clic en el backdrop (fuera del contenido) tambien cierra.
         if (e.target === ref.current) ref.current?.close();
@@ -124,7 +156,19 @@ export function CardModal({
                     impresiones={impresiones}
                     actual={mostrada}
                     onChange={onChangeCard}
+                    copiasDe={copiasDe}
                   />
+                )}
+                {cambiarArte && cambiarArte.copias > 0 && (
+                  <button
+                    type="button"
+                    onClick={cambiarArte.onCambiar}
+                    className="border-brand-500 bg-accent-soft text-accent hover:bg-brand-600 rounded-chip focus-visible:outline-brand-500 mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 border px-3 py-2 text-[13px] font-medium transition-colors hover:text-white"
+                  >
+                    <Replace size={15} aria-hidden="true" />
+                    Usar este arte en la baraja ({cambiarArte.copias}{" "}
+                    {cambiarArte.copias === 1 ? "copia" : "copias"})
+                  </button>
                 )}
               </div>
 
@@ -213,9 +257,11 @@ export function CardModal({
                       </button>
                     )}
                     <span className="text-muted text-[13px] tabular-nums">
-                      {copies === 0
-                        ? "Todavía no está en la baraja"
-                        : `${copies} en la baraja`}
+                      {copies > 0
+                        ? `${copies} en la baraja`
+                        : cambiarArte && cambiarArte.copias > 0
+                          ? `La baraja lleva ${cambiarArte.copias} con otro arte`
+                          : "Todavía no está en la baraja"}
                     </span>
                     {addBlocked && (
                       <span className="text-muted w-full text-[13px]">{addBlocked}</span>
@@ -240,10 +286,13 @@ function Impresiones({
   impresiones,
   actual,
   onChange,
+  copiasDe,
 }: {
   impresiones: Card[];
   actual: Card;
   onChange: (card: Card) => void;
+  /** En el constructor: cuantas copias lleva la baraja de cada impresion. */
+  copiasDe?: (id: string) => number;
 }) {
   return (
     <div className="mt-4">
@@ -253,16 +302,17 @@ function Impresiones({
       <ul className="scrollbar-slim mt-2 flex gap-2 overflow-x-auto pb-2">
         {impresiones.map((c) => {
           const elegida = c.id === actual.id;
+          const enBaraja = copiasDe?.(c.id) ?? 0;
           const etiqueta = c.origen
             ? `${editionTitle(c.edicion)} · Arte de ${origenTitle(c.origen)}`
             : editionTitle(c.edicion);
           return (
-            <li key={c.id} className="shrink-0">
+            <li key={c.id} className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => onChange(c)}
                 aria-pressed={elegida}
-                aria-label={`${etiqueta} (${c.frecuencia})`}
+                aria-label={`${etiqueta} (${c.frecuencia})${enBaraja ? `, ${enBaraja} en la baraja` : ""}`}
                 title={etiqueta}
                 className={cn(
                   "rounded-chip focus-visible:outline-brand-500 block overflow-hidden border-2 transition-colors",
@@ -281,6 +331,14 @@ function Impresiones({
                   style={{ aspectRatio: CARD_RATIO }}
                 />
               </button>
+              {enBaraja > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="bg-brand-600 rounded-chip pointer-events-none absolute top-1 left-1 min-w-5 px-1 text-center text-[11px] font-bold text-white tabular-nums"
+                >
+                  {enBaraja}
+                </span>
+              )}
             </li>
           );
         })}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
+  ClipboardList,
   Copy,
   Download,
   Hammer,
@@ -12,7 +13,6 @@ import {
   Link2,
   Save,
   Trash2,
-  TriangleAlert,
 } from "lucide-react";
 
 import { DeckSections } from "./DeckSections";
@@ -23,7 +23,8 @@ import { HandTester } from "./HandTester";
 import { downloadDeckImage } from "./deck-image";
 import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
-import { copyShareLink, downloadDeck } from "./actions";
+import { copyDeckList, copyShareLink, downloadDeck } from "./actions";
+import { DeckIssues } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
 import { agruparImpresiones } from "@/lib/card-order";
@@ -212,20 +213,27 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
             <button
               type="button"
               onClick={() => void copyShareLink(deck)}
-              aria-label="Compartir la baraja"
-              title="Copiar enlace"
-              className={ICONO}
+              className={BOTON}
             >
               <Link2 size={14} aria-hidden="true" />
+              Copiar enlace
+            </button>
+            <button
+              type="button"
+              onClick={() => void copyDeckList(deck, res)}
+              className={BOTON}
+            >
+              <ClipboardList size={14} aria-hidden="true" />
+              Copiar lista
             </button>
             <button
               type="button"
               onClick={() => downloadDeck(deck)}
-              aria-label="Exportar la baraja"
-              title="Exportar a un archivo"
-              className={ICONO}
+              title="Exportar a un archivo de respaldo"
+              className={BOTON}
             >
               <Download size={14} aria-hidden="true" />
+              Exportar
             </button>
             <button
               type="button"
@@ -236,11 +244,11 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                     toast("No se pudo generar la imagen de la baraja.", "warning"),
                   )
               }
-              aria-label="Descargar la baraja como imagen"
-              title="Descargar como imagen"
-              className={ICONO}
+              title="Descargar como imagen PNG"
+              className={BOTON}
             >
               <ImageDown size={14} aria-hidden="true" />
+              Imagen
             </button>
 
             {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
@@ -279,20 +287,15 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
         </div>
       </header>
 
-      {/* El panel de estado solo aparece cuando hay algo que corregir: decirle
-          "todo bien" a quien ya ve la baraja completa es ruido. */}
+      {/* El estado solo aparece cuando hay algo que corregir: decirle "todo
+          bien" a quien ya ve la baraja completa es ruido. Es el mismo
+          componente del constructor, para que los dos digan lo mismo. */}
       {!legal && (
-        <div className="border-line bg-panel rounded-panel flex flex-col gap-2 border p-5">
-          <p className="text-ink flex items-center gap-2 text-[13px]">
-            <TriangleAlert size={15} aria-hidden="true" className="shrink-0" />
-            La baraja todavía no cumple las reglas del formato
-          </p>
-          <ul className="text-muted flex flex-col gap-1 text-[13px]">
-            {issues.map((i, n) => (
-              <li key={`${i.code}-${n}`}>· {i.mensaje}</li>
-            ))}
-          </ul>
-        </div>
+        <DeckIssues
+          issues={issues}
+          total={stats.totalPrincipal}
+          vacia={res.principal.length === 0 && res.side.length === 0}
+        />
       )}
 
       <DeckSections

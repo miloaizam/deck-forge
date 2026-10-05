@@ -1114,6 +1114,30 @@ Elementales que traían esquinas blancas o el borde impreso se limpiaron y
 estrenan URL (`ad-0NN-recorte.webp`, `ee-3NN-recorte.webp`): se recorta el
 filete y el fondo de cada esquina pasa a negro, como en el arte de la API.
 
+**El constructor se maneja desde la grilla y la URL guarda el catálogo**
+(05-10-2026):
+- Los controles del constructor van **al pie del tile** (`CardTile`: − n +),
+  no sobre el arte: en las esquinas tapaban el coste, la Fuerza y el lazo.
+- **«Usar este arte en la baraja»** (`swapPrinting()` de `deck.ts`): el modal
+  del constructor lo ofrece cuando la baraja lleva otra impresión de la
+  carta, y pasa todas sus copias (principal y side, oro inicial y portada) a
+  la que se ve. Las miniaturas del selector marcan las copias de cada una.
+- **El estado de una baraja es un solo componente**, `DeckIssues.tsx`, en el
+  panel y en el detalle: barra hacia las 50, ámbar lo que falta, rojo la
+  baneada (que va primero) y una guía neutra con la baraja vacía. La barra
+  del teléfono y la lista usan `EstadoPastilla` (Legal / Incompleta / Con
+  baneada).
+- **«Copiar lista»** del detalle copia la baraja en texto (`deckAsText()` de
+  `deck-text.ts`).
+- **Los filtros del catálogo van en la URL** (`filtersToSearch` /
+  `filtersFromSearch` de `catalog.ts`): se leen una vez al montar —validando
+  cada valor contra las facetas, porque la URL es una entrada de afuera— y
+  se escriben con `replaceState`, que no ensucia el historial. Hasta leerla
+  no se escribe, o el primer render (filtros vacíos) la borraría.
+- **«Atrás» cierra el modal**: `CardModal` empuja una entrada al historial al
+  abrirse, conservando el estado del router de Next, y la consume al
+  cerrarse con la X o Esc. **«/»** enfoca el buscador (`Filters.tsx`).
+
 **Mientras algo carga se ve su forma** (`Skeleton.tsx`), nunca un spinner:
 cada ruta de `(app)` tiene su `loading.tsx` con la silueta de su página y el
 mismo `<main>` —mismo ancho y márgenes, para que nada salte al llegar—, las
