@@ -7,14 +7,16 @@ import { createDeck } from "./deck";
 import { buildCardIndex, canAdd, limiteDeCopias, validateDeck } from "./deck-rules";
 import { claveDeNombre } from "./documentos";
 import {
+  conErratas,
   efectoEnReglas,
-  errataUnica,
   erratasDe,
   estaBaneada,
   nombresConErrata,
   tieneErrata,
 } from "./erratas";
-import { catalogSchema, KEYWORDS_IMPRESAS, type Card } from "./types";
+import { keywordsPropias } from "./ability";
+import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
+import { catalogSchema, type Card } from "./types";
 
 /** La Fe de Erratas y la Banlist aplicadas, contra el catalogo real. */
 const CATALOGO: Card[] = catalogSchema.parse(
@@ -111,51 +113,44 @@ test("con Shingas en la baraja, Karna topa en una copia", () => {
   assert.equal(canAdd(una, karna, "principal", INDEX).ok, false);
 });
 
-test("el panel de erratas no explica las keywords", () => {
-  const recordatorio = new RegExp(
-    `(?:${KEYWORDS_IMPRESAS.join("|")})\\.?\\s*\\((?!Cartas)`,
-    "u",
-  );
-  for (const nombre of nombresConErrata()) {
-    for (const e of erratasDe({ nombre })) {
-      for (const t of [e.antes, e.despues]) {
-        if (t) assert.doesNotMatch(t, recordatorio, `${nombre}: ${t}`);
+test("cada cambio a mano encuentra su texto en todas las impresiones", () => {
+  for (const [nombre, t] of Object.entries(TEXTOS_ERRATADOS)) {
+    const impresiones = CATALOGO.filter((c) => c.nombre === nombre);
+    assert.ok(impresiones.length > 0, `${nombre}: no esta en el catalogo`);
+    for (const c of impresiones) {
+      for (const [antes] of t.cambia ?? []) {
+        assert.ok(c.habilidad.includes(antes), `${c.id}: no dice «${antes}»`);
       }
     }
   }
-  const [wyrm] = erratasDe({ nombre: "Wyrm de la Plaga" });
-  assert.match(wyrm.despues, /^Única\. Furia\. Cuando/);
-  const yaoguai = erratasDe({ nombre: "Yaoguai" }).find((e) => e.cambio === "habilidad");
-  assert.match(yaoguai?.despues ?? "", /^Errante\. Espectral\. Una vez/);
-  // Un parentesis que es regla de la carta, y no recordatorio, se queda.
-  const conRegla = nombresConErrata()
-    .flatMap((n) => erratasDe({ nombre: n }))
-    .some((e) => e.despues.includes("(Los Aliados, Armas o Tótem jugados"));
-  assert.ok(conRegla);
 });
 
-test("una sola errata por carta, con solo lo que cambia", () => {
-  // La Banlist repite la Unica que ya suma la Fe de Erratas: sale una vez.
-  const hidro = errataUnica({ nombre: "Hidromancia" })!;
-  assert.deepEqual(hidro.cambios, [{ tipo: "texto", sale: "", entra: "Única." }]);
-  // Solo el trozo que cambia, no la carta entera.
-  const carmina = errataUnica({ nombre: "Carmina Burana" })!;
-  assert.equal(carmina.cambios.length, 1);
-  assert.match(JSON.stringify(carmina.cambios[0]), /Guerra de Talismanes/);
-  // Lo que la Banlist agrega de verdad se queda, en la misma errata.
-  const adapa = errataUnica({ nombre: "Adapa" })!;
-  assert.deepEqual(adapa.fuentes.sort(), ["banlist", "fe-de-erratas"]);
-  assert.ok(adapa.cambios.some((c) => c.tipo === "nota" && /a sí mismo/.test(c.texto)));
-  // Raza: un solo cambio, aunque la Banlist tambien la nombre.
-  const devastador = errataUnica({ nombre: "Devastador" })!;
-  assert.deepEqual(devastador.cambios, [
-    { tipo: "dato", etiqueta: "Raza", sale: "Bestia", entra: "Dragón" },
-  ]);
-  // Ningun cambio que sea solo un punto o una mayuscula.
-  for (const n of nombresConErrata()) {
-    for (const c of errataUnica({ nombre: n })?.cambios ?? []) {
-      if (c.tipo === "texto")
-        assert.notEqual(c.sale.toLowerCase(), c.entra.toLowerCase(), n);
-    }
+test("el catalogo lleva el texto erratado, con sus keywords", () => {
+  const erratada = (nombre: string) => conErratas(porNombre(nombre));
+  // La Unica de la Banlist entra al texto y a las keywords.
+  const teutates = erratada("Teutates");
+  assert.match(teutates.habilidad, /^Única\.\n/);
+  assert.ok(teutates.keywords.includes("Única"));
+  // Delante de una linea que ya solo declara.
+  assert.match(erratada("Paracelso").habilidad, /^Única\. Guardián\.\n/);
+  // Tsukuyomi pasa de Unica a Errante.
+  const tsukuyomi = erratada("Tsukuyomi");
+  assert.ok(tsukuyomi.keywords.includes("Errante"));
+  assert.ok(!tsukuyomi.keywords.includes("Única"));
+  // Coste, atributo y nombre.
+  assert.equal(erratada("Arjumand Banu Begum").coste, 1);
+  const harionna = erratada("Harionna");
+  assert.equal(harionna.atributo, "Oscuridad");
+  assert.ok(harionna.keywords.includes("Oscuridad"));
+  assert.equal(erratada("Caída del Sol").nombre, "Caída de Sol");
+  assert.match(erratada("Lahmu").habilidad, /entre en juego bajo tu control/);
+  // Una carta sin errata sale tal cual.
+  const sin = CATALOGO.find((c) => !tieneErrata(c))!;
+  assert.equal(conErratas(sin), sin);
+  // Y las keywords siempre cuadran con lo que el texto declara.
+  for (const c of CATALOGO) {
+    const e = conErratas(c);
+    for (const k of keywordsPropias(e.habilidad)) assert.ok(e.keywords.includes(k), e.id);
+    if (efectoEnReglas(c).unica === true) assert.ok(e.keywords.includes("Única"), e.id);
   }
 });

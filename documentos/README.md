@@ -4,8 +4,8 @@ Transcripciones de DeckForge de los documentos oficiales del formato Escuelas
 Elementales, con el estilo del sitio. Esta carpeta es la **fuente**: los datos y
 el generador. Los PDF viven en **`public/reglas/`** y se publican; la página
 `/documentos` los enlaza para abrir y descargar, y `/documentos/fe-de-erratas` y
-`/documentos/banlist` los dibujan en HTML con estos mismos datos. **Todavía no
-se aplican** al catálogo ni al validador de barajas (ver `TODO.md`).
+`/documentos/banlist` los dibujan en HTML con estos mismos datos. El catálogo
+y el validador de barajas los aplican (`src/lib/erratas.ts`).
 
 | Archivo | Qué es | Original |
 |---|---|---|
@@ -20,8 +20,8 @@ actualizar `VERSION` en `generar.mjs` y `DOCUMENTOS` en `src/lib/documentos.ts`
 ## Cómo está hecho
 
 - **`fuente/*.json`** son los datos transcritos, y son la fuente de verdad: los
-  PDF se generan a partir de ellos. Cuando se apliquen las erratas y la
-  banlist al sitio, se leerán de aquí.
+  PDF se generan a partir de ellos, y el sitio aplica las erratas y la
+  Banlist leyéndolos de aquí.
 - **`src/lib/documentos.ts`** tiene un esquema de Zod para cada JSON, y
   **`src/lib/documentos.test.ts`** los valida en `pnpm run check` y los cruza
   con el catálogo: cada carta nombrada tiene que existir, o estar en una lista

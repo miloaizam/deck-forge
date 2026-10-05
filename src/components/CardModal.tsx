@@ -7,7 +7,6 @@ import { Minus, Plus, Replace, X } from "lucide-react";
 import { AbilityText } from "./AbilityText";
 import { CardRibbons } from "./CardRibbons";
 import { CARD_RATIO, marcarCargada } from "./CardTile";
-import { ErrataPanel } from "./ErrataPanel";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
@@ -225,8 +224,6 @@ export function CardModal({
                   </div>
                 )}
 
-                <ErrataPanel card={mostrada} />
-
                 {mostrada.ilustrador && (
                   <p className="text-muted border-line mt-5 border-t pt-5 text-[13px]">
                     Ilustración de <span className="text-ink">{mostrada.ilustrador}</span>
@@ -273,9 +270,6 @@ export function CardModal({
                           ? `La baraja lleva ${cambiarArte.copias} con otro arte`
                           : `Todavía no está ${enDestino}`}
                     </span>
-                    {addBlocked && (
-                      <span className="text-muted w-full text-[13px]">{addBlocked}</span>
-                    )}
                   </div>
                 )}
               </div>

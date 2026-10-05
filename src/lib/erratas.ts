@@ -1,25 +1,24 @@
 import banlistJson from "../../documentos/fuente/banlist-estandar.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
-import { keywordsPropias, sinRecordatorios } from "./ability";
+import { keywordsPropias, sinRecordatorios, splitAbility } from "./ability";
+import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
 import {
   banlistSchema,
   claveDeNombre,
-  DOCUMENTOS,
-  ETIQUETA_CAMBIO,
   feDeErratasSchema,
   type Cambio,
 } from "./documentos";
 import { ATRIBUTOS, RAZAS, type Atributo, type Card, type Raza } from "./types";
-import { cambiosDeTexto } from "./word-diff";
 
 /**
  * La Fe de Erratas y la Banlist, aplicadas a las cartas.
  *
- * El catalogo muestra el texto ORIGINAL de cada carta (el que se verifico
- * contra el arte) y la errata va aparte: el modal la ensena con su boton y la
- * grilla le pone un lazo. Las reglas de la baraja, en cambio, juegan con lo
- * erratado: una carta que la Banlist declara Unica topa en una copia aunque su
- * texto impreso no lo diga, y una baneada deja la baraja fuera del formato.
+ * `cards.json` guarda el texto IMPRESO de cada carta (el que se verifico
+ * contra el arte); `getCards()` le aplica las erratas con `conErratas()`, asi
+ * que el catalogo, el buscador y las reglas ven el texto vigente. La grilla y
+ * el modal ponen un lazo en la imagen de la carta erratada o baneada. Una
+ * carta que la Banlist declara Unica topa en una copia, y una baneada deja la
+ * baraja fuera del formato.
  *
  * Las entradas se asocian por NOMBRE (`claveDeNombre`, sin tildes ni
  * mayusculas), asi que alcanzan a todas las impresiones de la carta, Arte
@@ -35,7 +34,7 @@ const BAN = banlistSchema.parse(banlistJson);
 
 export type FuenteErrata = "fe-de-erratas" | "banlist";
 
-/** Una errata para mostrar en el modal de la carta. */
+/** Una entrada de los documentos que alcanza a una carta. */
 export interface ErrataDeCarta {
   fuente: FuenteErrata;
   /** Que cambia. "nota" es una errata de la Banlist en prosa ("Errante"). */
@@ -47,17 +46,6 @@ export interface ErrataDeCarta {
   /** Una aclaracion del propio documento. */
   nota?: string;
 }
-
-/** Donde se lee cada documento en el sitio. */
-export const RUTA_DE_FUENTE: Record<FuenteErrata, string> = {
-  "fe-de-erratas": DOCUMENTOS.feDeErratas.ruta,
-  banlist: DOCUMENTOS.banlist.ruta,
-};
-
-export const NOMBRE_DE_FUENTE: Record<FuenteErrata, string> = {
-  "fe-de-erratas": "Fe de Erratas",
-  banlist: "Banlist",
-};
 
 /**
  * Las entradas de la Banlist que no nombran una carta sino una regla de
@@ -72,7 +60,7 @@ function agregar(nombre: string, e: ErrataDeCarta) {
   const k = claveDeNombre(nombre);
   // Lo que hace cada keyword no se explica, igual que en el catalogo: la Fe de
   // Erratas copia la carta con sus recordatorios ("Única (Sólo puedes tener
-  // una copia…)") y en el panel ahogan lo que cambia.
+  // una copia…)").
   const limpia =
     e.cambio === "habilidad" || e.cambio === "nota"
       ? {
@@ -213,102 +201,71 @@ export function nombresConErrata(): string[] {
   return [...POR_NOMBRE.keys(), ...BANEADAS];
 }
 
-/** Un cambio de la errata unica de una carta, listo para mostrar. */
-export type CambioDeErrata =
-  | { tipo: "texto"; sale: string; entra: string }
-  | { tipo: "dato"; etiqueta: string; sale: string | null; entra: string }
-  | { tipo: "nota"; texto: string };
-
-/** La errata de una carta, juntando la Fe de Erratas y la Banlist. */
-export interface ErrataUnica {
-  cambios: CambioDeErrata[];
-  fuentes: FuenteErrata[];
+/**
+ * Donde va una keyword nueva: delante de las que la carta ya declara al
+ * comienzo ("Furia. Cuando…" -> "Errante. Furia. Cuando…"), o en una linea
+ * propia si no declara ninguna.
+ */
+function declarar(texto: string, keyword: string): string {
+  if (keywordsPropias(texto).includes(keyword)) return texto;
+  if (texto.trim() === "") return `${keyword}.`;
+  const [primera, ...resto] = texto.split("\n");
+  if (splitAbility(primera).keywords.length > 0) {
+    return [`${keyword}. ${primera}`, ...resto].join("\n");
+  }
+  return [`${keyword}.`, primera, ...resto].join("\n");
 }
 
-/** Las palabras de un texto, sin tildes, mayusculas ni puntuacion. */
-const palabras = (s: string) =>
-  s
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .split(/[^\p{L}\p{N}]+/u)
-    .filter((p) => p && p !== "carta");
-
-/**
- * Si la nota de la Banlist ya la dice otra errata: "Carta Unica." cuando la
- * Fe de Erratas suma "Unica", "Raza Dragon." cuando cambia la raza, o la misma
- * habilidad copiada casi palabra por palabra. Se mide por cuantas de sus
- * palabras estan en lo otro.
- */
-function yaDicha(nota: string, otros: string[]): boolean {
-  if (/^Se corrige su texto/.test(nota) && otros.length > 0) return true;
-  const propias = palabras(nota);
-  if (propias.length === 0) return true;
-  return otros.some((o) => {
-    const set = new Set(palabras(o));
-    return propias.filter((p) => set.has(p)).length / propias.length >= 0.75;
-  });
+/** Una keyword que la errata quita (Tsukuyomi deja de ser Unica). */
+function quitarDeclaracion(texto: string, keyword: string): string {
+  return texto
+    .split("\n")
+    .map((l) =>
+      splitAbility(l).cuerpo === ""
+        ? l.replace(new RegExp(`${keyword}\\.\\s*`, "u"), "").trim()
+        : l,
+    )
+    .filter((l) => l !== "")
+    .join("\n");
 }
 
-/** Un punto pegado a la frase siguiente ("Errante.En") se separa para el diff. */
-const separarFrases = (s: string) => s.replace(/\.(?=\p{Lu})/gu, ". ");
-
 /**
- * La errata de la carta en UNA sola lista: solo lo que cambia, sin el texto
- * entero (ese ya esta en el modal), y sin repetir lo que la Banlist dice de
- * nuevo cuando la Fe de Erratas ya lo dijo. Null si no tiene errata.
+ * La carta con la Fe de Erratas y la Banlist aplicadas: el texto vigente, que
+ * es el que muestra el catalogo y el que se juega. El lazo de la imagen
+ * (`CardRibbons`) avisa que el texto no es el impreso.
+ *
+ * Cambia la habilidad (con `TEXTOS_ERRATADOS` y las Unicas de los dos
+ * documentos), las keywords que de ella salen, el nombre, la raza, el
+ * atributo y el coste. Las keywords que la carta tiene por una condicion de
+ * su texto, que no se leen de la declaracion (`keywords.test.ts`), se
+ * conservan. Las cartas sin errata salen tal cual, la misma referencia.
  */
-export function errataUnica(card: Pick<Card, "nombre">): ErrataUnica | null {
-  const todas = erratasDe(card);
-  if (todas.length === 0) return null;
-  const cambios: CambioDeErrata[] = [];
-  const fuentes = new Set<FuenteErrata>();
-  const dichas: string[] = [];
+export function conErratas(card: Card): Card {
+  const texto = TEXTOS_ERRATADOS[card.nombre];
+  const efecto = efectoEnReglas(card);
+  if (!texto && Object.keys(efecto).length === 0) return card;
 
-  for (const e of todas) {
-    if (e.cambio === "nota") continue;
-    fuentes.add(e.fuente);
-    if (e.cambio === "habilidad") {
-      dichas.push(e.despues);
-      if (!e.antes) {
-        cambios.push({ tipo: "nota", texto: e.despues });
-        continue;
-      }
-      const antes = separarFrases(e.antes);
-      const despues = separarFrases(e.despues);
-      const trozos = cambiosDeTexto(antes, despues);
-      // Si la errata reescribe media carta, los trozos sueltos no se leen:
-      // va el texto nuevo entero.
-      const nuevas = trozos.reduce((n, c) => n + palabras(c.entra).length, 0);
-      if (nuevas > palabras(despues).length * 0.5) {
-        cambios.push({ tipo: "nota", texto: despues });
-      } else {
-        for (const c of trozos) {
-          // Un punto o una mayuscula de diferencia no es lo que cambia.
-          if (palabras(c.sale).join(" ") === palabras(c.entra).join(" ")) continue;
-          cambios.push({ tipo: "texto", ...c });
-        }
-      }
-    } else {
-      dichas.push(`${ETIQUETA_CAMBIO[e.cambio]} ${e.despues}`);
-      cambios.push({
-        tipo: "dato",
-        etiqueta: ETIQUETA_CAMBIO[e.cambio],
-        sale: e.antes,
-        entra: e.despues,
-      });
-    }
+  let habilidad = card.habilidad;
+  for (const [antes, despues] of texto?.cambia ?? []) {
+    habilidad = habilidad.replace(antes, despues);
   }
-  // Las notas de la Banlist, de la mas larga a la mas corta: asi "Carta
-  // Unica." cae como repetida cuando otra nota ya la dice.
-  const notas = todas
-    .filter((e) => e.cambio === "nota")
-    .sort((a, b) => b.despues.length - a.despues.length);
-  for (const e of notas) {
-    if (yaDicha(e.despues, dichas)) continue;
-    dichas.push(e.despues);
-    fuentes.add(e.fuente);
-    cambios.push({ tipo: "nota", texto: e.despues });
-  }
-  return { cambios, fuentes: [...fuentes] };
+  if (texto?.agrega) habilidad = `${habilidad}\n${texto.agrega}`;
+  for (const k of texto?.declara ?? []) habilidad = declarar(habilidad, k);
+  if (efecto.atributo) habilidad = declarar(habilidad, efecto.atributo);
+  if (efecto.unica === true) habilidad = declarar(habilidad, "Única");
+  if (efecto.unica === false) habilidad = quitarDeclaracion(habilidad, "Única");
+
+  const antes = new Set(keywordsPropias(card.habilidad));
+  const condicionales = card.keywords.filter((k) => !antes.has(k));
+  const keywords = [...new Set([...keywordsPropias(habilidad), ...condicionales])];
+
+  return {
+    ...card,
+    nombre: texto?.nombre ?? card.nombre,
+    habilidad,
+    keywords,
+    raza: efecto.raza ?? card.raza,
+    atributo: efecto.atributo ?? card.atributo,
+    coste: efecto.coste ?? card.coste,
+  };
 }

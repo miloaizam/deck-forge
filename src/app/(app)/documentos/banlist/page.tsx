@@ -40,13 +40,6 @@ export default function BanlistPage() {
         peso={pesoDelPdf(DOCUMENTOS.banlist)}
       />
 
-      <div className="border-brand-500/60 bg-accent-soft rounded-card mt-8 border px-5 py-4">
-        <p className="text-accent text-[11px] font-semibold tracking-[0.2em] uppercase">
-          Construcción de la baraja
-        </p>
-        <p className="text-ink mt-1 text-[16px] font-semibold">{doc.construccion}</p>
-      </div>
-
       <section aria-labelledby="prohibidas" className={SECCION}>
         <h2 id="prohibidas" className={`${TITULO} text-danger`}>
           Prohibidas <span className={CUENTA}>{doc.prohibidas.length}</span>

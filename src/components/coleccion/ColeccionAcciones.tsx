@@ -6,17 +6,19 @@ import { ClipboardCopy, Download, Trash2, Upload } from "lucide-react";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import {
+  COLECCION_VACIA,
   exportarColeccion,
   fusionar,
   importarColeccion,
+  estaVacia,
   saveColeccion,
   type Coleccion,
 } from "@/lib/coleccion";
 
 interface ColeccionAccionesProps {
   coleccion: Coleccion;
-  /** El texto de la lista que se ve, con sus filtros. */
-  lista: () => string;
+  /** El texto de la lista que se ve, con sus filtros. `null` si no se copia. */
+  lista: (() => string) | null;
   /** Cuantas cartas tiene la lista que se ve: sin ninguna no hay que copiar. */
   enLista: number;
 }
@@ -35,11 +37,11 @@ const MAX_ARCHIVO = 1024 * 1024;
 export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccionesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [vaciar, setVaciar] = useState(false);
-  const vacia = Object.keys(coleccion).length === 0;
+  const vacia = estaVacia(coleccion);
 
   const copiar = async () => {
     try {
-      await navigator.clipboard.writeText(lista());
+      if (lista) await navigator.clipboard.writeText(lista());
       toast("Lista copiada al portapapeles.", "info");
     } catch {
       toast("No se pudo copiar la lista. Revisa los permisos del navegador.", "warning");
@@ -70,8 +72,10 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
       toast("El archivo no es un respaldo de colección de DeckForge.", "warning");
       return;
     }
-    const nuevas = Object.keys(leido.cartas).filter((id) => !(id in coleccion)).length;
-    if (!saveColeccion(fusionar(coleccion, leido.cartas))) {
+    const nuevas =
+      Object.keys(leido.coleccion.tengo).filter((id) => !(id in coleccion.tengo)).length +
+      leido.coleccion.quiero.filter((id) => !coleccion.quiero.includes(id)).length;
+    if (!saveColeccion(fusionar(coleccion, leido.coleccion))) {
       toast(
         "No se pudo guardar la colección: el almacenamiento del navegador está lleno.",
         "warning",
@@ -80,8 +84,8 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
     }
     const partes = [
       nuevas === 1
-        ? "Colección importada: 1 impresión nueva."
-        : `Colección importada: ${nuevas} impresiones nuevas.`,
+        ? "Colección importada: 1 carta nueva."
+        : `Colección importada: ${nuevas} cartas nuevas.`,
     ];
     if (leido.descartadas > 0) {
       partes.push(
@@ -95,10 +99,12 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
 
   return (
     <div className="flex flex-wrap gap-2">
-      <button type="button" onClick={copiar} disabled={enLista === 0} className={BOTON}>
-        <ClipboardCopy size={15} aria-hidden="true" />
-        Copiar lista
-      </button>
+      {lista && (
+        <button type="button" onClick={copiar} disabled={enLista === 0} className={BOTON}>
+          <ClipboardCopy size={15} aria-hidden="true" />
+          Copiar lista
+        </button>
+      )}
       <button type="button" onClick={exportar} disabled={vacia} className={BOTON}>
         <Download size={15} aria-hidden="true" />
         Exportar
@@ -132,12 +138,12 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
       <ConfirmDialog
         open={vaciar}
         titulo="Vaciar la colección"
-        mensaje="Se quitan todas las cartas marcadas. Si quieres conservarlas, exporta antes un respaldo."
+        mensaje="Se quitan todas las cartas marcadas, las que tienes y las que te faltan. Si quieres conservarlas, exporta antes un respaldo."
         confirmar="Vaciar"
         onCancel={() => setVaciar(false)}
         onConfirm={() => {
           setVaciar(false);
-          if (saveColeccion({})) toast("Colección vaciada.", "delete");
+          if (saveColeccion(COLECCION_VACIA)) toast("Colección vaciada.", "delete");
         }}
       />
     </div>

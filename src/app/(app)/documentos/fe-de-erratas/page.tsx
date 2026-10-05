@@ -48,16 +48,7 @@ export default function FeDeErratasPage() {
         bajada={`${doc.entradas.length} cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado.`}
         origen={`Transcripción de DeckForge del documento oficial «${doc.original.titulo}», última actualización ${doc.original.actualizacion}. Versión del ${fechaLarga(doc.version)}. El texto de las cartas se copia tal cual del original; solo se corrigieron erratas del propio documento, anotadas en cada carta.`}
         peso={pesoDelPdf(DOCUMENTOS.feDeErratas)}
-      >
-        <p className="text-muted mt-6 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
-          <span>
-            <del className={MARCA_SALE}>Tachado</del>: lo que sale
-          </span>
-          <span>
-            <ins className={MARCA_ENTRA}>Resaltado</ins>: lo que entra
-          </span>
-        </p>
-      </DocumentHeader>
+      />
 
       <nav aria-label="Ediciones" className="mt-8">
         <ul className="flex flex-wrap gap-2">

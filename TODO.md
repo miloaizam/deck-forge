@@ -19,8 +19,8 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 ### La colección en las barajas
 
 - **Qué:** que el constructor y el detalle de una baraja marquen las cartas
-  que el jugador no tiene en su colección (`/coleccion`), y que Mis barajas
-  diga cuántas le faltan para armar cada una.
+  que el jugador no tiene en su colección (`/coleccion`), y que de ahí se
+  puedan sumar a «Me faltan».
 - **Por dónde:** `useColeccion()` ya se puede leer desde cualquier vista; las
   copias se comparan por `identidad`, sumando todas las impresiones, porque
   para jugar cualquier arte vale.

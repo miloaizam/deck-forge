@@ -86,10 +86,11 @@ export interface RuleCard {
 }
 
 /**
- * La carta tal como la ven las reglas: con la Fe de Erratas y la Banlist ya
- * aplicadas (`erratas.ts`). El catalogo muestra el texto original; aqui manda
- * el erratado, que es el que se juega: una carta que la Banlist declara Unica
- * topa en una copia, y una baneada queda `prohibida`.
+ * La carta tal como la ven las reglas: con la Fe de Erratas y la Banlist
+ * aplicadas (`erratas.ts`). Las cartas de `getCards()` ya llegan erratadas
+ * (`conErratas`); se vuelve a aplicar aqui para que las reglas no dependan de
+ * eso (los tests leen `cards.json` directo): una carta que la Banlist declara
+ * Unica topa en una copia, y una baneada queda `prohibida`.
  */
 export function toRuleCard(c: Card, orden = 0): RuleCard {
   const errata = efectoEnReglas(c);

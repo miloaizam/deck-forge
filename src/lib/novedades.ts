@@ -27,11 +27,19 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-05",
+    tipo: "Mejora",
+    titulo: "Erratas dentro de la carta",
+    texto: [
+      "Las cartas con errata muestran directamente el texto corregido por la Fe de Erratas y la Banlist, con sus keywords: ya no hay que abrir un panel aparte. El lazo «Errata» de la imagen sigue avisando que el texto no es el impreso, y el buscador y los filtros encuentran las cartas por el texto corregido.",
+    ],
+  },
+  {
+    fecha: "2026-10-05",
     tipo: "Novedad",
     titulo: "Tu colección",
     texto: [
-      "Nueva sección «Colección», junto a Mis barajas: marca las cartas que tienes y cuántas copias, y mira cuánto llevas de cada edición y qué te falta.",
-      "Las cartas van en dos pestañas, Obtenidas y Faltantes, por tipo y con el buscador y los filtros del catálogo. «Copiar lista» copia lo que ves como texto, para negociar cambios por chat, y la colección se exporta e importa con un archivo como las barajas.",
+      "Nueva sección «Colección», junto a Mis barajas, con dos listas: las cartas que tienes, con sus copias, y las que te faltan para conseguir. Se agregan desde «Agregar cartas», que tiene el buscador y los filtros del catálogo.",
+      "«Copiar lista» copia cualquiera de las dos como texto, para negociar cambios por chat, y la colección se exporta e importa con un archivo como las barajas.",
     ],
   },
   {

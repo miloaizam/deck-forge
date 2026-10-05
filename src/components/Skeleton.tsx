@@ -85,14 +85,10 @@ export function DeckListSkeleton() {
   );
 }
 
-/** La coleccion: el resumen, los filtros y las filas de la lista. */
+/** La coleccion: los filtros, las pestanas y las filas de la lista. */
 export function ColeccionSkeleton() {
   return (
     <div aria-hidden="true" className="flex flex-col gap-6">
-      <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
-        <Skeleton className="rounded-panel h-52" />
-        <Skeleton className="rounded-panel h-52" />
-      </div>
       <FiltersSkeleton />
       <Skeleton className="rounded-chip h-11 w-60" />
       <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">

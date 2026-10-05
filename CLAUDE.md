@@ -1028,27 +1028,33 @@ siempre a la vista y también en el teléfono, la **ayuda** (un signo de
 pregunta) y el botón de tema. La portada no tiene navbar, así que tampoco
 ayuda.
 
-**La colección** (`/coleccion`, 05-10-2026) lleva la cuenta de las cartas que
-el usuario tiene en físico. La lógica es `src/lib/coleccion.ts` (con su test) y
-la vista, `src/components/coleccion/`. Cinco decisiones:
+**La colección** (`/coleccion`, 05-10-2026) son dos listas del usuario: las
+cartas que **tiene**, con sus copias, y las que **le faltan**, que son las que
+quiere conseguir — no todo el catálogo: la primera versión medía el avance
+sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
+`src/lib/coleccion.ts` (con su test) y la vista, `src/components/coleccion/`.
 
-- **Se cuenta por impresión (`id`), no por `identidad`.** Quien colecciona
-  distingue el arte normal del alternativo, y de ese dato sale el otro: el
-  resumen da impresiones y **cartas distintas**. Al revés no se podría.
+- **Tres pestañas**: «Tengo» (− n +), «Me faltan» («Ya la tengo» la pasa a
+  Tengo con una copia; la X la quita) y «Agregar cartas», el catálogo entero
+  con «Tengo» y un corazón que la anota en las que faltan. **Tener una carta
+  la saca de las que faltan** (`conCopias`) y una que se tiene no entra
+  (`alternarQuiero`).
+- **Se cuenta por impresión (`id`), no por `identidad`**: quien colecciona
+  distingue el arte normal del alternativo.
 - **Vive en `localStorage`, en su propia clave** (`deckforge-coleccion`, sobre
-  `{ v: 1, cartas: { id: copias } }`), y se lee como las barajas: store con
+  `{ v: 1, cartas: { id: copias }, quiero: [id] }`; `quiero` falta en lo
+  guardado por la primera versión y se lee igual), con store de
   `useSyncExternalStore` y validación entrada por entrada (seguridad #4). Los
-  ids viejos se traducen con `cardRefSchema`. Una id que ya no está en el
-  catálogo se conserva pero no cuenta en los totales.
-- **Importar fusiona quedándose con la cantidad mayor** de cada impresión:
-  importar dos veces no duplica e importar un respaldo viejo no borra nada. El
-  archivo lleva `tipo: "coleccion"`, así que un respaldo de barajas no pasa
-  por uno de colección.
-- **Es una lista y no la grilla**: dos pestañas (Obtenidas / Faltantes) y,
-  dentro, las cartas por tipo en el orden del catálogo. Sin paginar —se baja
-  de corrido— y por eso cada fila lleva `content-visibility: auto`
+  ids viejos se traducen con `cardRefSchema`.
+- **Importar fusiona**: la cantidad mayor de cada impresión y la unión de las
+  que faltan. Importar dos veces no duplica e importar un respaldo viejo no
+  borra nada. El archivo lleva `tipo: "coleccion"`, así que un respaldo de
+  barajas no pasa por uno de colección.
+- **Es una lista y no la grilla**, por tipo y en el orden del catálogo. En
+  «Agregar cartas» son hasta 2652 filas: cada tipo pinta 150 y el resto se
+  pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
-  filtros en la URL como el catálogo, más `?ver=faltantes`.
+  filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
 - **«Copiar lista»** copia la pestaña que se ve, con sus filtros, como texto
   con el código de cada carta (`coleccionComoTexto`): es como se negocian los
   cambios.
@@ -1478,8 +1484,9 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   impreso y sin la condición (Única, Errante, libre por tres) ni la errata que
   la Banlist les pone. Ráksasa lleva tilde, como la imprime el arte (la Banlist
   escribe "Raksasa"), y el ilustrador leído del pie (`Brolken`: la API trae
-  relleno). **Las erratas de la Fe de Erratas tampoco se aplican**: Lahmu y
-  Ataque de Dragón siguen con su texto impreso.
+  relleno). Lo mismo vale para la Fe de Erratas: `data-src` guarda el texto
+  impreso de Lahmu y Ataque de Dragón, y las erratas se aplican al leer
+  (`conErratas`, más abajo).
 - **Los ids cambiaron tres veces y los viejos se traducen al leer.**
   `src/lib/ids-anteriores.ts` guarda cada id viejo (`pb-`, `pa-`, `do-3NN`,
   `ca-15N`, `cm-`, `te-`, `ke-`, `dh-`…) con su id de hoy, y `cardRefSchema`
@@ -1825,27 +1832,31 @@ catálogo real. Las páginas de `/documentos` los leen en el build con
 `documentos-data.ts` (solo Server Components: importa `node:fs`), y todo lo
 demás con **`src/lib/erratas.ts`**, que importa los mismos JSON sin `node:fs`
 y sirve en el cliente, en el build y en los tests (`scripts/ts-imports.mjs` les
-pone el atributo `type: "json"` que Node exige). El diff resaltado
-(`word-diff.ts`) es la misma lógica que el `diff()` del generador de los PDF:
-si cambia uno, se cambia el otro.
+pone el atributo `type: "json"` que Node exige). El diff resaltado de
+`/documentos/fe-de-erratas` (`word-diff.ts`) es la misma lógica que el
+`diff()` del generador de los PDF: si cambia uno, se cambia el otro.
 
-- **El catálogo muestra el texto ORIGINAL** y la errata va aparte: un lazo
-  «Errata» en la esquina de la imagen (grilla y modal, `CardRibbons.tsx`) y
-  un botón «Errata» en el modal (`ErrataPanel.tsx`) que abre el texto
-  arreglado, con lo que cambia resaltado. `cards.json` no cambia: el texto de
-  `data-src` es el impreso, verificado contra el arte.
-  **Una sola errata por carta, y solo lo que cambia** (`errataUnica()`):
-  la Fe de Erratas y la Banlist se juntan en un bloque, sin secciones por
-  fuente. De la habilidad salen los trozos que cambian (`cambiosDeTexto()`
-  de `word-diff.ts`), no el texto entero; si la errata reescribe más de la
-  mitad, va el texto nuevo completo. Una nota de la Banlist que repite lo
-  que ya dijo la Fe de Erratas («Carta Única.», «Raza Dragón.», la misma
-  habilidad copiada) se omite: se mide por cuántas de sus palabras ya están
-  dichas. Un punto o una mayúscula de diferencia no cuentan como cambio.
-  El panel **tampoco explica las keywords**: la Fe de Erratas copia la carta
-  con sus recordatorios («Única (Sólo puedes tener…)», «Guardián. (…)») y
-  `erratas.ts` los quita con `sinRecordatorios()` de `ability.ts`, el mismo
-  regex del catálogo.
+- **El catálogo muestra el texto ERRATADO** (decisión del proyecto,
+  05-10-2026; antes iba aparte, en un panel desplegable del modal).
+  `cards.json` no cambia —el texto de `data-src` es el impreso, verificado
+  contra el arte—: `getCards()` le aplica `conErratas()` de `erratas.ts`, así
+  que el modal, el buscador, los filtros y las reglas ven el texto vigente.
+  La imagen conserva el lazo «Errata» o «Baneada» (`CardRibbons.tsx`), y es
+  lo único que se ve de una baneada: su texto no cambia. Nada dice «según la
+  Fe de Erratas» o «según la Banlist».
+  `conErratas` suma las declaraciones que salen de `efectoEnReglas()` (las
+  Únicas, el atributo) y aplica `TEXTOS_ERRATADOS`
+  (`src/lib/erratas-aplicadas.ts`): lo que los documentos escriben en prosa
+  —«Errante», «solo si controlas Aliados de raza Bárbaro», «hasta tres Armas
+  con distinto nombre»— traducido a texto de carta, como reemplazos sobre
+  cada impresión para que cada edición conserve su forma de imprimir. Una
+  keyword nueva se antepone a las que la carta ya declara. Las keywords se
+  recalculan del texto nuevo y se conservan las condicionales
+  (`keywords.test.ts`). Muchas erratas no necesitan entrada: Escuelas
+  Elementales reimprimió la carta corregida y su texto ya se había propagado.
+  `erratas.test.ts` exige que cada reemplazo encuentre su texto en **todas**
+  las impresiones. La regla «Mazo Desafiante y/o Guerrero» (Shingas y Karna)
+  no es texto de carta y no se escribe en ninguna: la aplica el validador.
 - **Las reglas juegan con lo erratado.** `toRuleCard` (`deck-rules.ts`) toma
   de `efectoEnReglas()` la Única, la raza, el atributo y el coste: las **31
   Únicas de la Banlist** y las de observación topan en una copia, Tsukuyomi

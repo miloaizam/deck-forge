@@ -1,17 +1,15 @@
 import { z } from "zod";
 
-import { compareEditions } from "./card-order";
-import { editionTitle } from "./editions";
 import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./types";
 
 /**
- * La coleccion del usuario: cuantas copias tiene de cada impresion.
+ * La coleccion del usuario: las cartas que tiene, con sus copias, y las que le
+ * faltan, que son las que QUIERE conseguir (no todo el catalogo: nadie
+ * colecciona las 2652).
  *
- * Se cuenta por IMPRESION (`id`) y no por `identidad`: quien colecciona
- * distingue el Kirin normal del Milenaria, y del dato por impresion sale el
- * otro (cartas distintas) sumando; al reves no se puede. Vive en
- * `localStorage`, aparte de las barajas, y como todo lo que sale de ahi se
- * valida al leerse (CLAUDE.md, seguridad #4).
+ * Se cuenta por impresion (`id`): quien colecciona distingue el arte normal
+ * del alternativo. Vive en `localStorage`, aparte de las barajas, y como todo
+ * lo que sale de ahi se valida al leerse (CLAUDE.md, seguridad #4).
  *
  * Sin `"use client"` por lo mismo que `deck-storage.ts`: las funciones que
  * tocan `localStorage` se defienden solas de correr en el servidor.
@@ -28,10 +26,17 @@ const MAX_ENTRADAS = 10_000;
 /** Cota antes de parsear: localStorage y los archivos traen cualquier cosa. */
 const MAX_CHARS = 512 * 1024;
 
-/** Id de impresion -> copias (de 1 en adelante; las que no tiene no estan). */
-export type Coleccion = Readonly<Record<string, number>>;
+export interface Coleccion {
+  /** Id de impresion -> copias (de 1 en adelante). */
+  readonly tengo: Readonly<Record<string, number>>;
+  /** Las impresiones que quiere conseguir. Nunca una que ya tiene. */
+  readonly quiero: readonly string[];
+}
 
-const VACIA: Coleccion = Object.freeze({});
+export const COLECCION_VACIA: Coleccion = Object.freeze({
+  tengo: Object.freeze({}),
+  quiero: Object.freeze([]),
+});
 
 const copiasSchema = z.number().int().min(1).max(MAX_COPIAS_COLECCION);
 
@@ -40,134 +45,92 @@ const copiasSchema = z.number().int().min(1).max(MAX_COPIAS_COLECCION);
  * viejos se traducen (`ids-anteriores.ts`) y, si dos acaban en el mismo, se
  * suman. Nunca lanza.
  */
-export function sanearColeccion(bruto: unknown): {
-  cartas: Coleccion;
-  descartadas: number;
-} {
-  if (typeof bruto !== "object" || bruto === null || Array.isArray(bruto)) {
-    return { cartas: VACIA, descartadas: 0 };
-  }
-  const cartas: Record<string, number> = {};
+export function sanearColeccion(
+  cartas: unknown,
+  quiero: unknown,
+): { coleccion: Coleccion; descartadas: number } {
+  const tengo: Record<string, number> = {};
   let descartadas = 0;
   let leidas = 0;
-  for (const [clave, valor] of Object.entries(bruto)) {
-    if (++leidas > MAX_ENTRADAS) {
-      descartadas++;
-      continue;
+  if (typeof cartas === "object" && cartas !== null && !Array.isArray(cartas)) {
+    for (const [clave, valor] of Object.entries(cartas)) {
+      const id = cardRefSchema.safeParse(clave);
+      const n = copiasSchema.safeParse(valor);
+      if (++leidas > MAX_ENTRADAS || !id.success || !n.success) {
+        descartadas++;
+        continue;
+      }
+      tengo[id.data] = Math.min(MAX_COPIAS_COLECCION, (tengo[id.data] ?? 0) + n.data);
     }
-    const id = cardRefSchema.safeParse(clave);
-    const n = copiasSchema.safeParse(valor);
-    if (!id.success || !n.success) {
-      descartadas++;
-      continue;
-    }
-    cartas[id.data] = Math.min(MAX_COPIAS_COLECCION, (cartas[id.data] ?? 0) + n.data);
   }
-  return { cartas, descartadas };
+  const deseadas = new Set<string>();
+  if (Array.isArray(quiero)) {
+    for (const valor of quiero) {
+      const id = cardRefSchema.safeParse(valor);
+      if (++leidas > MAX_ENTRADAS || !id.success) {
+        descartadas++;
+        continue;
+      }
+      if (!(id.data in tengo)) deseadas.add(id.data);
+    }
+  }
+  return { coleccion: { tengo, quiero: [...deseadas] }, descartadas };
 }
 
 /** Lee lo guardado en localStorage. Lo que no cuadre se descarta. */
 export function parseColeccion(raw: string | null): Coleccion {
-  if (!raw || raw.length > MAX_CHARS) return VACIA;
+  if (!raw || raw.length > MAX_CHARS) return COLECCION_VACIA;
   try {
     const bruto: unknown = JSON.parse(raw);
-    if (typeof bruto !== "object" || bruto === null || !("cartas" in bruto)) {
-      return VACIA;
-    }
-    return sanearColeccion(bruto.cartas).cartas;
+    if (typeof bruto !== "object" || bruto === null) return COLECCION_VACIA;
+    const sobre = bruto as { cartas?: unknown; quiero?: unknown }; // se valida campo a campo
+    return sanearColeccion(sobre.cartas, sobre.quiero).coleccion;
   } catch {
-    return VACIA;
+    return COLECCION_VACIA;
   }
 }
 
-/** La coleccion con `n` copias de `id`; con 0 la impresion sale. */
+export const estaVacia = (col: Coleccion) =>
+  Object.keys(col.tengo).length === 0 && col.quiero.length === 0;
+
+/**
+ * La coleccion con `n` copias de `id`; con 0 sale de las que tiene. Tenerla
+ * la saca de las que faltan: ya no falta.
+ */
 export function conCopias(col: Coleccion, id: string, n: number): Coleccion {
   const acotado = Math.max(0, Math.min(MAX_COPIAS_COLECCION, Math.trunc(n)));
-  const siguiente: Record<string, number> = { ...col };
-  if (acotado === 0) delete siguiente[id];
-  else siguiente[id] = acotado;
-  return siguiente;
+  const tengo: Record<string, number> = { ...col.tengo };
+  if (acotado === 0) delete tengo[id];
+  else tengo[id] = acotado;
+  return {
+    tengo,
+    quiero: acotado > 0 ? col.quiero.filter((q) => q !== id) : col.quiero,
+  };
+}
+
+/** Suma o quita una impresion de las que faltan. Una que ya tiene no entra. */
+export function alternarQuiero(col: Coleccion, id: string): Coleccion {
+  if (col.quiero.includes(id)) {
+    return { ...col, quiero: col.quiero.filter((q) => q !== id) };
+  }
+  if (id in col.tengo) return col;
+  return { ...col, quiero: [...col.quiero, id] };
 }
 
 /**
  * Junta una coleccion importada con la que hay. Por impresion se queda la
- * MAYOR de las dos cantidades: importar el mismo respaldo dos veces no duplica
- * nada, e importar uno viejo no borra lo marcado despues.
+ * MAYOR de las dos cantidades y las que faltan se suman: importar el mismo
+ * respaldo dos veces no duplica nada, e importar uno viejo no borra nada.
  */
 export function fusionar(actual: Coleccion, importada: Coleccion): Coleccion {
-  const out: Record<string, number> = { ...actual };
-  for (const [id, n] of Object.entries(importada)) {
-    out[id] = Math.max(out[id] ?? 0, n);
+  const tengo: Record<string, number> = { ...actual.tengo };
+  for (const [id, n] of Object.entries(importada.tengo)) {
+    tengo[id] = Math.max(tengo[id] ?? 0, n);
   }
-  return out;
-}
-
-/* ------------------------------------------------------------------ *
- * Cuentas
- * ------------------------------------------------------------------ */
-
-export interface Avance {
-  tengo: number;
-  total: number;
-}
-
-export interface ResumenColeccion {
-  /** Impresiones con al menos una copia, sobre las del catalogo. */
-  impresiones: Avance;
-  /** Cartas distintas (por `identidad`) con al menos una impresion. */
-  cartas: Avance;
-  /** Copias en total, sumando todas las impresiones. */
-  copias: number;
-  /** Impresiones de las que hay mas de tres copias: lo que sobra para jugar. */
-  repetidas: number;
-  /** Por edicion, de la mas nueva a la mas vieja, como el catalogo. */
-  porEdicion: (Avance & { slug: string; titulo: string })[];
-}
-
-/**
- * Solo cuenta impresiones que estan en el catalogo: una id guardada de una
- * carta que ya no existe no infla los totales (y se conserva, por si vuelve).
- */
-export function resumir(cards: Card[], col: Coleccion): ResumenColeccion {
-  const identidades = new Map<string, boolean>();
-  const ediciones = new Map<string, Avance>();
-  let tengo = 0;
-  let copias = 0;
-  let repetidas = 0;
-
-  for (const c of cards) {
-    const n = col[c.id] ?? 0;
-    const ed = ediciones.get(c.edicion) ?? { tengo: 0, total: 0 };
-    ed.total++;
-    if (n > 0) {
-      ed.tengo++;
-      tengo++;
-      copias += n;
-      if (n > 3) repetidas++;
-    }
-    ediciones.set(c.edicion, ed);
-    identidades.set(c.identidad, (identidades.get(c.identidad) ?? false) || n > 0);
-  }
-
-  return {
-    impresiones: { tengo, total: cards.length },
-    cartas: {
-      tengo: [...identidades.values()].filter(Boolean).length,
-      total: identidades.size,
-    },
-    copias,
-    repetidas,
-    porEdicion: [...ediciones.entries()]
-      .sort(([a], [b]) => compareEditions(a, b))
-      .map(([slug, a]) => ({ slug, titulo: editionTitle(slug), ...a })),
-  };
-}
-
-/** Porcentaje entero, sin redondear a 100 lo que no esta completo. */
-export function porcentaje({ tengo, total }: Avance): number {
-  if (total === 0) return 0;
-  const p = Math.round((tengo / total) * 100);
-  return p === 100 && tengo < total ? 99 : p;
+  const quiero = [...new Set([...actual.quiero, ...importada.quiero])].filter(
+    (id) => !(id in tengo),
+  );
+  return { tengo, quiero };
 }
 
 /** Las cartas agrupadas por tipo, en el orden de las secciones de la baraja. */
@@ -181,8 +144,8 @@ export function porTipo(cards: Card[]): { tipo: Tipo; titulo: string; cards: Car
 
 /**
  * Una lista de texto para pasar por Discord o WhatsApp, que es como se
- * negocian los cambios: por tipo, con el codigo para no confundir artes.
- * Las obtenidas llevan las copias; las faltantes, no.
+ * negocian los cambios: por tipo, con el codigo para no confundir artes. Las
+ * que tiene llevan las copias; las que faltan, no.
  */
 export function coleccionComoTexto(
   titulo: string,
@@ -194,9 +157,10 @@ export function coleccionComoTexto(
   for (const g of porTipo(cards)) {
     out.push("", `${g.titulo} (${g.cards.length})`);
     for (const c of g.cards) {
-      const n = col[c.id] ?? 0;
       out.push(
-        conCopiasPuestas ? `${n} ${c.nombre} (${c.codigo})` : `${c.nombre} (${c.codigo})`,
+        conCopiasPuestas
+          ? `${col.tengo[c.id] ?? 0} ${c.nombre} (${c.codigo})`
+          : `${c.nombre} (${c.codigo})`,
       );
     }
   }
@@ -212,6 +176,7 @@ const archivoSchema = z.object({
   tipo: z.literal("coleccion"),
   v: z.literal(1),
   cartas: z.unknown(),
+  quiero: z.unknown().optional(),
 });
 
 export function exportarColeccion(col: Coleccion): string {
@@ -221,7 +186,8 @@ export function exportarColeccion(col: Coleccion): string {
       tipo: "coleccion",
       v: 1,
       exportado: new Date().toISOString(),
-      cartas: col,
+      cartas: col.tengo,
+      quiero: col.quiero,
     },
     null,
     2,
@@ -231,7 +197,7 @@ export function exportarColeccion(col: Coleccion): string {
 /** Lee un respaldo de coleccion. `null` si no lo es. Nunca lanza. */
 export function importarColeccion(
   texto: string,
-): { cartas: Coleccion; descartadas: number } | null {
+): { coleccion: Coleccion; descartadas: number } | null {
   if (texto.length > MAX_CHARS) return null;
   let bruto: unknown;
   try {
@@ -241,7 +207,7 @@ export function importarColeccion(
   }
   const sobre = archivoSchema.safeParse(bruto);
   if (!sobre.success) return null;
-  return sanearColeccion(sobre.data.cartas);
+  return sanearColeccion(sobre.data.cartas, sobre.data.quiero);
 }
 
 /* ------------------------------------------------------------------ *
@@ -279,23 +245,25 @@ export function subscribeColeccion(cb: () => void): () => void {
 export function getColeccionSnapshot(): Coleccion {
   if (cache === null) {
     try {
-      cache = disponible() ? parseColeccion(localStorage.getItem(COLECCION_KEY)) : VACIA;
+      cache = disponible()
+        ? parseColeccion(localStorage.getItem(COLECCION_KEY))
+        : COLECCION_VACIA;
     } catch {
-      cache = VACIA; // ventana privada, almacenamiento bloqueado
+      cache = COLECCION_VACIA; // ventana privada, almacenamiento bloqueado
     }
   }
   return cache;
 }
 
 export function getServerColeccionSnapshot(): Coleccion {
-  return VACIA;
+  return COLECCION_VACIA;
 }
 
 /** Guarda la coleccion entera. Devuelve si pudo (cuota llena, bloqueo). */
 export function saveColeccion(col: Coleccion): boolean {
   if (!disponible()) return false;
   try {
-    const sobre = JSON.stringify({ v: 1, cartas: col });
+    const sobre = JSON.stringify({ v: 1, cartas: col.tengo, quiero: col.quiero });
     // Nunca se escribe lo que despues no se podria leer.
     if (sobre.length > MAX_CHARS) return false;
     localStorage.setItem(COLECCION_KEY, sobre);

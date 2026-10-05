@@ -246,7 +246,6 @@ const CSS_ERRATAS = `
 .indice h3 { font-size: 10.5pt; color: var(--accent); margin-bottom: 1mm; }
 .indice ol { margin: 0; padding-left: 7mm; color: var(--muted); }
 .indice a { color: var(--ink); text-decoration: none; }
-.leyenda { display: flex; gap: 6mm; margin: 0 0 6mm; color: var(--muted); font-size: 8.6pt; }
 .edicion { break-before: page; }
 .edicion > h2 { margin-bottom: 5mm; }
 .entrada { break-inside: avoid; border: 1px solid var(--line); background: var(--surface); border-radius: 14px;
@@ -300,7 +299,6 @@ function feDeErratas() {
     }),
     `<section><p class="eyebrow">Índice</p><h2 class="seccion" style="margin-top:2mm">Cartas por edición</h2>
      <p class="seccion-bajada">Dentro de cada edición, en el orden del documento original.</p>
-     <div class="leyenda"><span><del>Tachado</del>: lo que sale</span><span><ins>Resaltado</ins>: lo que entra</span></div>
      <div class="indice">${grupos
        .map(
          ([ed, l]) =>
@@ -324,9 +322,6 @@ function feDeErratas() {
  * ------------------------------------------------------------------ */
 
 const CSS_BANLIST = `
-.regla { border: 1px solid rgb(139 92 246 / .6); background: var(--accent-soft); border-radius: 14px; padding: 4mm 5mm;
-  font-size: 11pt; font-weight: 600; margin-bottom: 7mm; }
-.regla span { display: block; font-size: 7.4pt; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1mm; }
 .rejilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2mm 3mm; margin-bottom: 8mm; }
 .item { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 2mm 3mm; font-weight: 600; break-inside: avoid; }
 .item.prohibida { border-color: rgb(248 113 113 / .5); }
@@ -359,7 +354,6 @@ function banlist() {
       aviso: `Transcripción de DeckForge del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo.`,
     }),
     `<section>
-      <div class="regla"><span>Construcción del mazo</span>${esc(doc.construccion)}</div>
       <h2 class="seccion peligro">Prohibidas <span class="cuenta">${doc.prohibidas.length}</span></h2>
       <p class="seccion-bajada">No se pueden incluir en el Mazo Castillo ni en el side deck.</p>
       <div class="rejilla">${ordenar(doc.prohibidas)

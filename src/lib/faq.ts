@@ -127,7 +127,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué significan los lazos «Errata» y «Baneada»?",
         respuesta: [
-          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. La carta muestra su texto impreso, y el botón **«Errata»** de su detalle muestra solo lo que cambia, juntando la Fe de Erratas y la Banlist. El constructor juega con el arreglado: si la errata la vuelve **Única**, admite una sola copia.",
+          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. Su detalle ya muestra el **texto corregido**, con sus keywords, y el constructor juega con él: si la errata la vuelve **Única**, admite una sola copia. El texto impreso en la carta puede decir otra cosa; manda el corregido.",
           "**Baneada**: la Banlist la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
         ],
       },
@@ -262,40 +262,41 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Para qué sirve la colección?",
         respuesta: [
-          "Para llevar la cuenta de las cartas que **tienes en físico**. En **Colección** marcas las que tienes, cuántas copias de cada una, y ves de un vistazo cuánto llevas de cada edición y qué te falta.",
+          "Para llevar dos listas: las cartas que **tienes** y las que **te faltan**, que son las que quieres conseguir. Está en **Colección**, en la barra de arriba.",
         ],
       },
       {
-        pregunta: "¿Cómo marco las cartas que tengo?",
+        pregunta: "¿Cómo agrego cartas?",
         respuesta: [
-          "La colección tiene dos pestañas, **Obtenidas** y **Faltantes**. Al empezar todo está en Faltantes: toca **«Tengo»** en cada carta que tengas y pasa a Obtenidas. Ahí, el **+** y el **−** cambian las copias; al quitar la última, la carta vuelve a Faltantes.",
-          "También se puede desde el detalle de la carta, con **«Agregar a la colección»** y **«Quitar una copia»**. Las cartas van **por tipo** (Aliados, Armas, Talismanes, Tótems y Oros), en el orden del catálogo, y se pueden buscar y filtrar igual que en él.",
+          "En la pestaña **«Agregar cartas»** está todo el catálogo, con el buscador y los filtros. En cada carta:",
+        ],
+        lista: [
+          "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
+          "El **corazón** la anota en las que te faltan.",
+        ],
+      },
+      {
+        pregunta: "¿Qué pasa cuando consigo una carta que me faltaba?",
+        respuesta: [
+          "En **«Me faltan»**, toca **«Ya la tengo»**: sale de esa lista y pasa a **«Tengo»** con una copia. La **X** la quita de las que te faltan sin marcarla como tuya.",
         ],
       },
       {
         pregunta: "¿Los artes alternativos cuentan aparte?",
         respuesta: [
-          "Sí: cada **impresión** se marca por separado, porque para coleccionar no es lo mismo el arte normal que el alternativo. El resumen da las dos cuentas: **impresiones** marcadas y **cartas distintas**, donde todos los artes de una carta cuentan como una.",
-          "En el detalle de una carta, la fila **Impresiones** marca cuántas copias tienes de cada arte.",
+          "Sí: cada **impresión** se marca por separado, porque no es lo mismo tener el arte normal que el alternativo. En el detalle de una carta, la fila **Impresiones** marca cuántas copias tienes de cada arte.",
         ],
       },
       {
-        pregunta: "¿Cómo veo lo que me falta de una edición?",
+        pregunta: "¿Puedo compartir mis listas para cambiar cartas?",
         respuesta: [
-          "En el recuadro **«Por edición»** del resumen, toca la edición: la lista muestra solo sus cartas y su barra dice cuántas llevas («212 / 246»). Vuelve a tocarla para ver todo. También sirve el filtro de edición.",
-        ],
-      },
-      {
-        pregunta: "¿Puedo compartir lo que me falta para cambiar cartas?",
-        respuesta: [
-          "Sí. **«Copiar lista»** copia como texto la pestaña que estás viendo, con los filtros puestos: las faltantes de una edición, por ejemplo, con el código de cada carta para no confundir artes. Las obtenidas van con sus copias.",
-          "El resumen cuenta también las cartas que tienes **con más de 3 copias**, las que te sobran para jugar.",
+          "Sí. En «Tengo» y en «Me faltan», **«Copiar lista»** copia como texto la lista que ves, con los filtros puestos y el código de cada carta para no confundir artes. Se pega en cualquier chat.",
         ],
       },
       {
         pregunta: "¿Dónde se guarda mi colección?",
         respuesta: [
-          "En **tu navegador**, igual que las barajas: no se sube a ningún servidor y **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con toda la colección y **«Importar»** la carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda con la cantidad mayor.",
+          "En **tu navegador**, igual que las barajas: no se sube a ningún servidor y **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con tus dos listas y **«Importar»** las carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda la cantidad mayor.",
         ],
       },
     ],
@@ -310,7 +311,7 @@ export const FAQ: FaqSection[] = [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
           "**Mis barajas:** las barajas que guardaste en este navegador.",
-          "**Colección:** las cartas que tienes y las que te faltan, edición por edición.",
+          "**Colección:** las cartas que tienes y las que te faltan.",
           "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya las aplican.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
