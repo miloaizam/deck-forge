@@ -1108,7 +1108,8 @@ costo, medido: una página de 35 cartas pasa de ~0,5 MB a ~2,2 MB, solo en
 esas pantallas y con carga diferida. La revisión de resolución por edición
 (04-10-2026, recortes del cuadro de texto a 2×) no encontró ninguna edición
 peor que Escuelas Elementales salvo las seis Legendarias de Dominio, que
-están en TODO.md. Las 24 imágenes de packs y de la extensión de Escuelas
+quedan así porque no hay arte más grande (el fandom solo las tiene a
+354×508). Las 24 imágenes de packs y de la extensión de Escuelas
 Elementales que traían esquinas blancas o el borde impreso se limpiaron y
 estrenan URL (`ad-0NN-recorte.webp`, `ee-3NN-recorte.webp`): se recorta el
 filete y el fondo de cada esquina pasa a negro, como en el arte de la API.
@@ -1408,7 +1409,7 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   Ataque de Dragón y Guadaña Dragón; «Luego, Roba dos cartas» en frase aparte
   en Lou Carcolh y Kyrenia; Lambton Worm roba «Al comienzo de la Fase Final»; y
   **Nube Incendiaria cuesta 2**, no 3. Las imágenes de Pack América llevan la
-  marca de agua con que circulan (TODO).
+  marca de agua con que circulan: no se encontró una copia limpia.
 - **Los oros de raza** imprimen «Oro Inicial» y la raza, con código `CR-0NN` al
   pie; el tercero de cada raza es un diseño de emblema que no imprime «Oro
   Inicial», pero es la misma carta. Van como **`Oro Inicial <raza>`**, y así

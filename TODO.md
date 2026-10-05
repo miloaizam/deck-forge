@@ -14,45 +14,25 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Imágenes de las cartas
+## Funciones nuevas
 
-Dos cosas que valen para todo este grupo: `data:images` **se salta las WebP
-que ya existen** (hay que borrarlas antes de regenerar), y **una URL de imagen
-ya publicada no se reutiliza** (`/cards/*` va con 7 días de caché: el arte
-nuevo va con otro nombre en el campo `imagen`; ver CLAUDE.md).
+### Vista de colección
 
-Las dos entradas que quedan esperan **otra fuente del arte**: lo que se pudo
-hacer con el que hay ya está hecho (04-10-2026).
-
-### Marca de agua en Pack América y en la promo de Sarras
-
-- **Qué pasa:** las once de Pack América (`ad-020`…`ad-030`) y la promo de
-  Sarras (`aa-001`) llevan la marca de agua «Mitos y Leyendas» sobre la
-  ilustración, que es como circulan en internet. Las esquinas blancas ya se
-  limpiaron (`*-recorte.webp`); la marca no sale recortando.
-- **Ya buscado, sin suerte:** la API, La Guarida y el fandom (Sarras_2017.png
-  trae la misma marca). La marca la trae además casi todo el arte de la API
-  (Dominio, Hijos del Sol, las ediciones extra…); Escuelas Elementales no.
-  Quitarla en todo el catálogo es otra tarea, más grande.
-- **Arreglado cuando:** aparece el arte limpio (un escaneo propio, por ejemplo)
-  y las doce se ven sin marca.
-
-### Arte a tamaño completo para las seis Legendarias de Dominio
-
-- **Qué:** DO-001 a DO-006 (Adapa, Caída del Sol, Devorar, Nammu, Xolotl y
-  Carpa Dragón) no existen en la API, y su arte se consiguió aparte a
-  **354×508**. `resize_to_width()` lo amplía a 420 de ancho, así que se ven
-  más blandas que el resto: en la revisión de resolución (04-10-2026) fueron
-  las únicas claramente peores que Escuelas Elementales.
-- **Ya buscado, sin suerte:** el fandom solo las tiene a 354×508
-  (`Adapa_DO.jpg`, `Nammu_DO.jpg`; `Xolotl_DO.jpg` incluso a 320×458). Las
-  imágenes grandes con el mismo nombre (`Adapa.png`, `Xolotl.jpg`) son de
-  otras impresiones, con otro arte o plantilla.
-- **Por dónde:** conseguir el arte a tamaño completo (un escaneo), dejarlo en
-  `images-src/do-00X-v2.png`, correr `pnpm run data:images` y apuntar
-  `imagen` y `thumb` de `data-src/dominio.json` al nombre nuevo.
-- **Terminado cuando:** las seis se ven tan nítidas como el resto de Dominio
-  en la grilla y en el modal.
+- **Qué:** que cada jugador marque qué cartas tiene (y cuántas copias) y vea
+  de un vistazo lo que le falta: por edición, un contador del tipo «212 / 246»
+  y la grilla separando lo que tiene de lo que no.
+- **Por dónde:** una ruta `/coleccion` que reutilice la grilla y los filtros
+  del catálogo, con un filtro más, «Tengo / Me faltan», y un control de copias
+  en cada carta. Como las barajas, vive en `localStorage` con su propia clave,
+  se valida con Zod al leerla (CLAUDE.md, seguridad #4) y se exporta e importa
+  como el respaldo de barajas, para pasarla a otro navegador. Si algún día hay
+  cuentas (entrada siguiente), la colección sube con ellas.
+- **A decidir antes:** si los artes alternativos y las reimpresiones se
+  cuentan como impresiones aparte (coleccionista) o juntos por `identidad`
+  (jugador); y si el constructor y el detalle de una baraja marcan las cartas
+  que el jugador no tiene.
+- **Terminado cuando:** se puede marcar una carta, ver qué falta de una
+  edición, recargar sin perderlo y llevarlo a otro navegador con el respaldo.
 
 ## Grande y con decisiones previas
 
