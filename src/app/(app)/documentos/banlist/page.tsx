@@ -18,7 +18,7 @@ const SECCION = "mt-12";
 const TITULO = "text-ink flex items-center gap-2 text-xl font-bold";
 const CUENTA =
   "bg-brand-600 rounded-chip px-2 text-[12px] font-bold text-white tabular-nums";
-const BAJADA = "text-muted mt-1.5 max-w-[80ch] leading-relaxed";
+const BAJADA = "text-muted mt-1.5 leading-relaxed";
 const ITEM =
   "bg-panel border-line rounded-card flex items-center gap-2.5 border px-3.5 py-2.5 text-[14px] font-medium";
 

@@ -33,8 +33,8 @@ export function DocumentHeader({
       </Link>
       <p className="eyebrow mt-4 mb-3">Documento oficial</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">{titulo}</h1>
-      <p className="text-muted mt-3 max-w-[70ch] leading-relaxed">{bajada}</p>
-      <p className="text-muted mt-2 max-w-[80ch] text-[13px] leading-relaxed">{origen}</p>
+      <p className="text-muted mt-3 leading-relaxed">{bajada}</p>
+      <p className="text-muted mt-2 text-[13px] leading-relaxed">{origen}</p>
       <DocumentActions doc={doc} nombre={titulo} peso={peso} className="mt-5" />
       {children}
     </header>

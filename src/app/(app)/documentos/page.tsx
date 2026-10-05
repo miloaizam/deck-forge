@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { DocumentActions } from "@/components/documentos/DocumentActions";
-import { DOCUMENTOS, fechaLarga, type Documento } from "@/lib/documentos";
+import { DOCUMENTOS, type Documento } from "@/lib/documentos";
 import { BANLIST, FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function DocumentosPage() {
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <p className="eyebrow mb-3">Reglas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Documentos</h1>
-      <p className="text-muted mt-3 max-w-[70ch] leading-relaxed">
+      <p className="text-muted mt-3 leading-relaxed">
         Los documentos oficiales del formato, transcritos con el estilo de DeckForge. Se
         pueden leer aquí mismo o descargar en PDF.
       </p>
@@ -40,8 +40,6 @@ export default function DocumentosPage() {
               "de nombre, raza o frecuencia",
             ],
           ]}
-          origen={`Original: «${FE_DE_ERRATAS.original.titulo}», ${FE_DE_ERRATAS.original.actualizacion}.`}
-          version={FE_DE_ERRATAS.version}
         />
         <Tarjeta
           doc={DOCUMENTOS.banlist}
@@ -53,8 +51,6 @@ export default function DocumentosPage() {
             [BANLIST.unicas.length, "Únicas"],
             [BANLIST.erratas.length, "erratas y ajustes"],
           ]}
-          origen={`Original: «${BANLIST.original.titulo}», modificado el ${fechaLarga(BANLIST.original.modificado)}.`}
-          version={BANLIST.version}
         />
       </div>
     </main>
@@ -67,16 +63,12 @@ function Tarjeta({
   titulo,
   descripcion,
   cifras,
-  origen,
-  version,
 }: {
   doc: Documento;
   icono: ReactNode;
   titulo: string;
   descripcion: string;
   cifras: [number, string][];
-  origen: string;
-  version: string;
 }) {
   const peso = pesoDelPdf(doc);
   const id = `doc-${doc.ruta.split("/").at(-1)}`;
@@ -108,10 +100,6 @@ function Tarjeta({
           </div>
         ))}
       </dl>
-
-      <p className="text-muted mt-5 text-[13px] leading-relaxed">
-        {origen} Transcripción del {fechaLarga(version)}. PDF de {doc.paginas} páginas.
-      </p>
 
       <DocumentActions
         doc={doc}

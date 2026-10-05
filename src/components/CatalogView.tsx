@@ -113,13 +113,6 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
         </div>
       ) : (
         <>
-          {/* Cuantas quedan, arriba y no solo al pie: es lo primero que se
-              quiere saber al filtrar. */}
-          <p className="text-muted -mt-1 text-[13px] tabular-nums">
-            {results.length === cards.length
-              ? `${cards.length} cartas`
-              : `${results.length} de ${cards.length} cartas`}
-          </p>
           <CardGrid cards={visible} onSelect={setSelected} />
           <Pagination
             page={currentPage}
