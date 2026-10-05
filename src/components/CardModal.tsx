@@ -37,6 +37,11 @@ interface CardModalProps {
   cambiarArte?: { copias: number; onCambiar: () => void };
   /** Copias en la baraja de cada impresion, para marcarlas en el selector. */
   copiasDe?: (id: string) => number;
+  /**
+   * A donde van las copias: la baraja del constructor o la coleccion. Solo
+   * cambia como se nombra en los textos.
+   */
+  destino?: "baraja" | "coleccion";
 }
 
 /** Marca de la entrada de historial que pone el modal al abrirse. */
@@ -65,7 +70,9 @@ export function CardModal({
   onChangeCard,
   cambiarArte,
   copiasDe,
+  destino = "baraja",
 }: CardModalProps) {
+  const enDestino = destino === "baraja" ? "en la baraja" : "en tu colección";
   const ref = useRef<HTMLDialogElement>(null);
 
   // La carta que se pinta es la ultima que se abrio, no `card`: al cerrar,
@@ -157,6 +164,7 @@ export function CardModal({
                     actual={mostrada}
                     onChange={onChangeCard}
                     copiasDe={copiasDe}
+                    enDestino={enDestino}
                   />
                 )}
                 {cambiarArte && cambiarArte.copias > 0 && (
@@ -242,7 +250,9 @@ export function CardModal({
                       )}
                     >
                       <Plus size={16} aria-hidden="true" />
-                      Agregar a la baraja
+                      {destino === "baraja"
+                        ? "Agregar a la baraja"
+                        : "Agregar a la colección"}
                     </button>
                     {/* Quitar sale solo con copias puestas: sin ninguna no
                         tendria nada que hacer. */}
@@ -258,10 +268,10 @@ export function CardModal({
                     )}
                     <span className="text-muted text-[13px] tabular-nums">
                       {copies > 0
-                        ? `${copies} en la baraja`
+                        ? `${copies} ${enDestino}`
                         : cambiarArte && cambiarArte.copias > 0
                           ? `La baraja lleva ${cambiarArte.copias} con otro arte`
-                          : "Todavía no está en la baraja"}
+                          : `Todavía no está ${enDestino}`}
                     </span>
                     {addBlocked && (
                       <span className="text-muted w-full text-[13px]">{addBlocked}</span>
@@ -287,12 +297,14 @@ function Impresiones({
   actual,
   onChange,
   copiasDe,
+  enDestino,
 }: {
   impresiones: Card[];
   actual: Card;
   onChange: (card: Card) => void;
   /** En el constructor: cuantas copias lleva la baraja de cada impresion. */
   copiasDe?: (id: string) => number;
+  enDestino: string;
 }) {
   return (
     <div className="mt-4">
@@ -312,7 +324,7 @@ function Impresiones({
                 type="button"
                 onClick={() => onChange(c)}
                 aria-pressed={elegida}
-                aria-label={`${etiqueta} (${c.frecuencia})${enBaraja ? `, ${enBaraja} en la baraja` : ""}`}
+                aria-label={`${etiqueta} (${c.frecuencia})${enBaraja ? `, ${enBaraja} ${enDestino}` : ""}`}
                 title={etiqueta}
                 className={cn(
                   "rounded-chip focus-visible:outline-brand-500 block overflow-hidden border-2 transition-colors",

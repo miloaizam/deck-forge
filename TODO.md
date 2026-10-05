@@ -16,23 +16,16 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Funciones nuevas
 
-### Vista de colección
+### La colección en las barajas
 
-- **Qué:** que cada jugador marque qué cartas tiene (y cuántas copias) y vea
-  de un vistazo lo que le falta: por edición, un contador del tipo «212 / 246»
-  y la grilla separando lo que tiene de lo que no.
-- **Por dónde:** una ruta `/coleccion` que reutilice la grilla y los filtros
-  del catálogo, con un filtro más, «Tengo / Me faltan», y un control de copias
-  en cada carta. Como las barajas, vive en `localStorage` con su propia clave,
-  se valida con Zod al leerla (CLAUDE.md, seguridad #4) y se exporta e importa
-  como el respaldo de barajas, para pasarla a otro navegador. Si algún día hay
-  cuentas (entrada siguiente), la colección sube con ellas.
-- **A decidir antes:** si los artes alternativos y las reimpresiones se
-  cuentan como impresiones aparte (coleccionista) o juntos por `identidad`
-  (jugador); y si el constructor y el detalle de una baraja marcan las cartas
-  que el jugador no tiene.
-- **Terminado cuando:** se puede marcar una carta, ver qué falta de una
-  edición, recargar sin perderlo y llevarlo a otro navegador con el respaldo.
+- **Qué:** que el constructor y el detalle de una baraja marquen las cartas
+  que el jugador no tiene en su colección (`/coleccion`), y que Mis barajas
+  diga cuántas le faltan para armar cada una.
+- **Por dónde:** `useColeccion()` ya se puede leer desde cualquier vista; las
+  copias se comparan por `identidad`, sumando todas las impresiones, porque
+  para jugar cualquier arte vale.
+- **Terminado cuando:** una baraja dice qué cartas faltan y se pueden copiar
+  como lista.
 
 ### Ordenar el catálogo
 

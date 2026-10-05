@@ -85,6 +85,34 @@ export function DeckListSkeleton() {
   );
 }
 
+/** La coleccion: el resumen, los filtros y las filas de la lista. */
+export function ColeccionSkeleton() {
+  return (
+    <div aria-hidden="true" className="flex flex-col gap-6">
+      <div className="grid gap-4 lg:grid-cols-[22rem_minmax(0,1fr)]">
+        <Skeleton className="rounded-panel h-52" />
+        <Skeleton className="rounded-panel h-52" />
+      </div>
+      <FiltersSkeleton />
+      <Skeleton className="rounded-chip h-11 w-60" />
+      <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 9 }, (_, i) => (
+          <li
+            key={i}
+            className="border-line rounded-card flex items-center gap-3 border p-1.5"
+          >
+            <Skeleton className="h-[51px] w-9 shrink-0" />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <Skeleton className="h-3.5 w-2/3" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** El detalle de una baraja: cabecera con acciones y una mesa de cartas. */
 export function DeckDetailSkeleton() {
   return (
@@ -145,7 +173,7 @@ function TextListSkeleton() {
 }
 
 export type PageSkeletonVariant =
-  "catalogo" | "constructor" | "barajas" | "baraja" | "texto";
+  "catalogo" | "constructor" | "barajas" | "coleccion" | "baraja" | "texto";
 
 /**
  * La pantalla entera mientras llega una pagina (los `loading.tsx` de cada
@@ -186,6 +214,7 @@ export function PageSkeleton({ variante }: { variante: PageSkeletonVariant }) {
           </div>
         )}
         {variante === "barajas" && <DeckListSkeleton />}
+        {variante === "coleccion" && <ColeccionSkeleton />}
         {variante === "baraja" && <DeckDetailSkeleton />}
         {variante === "texto" && <TextListSkeleton />}
       </div>

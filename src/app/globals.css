@@ -408,6 +408,13 @@
     transition-behavior: allow-discrete;
   }
 
+  /* Una fila de /coleccion. Son hasta 2652: el navegador se salta el
+     pintado de las que estan fuera de la vista y reserva su alto. */
+  .fila-coleccion {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 66px;
+  }
+
   /* Algo que aparece en la pagina ya cargada (una baraja recien duplicada,
      el aviso de que el constructor esta acotado, un requisito nuevo en el
      panel): fundido y un desliz corto hacia arriba. */

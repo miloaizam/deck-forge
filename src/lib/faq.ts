@@ -76,6 +76,19 @@ export const FAQ: FaqSection[] = [
           "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
         ],
       },
+      {
+        pregunta: "¿Puedo compartir una búsqueda?",
+        respuesta: [
+          "Sí. La búsqueda y los filtros quedan en la **dirección de la página**: copia el enlace y quien lo abra verá las mismas cartas. Por lo mismo, si vas a otra sección y vuelves con **«atrás»**, los filtros siguen puestos.",
+        ],
+      },
+      {
+        pregunta: "¿Hay atajos de teclado?",
+        respuesta: [
+          "La tecla **«/»** lleva al buscador desde cualquier parte del catálogo, del constructor o de tu colección. **Esc** cierra la carta abierta.",
+          "En el teléfono, el botón **«atrás»** también cierra la carta, en vez de salir de la página.",
+        ],
+      },
     ],
   },
   {
@@ -98,6 +111,17 @@ export const FAQ: FaqSection[] = [
           "Una sola **afinidad** para todos tus Aliados.",
           "Un **side deck** de hasta 10 cartas.",
           "La **Banlist**: sin cartas **baneadas**, y con las cartas que declara Únicas a una copia.",
+        ],
+      },
+      {
+        pregunta: "¿Qué significan los colores del estado de la baraja?",
+        respuesta: [
+          "Sobre la lista de la baraja, una **barra** avanza hacia las 50 cartas y debajo va lo que falta corregir:",
+        ],
+        lista: [
+          "**Verde:** la baraja cumple las reglas del formato.",
+          "**Ámbar:** está **incompleta**; cada línea dice qué falta, como el oro inicial o Aliados para llegar a 15.",
+          "**Rojo:** lleva una carta **baneada** y queda fuera del formato aunque esté completa.",
         ],
       },
       {
@@ -197,7 +221,13 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo comparto una baraja?",
         respuesta: [
-          "Toca el **botón del enlace**, en Mis barajas o en la página de la baraja, y se copia un enlace. Quien lo abra ve tu baraja completa y puede **guardarla en sus barajas**.",
+          "Toca **«Copiar enlace»** en la página de la baraja, o el botón del enlace en Mis barajas, y se copia un enlace. Quien lo abra ve tu baraja completa y puede **guardarla en sus barajas**.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo paso la lista de una baraja a Discord o WhatsApp?",
+        respuesta: [
+          "En la página de la baraja, **«Copiar lista»** copia la baraja como texto, por tipo y con las copias de cada carta («3 Akiko Yamamoto»), más el oro inicial y el side deck. Se pega en cualquier chat y se lee sin abrir nada.",
         ],
       },
       {
@@ -209,7 +239,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Puedo compartir la baraja como imagen?",
         respuesta: [
-          "Sí. En la página de la baraja, el **botón de la imagen** descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
+          "Sí. En la página de la baraja, el botón **«Imagen»** descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
         ],
       },
       {
@@ -227,6 +257,50 @@ export const FAQ: FaqSection[] = [
     ],
   },
   {
+    titulo: "Mi colección",
+    items: [
+      {
+        pregunta: "¿Para qué sirve la colección?",
+        respuesta: [
+          "Para llevar la cuenta de las cartas que **tienes en físico**. En **Colección** marcas las que tienes, cuántas copias de cada una, y ves de un vistazo cuánto llevas de cada edición y qué te falta.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo marco las cartas que tengo?",
+        respuesta: [
+          "La colección tiene dos pestañas, **Obtenidas** y **Faltantes**. Al empezar todo está en Faltantes: toca **«Tengo»** en cada carta que tengas y pasa a Obtenidas. Ahí, el **+** y el **−** cambian las copias; al quitar la última, la carta vuelve a Faltantes.",
+          "También se puede desde el detalle de la carta, con **«Agregar a la colección»** y **«Quitar una copia»**. Las cartas van **por tipo** (Aliados, Armas, Talismanes, Tótems y Oros), en el orden del catálogo, y se pueden buscar y filtrar igual que en él.",
+        ],
+      },
+      {
+        pregunta: "¿Los artes alternativos cuentan aparte?",
+        respuesta: [
+          "Sí: cada **impresión** se marca por separado, porque para coleccionar no es lo mismo el arte normal que el alternativo. El resumen da las dos cuentas: **impresiones** marcadas y **cartas distintas**, donde todos los artes de una carta cuentan como una.",
+          "En el detalle de una carta, la fila **Impresiones** marca cuántas copias tienes de cada arte.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo veo lo que me falta de una edición?",
+        respuesta: [
+          "En el recuadro **«Por edición»** del resumen, toca la edición: la lista muestra solo sus cartas y su barra dice cuántas llevas («212 / 246»). Vuelve a tocarla para ver todo. También sirve el filtro de edición.",
+        ],
+      },
+      {
+        pregunta: "¿Puedo compartir lo que me falta para cambiar cartas?",
+        respuesta: [
+          "Sí. **«Copiar lista»** copia como texto la pestaña que estás viendo, con los filtros puestos: las faltantes de una edición, por ejemplo, con el código de cada carta para no confundir artes. Las obtenidas van con sus copias.",
+          "El resumen cuenta también las cartas que tienes **con más de 3 copias**, las que te sobran para jugar.",
+        ],
+      },
+      {
+        pregunta: "¿Dónde se guarda mi colección?",
+        respuesta: [
+          "En **tu navegador**, igual que las barajas: no se sube a ningún servidor y **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con toda la colección y **«Importar»** la carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda con la cantidad mayor.",
+        ],
+      },
+    ],
+  },
+  {
     titulo: "Las secciones del sitio",
     items: [
       {
@@ -236,6 +310,7 @@ export const FAQ: FaqSection[] = [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
           "**Mis barajas:** las barajas que guardaste en este navegador.",
+          "**Colección:** las cartas que tienes y las que te faltan, edición por edición.",
           "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya las aplican.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],

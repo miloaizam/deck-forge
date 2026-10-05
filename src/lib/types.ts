@@ -308,7 +308,7 @@ const DECK_ID = /^[a-z0-9]{10}$/;
  *
  * Un id que cambio (`ids-anteriores.ts`) se traduce al leerse.
  */
-const cardRefSchema = z.string().max(40).regex(SLUG).transform(idVigente);
+export const cardRefSchema = z.string().max(40).regex(SLUG).transform(idVigente);
 
 export const deckEntrySchema = z.object({
   /** Id de IMPRESION: el usuario eligio ese arte y hay que respetarselo. */

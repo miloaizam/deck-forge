@@ -979,6 +979,7 @@ enlace para compartir. Lo que falta y lo que está mal, en
 
 Rutas: `/` portada (sin navbar) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
+`/coleccion` lo que el usuario tiene y le falta ·
 `/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
 `/documentos/banlist` para leerlas · `/novedades` la línea de tiempo de cambios.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
@@ -1020,12 +1021,40 @@ regenerarla. Dos límites a saber:
   compartió antes del cambio puede seguir saliendo sin imagen hasta que
   caduque.
 
-La navbar es una fila plana de cinco enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Documentos y Novedades. Bajo `md` se pliegan detrás de
+La navbar es una fila plana de seis enlaces (sin desplegable): Catálogo,
+Constructor, Mis barajas, Colección, Documentos y Novedades. Bajo `lg` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **ayuda** (un signo de
 pregunta) y el botón de tema. La portada no tiene navbar, así que tampoco
 ayuda.
+
+**La colección** (`/coleccion`, 05-10-2026) lleva la cuenta de las cartas que
+el usuario tiene en físico. La lógica es `src/lib/coleccion.ts` (con su test) y
+la vista, `src/components/coleccion/`. Cinco decisiones:
+
+- **Se cuenta por impresión (`id`), no por `identidad`.** Quien colecciona
+  distingue el arte normal del alternativo, y de ese dato sale el otro: el
+  resumen da impresiones y **cartas distintas**. Al revés no se podría.
+- **Vive en `localStorage`, en su propia clave** (`deckforge-coleccion`, sobre
+  `{ v: 1, cartas: { id: copias } }`), y se lee como las barajas: store con
+  `useSyncExternalStore` y validación entrada por entrada (seguridad #4). Los
+  ids viejos se traducen con `cardRefSchema`. Una id que ya no está en el
+  catálogo se conserva pero no cuenta en los totales.
+- **Importar fusiona quedándose con la cantidad mayor** de cada impresión:
+  importar dos veces no duplica e importar un respaldo viejo no borra nada. El
+  archivo lleva `tipo: "coleccion"`, así que un respaldo de barajas no pasa
+  por uno de colección.
+- **Es una lista y no la grilla**: dos pestañas (Obtenidas / Faltantes) y,
+  dentro, las cartas por tipo en el orden del catálogo. Sin paginar —se baja
+  de corrido— y por eso cada fila lleva `content-visibility: auto`
+  (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
+  filtros en la URL como el catálogo, más `?ver=faltantes`.
+- **«Copiar lista»** copia la pestaña que se ve, con sus filtros, como texto
+  con el código de cada carta (`coleccionComoTexto`): es como se negocian los
+  cambios.
+
+`CardModal` recibe `destino="coleccion"` para que sus textos digan «en tu
+colección» en vez de «en la baraja».
 
 **Dos contenidos para el usuario viven como datos y hay que mantenerlos a mano,
 en el mismo commit que el cambio que los afecta:**

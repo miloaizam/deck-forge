@@ -4,7 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileText, Hammer, Layers, LibraryBig, Menu, Sparkles, X } from "lucide-react";
+import {
+  FileText,
+  Hammer,
+  Layers,
+  Library,
+  LibraryBig,
+  Menu,
+  Sparkles,
+  X,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { HelpButton } from "./HelpButton";
@@ -21,6 +30,7 @@ const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
   { href: "/constructor", label: "Constructor", Icon: Hammer },
   { href: "/barajas", label: "Mis barajas", Icon: Layers },
+  { href: "/coleccion", label: "Colección", Icon: Library },
   { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];
@@ -31,7 +41,7 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 const LINK =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip px-3 text-sm transition-colors focus-visible:outline-brand-500";
+  "inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip px-3 text-sm transition-colors focus-visible:outline-brand-500";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -54,7 +64,10 @@ export function Navbar() {
         aria-label="Principal"
         className="mx-auto flex max-w-[1480px] items-center gap-2 px-4 py-3 sm:px-6"
       >
-        <Link href="/" className="focus-visible:outline-brand-500 mr-1 rounded sm:mr-2">
+        <Link
+          href="/"
+          className="focus-visible:outline-brand-500 mr-1 shrink-0 rounded sm:mr-2"
+        >
           {/* El logotipo blanco es invisible sobre el fondo claro: cada tema
               usa su version y el CSS elige cual se muestra. */}
           <Image
@@ -77,7 +90,7 @@ export function Navbar() {
 
         {/* Los cinco enlaces no caben junto al logotipo en un telefono, asi
             que ahi se pliegan detras del boton de menu. */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 lg:flex">
           {LINKS.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -106,7 +119,7 @@ export function Navbar() {
             aria-expanded={open}
             aria-controls="menu-principal"
             aria-label={open ? "Cerrar el menú" : "Abrir el menú"}
-            className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip flex size-11 shrink-0 items-center justify-center border transition-colors md:hidden"
+            className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip flex size-11 shrink-0 items-center justify-center border transition-colors lg:hidden"
           >
             {open ? (
               <X size={17} aria-hidden="true" />
@@ -124,7 +137,7 @@ export function Navbar() {
         id="menu-principal"
         inert={!open}
         className={cn(
-          "grid transition-[grid-template-rows,visibility] duration-200 ease-(--ease-out-soft) md:hidden",
+          "grid transition-[grid-template-rows,visibility] duration-200 ease-(--ease-out-soft) lg:hidden",
           open ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]",
         )}
       >

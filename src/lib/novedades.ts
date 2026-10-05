@@ -27,6 +27,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-05",
+    tipo: "Novedad",
+    titulo: "Tu colección",
+    texto: [
+      "Nueva sección «Colección», junto a Mis barajas: marca las cartas que tienes y cuántas copias, y mira cuánto llevas de cada edición y qué te falta.",
+      "Las cartas van en dos pestañas, Obtenidas y Faltantes, por tipo y con el buscador y los filtros del catálogo. «Copiar lista» copia lo que ves como texto, para negociar cambios por chat, y la colección se exporta e importa con un archivo como las barajas.",
+    ],
+  },
+  {
+    fecha: "2026-10-05",
     tipo: "Mejora",
     titulo: "Un constructor más cómodo",
     texto: [
