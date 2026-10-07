@@ -26,6 +26,14 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-07",
+    tipo: "Arreglo",
+    titulo: "La imagen de la baraja, completa en el teléfono",
+    texto: [
+      "Al descargar la imagen de una baraja desde el teléfono, algunas cartas salían como un hueco gris. Ahora las cartas se cargan de a pocas y se reintentan si la conexión falla, así que la imagen sale completa.",
+    ],
+  },
+  {
     fecha: "2026-10-05",
     tipo: "Mejora",
     titulo: "Ordena el catálogo",

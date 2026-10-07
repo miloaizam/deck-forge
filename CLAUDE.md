@@ -1790,6 +1790,17 @@ exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
 colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee
 clases: si cambia la paleta, se cambia ahí también.
 
+**En el teléfono la imagen salía con huecos** (07-10-2026): la página solo
+había cargado las miniaturas que se vieron, así que exportar pedía casi todas
+a la red de golpe y en una red móvil algunas fallaban y quedaban en gris.
+`cargar()` ahora las pide **de a seis**, **reintenta** dos veces, cae a la
+imagen grande (misma ruta sin `thumb/`) y espera `img.decode()` antes de
+dibujar, porque Safari de iOS dispara `onload` antes de decodificar y
+`drawImage` de una imagen sin decodificar no pinta nada. Y el
+`revokeObjectURL` del PNG va con retraso: revocar en el acto puede cortar la
+descarga en iOS. Se reprodujo en Chromium con un teléfono emulado, red lenta
+y fallos inyectados: 12 huecos antes, cero después.
+
 El modal de una carta, abierto desde el constructor, suma y **quita** copias.
 Quitar sale de la zona elegida en "Agregar a" si la carta está ahí y, si no,
 de la otra: el modal cuenta las dos juntas.

@@ -12,6 +12,12 @@ import { SECCIONES_DE_LA_BARAJA, type Deck } from "@/lib/types";
  * queda "contaminado" y se puede exportar; y el PNG se baja con un Blob y un
  * <a download>, igual que el respaldo JSON. Nada de esto pasa por la CSP: no se
  * inyecta ningun script ni se carga nada de fuera.
+ *
+ * En el telefono la pagina solo cargo las miniaturas que se vieron, asi que
+ * exportar las pide casi todas a la red de una vez, y en una red movil algunas
+ * fallaban y quedaban como hueco gris. Por eso se piden de a pocas, con
+ * reintentos, con la imagen grande como respaldo y esperando a que esten
+ * decodificadas antes de dibujarlas (`cargar`).
  */
 
 /**
@@ -54,14 +60,66 @@ function tramos(res: ResolvedDeck): Tramo[] {
   return lista.filter((t) => t.filas.length > 0);
 }
 
-function cargar(src: string): Promise<HTMLImageElement | null> {
+/** Un intento de carga. `null` si falla o si llega vacia. */
+function intento(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    // Una imagen que no llega deja su hueco en gris, no tumba la exportacion.
+    img.onload = async () => {
+      // Safari de iOS dispara `onload` antes de decodificar, y `drawImage` de
+      // una imagen sin decodificar no dibuja nada ni avisa. `decode()` espera
+      // a que este lista; si el navegador no lo tiene o falla, se sigue con
+      // la imagen cargada.
+      try {
+        await img.decode();
+      } catch {
+        // sin decode(): se dibuja igual
+      }
+      resolve(img.naturalWidth > 0 ? img : null);
+    };
     img.onerror = () => resolve(null);
     img.src = src;
   });
+}
+
+const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Pausas antes de cada reintento: en una red movil el corte suele ser breve. */
+const REINTENTOS_MS = [300, 900];
+
+/**
+ * Carga una imagen probando cada fuente en orden, con reintentos. Una imagen
+ * que no llega deja su hueco en gris, no tumba la exportacion.
+ */
+async function cargar(...fuentes: string[]): Promise<HTMLImageElement | null> {
+  for (const src of fuentes) {
+    for (let i = 0; i <= REINTENTOS_MS.length; i++) {
+      if (i > 0) await espera(REINTENTOS_MS[i - 1]);
+      const img = await intento(src);
+      if (img) return img;
+    }
+  }
+  return null;
+}
+
+/** Cuantas imagenes se piden a la vez, como el navegador por conexion. */
+const EN_PARALELO = 6;
+
+/** `fn` sobre cada elemento, de a `n` a la vez, conservando el orden. */
+async function deAPocos<T, R>(
+  items: T[],
+  n: number,
+  fn: (t: T) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let siguiente = 0;
+  const trabajador = async () => {
+    while (siguiente < items.length) {
+      const i = siguiente++;
+      out[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, trabajador));
+  return out;
 }
 
 /** Parte un texto en lineas que quepan en `ancho`, hasta `maxLineas`. */
@@ -104,9 +162,14 @@ export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<
   const fuente = getComputedStyle(document.body).fontFamily;
 
   const lista = tramos(res);
-  const ids = [...new Set(lista.flatMap((t) => t.filas.map((f) => f.card.thumb)))];
+  // Si la miniatura no llega, se prueba con la imagen grande de la carta, que
+  // vive en la misma ruta sin `thumb/` (asi en todo el catalogo).
+  const miniaturas = [...new Set(lista.flatMap((t) => t.filas.map((f) => f.card.thumb)))];
   const imagenes = new Map(
-    await Promise.all(ids.map(async (src) => [src, await cargar(src)] as const)),
+    await deAPocos(miniaturas, EN_PARALELO, async (thumb) => {
+      const grande = thumb.replace("/cards/thumb/", "/cards/");
+      return [thumb, await cargar(thumb, grande)] as const;
+    }),
   );
   const logo = await cargar("/brand/logo-white.svg");
 
@@ -266,5 +329,7 @@ export async function downloadDeckImage(deck: Deck, res: ResolvedDeck): Promise<
   a.href = url;
   a.download = `baraja-${slugNombre(deck)}.png`;
   a.click();
-  URL.revokeObjectURL(url);
+  // Safari de iOS empieza la descarga despues de este tick: revocar en el acto
+  // puede cortarla.
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
