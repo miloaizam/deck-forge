@@ -134,6 +134,9 @@ Regla: a mayor superficie, mayor radio. Un chip y un modal no comparten radio.
 
 - `shadow-glow` — `0 18px 40px -18px rgb(124 58 237 / .6)`. Violeta que se
   filtra por debajo. Solo para lo destacado.
+- `shadow-halo` — `0 0 18px -6px rgb(124 58 237 / .55)`. Brillo parejo y
+  corto, sin caer hacia abajo: para destacar un bloque dentro de una lista
+  (la última novedad), donde `shadow-glow` se montaba sobre el siguiente.
 - `shadow-panel` — sombra neutra suave para modales y menús flotantes.
 
 Nada de sombras negras duras: la profundidad viene del contraste entre

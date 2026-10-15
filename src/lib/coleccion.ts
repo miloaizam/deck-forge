@@ -5,7 +5,7 @@ import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./t
 /**
  * La coleccion del usuario: las cartas que tiene, con sus copias, y las que le
  * faltan, que son las que QUIERE conseguir (no todo el catalogo: nadie
- * colecciona las 2652).
+ * colecciona las 2649).
  *
  * Se cuenta por impresion (`id`): quien colecciona distingue el arte normal
  * del alternativo. Vive en `localStorage`, aparte de las barajas, y como todo

@@ -19,6 +19,11 @@
  * (`ad-`), salvo las impresiones de otra carta ya cargada, que van a Arte
  * Alternativo (`aa-`). Las entradas de mas arriba apuntan ya al id de hoy:
  * la tabla no encadena traducciones.
+ *
+ * 15-10-2026: salen de Arte Alternativo tres impresiones que se colaron
+ * (Leviatan de Furia, Mandoble de la extension de Furia y Nothung de
+ * Midgard). Quien las tenia en una baraja o en la coleccion pasa a la
+ * impresion de la misma carta que ya estaba.
  * Ver CLAUDE.md.
  */
 export const ID_ANTERIORES: Readonly<Record<string, string>> = {
@@ -117,6 +122,9 @@ export const ID_ANTERIORES: Readonly<Record<string, string>> = {
   "te-019": "aa-002",
   "te-020": "aa-003",
   "te-027": "aa-004",
+  "aa-265": "am-066",
+  "aa-390": "do-102",
+  "aa-415": "do-170",
 };
 
 /** El id de hoy de una carta, o el mismo si nunca cambio. */

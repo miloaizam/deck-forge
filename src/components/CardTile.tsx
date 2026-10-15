@@ -3,6 +3,7 @@ import { Minus, Plus, Sparkles } from "lucide-react";
 import { CardRibbons } from "./CardRibbons";
 import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
+import { CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -46,7 +47,12 @@ export function CardTile({
   return (
     // El boton de agregar va superpuesto y aparte: un <button> no puede anidar
     // otro <button>. Mismo apano que en Select.tsx con el boton de limpiar.
-    <div className="group border-line bg-panel ease-out-soft hover:border-brand-500 hover:shadow-glow rounded-card relative overflow-hidden border transition duration-200 focus-within:-translate-y-1 hover:-translate-y-1">
+    <div
+      className={cn(
+        "group border-line bg-panel relative overflow-hidden border",
+        CONTORNO_CARTA,
+      )}
+    >
       <button
         type="button"
         onClick={() => onSelect(card)}

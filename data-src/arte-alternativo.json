@@ -5815,27 +5815,6 @@
     "origen": "midgard"
   },
   {
-    "id": "aa-265",
-    "codigo": "AA-265",
-    "nombre": "Nothung",
-    "identidad": "nothung",
-    "tipo": "Arma",
-    "raza": null,
-    "escuela": null,
-    "atributo": null,
-    "coste": 2,
-    "fuerza": null,
-    "habilidad": "El Aliado portador gana Ilusión (Cuando ese Aliado sea Destruido, regrésalo al juego bajo el control de su dueño como un Aliado sin habilidad).\nCuando esta Arma sea Destruida, ponla en tu mano.",
-    "legalidad": "libre",
-    "keywords": [],
-    "edicion": "arte-alternativo",
-    "frecuencia": "Cortesano",
-    "ilustrador": "David Bueno",
-    "imagen": "/cards/aa-265.webp",
-    "thumb": "/cards/thumb/aa-265.webp",
-    "origen": "midgard"
-  },
-  {
     "id": "aa-266",
     "codigo": "AA-266",
     "nombre": "Incendiar el Mundo",
@@ -8556,27 +8535,6 @@
     "origen": "furiaext"
   },
   {
-    "id": "aa-390",
-    "codigo": "AA-390",
-    "nombre": "Mandoble",
-    "identidad": "mandoble",
-    "tipo": "Arma",
-    "raza": null,
-    "escuela": null,
-    "atributo": null,
-    "coste": 2,
-    "fuerza": null,
-    "habilidad": "El Aliado portador gana 1 a la Fuerza y es Imbloqueable.\nEn la Fase Final, si el Aliado portador es de Raza Eterno e hizo daño al Mazo Castillo oponente, puedes mostrar la primera carta de tu Mazo Castillo, si es un Aliado puedes jugarlo sin pagar su coste.",
-    "legalidad": "libre",
-    "keywords": [],
-    "edicion": "arte-alternativo",
-    "frecuencia": "Vasallo",
-    "ilustrador": "Alejandro Rojas",
-    "imagen": "/cards/aa-390.webp",
-    "thumb": "/cards/thumb/aa-390.webp",
-    "origen": "furiaext"
-  },
-  {
     "id": "aa-391",
     "codigo": "AA-391",
     "nombre": "Belerofonte",
@@ -9097,29 +9055,6 @@
     "ilustrador": "Badillafloyd",
     "imagen": "/cards/aa-414.webp",
     "thumb": "/cards/thumb/aa-414.webp",
-    "origen": "furia"
-  },
-  {
-    "id": "aa-415",
-    "codigo": "AA-415",
-    "nombre": "Leviatán",
-    "identidad": "leviatan",
-    "tipo": "Aliado",
-    "raza": "Bestia",
-    "escuela": null,
-    "atributo": null,
-    "coste": 5,
-    "fuerza": 5,
-    "habilidad": "Furia (Este Aliado no necesita pasar por una Fase de Agrupación para ser declarado atacante).\nCuando un Aliado de Raza Bestia entra en juego bajo tu control, si este Aliado está en tu Cementerio puedes ponerlo en tu mano.",
-    "legalidad": "libre",
-    "keywords": [
-      "Furia"
-    ],
-    "edicion": "arte-alternativo",
-    "frecuencia": "Vasallo",
-    "ilustrador": "Lucius Blacklung",
-    "imagen": "/cards/aa-415.webp",
-    "thumb": "/cards/thumb/aa-415.webp",
     "origen": "furia"
   },
   {

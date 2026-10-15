@@ -90,6 +90,22 @@ export const HOVER_PELIGRO =
 export const HOVER_AVISO =
   "hover:border-warning/70 hover:bg-warning/10 hover:text-warning";
 
+/**
+ * El contorno de una carta al apuntarla: un anillo violeta separado del borde
+ * y la carta que sube un poco. Es el mismo en todo el sitio (catalogo,
+ * constructor, la mesa de /baraja, la mano de prueba) para que el usuario lo
+ * reconozca: dice sobre que carta va a caer el clic. Es `outline` y no el
+ * borde para que no cambie de grosor la carta ni choque con su marco.
+ *
+ * `CONTORNO_CARTA` reacciona al propio elemento; `CONTORNO_CARTA_GRUPO`, al
+ * `group` que lo envuelve, para cuando la carta comparte celda con botones
+ * que no son ella (la estrella de portada en /baraja).
+ */
+const CONTORNO_BASE =
+  "ease-out-soft rounded-card outline-2 outline-offset-2 outline-transparent transition-[translate,outline-color] duration-200";
+export const CONTORNO_CARTA = `${CONTORNO_BASE} hover:outline-brand-500 hover:-translate-y-1 has-focus-visible:outline-brand-500 has-focus-visible:-translate-y-1`;
+export const CONTORNO_CARTA_GRUPO = `${CONTORNO_BASE} group-hover:outline-brand-500 group-hover:-translate-y-1 group-has-focus-visible:outline-brand-500 group-has-focus-visible:-translate-y-1`;
+
 /** El tono de una accion que se confirma en un modal. */
 export type TonoAccion = "peligro" | "aviso";
 

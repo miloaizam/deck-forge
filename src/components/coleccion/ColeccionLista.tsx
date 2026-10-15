@@ -44,7 +44,7 @@ const BOTON =
  * del catalogo porque aqui se recorren muchas cartas marcando: importa leer el
  * nombre, no ver el arte en grande (para eso la fila abre la carta).
  *
- * En «Agregar cartas» son hasta 2652 filas: cada tipo pinta las primeras
+ * En «Agregar cartas» son hasta 2649 filas: cada tipo pinta las primeras
  * `TANDA` y el resto se pide con un boton al pie del grupo (pintarlas todas de
  * una tardaba casi un segundo al cambiar de pestana). Cada fila lleva ademas
  * `content-visibility: auto` (`.fila-coleccion`), asi el navegador solo pinta

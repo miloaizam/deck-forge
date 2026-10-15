@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-15",
+    version: "4.4.1",
+    tipo: "Arreglo",
+    titulo: "Tres artes alternativos menos y botones más visibles",
+    texto: [
+      "Leviatán de Furia, Mandoble de la extensión de Furia y Nothung de Midgard salen de Arte Alternativo: se habían colado por error. Si los tenías en una baraja o en tu colección, pasan solos al arte de la misma carta que ya estaba.",
+      "Los botones del aviso para recuperar una baraja y la moneda para elegir el oro inicial se ven mejor, y todas las cartas se marcan igual al pasar el cursor: con un contorno violeta.",
+    ],
+  },
+  {
+    fecha: "2026-10-15",
     tipo: "Mejora",
     titulo: "Recupera tu baraja y comparte mejor tu colección",
     version: "4.4.0",

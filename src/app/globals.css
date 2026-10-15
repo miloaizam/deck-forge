@@ -55,6 +55,9 @@
 
   /* Elevacion: el violeta se filtra por debajo, nunca sombra negra */
   --shadow-glow: 0 18px 40px -18px rgb(124 58 237 / 0.6);
+  /* Un brillo parejo y corto, sin caer hacia abajo: para un bloque de una
+     lista, donde el glow de arriba se montaba sobre el siguiente. */
+  --shadow-halo: 0 0 18px -6px rgb(124 58 237 / 0.55);
   --shadow-panel: 0 12px 32px -20px rgb(0 0 0 / 0.9);
 
   /* Movimiento --------------------------------------------------- */
@@ -101,6 +104,7 @@
   --gradient-forge: radial-gradient(110% 90% at 50% 0%, #f1ecff 0%, #f5f3fb 65%);
   --gradient-wordmark: linear-gradient(92deg, #7c3aed, #5b21b6);
   --shadow-glow: 0 18px 40px -22px rgb(124 58 237 / 0.4);
+  --shadow-halo: 0 0 16px -6px rgb(124 58 237 / 0.35);
   --shadow-panel: 0 12px 32px -20px rgb(27 23 48 / 0.25);
 
   color-scheme: light;
@@ -408,7 +412,7 @@
     transition-behavior: allow-discrete;
   }
 
-  /* Una fila de /coleccion. Son hasta 2652: el navegador se salta el
+  /* Una fila de /coleccion. Son hasta 2649: el navegador se salta el
      pintado de las que estan fuera de la vista y reserva su alto. */
   .fila-coleccion {
     content-visibility: auto;

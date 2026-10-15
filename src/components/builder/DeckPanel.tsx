@@ -73,13 +73,14 @@ function OroInicialToggle({
       <span
         className={cn(
           CAJA_FILA,
-          // El activo si lleva caja fija: no es una accion que se ofrece al
-          // apuntar, es el estado de la baraja y tiene que verse sin tocarlo.
+          // Siempre con su circulo: sin el, la moneda se perdia entre los
+          // − y + de la fila y nadie sabia que se podia pulsar. El activo va
+          // relleno: es el estado de la baraja y tiene que verse sin tocarlo.
           activo
             ? "border-brand-600 bg-accent-soft text-accent"
             : bloqueo
-              ? "text-muted/25"
-              : "text-muted/60 group-hover/b:border-brand-500 group-hover/b:bg-accent-soft group-hover/b:text-accent",
+              ? "border-line/60 text-muted/30"
+              : "border-line text-muted group-hover/b:border-brand-500 group-hover/b:bg-accent-soft group-hover/b:text-accent",
         )}
       >
         <Coins size={14} aria-hidden="true" />

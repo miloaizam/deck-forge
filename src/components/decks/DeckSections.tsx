@@ -4,6 +4,7 @@ import { Coins, Star } from "lucide-react";
 import { CARD_RATIO, marcarCargada } from "../CardTile";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Tipo } from "@/lib/types";
+import { CONTORNO_CARTA_GRUPO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** Las pilas se reparten en el mismo orden en que se lee la lista. */
@@ -160,9 +161,8 @@ function Pila({
             y cada copia extra suma su franja. En padding los % van contra el
             ancho, y en translate contra el alto propio: de ahi los dos factores. */}
         <div
-          // Al apuntar, un contorno de color rodea la pila entera: dice sobre
-          // que carta va a caer el clic.
-          className="ease-out-soft rounded-card group-hover:outline-brand-500 relative w-full outline-2 outline-offset-2 outline-transparent transition-[translate,outline-color] duration-200 group-hover:-translate-y-1"
+          // Al apuntar, el contorno de color rodea la pila entera.
+          className={cn("relative w-full", CONTORNO_CARTA_GRUPO)}
           style={{ paddingBottom: `${ALTO * (1 + (fila.n - 1) * ASOMO) * 100}%` }}
         >
           {Array.from({ length: fila.n }, (_, i) => (

@@ -2,11 +2,20 @@ import { History } from "lucide-react";
 
 import type { DraftState } from "./DeckParamLoader";
 import { deckTitle } from "@/lib/deck";
-import { HOVER_AVISO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
+/*
+ * Botones rellenos y no de contorno: sobre el fondo violeta del aviso uno
+ * transparente no se distinguia. Recuperar es la accion principal (violeta);
+ * Descartar va en el color del panel y se pone ambar al apuntar, como todo lo
+ * que descarta algo (HOVER_AVISO, pero sin su fondo traslucido).
+ */
 const BOTON =
-  "inline-flex h-9 items-center rounded-chip border border-line px-3.5 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex h-9 items-center rounded-chip border px-3.5 text-[13px] font-medium shadow-panel transition-colors focus-visible:outline-brand-500";
+const RECUPERAR =
+  "border-brand-600 bg-brand-600 text-white hover:border-brand-500 hover:bg-brand-500";
+const DESCARTAR =
+  "border-line bg-panel text-ink hover:border-warning/70 hover:text-warning";
 
 /**
  * El aviso del borrador, sobre el panel de la baraja: pregunta si recuperar la
@@ -45,10 +54,10 @@ export function DraftNotice({
         <p className="text-ink font-semibold">¿Recuperar baraja sin guardar?</p>
         <p className="text-muted break-words">«{titulo}»</p>
         <div className="mt-2.5 flex flex-wrap gap-2">
-          <button type="button" onClick={onRecuperar} className={BOTON}>
+          <button type="button" onClick={onRecuperar} className={cn(BOTON, RECUPERAR)}>
             Recuperar
           </button>
-          <button type="button" onClick={onDescartar} className={cn(BOTON, HOVER_AVISO)}>
+          <button type="button" onClick={onDescartar} className={cn(BOTON, DESCARTAR)}>
             Descartar
           </button>
         </div>

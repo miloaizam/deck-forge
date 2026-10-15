@@ -7,6 +7,8 @@ import { Hand, RotateCcw, Shuffle } from "lucide-react";
 import { CARD_RATIO, marcarCargada } from "../CardTile";
 import type { ResolvedDeck, RuleCard } from "@/lib/deck-rules";
 import { mazoParaRobar, robarMano, MANO_INICIAL, MANO_MINIMA } from "@/lib/hand-test";
+import { CONTORNO_CARTA } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 interface HandTesterProps {
   res: ResolvedDeck;
@@ -121,7 +123,10 @@ export function HandTester({ res, oroInicial, onVer, className }: HandTesterProp
                       type="button"
                       onClick={() => onVer(id)}
                       aria-label={`Ver ${card.nombre}`}
-                      className="focus-visible:outline-brand-500 hover:border-brand-500 border-line rounded-card block w-full overflow-hidden border transition-colors"
+                      className={cn(
+                        "border-line block w-full overflow-hidden border",
+                        CONTORNO_CARTA,
+                      )}
                     >
                       <Image
                         src={card.thumb}

@@ -1035,7 +1035,7 @@ ayuda.
 **La colección** (`/coleccion`, 05-10-2026) son dos listas del usuario: las
 cartas que **tiene**, con sus copias, y las que **le faltan**, que son las que
 quiere conseguir — no todo el catálogo: la primera versión medía el avance
-sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
+sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
 `src/lib/coleccion.ts` (con su test) y la vista, `src/components/coleccion/`.
 
 - **Tres pestañas**: «Tengo» (− n +), «Me faltan» (− n + **sin más tope
@@ -1059,7 +1059,7 @@ sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   borra nada. El archivo lleva `tipo: "coleccion"`, así que un respaldo de
   barajas no pasa por uno de colección.
 - **Es una lista y no la grilla**, por tipo y en el orden del catálogo. En
-  «Agregar cartas» son hasta 2652 filas: cada tipo pinta 150 y el resto se
+  «Agregar cartas» son hasta 2649 filas: cada tipo pinta 150 y el resto se
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
@@ -1430,8 +1430,8 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
 que no son ediciones del juego (ver abajo): **Adicionales** (74, en
-`data-src/extras.json`) y **Arte Alternativo** (419, en
-`data-src/arte-alternativo.json`). **2652** en total.
+`data-src/extras.json`) y **Arte Alternativo** (416, en
+`data-src/arte-alternativo.json`). **2649** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1447,7 +1447,7 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
   de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`).
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte: 419, de veinte ediciones del
+  cargadas, para que el jugador elija el arte: 416, de veinte ediciones del
   juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
   copias. La edición se ordena por **`origen`** —la edición del juego de donde
   sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
@@ -1470,6 +1470,12 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   anterior: la promo de Sarras (`aa-001`, que salió en la tanda de 2017 y
   por decisión del proyecto va con origen **Templarios**) y las
   Milenarias de Templarios de Lambton Worm, Dama Dragón y Guadaña Dragón.
+  **Tres de las aprobadas se retiraron después** (15-10-2026, decisión del
+  proyecto): Leviatán de Furia (`aa-415`), Mandoble de la extensión de Furia
+  (`aa-390`) y Nothung de Midgard (`aa-265`). Sus ids van en
+  `ids-anteriores.ts` hacia la impresión que ya estaba (DO-170, DO-102 y
+  AM-066), así que una baraja o una colección que las llevaba no pierde la
+  carta, y sus WebP se borraron.
 - **Detalles de la carga**:
   - La API rotula **«Viriato» a la 280 de Tierra Austral, que es Venatio**.
   - **Las 17 de los mazos raciales de Dinastía del Dragón** (código
@@ -1826,10 +1832,15 @@ millones de píxeles.
 título. Es un solo enlace, el del título, con un `::after` absoluto que cubre
 el `<li>` (que lleva `relative`); los botones de acciones van encima con
 `relative z-10`. Envolver la tarjeta en un `<a>` anidaría botones dentro de
-un enlace, que no es HTML válido y rompe el teclado. En `/baraja`, cada pila
-de cartas lleva al apuntar un **contorno del color de marca** alrededor de la
-pila entera (`outline` en el contenedor, no el borde de cada copia, que en
-una pila de tres dibujaba tres marcos).
+un enlace, que no es HTML válido y rompe el teclado.
+
+**Una carta bajo el cursor se ve igual en todo el sitio**: un anillo violeta
+separado de su borde y la carta que sube un poco (`CONTORNO_CARTA` de
+`src/lib/ui.ts`, en el catálogo, el constructor y la mano de prueba;
+`CONTORNO_CARTA_GRUPO` en la mesa de `/baraja`, donde la pila comparte celda
+con la estrella de portada). Es `outline` y no el borde: no cambia el grosor
+de la carta, y en una pila de tres copias rodea la pila entera en vez de
+dibujar tres marcos. Antes cada vista hacía lo suyo (borde, brillo o nada).
 
 **Los botones dicen cuánto se pierde** (15-10-2026). `HOVER_PELIGRO` y
 `HOVER_AVISO` (`src/lib/ui.ts`) ponen rojo o ámbar el hover de lo que borra o

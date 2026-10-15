@@ -94,7 +94,7 @@ export function NovedadesTimeline() {
                     tabIndex={-1}
                     className={cn(
                       "aparece bg-panel rounded-card border p-4 sm:p-5",
-                      ultima ? "border-brand-500 shadow-glow" : "border-line",
+                      ultima ? "border-brand-500 shadow-halo" : "border-line",
                     )}
                   >
                     <div className="flex flex-wrap items-center gap-2">
