@@ -39,7 +39,7 @@ export const NOVEDADES: Novedad[] = [
     titulo: "Tres artes alternativos menos y botones más visibles",
     texto: [
       "Leviatán de Furia, Mandoble de la extensión de Furia y Nothung de Midgard salen de Arte Alternativo: se habían colado por error. Si los tenías en una baraja o en tu colección, pasan solos al arte de la misma carta que ya estaba.",
-      "Los botones del aviso para recuperar una baraja y la moneda para elegir el oro inicial se ven mejor, y todas las cartas se marcan igual al pasar el cursor: con un contorno violeta.",
+      "Los botones del aviso para recuperar una baraja y la moneda para elegir el oro inicial se ven mejor. Y todo lo que se puede pulsar —cartas, botones, filtros, tarjetas— se marca igual al pasar el cursor: con un contorno violeta, o rojo en lo que borra.",
     ],
   },
   {

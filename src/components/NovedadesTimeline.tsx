@@ -140,7 +140,7 @@ export function NovedadesTimeline() {
               setEnfocar(visibles);
               setVisibles((v) => v + POR_TANDA);
             }}
-            className="border-line text-muted hover:text-ink hover:border-brand-500 focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-5 text-[13px] transition-colors"
+            className="border-line text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-5 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
           >
             <ChevronDown size={15} aria-hidden="true" />
             Ver más

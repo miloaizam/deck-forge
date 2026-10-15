@@ -257,7 +257,7 @@ export function CardModal({
                       <button
                         type="button"
                         onClick={onRemove}
-                        className="border-line text-muted hover:text-ink hover:border-brand-500 rounded-chip focus-visible:outline-brand-500 inline-flex h-11 items-center gap-2 border px-4 text-sm transition-colors"
+                        className="border-line text-muted hover:text-ink hover:outline-brand-500 rounded-chip focus-visible:outline-brand-500 inline-flex h-11 items-center gap-2 border px-4 text-sm transition-colors hover:outline-2 hover:outline-offset-2"
                       >
                         <Minus size={16} aria-hidden="true" />
                         Quitar una copia
@@ -305,7 +305,7 @@ function Impresiones({
       <p className="text-muted text-[11px] tracking-[0.18em] uppercase">
         Impresiones ({impresiones.length})
       </p>
-      <ul className="scrollbar-slim mt-2 flex gap-2 overflow-x-auto pb-2">
+      <ul className="scrollbar-slim mt-1 flex gap-2 overflow-x-auto p-1 pb-2">
         {impresiones.map((c) => {
           const elegida = c.id === actual.id;
           const enBaraja = copiasDe?.(c.id) ?? 0;
@@ -324,7 +324,7 @@ function Impresiones({
                   "rounded-chip focus-visible:outline-brand-500 block overflow-hidden border-2 transition-colors",
                   elegida
                     ? "border-brand-500"
-                    : "hover:border-line border-transparent opacity-80 hover:opacity-100",
+                    : "hover:outline-brand-500 border-transparent opacity-80 hover:opacity-100 hover:outline-2 hover:outline-offset-2",
                 )}
               >
                 <Image

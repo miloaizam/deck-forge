@@ -30,7 +30,7 @@ interface ColeccionAccionesProps {
 }
 
 const BOTON =
-  "inline-flex h-10 items-center gap-1.5 rounded-chip border border-line px-3.5 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500 disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex h-10 items-center gap-1.5 rounded-chip border border-line px-3.5 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500 disabled:pointer-events-none disabled:opacity-50";
 
 /** Mas que esto no es un respaldo de coleccion. */
 const MAX_ARCHIVO = 1024 * 1024;

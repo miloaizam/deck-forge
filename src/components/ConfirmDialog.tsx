@@ -88,7 +88,7 @@ export function ConfirmDialog({
             // El foco entra aqui: la salida segura es la que queda bajo la mano.
             autoFocus
             onClick={() => ref.current?.close()}
-            className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center px-4 text-[13px] transition-colors"
+            className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center px-4 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
           >
             {cancelar}
           </button>

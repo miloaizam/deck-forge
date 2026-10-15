@@ -86,6 +86,15 @@ el color no es el único indicador.
 | `warning` | `#FBBF24` | `#B45309` | algo no se pudo hacer, y el aviso dice por qué |
 | `accent` | (el de la marca) | | informativo: enlace copiado, archivo exportado |
 
+### Al pasar el cursor
+
+Todo lo que se puede pulsar y tiene contorno —botones, filtros, selectores,
+tarjetas, filas, cartas— responde igual: **un anillo `brand-500` de 2 px,
+separado 2 px del borde**, el mismo del foco del teclado. El borde no cambia.
+Lo que borra o vacía lleva el anillo en `danger`, y lo que descarta algo menos
+grave, en `warning`. Las cartas además suben un poco. Un elemento sin contorno
+(un enlace de la navbar, un texto) solo aclara su color.
+
 ### Tema claro
 
 La app es **dark-first**, pero tiene tema claro conmutable desde la navbar. Se

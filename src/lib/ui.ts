@@ -61,7 +61,7 @@ export const PRIMARY_BUTTON =
  * quede claro cual es la salida recomendada.
  */
 export const SECONDARY_BUTTON =
-  "border-line text-ink hover:border-brand-500 focus-visible:outline-brand-500 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 border px-8 text-[17px] font-medium transition duration-200";
+  "border-line text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 focus-visible:outline-brand-500 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 border px-8 text-[17px] font-medium transition duration-200";
 
 /**
  * Las clases van escritas enteras y no armadas con plantillas: Tailwind lee el
@@ -86,9 +86,9 @@ export const COLUMNAS_GRILLA: Record<"catalogo" | "constructor", string> = {
  * `cn()` resuelve el choque con el hover violeta de siempre.
  */
 export const HOVER_PELIGRO =
-  "hover:border-danger/70 hover:bg-danger/10 hover:text-danger";
+  "hover:outline-2 hover:outline-offset-2 hover:outline-danger hover:bg-danger/10 hover:text-danger";
 export const HOVER_AVISO =
-  "hover:border-warning/70 hover:bg-warning/10 hover:text-warning";
+  "hover:outline-2 hover:outline-offset-2 hover:outline-warning hover:bg-warning/10 hover:text-warning";
 
 /**
  * El contorno de una carta al apuntarla: un anillo violeta separado del borde

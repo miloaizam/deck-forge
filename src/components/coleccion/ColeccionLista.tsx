@@ -30,13 +30,13 @@ export type VistaColeccion = "tengo" | "faltan" | "agregar";
 const TANDA = 150;
 
 const MAS =
-  "inline-flex h-10 items-center rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex h-10 items-center rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 const PASO =
   "inline-flex size-9 items-center justify-center rounded-chip text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:outline-brand-500 disabled:opacity-40 disabled:hover:bg-transparent";
 
 const BOTON =
-  "inline-flex h-9 shrink-0 items-center gap-1 rounded-chip border border-line px-3 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex h-9 shrink-0 items-center gap-1 rounded-chip border border-line px-3 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /**
  * La coleccion como lista: por tipo, en el orden del catalogo (o el que se
@@ -76,7 +76,7 @@ export function ColeccionLista({
             {g.cards.slice(0, mostradas[g.tipo] ?? TANDA).map((c) => (
               <li
                 key={c.id}
-                className="fila-coleccion bg-panel border-line rounded-card hover:border-brand-500 flex items-center gap-2 border p-1.5 pr-2 transition-colors"
+                className="fila-coleccion bg-panel border-line rounded-card hover:outline-brand-500 flex items-center gap-2 border p-1.5 pr-2 transition-colors hover:outline-2 hover:outline-offset-2"
               >
                 <button
                   type="button"

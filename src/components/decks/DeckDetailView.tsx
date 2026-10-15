@@ -47,12 +47,12 @@ interface DeckDetailViewProps {
 }
 
 const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 /** Las dos tarjetas de analisis del final: mano de prueba y curva. */
 const PANEL_ANALISIS =
   "border-line bg-panel rounded-panel flex flex-col border p-5 sm:p-6";
 const ICONO =
-  "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /**
  * Muestra una baraja, sea tuya (`?m=`) o de un enlace compartido (`#d=`, o

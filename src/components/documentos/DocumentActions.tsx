@@ -5,7 +5,7 @@ import type { Documento } from "@/lib/documentos";
 import { cn } from "@/lib/utils";
 
 const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500";
+  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 const PRIMARIO =
   "inline-flex h-11 items-center gap-1.5 rounded-chip bg-brand-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-brand-500 focus-visible:outline-brand-300";
 

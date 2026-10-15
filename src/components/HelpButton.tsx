@@ -51,7 +51,7 @@ export function HelpButton() {
         title="Ayuda"
         // Mismo trato que el boton de tema, que va justo al lado: sin caja en
         // reposo, el aro solo al apuntar o enfocar.
-        className="text-muted hover:text-ink hover:border-line focus-visible:outline-brand-500 active:border-brand-500 active:text-ink flex size-11 shrink-0 items-center justify-center rounded-full border border-transparent transition-colors"
+        className="text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 active:border-brand-500 active:text-ink flex size-11 shrink-0 items-center justify-center rounded-full border border-transparent transition-colors hover:outline-2 hover:outline-offset-2"
       >
         <CircleHelp size={17} aria-hidden="true" />
       </button>
@@ -128,7 +128,7 @@ export function HelpButton() {
             <Link
               href="/novedades"
               onClick={cerrar}
-              className="border-line hover:border-brand-500 focus-visible:outline-brand-500 rounded-card text-muted hover:text-ink flex items-center gap-2 border px-4 py-3 text-[14px] transition-colors"
+              className="border-line hover:outline-brand-500 focus-visible:outline-brand-500 rounded-card text-muted hover:text-ink flex items-center gap-2 border px-4 py-3 text-[14px] transition-colors hover:outline-2 hover:outline-offset-2"
             >
               <Sparkles size={15} aria-hidden="true" className="text-accent" />
               ¿Qué cambió últimamente? Mira las novedades

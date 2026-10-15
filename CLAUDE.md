@@ -1842,6 +1842,20 @@ con la estrella de portada). Es `outline` y no el borde: no cambia el grosor
 de la carta, y en una pila de tres copias rodea la pila entera en vez de
 dibujar tres marcos. Antes cada vista hacía lo suyo (borde, brillo o nada).
 
+**Y lo mismo vale para todo lo que se apunta** (15-10-2026): botones, filtros,
+selectores, la tarjeta de Mis barajas, las filas de la colección, la paginación,
+el `−/+` y la moneda del panel. Al pasar el cursor **no cambia el borde**: sale
+el mismo anillo, `hover:outline-2 hover:outline-offset-2
+hover:outline-brand-500`, que es además el anillo de foco del teclado
+(`:focus-visible` en `globals.css`). Se escribe con los tres `hover:` y no con
+una base `outline-transparent`, porque esa base, como utilidad, le ganaría al
+`:focus-visible` del `@layer base` y borraría el foco de los elementos que no
+lo repiten. `HOVER_PELIGRO` y `HOVER_AVISO` cambian solo el color del anillo
+(`outline-danger`, `outline-warning`), y `cn()` resuelve el choque con el
+violeta. Dos cuidados: un contenedor con `overflow` recorta el anillo (son 4
+px por fuera), por eso la fila de impresiones del modal lleva `p-1`; y las
+cartas siguen con `CONTORNO_CARTA`, que suma el leve ascenso.
+
 **Los botones dicen cuánto se pierde** (15-10-2026). `HOVER_PELIGRO` y
 `HOVER_AVISO` (`src/lib/ui.ts`) ponen rojo o ámbar el hover de lo que borra o
 vacía (borrar una baraja, vaciarla, vaciar la colección) y de lo que descarta

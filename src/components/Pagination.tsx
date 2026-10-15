@@ -36,7 +36,7 @@ function pageWindow(page: number, total: number): (number | null)[] {
 const BUTTON =
   "inline-flex h-11 min-w-11 items-center justify-center rounded-chip border px-3 text-sm transition-colors focus-visible:outline-brand-500";
 const NEUTRAL =
-  "border-line text-muted hover:text-ink hover:border-brand-500 disabled:pointer-events-none disabled:opacity-40";
+  "border-line text-muted hover:text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 disabled:pointer-events-none disabled:opacity-40";
 
 /** Campo para saltar a una pagina concreta. */
 function PageJump({

@@ -60,7 +60,7 @@ export function QuantityStepper({
         <span
           className={cn(
             CAJA_FILA,
-            "text-muted group-hover/b:border-line group-hover/b:bg-surface group-hover/b:text-ink",
+            "text-muted group-hover/b:outline-brand-500 group-hover/b:bg-surface group-hover/b:text-ink group-hover/b:outline-2 group-hover/b:outline-offset-2",
           )}
         >
           <Minus size={14} aria-hidden="true" />
@@ -91,7 +91,7 @@ export function QuantityStepper({
               ? "text-muted/30"
               : // Sumar es LA accion de la fila, asi que al apuntarla se pinta
                 // entera: distingue el boton que agrega del que deshace.
-                "text-muted group-hover/b:border-brand-500 group-hover/b:bg-brand-600 group-hover/b:text-white",
+                "text-muted group-hover/b:outline-brand-500 group-hover/b:bg-brand-600 group-hover/b:text-white group-hover/b:outline-2 group-hover/b:outline-offset-2",
           )}
         >
           <Plus size={14} aria-hidden="true" />

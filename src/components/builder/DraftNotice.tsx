@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 const BOTON =
   "inline-flex h-9 items-center rounded-chip border px-3.5 text-[13px] font-medium shadow-panel transition-colors focus-visible:outline-brand-500";
 const RECUPERAR =
-  "border-brand-600 bg-brand-600 text-white hover:border-brand-500 hover:bg-brand-500";
+  "border-brand-600 bg-brand-600 text-white hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:bg-brand-500";
 const DESCARTAR =
-  "border-line bg-panel text-ink hover:border-warning/70 hover:text-warning";
+  "border-line bg-panel text-ink hover:outline-2 hover:outline-offset-2 hover:outline-warning hover:text-warning";
 
 /**
  * El aviso del borrador, sobre el panel de la baraja: pregunta si recuperar la

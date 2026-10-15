@@ -80,7 +80,7 @@ function OroInicialToggle({
             ? "border-brand-600 bg-accent-soft text-accent"
             : bloqueo
               ? "border-line/60 text-muted/30"
-              : "border-line text-muted group-hover/b:border-brand-500 group-hover/b:bg-accent-soft group-hover/b:text-accent",
+              : "border-line text-muted group-hover/b:outline-brand-500 group-hover/b:bg-accent-soft group-hover/b:text-accent group-hover/b:outline-2 group-hover/b:outline-offset-2",
         )}
       >
         <Coins size={14} aria-hidden="true" />

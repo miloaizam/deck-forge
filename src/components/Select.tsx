@@ -198,7 +198,7 @@ export function Select({
             "focus-visible:outline-brand-500 rounded-chip flex h-11 w-full items-center gap-2 border pr-10 pl-3 text-sm transition-colors",
             activo
               ? "border-brand-600 bg-accent-soft text-ink"
-              : "border-line bg-panel text-muted hover:border-brand-500 hover:text-ink",
+              : "border-line bg-panel text-muted hover:outline-brand-500 hover:text-ink hover:outline-2 hover:outline-offset-2",
           )}
         >
           <span id={`${id}-value`} className="truncate">

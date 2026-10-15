@@ -66,9 +66,9 @@ function formatFecha(ms: number): string {
  * comodos de pulsar y la tarjeta se lee de una.
  */
 const ACCION =
-  "text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-1.5 border px-2.5 text-[13px] transition-colors";
+  "text-muted hover:text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-1.5 border px-2.5 text-[13px] transition-colors";
 const ACCION_ICONO =
-  "text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex size-9 items-center justify-center border transition-colors";
+  "text-muted hover:text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex size-9 items-center justify-center border transition-colors";
 
 export function DeckListView({ cards }: DeckListViewProps) {
   // La lista sale del store, no de estado propio: asi se mantiene al dia sola
@@ -150,7 +150,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                 // dice que la tarjeta es algo con que se puede hacer cosas.
                 // `relative`: el enlace del titulo se estira sobre la tarjeta
                 // entera (su ::after), y los botones van por encima con z-10.
-                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:border-brand-500 hover:shadow-glow group relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5"
+                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
               >
                 {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no

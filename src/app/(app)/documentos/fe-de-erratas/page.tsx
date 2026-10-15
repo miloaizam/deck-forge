@@ -56,7 +56,7 @@ export default function FeDeErratasPage() {
             <li key={ed}>
               <a
                 href={`#${ancla(ed)}`}
-                className="border-line text-muted hover:border-brand-500 hover:text-ink focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-2 border px-3 text-[13px] transition-colors"
+                className="border-line text-muted hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-2 border px-3 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
               >
                 {ed}
                 <span className="bg-accent-soft text-accent rounded-chip px-1.5 text-[11px] font-semibold tabular-nums">

@@ -17,9 +17,7 @@ export default async function ColeccionPage() {
       <p className="eyebrow mb-3">Colección</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Mi colección</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Las cartas que tienes y las que te faltan para conseguir. Búscalas en «Agregar
-        cartas» y márcalas: se guardan en este navegador, y con un respaldo las pasas a
-        otro equipo.
+        Las cartas que tienes y las que te faltan para conseguir.
       </p>
 
       <div className="mt-10">

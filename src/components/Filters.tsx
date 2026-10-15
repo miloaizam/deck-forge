@@ -108,7 +108,7 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
               type="button"
               onClick={onReset}
               aria-label="Limpiar filtros"
-              className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 border px-3 text-[13px] whitespace-nowrap transition-colors sm:px-4"
+              className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 border px-3 text-[13px] whitespace-nowrap transition-colors hover:outline-2 hover:outline-offset-2 sm:px-4"
             >
               <X size={14} aria-hidden="true" />
               <span className="hidden sm:inline">Limpiar filtros</span>
@@ -124,7 +124,7 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
               "focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 border px-3 text-sm whitespace-nowrap transition-colors sm:px-4",
               open || activos > 0
                 ? "border-brand-600 bg-accent-soft text-ink"
-                : "border-line text-muted hover:border-brand-500 hover:text-ink",
+                : "border-line text-muted hover:outline-brand-500 hover:text-ink hover:outline-2 hover:outline-offset-2",
             )}
           >
             <Funnel size={15} aria-hidden="true" />

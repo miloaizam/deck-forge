@@ -47,7 +47,7 @@ export function ScrollTopButton() {
       title="Volver arriba"
       // Invisible saca el boton del orden de tabulacion cuando no se ve.
       className={cn(
-        "border-line bg-panel/90 text-muted hover:text-ink hover:border-brand-500 focus-visible:outline-brand-500 shadow-panel fixed right-4 z-20 flex size-11 items-center justify-center rounded-full border backdrop-blur transition-[opacity,transform,visibility,color,border-color] duration-200 sm:right-6",
+        "border-line bg-panel/90 text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 shadow-panel fixed right-4 z-20 flex size-11 items-center justify-center rounded-full border backdrop-blur transition-[opacity,transform,visibility,color,border-color] duration-200 hover:outline-2 hover:outline-offset-2 sm:right-6",
         enConstructor
           ? "bottom-[calc(4.25rem+env(safe-area-inset-bottom))] lg:bottom-6"
           : "bottom-6",

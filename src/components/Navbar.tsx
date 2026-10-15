@@ -119,7 +119,7 @@ export function Navbar() {
             aria-expanded={open}
             aria-controls="menu-principal"
             aria-label={open ? "Cerrar el menú" : "Abrir el menú"}
-            className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip flex size-11 shrink-0 items-center justify-center border transition-colors lg:hidden"
+            className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip flex size-11 shrink-0 items-center justify-center border transition-colors hover:outline-2 hover:outline-offset-2 lg:hidden"
           >
             {open ? (
               <X size={17} aria-hidden="true" />
