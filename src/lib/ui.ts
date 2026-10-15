@@ -77,3 +77,30 @@ export const COLUMNAS_GRILLA: Record<"catalogo" | "constructor", string> = {
   constructor:
     "max-w-[200px] min-w-0 basis-[calc((100%-1rem)/2-0.5px)] sm:basis-[calc((100%-2rem)/3-0.5px)] md:basis-[calc((100%-3rem)/4-0.5px)] lg:basis-[calc((100%-3rem)/4-0.5px)] xl:basis-[calc((100%-5rem)/6-0.5px)]",
 };
+
+/**
+ * El color de lo que se pierde. Lo que borra o vacia y no tiene vuelta atras
+ * (borrar una baraja, vaciarla, vaciar la coleccion) se pone rojo al pasar el
+ * cursor; lo que descarta algo menos grave (un borrador, una carta de la
+ * lista de faltantes) se pone ambar. Se suman al final de la clase del boton:
+ * `cn()` resuelve el choque con el hover violeta de siempre.
+ */
+export const HOVER_PELIGRO =
+  "hover:border-danger/70 hover:bg-danger/10 hover:text-danger";
+export const HOVER_AVISO =
+  "hover:border-warning/70 hover:bg-warning/10 hover:text-warning";
+
+/** El tono de una accion que se confirma en un modal. */
+export type TonoAccion = "peligro" | "aviso";
+
+/**
+ * El boton que confirma en un modal: rojo si la accion no tiene vuelta atras,
+ * ambar si se puede rehacer. El texto del hover va en `text-bg`, el fondo de
+ * la pagina, que contrasta con el relleno en los dos temas.
+ */
+export const BOTON_CONFIRMAR: Record<TonoAccion, string> = {
+  peligro:
+    "border-danger bg-danger/15 text-danger hover:bg-danger hover:text-bg focus-visible:outline-danger",
+  aviso:
+    "border-warning bg-warning/15 text-warning hover:bg-warning hover:text-bg focus-visible:outline-warning",
+};

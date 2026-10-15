@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { Funnel, Search, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Funnel, Search, X } from "lucide-react";
 
 import { Select } from "./Select";
 import type { CatalogFilters, Facets } from "@/lib/catalog";
 import { etiquetaDeTipo } from "@/lib/oros";
 import { countActiveFilters } from "@/lib/catalog";
+import { ETIQUETA_ORDEN, esOrden, siguienteOrden } from "@/lib/card-order";
 import { editionTitle } from "@/lib/editions";
 import { TEXT_FIELD } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -16,8 +17,6 @@ interface FiltersProps {
   facets: Facets;
   onChange: (next: CatalogFilters) => void;
   onReset: () => void;
-  /** Un control mas junto al boton de filtros: el orden, en el catalogo. */
-  extra?: ReactNode;
 }
 
 /**
@@ -27,7 +26,7 @@ interface FiltersProps {
  * pantalla, sobre todo en el telefono; plegados, la primera cosa que se ve al
  * entrar al catalogo son las cartas.
  */
-export function Filters({ filters, facets, onChange, onReset, extra }: FiltersProps) {
+export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const buscador = useRef<HTMLInputElement>(null);
@@ -76,21 +75,35 @@ export function Filters({ filters, facets, onChange, onReset, extra }: FiltersPr
             placeholder="Buscar por nombre o habilidad…"
             aria-keyshortcuts="/"
             aria-label="Buscar cartas"
-            className={cn(TEXT_FIELD, "pr-4 pl-10")}
+            className={cn(TEXT_FIELD, "pr-12 pl-10")}
           />
-          {/* La pista del atajo, solo con teclado a mano y con el campo vacio. */}
-          {filters.query === "" && (
-            <kbd
-              aria-hidden="true"
-              className="border-line text-muted pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border px-1.5 text-[11px] sm:block"
-            >
-              /
-            </kbd>
-          )}
+          {/* El orden va dentro del buscador: cada pulsacion pasa al siguiente
+              (catalogo, A-Z, Z-A) y el icono dice cual esta puesto. Es un
+              boton aparte del campo, superpuesto, como el de limpiar de Select. */}
+          <button
+            type="button"
+            onClick={() => set("orden")(siguienteOrden(filters.orden))}
+            aria-label={`Ordenar: ${ETIQUETA_ORDEN[esOrden(filters.orden) ? filters.orden : ""]}. Pulsa para cambiar.`}
+            title={ETIQUETA_ORDEN[esOrden(filters.orden) ? filters.orden : ""]}
+            className={cn(
+              "rounded-chip focus-visible:outline-brand-500 absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center transition-colors",
+              filters.orden
+                ? "bg-accent-soft text-accent"
+                : "text-muted hover:text-ink hover:bg-surface",
+            )}
+          >
+            {filters.orden === "nombre" ? (
+              <ArrowDownAZ size={17} aria-hidden="true" />
+            ) : filters.orden === "nombre-desc" ? (
+              <ArrowDownZA size={17} aria-hidden="true" />
+            ) : (
+              <ArrowUpDown size={17} aria-hidden="true" />
+            )}
+          </button>
         </div>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {(activos > 0 || filters.query !== "") && (
+          {(activos > 0 || filters.query !== "" || filters.orden !== "") && (
             <button
               type="button"
               onClick={onReset}
@@ -101,8 +114,6 @@ export function Filters({ filters, facets, onChange, onReset, extra }: FiltersPr
               <span className="hidden sm:inline">Limpiar filtros</span>
             </button>
           )}
-
-          {extra}
 
           <button
             type="button"

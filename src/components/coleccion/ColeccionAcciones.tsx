@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ClipboardCopy, Download, Trash2, Upload } from "lucide-react";
+import { Download, ImageDown, Link2, Trash2, Upload } from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
@@ -14,13 +14,19 @@ import {
   saveColeccion,
   type Coleccion,
 } from "@/lib/coleccion";
+import { coleccionUrl } from "@/lib/coleccion-code";
+import { HOVER_PELIGRO } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 interface ColeccionAccionesProps {
   coleccion: Coleccion;
-  /** El texto de la lista que se ve, con sus filtros. `null` si no se copia. */
-  lista: (() => string) | null;
-  /** Cuantas cartas tiene la lista que se ve: sin ninguna no hay que copiar. */
-  enLista: number;
+  /**
+   * Descarga la lista que se ve (con sus filtros) como imagen. `null` si en
+   * esta pestana no hay imagen que dar: «Agregar cartas», o la lista vacia.
+   */
+  onImagen: (() => void) | null;
+  /** Una coleccion compartida: solo se puede bajar su imagen. */
+  soloLectura?: boolean;
 }
 
 const BOTON =
@@ -30,21 +36,29 @@ const BOTON =
 const MAX_ARCHIVO = 1024 * 1024;
 
 /**
- * Copiar la lista que se ve, llevarse la coleccion a otro navegador y
- * vaciarla. El respaldo se arma con un Blob, como el de las barajas: no sale
+ * La imagen de la lista que se ve, el enlace para compartir la coleccion,
+ * llevarsela a otro navegador y vaciarla. El respaldo se arma con un Blob, como el de las barajas: no sale
  * nada del navegador.
  */
-export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccionesProps) {
+export function ColeccionAcciones({
+  coleccion,
+  onImagen,
+  soloLectura = false,
+}: ColeccionAccionesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [vaciar, setVaciar] = useState(false);
   const vacia = estaVacia(coleccion);
 
-  const copiar = async () => {
+  // El enlace lleva la coleccion entera, las dos listas: quien lo abre ve lo
+  // que tienes y lo que te falta, que es lo que hace falta para un cambio.
+  const compartir = async () => {
     try {
-      if (lista) await navigator.clipboard.writeText(lista());
-      toast("Lista copiada al portapapeles.", "info");
+      await navigator.clipboard.writeText(
+        coleccionUrl(coleccion, window.location.origin),
+      );
+      toast("Enlace de la colección copiado al portapapeles.", "info");
     } catch {
-      toast("No se pudo copiar la lista. Revisa los permisos del navegador.", "warning");
+      toast("No se pudo copiar el enlace. Revisa los permisos del navegador.", "warning");
     }
   };
 
@@ -74,7 +88,8 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
     }
     const nuevas =
       Object.keys(leido.coleccion.tengo).filter((id) => !(id in coleccion.tengo)).length +
-      leido.coleccion.quiero.filter((id) => !coleccion.quiero.includes(id)).length;
+      Object.keys(leido.coleccion.quiero).filter((id) => !(id in coleccion.quiero))
+        .length;
     if (!saveColeccion(fusionar(coleccion, leido.coleccion))) {
       toast(
         "No se pudo guardar la colección: el almacenamiento del navegador está lleno.",
@@ -97,14 +112,32 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
     toast(partes.join(" "), "success");
   };
 
+  const imagen = (
+    <button
+      type="button"
+      onClick={() => onImagen?.()}
+      disabled={!onImagen}
+      title="Descargar la lista que se ve como imagen"
+      className={BOTON}
+    >
+      <ImageDown size={15} aria-hidden="true" />
+      Imagen
+    </button>
+  );
+  if (soloLectura) return <div className="flex flex-wrap gap-2">{imagen}</div>;
+
   return (
     <div className="flex flex-wrap gap-2">
-      {lista && (
-        <button type="button" onClick={copiar} disabled={enLista === 0} className={BOTON}>
-          <ClipboardCopy size={15} aria-hidden="true" />
-          Copiar lista
-        </button>
-      )}
+      {imagen}
+      <button
+        type="button"
+        onClick={() => void compartir()}
+        disabled={vacia}
+        className={BOTON}
+      >
+        <Link2 size={15} aria-hidden="true" />
+        Compartir
+      </button>
       <button type="button" onClick={exportar} disabled={vacia} className={BOTON}>
         <Download size={15} aria-hidden="true" />
         Exportar
@@ -130,7 +163,7 @@ export function ColeccionAcciones({ coleccion, lista, enLista }: ColeccionAccion
         disabled={vacia}
         aria-label="Vaciar la colección"
         title="Vaciar la colección"
-        className={BOTON}
+        className={cn(BOTON, HOVER_PELIGRO)}
       >
         <Trash2 size={15} aria-hidden="true" />
       </button>

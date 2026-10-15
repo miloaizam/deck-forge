@@ -32,7 +32,6 @@ import {
   type Afinidad,
   type CardIndex,
 } from "./deck-rules";
-import { deckAsText } from "./deck-text";
 import { catalogSchema, type Atributo, type Card, type Deck, type Raza } from "./types";
 
 /** Atajo para pedirle una afinidad a `deckAffinity` con solo las razas. */
@@ -678,22 +677,6 @@ test("el + bloqueado dice cuantas copias hay, no cuantas habria", () => {
   const mensaje = check.ok ? "" : check.mensaje;
   assert.match(mensaje, /3 copias/);
   assert.doesNotMatch(mensaje, /4/);
-});
-
-test("la lista en texto va por tipo, con copias y el oro inicial aparte", () => {
-  const aliado = cards.find((c) => c.tipo === "Aliado")!;
-  const oro = cards.find((c) => c.tipo === "Oro" && c.habilidad === "")!;
-  const deck = {
-    ...createDeck("Lista"),
-    principal: [
-      { id: aliado.id, n: 3 },
-      { id: oro.id, n: 1 },
-    ],
-    oroInicial: oro.id,
-  };
-  const texto = deckAsText(deck, resolveDeck(deck, index));
-  assert.match(texto, new RegExp(`^Lista\\n\\nAliados \\(3\\)\\n3 ${aliado.nombre}`));
-  assert.match(texto, new RegExp(`Oro inicial: ${oro.nombre}`));
 });
 
 test("cambiar el arte pasa todas las copias a la impresion elegida", () => {

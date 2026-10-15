@@ -130,55 +130,43 @@ export function agruparImpresiones(cards: Card[]): Map<string, Card[]> {
 }
 
 /**
- * Los ordenes que el catalogo deja elegir, ademas del de siempre (`""`).
+ * Los ordenes que se pueden elegir desde el buscador, ademas del de siempre
+ * (`""`, edicion y frecuencia): por nombre, de la A a la Z o al reves.
  *
- * Solo en el catalogo (`/catalogo` y la pagina de cada edicion): el
- * constructor y una baraja se quedan con el orden fijo, porque ahi una carta
- * que cambia de sitio entre vistas obliga a buscarla de nuevo. Va en la URL
- * (`?orden=`) como los filtros.
+ * Valen en el catalogo, en la grilla del constructor y en la coleccion: las
+ * tres usan el mismo buscador (`Filters`). El panel de la baraja y su detalle
+ * se quedan con el orden fijo. Va en la URL (`?orden=`) como un filtro mas, y
+ * «Limpiar filtros» lo vuelve al de siempre.
  */
-export const ORDENES = [
-  "nombre",
-  "coste-asc",
-  "coste-desc",
-  "fuerza-desc",
-  "fuerza-asc",
-] as const;
+export const ORDENES = ["nombre", "nombre-desc"] as const;
 export type Orden = (typeof ORDENES)[number];
 
 export const ETIQUETA_ORDEN: Record<Orden | "", string> = {
-  "": "Edición y frecuencia",
-  nombre: "Nombre (A–Z)",
-  "coste-asc": "Coste: menor a mayor",
-  "coste-desc": "Coste: mayor a menor",
-  "fuerza-desc": "Fuerza: mayor a menor",
-  "fuerza-asc": "Fuerza: menor a mayor",
+  "": "Orden del catálogo",
+  nombre: "Nombre de la A a la Z",
+  "nombre-desc": "Nombre de la Z a la A",
 };
 
 export const esOrden = (v: string | null): v is Orden =>
   (ORDENES as readonly string[]).includes(v ?? "");
 
-const NOMBRE = new Intl.Collator("es", { sensitivity: "base", numeric: true });
-
-/** Un numero que falta (los Oros no tienen coste) va siempre al final. */
-function porNumero(a: number | null, b: number | null, sentido: 1 | -1): number {
-  if (a === null || b === null) return a === b ? 0 : a === null ? 1 : -1;
-  return (a - b) * sentido;
+/** El orden que sigue al pulsar el boton: catalogo, A-Z, Z-A y de vuelta. */
+export function siguienteOrden(o: string): Orden | "" {
+  return o === "" ? "nombre" : o === "nombre" ? "nombre-desc" : "";
 }
+
+const NOMBRE = new Intl.Collator("es", { sensitivity: "base", numeric: true });
 
 /**
  * Las cartas en el orden elegido, sin tocar el arreglo que recibe. Los
- * empates conservan el orden en que llegan (el `sort` es estable), que es el
- * del catalogo: dos cartas de coste 2 salen por edicion y frecuencia.
+ * empates (dos impresiones de la misma carta) conservan el orden en que
+ * llegan, que es el del catalogo: el `sort` es estable. Un orden que no se
+ * reconoce deja las cartas como estaban.
  */
-export function ordenarCartas(cards: Card[], orden: Orden | ""): Card[] {
-  if (orden === "") return cards;
-  const comparar: (a: Card, b: Card) => number = {
-    nombre: (a: Card, b: Card) => NOMBRE.compare(a.nombre, b.nombre),
-    "coste-asc": (a: Card, b: Card) => porNumero(a.coste, b.coste, 1),
-    "coste-desc": (a: Card, b: Card) => porNumero(a.coste, b.coste, -1),
-    "fuerza-desc": (a: Card, b: Card) => porNumero(a.fuerza, b.fuerza, -1),
-    "fuerza-asc": (a: Card, b: Card) => porNumero(a.fuerza, b.fuerza, 1),
-  }[orden];
-  return [...cards].sort(comparar);
+export function ordenarCartas(cards: Card[], orden: string): Card[] {
+  if (orden === "nombre")
+    return [...cards].sort((a, b) => NOMBRE.compare(a.nombre, b.nombre));
+  if (orden === "nombre-desc")
+    return [...cards].sort((a, b) => NOMBRE.compare(b.nombre, a.nombre));
+  return cards;
 }

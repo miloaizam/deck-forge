@@ -1,8 +1,7 @@
+import { slugArchivo } from "../card-sheet-image";
 import { toast } from "../toast";
 import { deckTitle } from "@/lib/deck";
 import { exportFile, shareUrl } from "@/lib/deck-code";
-import type { ResolvedDeck } from "@/lib/deck-rules";
-import { deckAsText } from "@/lib/deck-text";
 import type { Deck } from "@/lib/types";
 
 /**
@@ -39,21 +38,5 @@ export function downloadDeck(deck: Deck): void {
 
 /** El nombre de la baraja apto para un archivo: "Dragón Control" -> "dragon-control". */
 export function slugNombre(deck: Deck): string {
-  const base = deckTitle(deck)
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  return base || "sin-nombre";
-}
-
-/** Copia la baraja como lista de texto ("3 Akiko Yamamoto"), por tipo. */
-export async function copyDeckList(deck: Deck, res: ResolvedDeck): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(deckAsText(deck, res));
-    toast(`Lista de "${deckTitle(deck)}" copiada al portapapeles.`, "info");
-  } catch {
-    toast("No se pudo copiar la lista. Revisa los permisos del navegador.", "warning");
-  }
+  return slugArchivo(deckTitle(deck));
 }

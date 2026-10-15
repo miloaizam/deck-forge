@@ -74,7 +74,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿En qué orden salen las cartas?",
         respuesta: [
           "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
-          "En el catálogo puedes cambiarlo con el botón **«Ordenar»**, junto a los filtros: por **nombre**, por **coste** o por **Fuerza**, de menor a mayor o al revés. Las cartas sin coste, como los Oros, van al final. El constructor y tus barajas siguen siempre el orden de edición y frecuencia, para que una carta no cambie de sitio.",
+          "El botón de las **flechas**, dentro del buscador, cambia el orden a **nombre de la A a la Z**, luego de la **Z a la A** y de vuelta al de siempre. Está en el catálogo, en el constructor y en tu colección, y **«Limpiar filtros»** también lo vuelve al de siempre. La lista de tu baraja sigue siempre el orden de edición y frecuencia.",
         ],
       },
       {
@@ -203,6 +203,7 @@ export const FAQ: FaqSection[] = [
         respuesta: [
           "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**, desde donde puedes editarla, duplicarla, compartirla, exportarla o borrarla.",
           "Dos barajas **no pueden llamarse igual**: si el nombre ya existe, el constructor te pide otro. Al duplicar, importar o guardar una baraja compartida con un nombre repetido, se le agrega **«(copia)»**.",
+          "Si la baraja está **incompleta** o lleva una carta **baneada**, el constructor te muestra qué le falta y pregunta antes de guardar: puedes **«Guardar igual»** y terminarla después. Al guardar cambios en una baraja que ya existía, también pide confirmar, porque reemplaza la versión anterior.",
         ],
       },
       {
@@ -222,13 +223,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo comparto una baraja?",
         respuesta: [
-          "Toca **«Copiar enlace»** en la página de la baraja, o el botón del enlace en Mis barajas, y se copia un enlace. Quien lo abra ve tu baraja completa y puede **guardarla en sus barajas**.",
-        ],
-      },
-      {
-        pregunta: "¿Cómo paso la lista de una baraja a Discord o WhatsApp?",
-        respuesta: [
-          "En la página de la baraja, **«Copiar lista»** copia la baraja como texto, por tipo y con las copias de cada carta («3 Akiko Yamamoto»), más el oro inicial y el side deck. Se pega en cualquier chat y se lee sin abrir nada.",
+          "Toca el **botón del enlace** (la cadena), en la página de la baraja o en su tarjeta de Mis barajas, y se copia un enlace. Quien lo abra ve tu baraja completa y puede **guardarla en sus barajas**.",
         ],
       },
       {
@@ -240,7 +235,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Puedo compartir la baraja como imagen?",
         respuesta: [
-          "Sí. En la página de la baraja, el botón **«Imagen»** descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
+          "Sí. El **botón de la imagen**, en la página de la baraja o en su tarjeta de Mis barajas, descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
         ],
       },
       {
@@ -273,13 +268,13 @@ export const FAQ: FaqSection[] = [
         ],
         lista: [
           "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
-          "El **corazón** la anota en las que te faltan.",
+          "El **corazón** la anota en las que te faltan. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan, hasta **3**.",
         ],
       },
       {
         pregunta: "¿Qué pasa cuando consigo una carta que me faltaba?",
         respuesta: [
-          "En **«Me faltan»**, toca **«Ya la tengo»**: sale de esa lista y pasa a **«Tengo»** con una copia. La **X** la quita de las que te faltan sin marcarla como tuya.",
+          "En **«Me faltan»**, toca **«Ya la tengo»**: sale de esa lista y pasa a **«Tengo»** con las copias que te faltaban. Para sacarla de la lista sin marcarla como tuya, baja sus copias con el **−** hasta cero.",
         ],
       },
       {
@@ -290,8 +285,10 @@ export const FAQ: FaqSection[] = [
       },
       {
         pregunta: "¿Puedo compartir mis listas para cambiar cartas?",
-        respuesta: [
-          "Sí. En «Tengo» y en «Me faltan», **«Copiar lista»** copia como texto la lista que ves, con los filtros puestos y el código de cada carta para no confundir artes. Se pega en cualquier chat.",
+        respuesta: ["Sí, de dos formas:"],
+        lista: [
+          "**«Compartir»** copia un enlace con tus dos listas. Quien lo abra ve lo que tienes y lo que te falta, sin poder cambiarlo, y su propia colección no se toca.",
+          "**«Imagen»** descarga un PNG de la lista que estás viendo, «Tengo» o «Me faltan», con los filtros que tengas puestos.",
         ],
       },
       {

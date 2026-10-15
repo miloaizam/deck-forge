@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+import { BOTON_CONFIRMAR, type TonoAccion } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
   /** Cerrado cuando es `false`. El texto del cuerpo lo pone quien lo abre. */
@@ -10,12 +13,23 @@ interface ConfirmDialogProps {
   mensaje: string;
   /** Texto del boton que ejecuta la accion. */
   confirmar: string;
+  /** Texto del boton de salida. */
+  cancelar?: string;
+  /**
+   * Rojo (por defecto) si la accion no tiene vuelta atras; ambar si se puede
+   * rehacer, como guardar cambios o guardar una baraja incompleta.
+   */
+  tono?: TonoAccion;
+  /** Algo mas bajo el mensaje: el estado de la baraja, al guardarla. */
+  children?: ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 /**
- * Pide confirmar algo que no tiene vuelta atras.
+ * Pide confirmar una accion: en rojo lo que no tiene vuelta atras (borrar,
+ * vaciar) y en ambar lo que se puede rehacer (guardar cambios, guardar una
+ * baraja incompleta).
  *
  * Usa el <dialog> nativo por lo mismo que CardModal: trae foco atrapado, cierre
  * con Esc y devolucion del foco al boton que lo abrio, sin librerias. La
@@ -27,6 +41,9 @@ export function ConfirmDialog({
   titulo,
   mensaje,
   confirmar,
+  cancelar = "Cancelar",
+  tono = "peligro",
+  children,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -36,6 +53,11 @@ export function ConfirmDialog({
   // salida no se desvanezca con el texto ya borrado.
   const [texto, setTexto] = useState(mensaje);
   if (open && mensaje !== texto) setTexto(mensaje);
+  // Lo mismo con el contenido extra y el tono: se van con el modal, no antes.
+  const [extra, setExtra] = useState(children);
+  if (open && children !== extra) setExtra(children);
+  const [tonoMostrado, setTonoMostrado] = useState(tono);
+  if (open && tono !== tonoMostrado) setTonoMostrado(tono);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -51,13 +73,14 @@ export function ConfirmDialog({
       // el estado de quien lo abrio nunca se queda creyendo que sigue abierto.
       onClose={onCancel}
       aria-labelledby="confirm-titulo"
-      className="panel-anim panel-crece bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(26rem,calc(100vw-2rem))] border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      className="panel-anim panel-crece bg-surface border-line text-ink shadow-panel rounded-panel m-auto w-[min(30rem,calc(100vw-2rem))] border p-0 backdrop:bg-black/70 backdrop:backdrop-blur-sm"
     >
       <div className="flex flex-col gap-2 p-5 sm:p-6">
         <h2 id="confirm-titulo" className="text-ink text-lg font-bold">
           {titulo}
         </h2>
         <p className="text-muted text-[13px] leading-relaxed">{texto}</p>
+        {extra && <div className="mt-2">{extra}</div>}
 
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           <button
@@ -67,12 +90,15 @@ export function ConfirmDialog({
             onClick={() => ref.current?.close()}
             className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center px-4 text-[13px] transition-colors"
           >
-            Cancelar
+            {cancelar}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="border-brand-600 bg-accent-soft text-accent hover:bg-brand-600 focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center border px-4 text-[13px] font-medium transition-colors hover:text-white"
+            className={cn(
+              "rounded-chip inline-flex h-11 items-center border px-4 text-[13px] font-medium transition-colors",
+              BOTON_CONFIRMAR[tonoMostrado],
+            )}
           >
             {confirmar}
           </button>

@@ -26,55 +26,68 @@ const MAX_ENTRADAS = 10_000;
 /** Cota antes de parsear: localStorage y los archivos traen cualquier cosa. */
 const MAX_CHARS = 512 * 1024;
 
+/** Copias que se pueden pedir de una carta que falta: las de una baraja. */
+export const MAX_COPIAS_FALTANTES = 3;
+
 export interface Coleccion {
-  /** Id de impresion -> copias (de 1 en adelante). */
+  /** Id de impresion -> copias que tiene (de 1 en adelante). */
   readonly tengo: Readonly<Record<string, number>>;
-  /** Las impresiones que quiere conseguir. Nunca una que ya tiene. */
-  readonly quiero: readonly string[];
+  /**
+   * Id de impresion -> copias que le faltan (de 1 a 3). Nunca una que ya
+   * tiene: tenerla la saca de aqui.
+   */
+  readonly quiero: Readonly<Record<string, number>>;
 }
 
 export const COLECCION_VACIA: Coleccion = Object.freeze({
   tengo: Object.freeze({}),
-  quiero: Object.freeze([]),
+  quiero: Object.freeze({}),
 });
 
 const copiasSchema = z.number().int().min(1).max(MAX_COPIAS_COLECCION);
+const faltantesSchema = z.number().int().min(1).max(MAX_COPIAS_FALTANTES);
 
 /**
  * Valida las entradas una a una: una rota no se lleva a las demas. Los ids
  * viejos se traducen (`ids-anteriores.ts`) y, si dos acaban en el mismo, se
- * suman. Nunca lanza.
+ * suman (hasta su tope). Nunca lanza.
+ *
+ * `quiero` se lee tambien como lista de ids, que es como lo guardaba la
+ * version anterior (una copia de cada una).
  */
 export function sanearColeccion(
   cartas: unknown,
   quiero: unknown,
 ): { coleccion: Coleccion; descartadas: number } {
   const tengo: Record<string, number> = {};
+  const faltan: Record<string, number> = {};
   let descartadas = 0;
   let leidas = 0;
-  if (typeof cartas === "object" && cartas !== null && !Array.isArray(cartas)) {
-    for (const [clave, valor] of Object.entries(cartas)) {
+  const leer = (
+    origen: unknown,
+    destino: Record<string, number>,
+    esquema: typeof copiasSchema,
+    tope: number,
+  ) => {
+    const pares: [unknown, unknown][] = Array.isArray(origen)
+      ? origen.map((id) => [id, 1])
+      : typeof origen === "object" && origen !== null
+        ? Object.entries(origen)
+        : [];
+    for (const [clave, valor] of pares) {
       const id = cardRefSchema.safeParse(clave);
-      const n = copiasSchema.safeParse(valor);
+      const n = esquema.safeParse(valor);
       if (++leidas > MAX_ENTRADAS || !id.success || !n.success) {
         descartadas++;
         continue;
       }
-      tengo[id.data] = Math.min(MAX_COPIAS_COLECCION, (tengo[id.data] ?? 0) + n.data);
+      destino[id.data] = Math.min(tope, (destino[id.data] ?? 0) + n.data);
     }
-  }
-  const deseadas = new Set<string>();
-  if (Array.isArray(quiero)) {
-    for (const valor of quiero) {
-      const id = cardRefSchema.safeParse(valor);
-      if (++leidas > MAX_ENTRADAS || !id.success) {
-        descartadas++;
-        continue;
-      }
-      if (!(id.data in tengo)) deseadas.add(id.data);
-    }
-  }
-  return { coleccion: { tengo, quiero: [...deseadas] }, descartadas };
+  };
+  leer(cartas, tengo, copiasSchema, MAX_COPIAS_COLECCION);
+  leer(quiero, faltan, faltantesSchema, MAX_COPIAS_FALTANTES);
+  for (const id of Object.keys(faltan)) if (id in tengo) delete faltan[id];
+  return { coleccion: { tengo, quiero: faltan }, descartadas };
 }
 
 /** Lee lo guardado en localStorage. Lo que no cuadre se descarta. */
@@ -91,45 +104,66 @@ export function parseColeccion(raw: string | null): Coleccion {
 }
 
 export const estaVacia = (col: Coleccion) =>
-  Object.keys(col.tengo).length === 0 && col.quiero.length === 0;
+  Object.keys(col.tengo).length === 0 && Object.keys(col.quiero).length === 0;
+
+const acotar = (n: number, tope: number) => Math.max(0, Math.min(tope, Math.trunc(n)));
 
 /**
  * La coleccion con `n` copias de `id`; con 0 sale de las que tiene. Tenerla
  * la saca de las que faltan: ya no falta.
  */
 export function conCopias(col: Coleccion, id: string, n: number): Coleccion {
-  const acotado = Math.max(0, Math.min(MAX_COPIAS_COLECCION, Math.trunc(n)));
+  const acotado = acotar(n, MAX_COPIAS_COLECCION);
   const tengo: Record<string, number> = { ...col.tengo };
+  const quiero: Record<string, number> = { ...col.quiero };
   if (acotado === 0) delete tengo[id];
-  else tengo[id] = acotado;
-  return {
-    tengo,
-    quiero: acotado > 0 ? col.quiero.filter((q) => q !== id) : col.quiero,
-  };
+  else {
+    tengo[id] = acotado;
+    delete quiero[id];
+  }
+  return { tengo, quiero };
 }
 
-/** Suma o quita una impresion de las que faltan. Una que ya tiene no entra. */
-export function alternarQuiero(col: Coleccion, id: string): Coleccion {
-  if (col.quiero.includes(id)) {
-    return { ...col, quiero: col.quiero.filter((q) => q !== id) };
-  }
+/**
+ * Las copias que faltan de `id`, de 0 (sale de la lista) a 3. Una carta que ya
+ * se tiene no entra.
+ */
+export function conFaltantes(col: Coleccion, id: string, n: number): Coleccion {
   if (id in col.tengo) return col;
-  return { ...col, quiero: [...col.quiero, id] };
+  const acotado = acotar(n, MAX_COPIAS_FALTANTES);
+  const quiero: Record<string, number> = { ...col.quiero };
+  if (acotado === 0) delete quiero[id];
+  else quiero[id] = acotado;
+  return { ...col, quiero };
+}
+
+/** Anota una carta como faltante (una copia), o la saca si ya estaba. */
+export function alternarQuiero(col: Coleccion, id: string): Coleccion {
+  return conFaltantes(col, id, id in col.quiero ? 0 : 1);
+}
+
+/** La carta que faltaba llego: pasa a las que tiene con las copias que faltaban. */
+export function yaLaTengo(col: Coleccion, id: string): Coleccion {
+  return conCopias(col, id, col.quiero[id] ?? 1);
 }
 
 /**
  * Junta una coleccion importada con la que hay. Por impresion se queda la
- * MAYOR de las dos cantidades y las que faltan se suman: importar el mismo
- * respaldo dos veces no duplica nada, e importar uno viejo no borra nada.
+ * MAYOR de las dos cantidades, en las dos listas: importar el mismo respaldo
+ * dos veces no duplica nada, e importar uno viejo no borra nada.
  */
 export function fusionar(actual: Coleccion, importada: Coleccion): Coleccion {
-  const tengo: Record<string, number> = { ...actual.tengo };
-  for (const [id, n] of Object.entries(importada.tengo)) {
-    tengo[id] = Math.max(tengo[id] ?? 0, n);
-  }
-  const quiero = [...new Set([...actual.quiero, ...importada.quiero])].filter(
-    (id) => !(id in tengo),
-  );
+  const mayor = (
+    a: Readonly<Record<string, number>>,
+    b: Readonly<Record<string, number>>,
+  ) => {
+    const out: Record<string, number> = { ...a };
+    for (const [id, n] of Object.entries(b)) out[id] = Math.max(out[id] ?? 0, n);
+    return out;
+  };
+  const tengo = mayor(actual.tengo, importada.tengo);
+  const quiero = mayor(actual.quiero, importada.quiero);
+  for (const id of Object.keys(quiero)) if (id in tengo) delete quiero[id];
   return { tengo, quiero };
 }
 
@@ -140,31 +174,6 @@ export function porTipo(cards: Card[]): { tipo: Tipo; titulo: string; cards: Car
     titulo,
     cards: cards.filter((c) => c.tipo === tipo),
   })).filter((g) => g.cards.length > 0);
-}
-
-/**
- * Una lista de texto para pasar por Discord o WhatsApp, que es como se
- * negocian los cambios: por tipo, con el codigo para no confundir artes. Las
- * que tiene llevan las copias; las que faltan, no.
- */
-export function coleccionComoTexto(
-  titulo: string,
-  cards: Card[],
-  col: Coleccion,
-  conCopiasPuestas: boolean,
-): string {
-  const out = [`${titulo} (${cards.length})`];
-  for (const g of porTipo(cards)) {
-    out.push("", `${g.titulo} (${g.cards.length})`);
-    for (const c of g.cards) {
-      out.push(
-        conCopiasPuestas
-          ? `${col.tengo[c.id] ?? 0} ${c.nombre} (${c.codigo})`
-          : `${c.nombre} (${c.codigo})`,
-      );
-    }
-  }
-  return out.join("\n");
 }
 
 /* ------------------------------------------------------------------ *

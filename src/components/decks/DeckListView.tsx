@@ -3,9 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Copy, Download, Hammer, Layers, Link2, Plus, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Download,
+  Hammer,
+  ImageDown,
+  Layers,
+  Link2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import { copyShareLink, downloadDeck } from "./actions";
+import { descargarImagenDeBaraja } from "./deck-image";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import { DeckTransfer } from "./DeckTransfer";
@@ -29,6 +39,8 @@ import {
   saveDecks,
 } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
+import { HOVER_PELIGRO } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 import { CARD_RATIO } from "../CardTile";
 
 interface DeckListViewProps {
@@ -134,7 +146,9 @@ export function DeckListView({ cards }: DeckListViewProps) {
             return (
               <li
                 key={deck.id}
-                className="aparece border-line bg-panel rounded-panel flex gap-3 border p-3.5"
+                // Se levanta al pasar el cursor, como las cartas del catalogo:
+                // dice que la tarjeta es algo con que se puede hacer cosas.
+                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:border-brand-500 hover:shadow-glow flex gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5"
               >
                 {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no
@@ -194,6 +208,15 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     </Link>
                     <button
                       type="button"
+                      onClick={() => descargarImagenDeBaraja(deck, res)}
+                      aria-label={`Descargar ${deckTitle(deck)} como imagen`}
+                      title="Descargar como imagen"
+                      className={ACCION_ICONO}
+                    >
+                      <ImageDown size={14} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => void copyShareLink(deck)}
                       aria-label={`Compartir ${deckTitle(deck)}`}
                       title="Copiar enlace"
@@ -226,7 +249,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                       onClick={() => setPorBorrar(deck)}
                       aria-label={`Borrar ${deckTitle(deck)}`}
                       title="Borrar"
-                      className={ACCION_ICONO}
+                      className={cn(ACCION_ICONO, HOVER_PELIGRO)}
                     >
                       <Trash2 size={14} aria-hidden="true" />
                     </button>

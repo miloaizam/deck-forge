@@ -2,6 +2,7 @@ import { History, X } from "lucide-react";
 
 import type { DraftState } from "./DeckParamLoader";
 import { deckTitle } from "@/lib/deck";
+import { HOVER_AVISO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const BOTON =
@@ -55,7 +56,7 @@ export function DraftNotice({
               Retomar
             </button>
           )}
-          <button type="button" onClick={onDescartar} className={BOTON}>
+          <button type="button" onClick={onDescartar} className={cn(BOTON, HOVER_AVISO)}>
             Descartar
           </button>
         </div>

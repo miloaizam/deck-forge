@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Share2 } from "lucide-react";
 
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
@@ -8,9 +9,10 @@ import { useHydrated } from "../decks/use-decks";
 import { toast } from "../toast";
 import { ColeccionAcciones } from "./ColeccionAcciones";
 import { ColeccionLista, type VistaColeccion } from "./ColeccionLista";
-import { useColeccion } from "./use-coleccion";
+import { useCodigoCompartido, useColeccion } from "./use-coleccion";
+import { downloadCardSheet } from "../card-sheet-image";
 import { ColeccionSkeleton } from "@/components/Skeleton";
-import { agruparImpresiones } from "@/lib/card-order";
+import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import {
   applyFilters,
   buildFacets,
@@ -22,12 +24,14 @@ import {
   type CatalogFilters,
 } from "@/lib/catalog";
 import {
-  alternarQuiero,
-  coleccionComoTexto,
   conCopias,
+  conFaltantes,
+  porTipo,
   saveColeccion,
+  yaLaTengo,
   type Coleccion,
 } from "@/lib/coleccion";
+import { decodeColeccion } from "@/lib/coleccion-code";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -47,9 +51,15 @@ const esVista = (v: string | null): v is VistaColeccion =>
  *
  * Reutiliza el buscador y los filtros del catalogo, y los guarda en la URL
  * de la misma forma, junto con la pestana (`?ver=`).
+ *
+ * Con un enlace compartido (`#c=`) muestra la coleccion de otra persona, de
+ * solo lectura: sus dos listas, sin «Agregar cartas» y sin tocar la propia.
  */
 export function ColeccionView({ cards }: { cards: Card[] }) {
-  const coleccion = useColeccion();
+  const propia = useColeccion();
+  const codigo = useCodigoCompartido();
+  const compartida = useMemo(() => decodeColeccion(codigo), [codigo]);
+  const coleccion = compartida ?? propia;
   const hidratada = useHydrated();
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [vista, setVista] = useState<VistaColeccion>("tengo");
@@ -76,31 +86,44 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
     const params = new URLSearchParams(filtersToSearch(filters, 1));
     if (vista !== "tengo") params.set("ver", vista);
     const s = params.toString();
+    // El fragmento se conserva: ahi viaja la coleccion compartida.
     history.replaceState(
       history.state,
       "",
-      `${window.location.pathname}${s ? `?${s}` : ""}`,
+      `${window.location.pathname}${s ? `?${s}` : ""}${window.location.hash}`,
     );
   }, [leidaUrl, filters, vista]);
 
   const filtradas = useMemo(
-    () => applyFilters(cards, filters, index),
+    () => ordenarCartas(applyFilters(cards, filters, index), filters.orden),
     [cards, filters, index],
   );
   const tengo = useMemo(
     () => filtradas.filter((c) => (coleccion.tengo[c.id] ?? 0) > 0),
     [filtradas, coleccion],
   );
-  const faltan = useMemo(() => {
-    const ids = new Set(coleccion.quiero);
-    return filtradas.filter((c) => ids.has(c.id));
-  }, [filtradas, coleccion]);
-  const lista = vista === "tengo" ? tengo : vista === "faltan" ? faltan : filtradas;
+  const faltan = useMemo(
+    () => filtradas.filter((c) => (coleccion.quiero[c.id] ?? 0) > 0),
+    [filtradas, coleccion],
+  );
+  // En una compartida no hay «Agregar cartas»: si el enlace la pedia, se ve
+  // «Tengo».
+  const vistaReal: VistaColeccion = compartida && vista === "agregar" ? "tengo" : vista;
+  const lista =
+    vistaReal === "tengo" ? tengo : vistaReal === "faltan" ? faltan : filtradas;
   const cuenta: Record<VistaColeccion, number | null> = {
     tengo: tengo.length,
     faltan: faltan.length,
     agregar: null,
   };
+  const vistas = compartida ? VISTAS.filter((v) => v.valor !== "agregar") : VISTAS;
+
+  // Un enlace roto no rompe la pagina: se avisa y se ve la coleccion propia.
+  useEffect(() => {
+    if (codigo && !compartida) {
+      toast("El enlace de la colección no se pudo leer.", "warning");
+    }
+  }, [codigo, compartida]);
 
   const guardar = (siguiente: Coleccion) => {
     if (!saveColeccion(siguiente)) {
@@ -110,22 +133,69 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
       );
     }
   };
-  const ponerCopias = (card: Card, n: number) =>
-    guardar(conCopias(coleccion, card.id, n));
-  const alternar = (card: Card) => guardar(alternarQuiero(coleccion, card.id));
+  const ponerCopias = (card: Card, n: number) => guardar(conCopias(propia, card.id, n));
+  const acciones = {
+    onCopias: ponerCopias,
+    onFaltantes: (card: Card, n: number) => guardar(conFaltantes(propia, card.id, n)),
+    onYaLaTengo: (card: Card) => guardar(yaLaTengo(propia, card.id)),
+  };
 
   if (!hidratada) return <ColeccionSkeleton />;
 
-  const textoDeLista = () =>
-    coleccionComoTexto(
-      vista === "tengo" ? "Tengo" : "Me faltan",
-      lista,
-      coleccion,
-      vista === "tengo",
-    );
+  // La imagen de la lista que se ve, con sus filtros y su orden.
+  const imagen = () => {
+    const copias = vistaReal === "faltan" ? coleccion.quiero : coleccion.tengo;
+    const nombre = vistaReal === "faltan" ? "Me faltan" : "Tengo";
+    void downloadCardSheet({
+      etiqueta: "Colección · Escuelas Elementales",
+      titulo: compartida ? `Colección compartida: ${nombre.toLowerCase()}` : nombre,
+      tramos: porTipo(lista).map((g) => ({
+        titulo: g.titulo,
+        cuenta: g.cards.reduce((s, c) => s + (copias[c.id] ?? 0), 0),
+        cartas: g.cards.map((c) => ({
+          thumb: c.thumb,
+          etiqueta: `×${copias[c.id] ?? 0}`,
+        })),
+      })),
+      archivo: vistaReal === "faltan" ? "coleccion-me-faltan" : "coleccion-tengo",
+    })
+      .then(() => toast("Imagen de la colección descargada.", "info"))
+      .catch(() => toast("No se pudo generar la imagen de la colección.", "warning"));
+  };
 
   return (
     <div className="flex flex-col gap-6">
+      {compartida && (
+        <div
+          role="status"
+          className="aparece border-brand-500/50 bg-accent-soft rounded-card flex flex-wrap items-center gap-3 border p-3.5"
+        >
+          <Share2 size={16} aria-hidden="true" className="text-accent shrink-0" />
+          <p className="text-ink min-w-0 flex-1 text-[14px]">
+            <strong className="font-semibold">Colección compartida.</strong>{" "}
+            <span className="text-muted">
+              Estás viendo lo que otra persona tiene y le falta. Tu colección no cambia.
+            </span>
+          </p>
+          {/* Un boton y no un Link: navegar con el router no dispara
+              `hashchange`, y la vista seguiria leyendo el enlace. Vaciar el
+              fragmento si lo dispara; despues se limpia el "#" que queda. */}
+          <button
+            type="button"
+            onClick={() => {
+              window.location.hash = "";
+              history.replaceState(
+                history.state,
+                "",
+                `${window.location.pathname}${window.location.search}`,
+              );
+            }}
+            className="text-accent focus-visible:outline-brand-500 rounded text-[14px] underline underline-offset-4"
+          >
+            Ver mi colección
+          </button>
+        </div>
+      )}
       <Filters
         filters={filters}
         facets={facets}
@@ -139,15 +209,15 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
           aria-label="Qué cartas mostrar"
           className="border-line bg-panel rounded-chip inline-flex max-w-full overflow-x-auto border p-1"
         >
-          {VISTAS.map(({ valor, titulo }) => (
+          {vistas.map(({ valor, titulo }) => (
             <button
               key={valor}
               type="button"
               onClick={() => setVista(valor)}
-              aria-pressed={vista === valor}
+              aria-pressed={vistaReal === valor}
               className={cn(
                 "rounded-chip focus-visible:outline-brand-500 inline-flex h-9 shrink-0 items-center gap-2 px-3.5 text-[14px] whitespace-nowrap transition-colors sm:px-4",
-                vista === valor
+                vistaReal === valor
                   ? "bg-brand-600 font-medium text-white"
                   : "text-muted hover:text-ink",
               )}
@@ -157,7 +227,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
                 <span
                   className={cn(
                     "text-[12px] tabular-nums",
-                    vista === valor ? "text-white/80" : "text-muted",
+                    vistaReal === valor ? "text-white/80" : "text-muted",
                   )}
                 >
                   {cuenta[valor]}
@@ -168,31 +238,32 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
         </div>
         <ColeccionAcciones
           coleccion={coleccion}
-          lista={vista === "agregar" ? null : textoDeLista}
-          enLista={lista.length}
+          onImagen={vistaReal === "agregar" || lista.length === 0 ? null : imagen}
+          soloLectura={compartida !== null}
         />
       </div>
 
       {lista.length > 0 ? (
         <ColeccionLista
-          key={`${vista}${filtersToSearch(filters, 1)}`}
+          key={`${vistaReal}${filtersToSearch(filters, 1)}`}
           cards={lista}
           coleccion={coleccion}
-          vista={vista}
+          vista={vistaReal}
           onSelect={setSelected}
-          onCopias={ponerCopias}
-          onQuiero={alternar}
+          acciones={compartida ? undefined : acciones}
         />
       ) : (
         <div className="border-line rounded-panel border border-dashed px-6 py-14 text-center">
           <p className="text-ink">
             {hasActiveFilters(filters)
               ? "Ninguna carta de esta lista coincide con la búsqueda."
-              : vista === "tengo"
-                ? "Todavía no marcaste ninguna carta que tengas."
-                : "No hay cartas en tu lista de las que te faltan."}
+              : compartida
+                ? "Esta lista está vacía."
+                : vistaReal === "tengo"
+                  ? "Todavía no marcaste ninguna carta que tengas."
+                  : "No hay cartas en tu lista de las que te faltan."}
           </p>
-          {hasActiveFilters(filters) ? (
+          {compartida ? null : hasActiveFilters(filters) ? (
             <button
               type="button"
               onClick={() => setFilters(EMPTY_FILTERS)}
@@ -210,7 +281,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
               >
                 Agregar cartas
               </button>{" "}
-              {vista === "tengo"
+              {vistaReal === "tengo"
                 ? "y márcalas con «Tengo»."
                 : "y márcalas con el corazón."}
             </p>
@@ -226,13 +297,13 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
         destino="coleccion"
         copies={selected ? (coleccion.tengo[selected.id] ?? 0) : 0}
         onAdd={
-          selected
-            ? () => ponerCopias(selected, (coleccion.tengo[selected.id] ?? 0) + 1)
+          selected && !compartida
+            ? () => ponerCopias(selected, (propia.tengo[selected.id] ?? 0) + 1)
             : undefined
         }
         onRemove={
-          selected
-            ? () => ponerCopias(selected, (coleccion.tengo[selected.id] ?? 0) - 1)
+          selected && !compartida
+            ? () => ponerCopias(selected, (propia.tengo[selected.id] ?? 0) - 1)
             : undefined
         }
         copiasDe={(id) => coleccion.tengo[id] ?? 0}

@@ -88,10 +88,20 @@ test("el buscador completa la palabra que se esta escribiendo, sin tildes", () =
 
 test("los filtros van y vuelven por la URL, y lo que no es opcion se descarta", () => {
   const f = buildFacets(CATALOGO);
-  const filtros = { ...EMPTY_FILTERS, query: "dragón", tipo: "Aliado", raza: f.razas[0] };
+  const filtros = {
+    ...EMPTY_FILTERS,
+    query: "dragón",
+    tipo: "Aliado",
+    raza: f.razas[0],
+    orden: "nombre-desc",
+  };
   const search = filtersToSearch(filtros, 3);
   assert.deepEqual(filtersFromSearch(search, f), { filters: filtros, page: 3 });
-  const malo = filtersFromSearch("?tipo=<script>&raza=Nada&p=-4&q=" + "x".repeat(500), f);
+  const malo = filtersFromSearch(
+    "?tipo=<script>&raza=Nada&orden=coste-asc&p=-4&q=" + "x".repeat(500),
+    f,
+  );
+  assert.equal(malo.filters.orden, "");
   assert.equal(malo.filters.tipo, "");
   assert.equal(malo.filters.raza, "");
   assert.equal(malo.page, 1);

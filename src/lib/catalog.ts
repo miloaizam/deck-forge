@@ -1,6 +1,6 @@
 import MiniSearch from "minisearch";
 
-import { compareEditions } from "./card-order";
+import { compareEditions, esOrden } from "./card-order";
 import { EDITIONS } from "./editions";
 import { coincideTipo, esClaseDeOro, OPCIONES_DE_TIPO } from "./oros";
 import { ESCUELAS, FRECUENCIAS, KEYWORDS_IMPRESAS, RAZAS, type Card } from "./types";
@@ -25,6 +25,8 @@ export interface CatalogFilters {
   frecuencia: string;
   coste: string;
   fuerza: string;
+  /** El orden de la grilla: `""` es el del catalogo (`ORDENES`, card-order.ts). */
+  orden: string;
 }
 
 export const EMPTY_FILTERS: CatalogFilters = {
@@ -37,6 +39,7 @@ export const EMPTY_FILTERS: CatalogFilters = {
   frecuencia: "",
   coste: "",
   fuerza: "",
+  orden: "",
 };
 
 export function hasActiveFilters(f: CatalogFilters): boolean {
@@ -44,12 +47,13 @@ export function hasActiveFilters(f: CatalogFilters): boolean {
 }
 
 /**
- * Cuantos filtros hay puestos, sin contar la busqueda: es el numero que lleva
- * el boton de filtros, y la busqueda tiene su propio campo a la vista.
+ * Cuantos filtros hay puestos, sin contar la busqueda ni el orden: es el
+ * numero que lleva el boton de filtros, y la busqueda y el orden viven en su
+ * propio campo a la vista.
  */
 export function countActiveFilters(f: CatalogFilters): number {
   const claves = Object.keys(f) as (keyof CatalogFilters)[];
-  return claves.filter((k) => k !== "query" && f[k] !== "").length;
+  return claves.filter((k) => k !== "query" && k !== "orden" && f[k] !== "").length;
 }
 
 /**
@@ -225,7 +229,7 @@ export function pageRange(
  * pagina se lee como entero positivo. Lo demas se ignora en silencio.
  */
 const CLAVES_URL: Record<
-  Exclude<keyof CatalogFilters, "query">,
+  Exclude<keyof CatalogFilters, "query" | "orden">,
   [string, keyof Facets]
 > = {
   edicion: ["ed", "ediciones"],
@@ -254,6 +258,8 @@ export function filtersFromSearch(
       filters[clave as keyof CatalogFilters] = valor;
     }
   }
+  const orden = params.get("orden");
+  if (esOrden(orden)) filters.orden = orden;
   const p = Number.parseInt(params.get("p") ?? "", 10);
   return { filters, page: Number.isFinite(p) && p > 1 && p < 10_000 ? p : 1 };
 }
@@ -265,6 +271,7 @@ export function filtersToSearch(filters: CatalogFilters, page: number): string {
     const valor = filters[clave as keyof CatalogFilters]; // ver arriba
     if (valor) params.set(param, valor);
   }
+  if (filters.orden) params.set("orden", filters.orden);
   if (page > 1) params.set("p", String(page));
   const s = params.toString();
   return s ? `?${s}` : "";

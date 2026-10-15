@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
-  ClipboardList,
   Copy,
   Download,
   Hammer,
@@ -20,10 +19,10 @@ import { CardModal } from "../CardModal";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { CostCurve } from "../CostCurve";
 import { HandTester } from "./HandTester";
-import { downloadDeckImage } from "./deck-image";
+import { descargarImagenDeBaraja } from "./deck-image";
 import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
-import { copyDeckList, copyShareLink, downloadDeck } from "./actions";
+import { copyShareLink, downloadDeck } from "./actions";
 import { DeckIssues } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
@@ -40,6 +39,8 @@ import {
 } from "@/lib/deck-rules";
 import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
+import { HOVER_PELIGRO } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 interface DeckDetailViewProps {
   cards: Card[];
@@ -210,45 +211,35 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                 Editar
               </Link>
             )}
+            {/* Las acciones sobre la baraja van en iconos, con su nombre en
+                el title y en aria-label: la imagen primero, luego el enlace
+                y el respaldo. */}
             <button
               type="button"
-              onClick={() => void copyShareLink(deck)}
-              className={BOTON}
+              onClick={() => descargarImagenDeBaraja(deck, res)}
+              aria-label="Descargar como imagen"
+              title="Descargar como imagen PNG"
+              className={ICONO}
             >
-              <Link2 size={14} aria-hidden="true" />
-              Copiar enlace
+              <ImageDown size={14} aria-hidden="true" />
             </button>
             <button
               type="button"
-              onClick={() => void copyDeckList(deck, res)}
-              className={BOTON}
+              onClick={() => void copyShareLink(deck)}
+              aria-label="Copiar enlace"
+              title="Copiar enlace"
+              className={ICONO}
             >
-              <ClipboardList size={14} aria-hidden="true" />
-              Copiar lista
+              <Link2 size={14} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => downloadDeck(deck)}
+              aria-label="Exportar a un archivo"
               title="Exportar a un archivo de respaldo"
-              className={BOTON}
+              className={ICONO}
             >
               <Download size={14} aria-hidden="true" />
-              Exportar
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                void downloadDeckImage(deck, res)
-                  .then(() => toast(`Imagen de "${deckTitle(deck)}" descargada.`, "info"))
-                  .catch(() =>
-                    toast("No se pudo generar la imagen de la baraja.", "warning"),
-                  )
-              }
-              title="Descargar como imagen PNG"
-              className={BOTON}
-            >
-              <ImageDown size={14} aria-hidden="true" />
-              Imagen
             </button>
 
             {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
@@ -277,7 +268,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                   onClick={() => setPorBorrar(true)}
                   aria-label="Borrar la baraja"
                   title="Borrar"
-                  className={ICONO}
+                  className={cn(ICONO, HOVER_PELIGRO)}
                 >
                   <Trash2 size={14} aria-hidden="true" />
                 </button>

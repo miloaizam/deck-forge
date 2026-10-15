@@ -126,15 +126,15 @@ const PREFIJOS: readonly string[] = [
 const ANCHO_VERSION = 8;
 const ANCHO_LARGO_NOMBRE = 8;
 /** 32 ediciones. */
-const ANCHO_PREFIJO = 5;
+export const ANCHO_PREFIJO = 5;
 /** Hasta 1023; la edicion mas larga del catalogo llega a 326. */
-const ANCHO_NUMERO = 10;
+export const ANCHO_NUMERO = 10;
 /** Hasta 31 grupos por zona, uno por edicion. */
 const ANCHO_GRUPOS = 5;
 /** Hasta 63 entradas por grupo; el esquema de la baraja topa en 60. */
 const ANCHO_ENTRADAS = 6;
 /** Salto respecto del numero anterior del mismo grupo. */
-const ANCHO_SALTO = 6;
+export const ANCHO_SALTO = 6;
 /** Copias, cuando no son 1, 2 ni 3. */
 const ANCHO_COPIAS = 6;
 
@@ -153,11 +153,14 @@ const ID_IMPRESION = /^([a-z]{2})-(\d{3})$/;
 /* ------------------------------------------------------------------ *
  * Bits
  *
+ * Exportados para `coleccion-code.ts`, que comparte con las barajas la forma
+ * de escribir una impresion (prefijo y numero) y el base64url del enlace.
+ *
  * Un escritor y un lector de campos de ancho arbitrario, que es lo que hace
  * corto el codigo: las copias de una carta ocupan dos bits y no un byte.
  * ------------------------------------------------------------------ */
 
-class BitWriter {
+export class BitWriter {
   private readonly bytes: number[] = [];
   private actual = 0;
   private libres = 8;
@@ -180,7 +183,7 @@ class BitWriter {
   }
 }
 
-class BitReader {
+export class BitReader {
   private readonly datos: Uint8Array;
   private pos = 0;
 
@@ -212,13 +215,13 @@ class BitReader {
 
 const BASE64URL = /^[A-Za-z0-9_-]+$/;
 
-function aBase64Url(bytes: Uint8Array): string {
+export function aBase64Url(bytes: Uint8Array): string {
   let crudo = "";
   for (const b of bytes) crudo += String.fromCharCode(b);
   return btoa(crudo).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function deBase64Url(texto: string): Uint8Array | null {
+export function deBase64Url(texto: string): Uint8Array | null {
   if (!BASE64URL.test(texto)) return null;
   let crudo: string;
   try {
@@ -235,12 +238,12 @@ function deBase64Url(texto: string): Uint8Array | null {
  * Enlace: escribir
  * ------------------------------------------------------------------ */
 
-interface Ref {
+export interface Ref {
   prefijo: number;
   numero: number;
 }
 
-function refDe(id: string): Ref | null {
+export function refDe(id: string): Ref | null {
   const m = ID_IMPRESION.exec(id);
   if (!m) return null;
   const prefijo = PREFIJOS.indexOf(m[1]);
@@ -371,7 +374,7 @@ function armar(
  * El id de impresion de una referencia. `null` cuando el codigo nombra una
  * edicion que esta version no conoce todavia.
  */
-function idDe(prefijo: number, numero: number): string | null {
+export function idDe(prefijo: number, numero: number): string | null {
   const pre = PREFIJOS[prefijo];
   return pre === undefined ? null : `${pre}-${String(numero).padStart(3, "0")}`;
 }

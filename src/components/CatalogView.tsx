@@ -6,7 +6,6 @@ import { CardGrid } from "./CardGrid";
 import { CardModal } from "./CardModal";
 import { Filters } from "./Filters";
 import { Pagination } from "./Pagination";
-import { SortMenu } from "./SortMenu";
 import {
   applyFilters,
   buildFacets,
@@ -20,7 +19,7 @@ import {
   paginate,
   type CatalogFilters,
 } from "@/lib/catalog";
-import { agruparImpresiones, esOrden, ordenarCartas, type Orden } from "@/lib/card-order";
+import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import type { Card } from "@/lib/types";
 
 interface CatalogViewProps {
@@ -36,7 +35,6 @@ interface CatalogViewProps {
 export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
-  const [orden, setOrden] = useState<Orden | "">("");
   const [selected, setSelected] = useState<Card | null>(null);
 
   // El indice es caro de construir y el catalogo no cambia en runtime.
@@ -54,30 +52,22 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
   const [leidaUrl, setLeidaUrl] = useState(false);
   useEffect(() => {
     const { filters: f, page: p } = filtersFromSearch(window.location.search, facets);
-    const o = new URLSearchParams(window.location.search).get("orden");
     // Sincroniza con un sistema externo (la URL) una sola vez, al montar.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilters(f);
     setPage(p);
-    setOrden(esOrden(o) ? o : "");
     setLeidaUrl(true);
   }, [facets]);
   useEffect(() => {
     if (!leidaUrl) return;
-    const params = new URLSearchParams(filtersToSearch(filters, page));
-    if (orden) params.set("orden", orden);
-    const s = params.toString();
-    history.replaceState(
-      history.state,
-      "",
-      `${window.location.pathname}${s ? `?${s}` : ""}`,
-    );
-  }, [leidaUrl, filters, page, orden]);
+    const url = `${window.location.pathname}${filtersToSearch(filters, page)}`;
+    history.replaceState(history.state, "", url);
+  }, [leidaUrl, filters, page]);
 
   // Con un orden elegido, manda sobre el de relevancia de la busqueda.
   const results = useMemo(
-    () => ordenarCartas(applyFilters(cards, filters, index), orden),
-    [cards, filters, index, orden],
+    () => ordenarCartas(applyFilters(cards, filters, index), filters.orden),
+    [cards, filters, index],
   );
 
   const totalPages = pageCount(results.length);
@@ -103,15 +93,6 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
         facets={facets}
         onChange={update}
         onReset={() => update(EMPTY_FILTERS)}
-        extra={
-          <SortMenu
-            value={orden}
-            onChange={(o) => {
-              setOrden(o);
-              setPage(1);
-            }}
-          />
-        }
       />
 
       {cards.length === 0 ? (

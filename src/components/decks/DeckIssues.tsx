@@ -24,7 +24,8 @@ const GRAVES = new Set<DeckIssue["code"]>(["carta-prohibida"]);
  * con el mismo color: rojo lo que la saca del formato (una baneada), ambar lo
  * que todavia falta, y una guia neutra mientras la baraja esta vacia —una lista
  * de cuatro errores a quien todavia no hizo nada es un reto, no una ayuda—.
- * El color nunca va solo: cada linea lleva su icono y su texto.
+ * Caja, barra, titulo y lista van del mismo tono. El color nunca va solo: el
+ * titulo lleva su icono y cada linea dice con palabras que falta.
  */
 export function DeckIssues({
   issues,
@@ -39,37 +40,48 @@ export function DeckIssues({
   const grave = errores.some((i) => GRAVES.has(i.code));
   const pct = Math.min(100, Math.round((total / DECK_TOTAL) * 100));
 
-  const tono = vacia
-    ? "border-line"
-    : legal
-      ? "border-success/50"
-      : grave
-        ? "border-danger/60 bg-danger/5"
-        : "border-warning/50 bg-warning/5";
+  // Un solo tono para todo: la caja, la barra, el titulo y la lista. Verde si
+  // cumple, rojo si esta fuera del formato, ambar si le falta algo y neutro
+  // mientras esta vacia.
+  const tono = vacia ? "neutro" : legal ? "ok" : grave ? "fuera" : "falta";
+  const COLOR = {
+    neutro: {
+      caja: "border-line",
+      texto: "text-muted",
+      barra: "bg-brand-500",
+      punto: "bg-muted",
+    },
+    ok: {
+      caja: "border-success/50 bg-success/5",
+      texto: "text-success",
+      barra: "bg-success",
+      punto: "bg-success",
+    },
+    fuera: {
+      caja: "border-danger/60 bg-danger/5",
+      texto: "text-danger",
+      barra: "bg-danger",
+      punto: "bg-danger",
+    },
+    falta: {
+      caja: "border-warning/50 bg-warning/5",
+      texto: "text-warning",
+      barra: "bg-warning",
+      punto: "bg-warning",
+    },
+  }[tono];
+  const Icono = { neutro: Info, ok: CircleCheck, fuera: Ban, falta: TriangleAlert }[tono];
 
   return (
-    <div className={cn("rounded-card flex flex-col gap-3 border p-3.5", tono, className)}>
-      <p
-        className={cn(
-          "flex items-center gap-2 text-[14px] font-semibold",
-          vacia
-            ? "text-muted"
-            : legal
-              ? "text-success"
-              : grave
-                ? "text-danger"
-                : "text-warning",
-        )}
-      >
-        {vacia ? (
-          <Info size={16} aria-hidden="true" className="shrink-0" />
-        ) : legal ? (
-          <CircleCheck size={16} aria-hidden="true" className="shrink-0" />
-        ) : grave ? (
-          <Ban size={16} aria-hidden="true" className="shrink-0" />
-        ) : (
-          <TriangleAlert size={16} aria-hidden="true" className="shrink-0" />
-        )}
+    <div
+      className={cn(
+        "rounded-card flex flex-col gap-3 border p-3.5",
+        COLOR.caja,
+        className,
+      )}
+    >
+      <p className={cn("flex items-center gap-2 text-[14px] font-semibold", COLOR.texto)}>
+        <Icono size={16} aria-hidden="true" className="shrink-0" />
         {vacia
           ? "Baraja vacía"
           : legal
@@ -92,12 +104,8 @@ export function DeckIssues({
         >
           <div
             className={cn(
-              "h-full rounded-full transition-[width] duration-300",
-              total === DECK_TOTAL
-                ? "bg-success"
-                : total > DECK_TOTAL
-                  ? "bg-danger"
-                  : "bg-brand-500",
+              "h-full rounded-full transition-[width,background-color] duration-300",
+              COLOR.barra,
             )}
             style={{ width: `${pct}%` }}
           />
@@ -111,33 +119,25 @@ export function DeckIssues({
         </p>
       ) : (
         (errores.length > 0 || avisos.length > 0) && (
-          <ul className="flex flex-col gap-1.5 text-[13px] leading-snug">
+          // Una lista de verdad, con su punto del color de la caja: el icono
+          // ya va en el titulo y repetirlo en cada linea era ruido.
+          <ul
+            className={cn("flex flex-col gap-1.5 text-[13px] leading-snug", COLOR.texto)}
+          >
             {[
               // Lo que saca la baraja del formato va primero.
               ...errores.filter((i) => GRAVES.has(i.code)),
               ...errores.filter((i) => !GRAVES.has(i.code)),
               ...avisos,
             ].map((i, n) => (
-              <li key={`${i.code}-${n}`} className="aparece text-ink flex gap-2">
-                {GRAVES.has(i.code) ? (
-                  <Ban
-                    size={14}
-                    aria-hidden="true"
-                    className="text-danger mt-0.5 shrink-0"
-                  />
-                ) : i.gravedad === "error" ? (
-                  <TriangleAlert
-                    size={14}
-                    aria-hidden="true"
-                    className="text-warning mt-0.5 shrink-0"
-                  />
-                ) : (
-                  <Info
-                    size={14}
-                    aria-hidden="true"
-                    className="text-muted mt-0.5 shrink-0"
-                  />
-                )}
+              <li key={`${i.code}-${n}`} className="aparece flex gap-2">
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "mt-[0.45em] size-1.5 shrink-0 rounded-full",
+                    COLOR.punto,
+                  )}
+                />
                 {i.mensaje}
               </li>
             ))}

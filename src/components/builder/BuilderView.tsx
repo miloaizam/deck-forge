@@ -8,7 +8,8 @@ import { DeckClearButton, DeckPanel } from "./DeckPanel";
 import { DeckParamLoader, type DraftState } from "./DeckParamLoader";
 import { DraftNotice } from "./DraftNotice";
 import { DeckSheet } from "./DeckSheet";
-import { estadoDeBaraja } from "../decks/DeckIssues";
+import { DeckIssues, estadoDeBaraja } from "../decks/DeckIssues";
+import { ConfirmDialog } from "../ConfirmDialog";
 import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
@@ -49,12 +50,14 @@ import {
   buildCardIndex,
   canAdd,
   deckStats,
+  isLegal,
   resolveDeck,
   validateDeck,
   DECK_TOTAL,
   SIDE_TOTAL,
+  type DeckIssue,
 } from "@/lib/deck-rules";
-import { agruparImpresiones } from "@/lib/card-order";
+import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import { clearDraft, hayCambios, writeDraft } from "@/lib/deck-draft";
 import {
   mensajeNoGuardada,
@@ -161,6 +164,8 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const [selected, setSelected] = useState<Card | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [guardado, setGuardado] = useState(false);
+  const [confirmarVaciar, setConfirmarVaciar] = useState(false);
+  const [confirmarGuardar, setConfirmarGuardar] = useState(false);
   /**
    * A que zona van las cartas que se agregan desde el catalogo.
    *
@@ -287,7 +292,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const facets = useMemo(() => buildFacets(disponibles), [disponibles]);
 
   const results = useMemo(
-    () => applyFilters(disponibles, filters, search),
+    () => ordenarCartas(applyFilters(disponibles, filters, search), filters.orden),
     [disponibles, filters, search],
   );
   const totalPages = pageCount(results.length, PAGE_SIZE_BUILDER);
@@ -310,8 +315,19 @@ export function BuilderView({ cards }: BuilderViewProps) {
       );
       return;
     }
-    // Se mira antes de escribir: despues ya estaria guardada siempre.
+    // Guardar una baraja incompleta o con una baneada se puede, pero se avisa;
+    // y editar una ya guardada se confirma, porque pisa la version anterior.
+    // Una baraja nueva y legal se guarda sin preguntar.
     const yaExistia = readDeck(deck.id) !== null;
+    if (yaExistia || !isLegal(issues)) {
+      setConfirmarGuardar(true);
+      return;
+    }
+    escribir(false);
+  };
+
+  const escribir = (yaExistia: boolean) => {
+    setConfirmarGuardar(false);
     const r = saveDeck(deck);
     if (r !== "ok") {
       avisarError(mensajeNoGuardada(r));
@@ -330,9 +346,13 @@ export function BuilderView({ cards }: BuilderViewProps) {
     router.push(`/baraja/?m=${deck.id}`);
   };
 
+  // Vaciar pide confirmar: rehacer una baraja de 50 cartas a mano es caro.
   const vaciar = () => {
-    // Sin confirmacion, porque se rehace a mano; pero que se note que paso.
     if (deck.principal.length === 0 && deck.side.length === 0) return;
+    setConfirmarVaciar(true);
+  };
+  const vaciarYa = () => {
+    setConfirmarVaciar(false);
     setDeck((d) => clearDeck(d));
     toast("Baraja vaciada: se quitaron todas sus cartas.", "delete");
   };
@@ -600,6 +620,77 @@ export function BuilderView({ cards }: BuilderViewProps) {
             : undefined
         }
       />
+
+      <ConfirmDialog
+        open={confirmarVaciar}
+        titulo="¿Vaciar la baraja?"
+        mensaje="Se quitan todas las cartas de la baraja y del side deck. El nombre y la descripción se conservan."
+        confirmar="Vaciar la baraja"
+        onConfirm={vaciarYa}
+        onCancel={() => setConfirmarVaciar(false)}
+      />
+
+      <ConfirmGuardar
+        open={confirmarGuardar}
+        nombre={deckTitle(deck)}
+        editando={confirmarGuardar && readDeck(deck.id) !== null}
+        issues={issues}
+        total={stats.totalPrincipal}
+        vacia={res.principal.length === 0 && res.side.length === 0}
+        onConfirm={() => escribir(readDeck(deck.id) !== null)}
+        onCancel={() => setConfirmarGuardar(false)}
+      />
     </>
+  );
+}
+
+/**
+ * Confirma un guardado que merece una pausa: editar una baraja ya guardada
+ * (pisa la version anterior) o guardar una que no cumple. Cuando no cumple,
+ * muestra la misma caja de estado del panel, en ambar si le falta algo y en
+ * rojo si lleva una baneada.
+ */
+function ConfirmGuardar({
+  open,
+  nombre,
+  editando,
+  issues,
+  total,
+  vacia,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  nombre: string;
+  editando: boolean;
+  issues: DeckIssue[];
+  total: number;
+  vacia: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const legal = isLegal(issues);
+  const fuera = estadoDeBaraja(issues) === "baneada";
+  const titulo = legal
+    ? "¿Guardar los cambios?"
+    : fuera
+      ? "La baraja está fuera del formato"
+      : "La baraja está incompleta";
+  const mensaje = legal
+    ? `Se guardan los cambios en "${nombre}" y reemplazan la versión anterior.`
+    : `${editando ? `Se guardan los cambios en "${nombre}". ` : ""}Se puede guardar así y terminar después, pero mientras no se corrija no cumple las reglas del formato.`;
+  return (
+    <ConfirmDialog
+      open={open}
+      titulo={titulo}
+      mensaje={mensaje}
+      confirmar={legal ? "Guardar cambios" : "Guardar igual"}
+      cancelar="Seguir editando"
+      tono={fuera ? "peligro" : "aviso"}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    >
+      {!legal && <DeckIssues issues={issues} total={total} vacia={vacia} />}
+    </ConfirmDialog>
   );
 }

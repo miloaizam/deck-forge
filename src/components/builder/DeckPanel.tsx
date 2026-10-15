@@ -19,6 +19,7 @@ import {
 } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Deck, type Tipo } from "@/lib/types";
 import { ETIQUETA_ORO } from "@/lib/oros";
+import { HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckPanelProps {
@@ -293,7 +294,10 @@ export function DeckClearButton({ onClear }: { onClear: () => void }) {
     <button
       type="button"
       onClick={onClear}
-      className="text-muted hover:text-ink hover:border-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-4 text-[13px] transition-colors"
+      className={cn(
+        "text-muted border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-4 text-[13px] transition-colors",
+        HOVER_PELIGRO,
+      )}
     >
       <Trash2 size={14} aria-hidden="true" />
       Vaciar la baraja

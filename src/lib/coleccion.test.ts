@@ -6,15 +6,23 @@ import path from "node:path";
 import {
   alternarQuiero,
   COLECCION_VACIA,
-  coleccionComoTexto,
   conCopias,
+  conFaltantes,
   exportarColeccion,
   fusionar,
   importarColeccion,
   MAX_COPIAS_COLECCION,
+  MAX_COPIAS_FALTANTES,
   parseColeccion,
   porTipo,
+  yaLaTengo,
 } from "./coleccion";
+import {
+  codigoDeColeccion,
+  coleccionUrl,
+  decodeColeccion,
+  encodeColeccion,
+} from "./coleccion-code";
 import { catalogSchema, type Card } from "./types";
 
 const CATALOGO: Card[] = catalogSchema.parse(
@@ -32,27 +40,30 @@ test("lo guardado se lee entrada por entrada: una rota no tira las demas", () =>
       "bu-004": MAX_COPIAS_COLECCION + 1,
       "pb-001": 1, // id viejo: se traduce
     },
-    quiero: ["bu-010", "bu-001", 7, "../y"],
+    quiero: { "bu-010": 2, "bu-001": 1, "bu-011": 9, "../y": 1 },
   });
   assert.deepEqual(parseColeccion(raw), {
     tengo: { "bu-001": 2, "ad-001": 1 },
-    // La que ya tiene no puede faltarle.
-    quiero: ["bu-010"],
+    // La que ya tiene no puede faltarle, y una faltante no pasa de 3.
+    quiero: { "bu-010": 2 },
   });
-  // Lo guardado antes de que existiera `quiero` se sigue leyendo.
-  assert.deepEqual(parseColeccion(JSON.stringify({ v: 1, cartas: { "bu-001": 1 } })), {
-    tengo: { "bu-001": 1 },
-    quiero: [],
+  // La version anterior guardaba las faltantes como lista: una copia de cada una.
+  assert.deepEqual(parseColeccion(JSON.stringify({ v: 1, quiero: ["bu-020"] })), {
+    tengo: {},
+    quiero: { "bu-020": 1 },
   });
   assert.deepEqual(parseColeccion("no es json"), COLECCION_VACIA);
   assert.deepEqual(parseColeccion(null), COLECCION_VACIA);
 });
 
-test("tener una carta la saca de las que faltan", () => {
+test("las faltantes llevan de 1 a 3 copias y tenerla la saca de la lista", () => {
   let col = alternarQuiero(COLECCION_VACIA, "bu-001");
-  assert.deepEqual(col.quiero, ["bu-001"]);
-  col = conCopias(col, "bu-001", 1);
-  assert.deepEqual(col, { tengo: { "bu-001": 1 }, quiero: [] });
+  assert.deepEqual(col.quiero, { "bu-001": 1 });
+  col = conFaltantes(col, "bu-001", 7);
+  assert.equal(col.quiero["bu-001"], MAX_COPIAS_FALTANTES);
+  // «Ya la tengo» pasa las copias que faltaban.
+  col = yaLaTengo(col, "bu-001");
+  assert.deepEqual(col, { tengo: { "bu-001": 3 }, quiero: {} });
   // Una que ya tiene no entra a las que faltan.
   assert.equal(alternarQuiero(col, "bu-001"), col);
   col = conCopias(col, "bu-001", 0);
@@ -61,10 +72,10 @@ test("tener una carta la saca de las que faltan", () => {
 });
 
 test("importar se queda con la mayor cantidad y no duplica", () => {
-  const actual = { tengo: { "bu-001": 3, "bu-002": 1 }, quiero: ["bu-009"] };
+  const actual = { tengo: { "bu-001": 3, "bu-002": 1 }, quiero: { "bu-009": 1 } };
   const archivo = exportarColeccion({
     tengo: { "bu-001": 1, "bu-002": 4, "bu-005": 2 },
-    quiero: ["bu-009", "bu-010"],
+    quiero: { "bu-009": 2, "bu-010": 1 },
   });
   const leido = importarColeccion(archivo);
   assert.ok(leido);
@@ -72,7 +83,7 @@ test("importar se queda con la mayor cantidad y no duplica", () => {
   const una = fusionar(actual, leido.coleccion);
   assert.deepEqual(una, {
     tengo: { "bu-001": 3, "bu-002": 4, "bu-005": 2 },
-    quiero: ["bu-009", "bu-010"],
+    quiero: { "bu-009": 2, "bu-010": 1 },
   });
   assert.deepEqual(fusionar(una, leido.coleccion), una);
 
@@ -84,13 +95,38 @@ test("importar se queda con la mayor cantidad y no duplica", () => {
   assert.equal(importarColeccion("{"), null);
 });
 
-test("porTipo reparte todo el catalogo y la lista de texto lleva cada carta", () => {
+test("la coleccion va y vuelve por el enlace, entera y corta", () => {
+  // Una coleccion grande y desordenada: varias ediciones, copias altas y bajas.
+  const tengo: Record<string, number> = {};
+  const quiero: Record<string, number> = {};
+  CATALOGO.forEach((c, i) => {
+    if (i % 3 === 0) tengo[c.id] = (i % 7) + 1;
+    else if (i % 11 === 0) quiero[c.id] = (i % 3) + 1;
+  });
+  tengo[CATALOGO[1].id] = MAX_COPIAS_COLECCION;
+  const col = { tengo, quiero };
+  const codigo = encodeColeccion(col);
+  assert.match(codigo, /^[A-Za-z0-9_-]+$/);
+  assert.deepEqual(decodeColeccion(codigo), col);
+  // ~880 cartas en unos pocos miles de caracteres: cabe en un enlace.
+  assert.ok(codigo.length < 4000, `${codigo.length}`);
+
+  const url = coleccionUrl(col, "https://x.dev/");
+  assert.ok(url.startsWith("https://x.dev/coleccion/#c="));
+  assert.equal(codigoDeColeccion(new URL(url).hash), codigo);
+  assert.deepEqual(decodeColeccion(encodeColeccion(COLECCION_VACIA)), COLECCION_VACIA);
+
+  // Lo que no es un codigo no revienta.
+  for (const malo of ["", "!!!", "AAAA", "x".repeat(30_000), "_w"]) {
+    assert.doesNotThrow(() => decodeColeccion(malo));
+  }
+  assert.equal(decodeColeccion("!!!"), null);
+});
+
+test("porTipo reparte todo el catalogo", () => {
   const grupos = porTipo(CATALOGO);
   assert.equal(
     grupos.reduce((s, g) => s + g.cards.length, 0),
     CATALOGO.length,
   );
-  const muestra = CATALOGO.slice(0, 5);
-  const texto = coleccionComoTexto("Me faltan", muestra, COLECCION_VACIA, false);
-  for (const c of muestra) assert.ok(texto.includes(`${c.nombre} (${c.codigo})`));
 });

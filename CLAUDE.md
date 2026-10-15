@@ -1035,20 +1035,22 @@ quiere conseguir — no todo el catálogo: la primera versión medía el avance
 sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
 `src/lib/coleccion.ts` (con su test) y la vista, `src/components/coleccion/`.
 
-- **Tres pestañas**: «Tengo» (− n +), «Me faltan» («Ya la tengo» la pasa a
-  Tengo con una copia; la X la quita) y «Agregar cartas», el catálogo entero
-  con «Tengo» y un corazón que la anota en las que faltan. **Tener una carta
-  la saca de las que faltan** (`conCopias`) y una que se tiene no entra
-  (`alternarQuiero`).
+- **Tres pestañas**: «Tengo» (− n +), «Me faltan» (− n + de **1 a 3
+  copias**, y «Ya la tengo», que la pasa a Tengo con esas copias) y
+  «Agregar cartas», el catálogo entero con «Tengo» y un corazón que la anota
+  en las que faltan. **Tener una carta la saca de las que faltan**
+  (`conCopias`) y una que se tiene no entra (`conFaltantes`). Las filas dicen
+  edición y frecuencia, sin el código: el jugador busca por nombre.
 - **Se cuenta por impresión (`id`), no por `identidad`**: quien colecciona
   distingue el arte normal del alternativo.
 - **Vive en `localStorage`, en su propia clave** (`deckforge-coleccion`, sobre
-  `{ v: 1, cartas: { id: copias }, quiero: [id] }`; `quiero` falta en lo
-  guardado por la primera versión y se lee igual), con store de
+  `{ v: 1, cartas: { id: copias }, quiero: { id: copias } }`; las dos
+  versiones anteriores guardaban `quiero` como lista de ids, o no lo
+  guardaban, y se leen igual: una copia de cada una), con store de
   `useSyncExternalStore` y validación entrada por entrada (seguridad #4). Los
   ids viejos se traducen con `cardRefSchema`.
-- **Importar fusiona**: la cantidad mayor de cada impresión y la unión de las
-  que faltan. Importar dos veces no duplica e importar un respaldo viejo no
+- **Importar fusiona**: la cantidad mayor de cada impresión, en las dos
+  listas. Importar dos veces no duplica e importar un respaldo viejo no
   borra nada. El archivo lleva `tipo: "coleccion"`, así que un respaldo de
   barajas no pasa por uno de colección.
 - **Es una lista y no la grilla**, por tipo y en el orden del catálogo. En
@@ -1056,9 +1058,16 @@ sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
-- **«Copiar lista»** copia la pestaña que se ve, con sus filtros, como texto
-  con el código de cada carta (`coleccionComoTexto`): es como se negocian los
-  cambios.
+- **«Imagen»** baja un PNG de la pestaña que se ve, con sus filtros y su
+  orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
+- **«Compartir»** copia un enlace con las dos listas, `/coleccion/#c=…`
+  (`coleccion-code.ts`). Es el formato binario del enlace de una baraja, con
+  los mismos ayudantes de `deck-code.ts` (prefijo y número de cada
+  impresión, saltos, base64url) y campos más anchos: hasta 4095 cartas por
+  edición y copias hasta 99. Viaja en el fragmento, como la baraja, y al
+  leerse pasa por `sanearColeccion`. Quien lo abre ve esa colección **de
+  solo lectura** —sin «Agregar cartas», sin controles, con un aviso arriba—
+  y la suya no se toca. Un enlace roto avisa y muestra la propia.
 
 `CardModal` recibe `destino="coleccion"` para que sus textos digan «en tu
 colección» en vez de «en la baraja».
@@ -1159,12 +1168,13 @@ filete y el fondo de cada esquina pasa a negro, como en el arte de la API.
   carta, y pasa todas sus copias (principal y side, oro inicial y portada) a
   la que se ve. Las miniaturas del selector marcan las copias de cada una.
 - **El estado de una baraja es un solo componente**, `DeckIssues.tsx`, en el
-  panel y en el detalle: barra hacia las 50, ámbar lo que falta, rojo la
-  baneada (que va primero) y una guía neutra con la baraja vacía. La barra
+  panel, en el detalle y en el modal de guardar: barra hacia las 50 y **un
+  solo tono para la caja, la barra, el título y la lista** —verde si cumple,
+  ámbar si falta algo, rojo si lleva una baneada (que va primero), neutro
+  vacía—. La lista lleva un punto del color de la caja, no un icono por
+  línea (15-10-2026). La barra
   del teléfono y la lista usan `EstadoPastilla` (Legal / Incompleta / Con
   baneada).
-- **«Copiar lista»** del detalle copia la baraja en texto (`deckAsText()` de
-  `deck-text.ts`).
 - **Los filtros del catálogo van en la URL** (`filtersToSearch` /
   `filtersFromSearch` de `catalog.ts`): se leen una vez al montar —validando
   cada valor contra las facetas, porque la URL es una entrada de afuera— y
@@ -1263,15 +1273,19 @@ desempate en manos del `sort` y de ahí salen los saltos de posición—. Compru
 además que ordenar el catálogo al revés dé el mismo resultado: un comparador no
 transitivo pondría la misma carta en distinto sitio en cada vista.
 
-**El catálogo deja elegir otro orden** (05-10-2026): el botón «Ordenar»
-(`SortMenu.tsx`, un menú de `menuitemradio` junto al de filtros) ofrece
-nombre, coste y Fuerza en los dos sentidos (`ORDENES` y `ordenarCartas()` de
-`card-order.ts`). Vale **solo en `/catalogo` y en la página de cada edición**,
-y va en la URL (`?orden=`). El constructor y el contenido de una baraja se
-quedan con el orden fijo: ahí una carta que cambia de sitio obliga a buscarla.
-Los empates conservan el orden de catálogo (el `sort` es estable), las cartas
-sin coste o sin Fuerza van al final en los dos sentidos, y un orden elegido
-manda sobre la relevancia de la búsqueda.
+**Se puede ordenar por nombre desde el buscador** (15-10-2026). El botón de
+las flechas, dentro del campo de búsqueda de `Filters.tsx`, pasa del orden
+del catálogo a la A-Z, a la Z-A y de vuelta (`siguienteOrden`, `ORDENES` y
+`ordenarCartas()` de `card-order.ts`), y su icono dice cuál está puesto. Vale
+en las tres vistas con buscador —catálogo (y cada edición), grilla del
+constructor y colección—; el panel de la baraja y su detalle se quedan con el
+orden fijo. El orden es un campo más de `CatalogFilters` (`orden`), así que
+va en la URL (`?orden=`) y **«Limpiar filtros» lo vuelve al de siempre**;
+no cuenta en el número del botón de filtros. Reemplazó al botón «Ordenar»
+(`SortMenu`), que ofrecía también coste y Fuerza. Los empates conservan el
+orden de catálogo (el `sort` es estable) y un orden elegido manda sobre la
+relevancia de la búsqueda. El atajo «/» al buscador sigue funcionando; solo
+se quitó su pista.
 
 **Los selectores con muchas opciones abren con buscador** (`Select.tsx`, a
 partir de ocho opciones: habilidad, raza, edición, frecuencia y los rangos de
@@ -1781,14 +1795,29 @@ juega de salida—, **sin una copia del oro inicial**, que se aparta antes de
 empezar; cada mulligan baraja de nuevo y roba una menos, hasta 1. Barajar es
 Fisher–Yates: el `sort` con un random que se ve por ahí no es uniforme.
 
-**La baraja se descarga como imagen** (`deck-image.ts`): un PNG de 1600 px de
+**La baraja se descarga como imagen** (`deck-image.ts`, que arma los datos
+para `card-sheet-image.ts`, el dibujo compartido con la colección), desde su
+detalle o desde su tarjeta en Mis barajas: un PNG de 1600 px de
 ancho dibujado en un `<canvas>`, con el nombre, la nota, las cartas por tipo
 con sus copias y el oro inicial marcado. Sin conteo, legalidad ni afinidad: en
 una imagen para compartir sobran. Sin servidor ni
 dependencias: las miniaturas son del propio origen, así que el canvas se puede
 exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
 colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee
-clases: si cambia la paleta, se cambia ahí también.
+clases: si cambia la paleta, se cambia ahí también. Una plancha que no cabe
+en 10 000 px de alto (una colección grande) **achica las cartas** sumando
+columnas: Safari de iOS deja en blanco, sin avisar, un canvas de más de ~16,7
+millones de píxeles.
+
+**Los botones dicen cuánto se pierde** (15-10-2026). `HOVER_PELIGRO` y
+`HOVER_AVISO` (`src/lib/ui.ts`) ponen rojo o ámbar el hover de lo que borra o
+vacía (borrar una baraja, vaciarla, vaciar la colección) y de lo que descarta
+algo menos grave (el borrador del constructor). `ConfirmDialog` lleva `tono`:
+el botón que confirma va rojo (`peligro`, por defecto) o ámbar (`aviso`), y
+admite contenido debajo del mensaje. El constructor confirma **vaciar la
+baraja**, **guardar cambios** en una baraja que ya existía y **guardar una
+que no cumple**, con su `DeckIssues` dentro (ámbar si le falta algo, rojo si
+lleva una baneada). Una baraja nueva y legal se guarda sin preguntar.
 
 **En el teléfono la imagen salía con huecos** (07-10-2026): la página solo
 había cargado las miniaturas que se vieron, así que exportar pedía casi todas

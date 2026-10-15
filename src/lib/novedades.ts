@@ -26,6 +26,17 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-15",
+    tipo: "Mejora",
+    titulo: "Barajas, colección y avisos más claros",
+    texto: [
+      "El constructor pregunta antes de vaciar la baraja, antes de guardar cambios en una baraja que ya existía y antes de guardar una baraja incompleta o con cartas baneadas, mostrando lo que le falta.",
+      "El estado de la baraja va de un solo color: verde si cumple, ámbar si le falta algo y rojo si está fuera del formato, con la barra y la lista del mismo tono. Los botones que borran o vacían se ponen rojos al pasar el cursor.",
+      "Para ordenar por nombre, de la A a la Z o al revés, está el botón de las flechas dentro del buscador del catálogo, del constructor y de la colección.",
+      "En Mis barajas, cada baraja descarga su imagen desde la tarjeta. En la colección, «Compartir» copia un enlace con lo que tienes y lo que te falta, «Imagen» descarga la lista que ves, y en «Me faltan» se anotan hasta 3 copias.",
+    ],
+  },
+  {
     fecha: "2026-10-07",
     tipo: "Arreglo",
     titulo: "La imagen de la baraja, completa en el teléfono",
