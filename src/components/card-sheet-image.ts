@@ -54,6 +54,12 @@ export interface CartaEnPlancha {
   destacada?: boolean;
   /** Borde y cinta roja: la carta esta baneada. */
   baneada?: boolean;
+  /**
+   * Lineas bajo la carta: la primera en negrita (el nombre) y las demas en
+   * gris (edicion, frecuencia). La coleccion las lleva porque ahi se busca la
+   * carta concreta; en una baraja el arte ya basta.
+   */
+  pie?: string[];
 }
 
 export interface TramoDePlancha {
@@ -171,13 +177,37 @@ function medidas(columnas: number) {
   return { w, h: Math.round((w * 732) / 512) };
 }
 
+/** Las pastillas, la cinta y el pie se achican con la carta. */
+const escalaPara = (columnas: number) =>
+  Math.min(1, medidas(columnas).w / medidas(COLUMNAS).w);
+
+/** Alto de una linea del pie, a escala 1. */
+const LINEA_PIE = 18;
+
+/** Lo que suma el pie bajo cada fila: el de la carta con mas lineas. */
+function altoPieDeCarta(tramos: TramoDePlancha[], columnas: number): number {
+  const n = Math.max(
+    0,
+    ...tramos.flatMap((t) => t.cartas.map((c) => c.pie?.length ?? 0)),
+  );
+  return n === 0 ? 0 : Math.ceil((8 + n * LINEA_PIE) * escalaPara(columnas));
+}
+
 /** El alto que ocupan los tramos con `columnas` por fila. */
 function altoTramos(tramos: TramoDePlancha[], columnas: number): number {
-  const { h } = medidas(columnas);
+  const fila = medidas(columnas).h + altoPieDeCarta(tramos, columnas) + HUECO;
   return tramos.reduce(
-    (s, t) => s + 40 + Math.ceil(t.cartas.length / columnas) * (h + HUECO) + 24,
+    (s, t) => s + 40 + Math.ceil(t.cartas.length / columnas) * fila + 24,
     0,
   );
+}
+
+/** El texto recortado con "…" para que quepa en `ancho`. */
+function recortar(ctx: CanvasRenderingContext2D, texto: string, ancho: number): string {
+  if (ctx.measureText(texto).width <= ancho) return texto;
+  let t = texto;
+  while (t.length > 1 && ctx.measureText(`${t}…`).width > ancho) t = t.slice(0, -1);
+  return `${t.trimEnd()}…`;
 }
 
 /** Diez columnas si caben; si no, las que hagan falta para no pasar del alto. */
@@ -218,8 +248,9 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
   const altoPie = 80 + MARGEN / 2;
   const columnas = columnasPara(p.tramos, MARGEN + altoCabecera + altoPie);
   const { w: CARTA_W, h: CARTA_H } = medidas(columnas);
-  // Las pastillas y la cinta se achican con la carta.
-  const escala = Math.min(1, CARTA_W / medidas(COLUMNAS).w);
+  // Las pastillas, la cinta y el pie se achican con la carta.
+  const escala = escalaPara(columnas);
+  const FILA = CARTA_H + altoPieDeCarta(p.tramos, columnas) + HUECO;
   const alto = MARGEN + altoCabecera + altoTramos(p.tramos, columnas) + altoPie;
 
   canvas.width = ANCHO;
@@ -287,7 +318,7 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
 
     t.cartas.forEach((carta, i) => {
       const x = MARGEN + (i % columnas) * (CARTA_W + HUECO);
-      const cy = y + Math.floor(i / columnas) * (CARTA_H + HUECO);
+      const cy = y + Math.floor(i / columnas) * FILA;
       const img = imagenes.get(carta.thumb);
       const radio = Math.max(4, 9 * escala);
       ctx.save();
@@ -336,8 +367,19 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
         x + CARTA_W - w + 3 * escala,
         cy + CARTA_H - 28 * escala,
       );
+
+      // El pie: nombre y, debajo, edicion y frecuencia, cada uno en su linea.
+      carta.pie?.forEach((texto, j) => {
+        ctx.fillStyle = j === 0 ? COLOR.ink : COLOR.muted;
+        ctx.font = f(j === 0 ? 700 : 400, Math.round((j === 0 ? 14 : 12) * escala));
+        ctx.fillText(
+          recortar(ctx, texto, CARTA_W),
+          x,
+          cy + CARTA_H + (8 + j * LINEA_PIE) * escala,
+        );
+      });
     });
-    y += Math.ceil(t.cartas.length / columnas) * (CARTA_H + HUECO) + 24;
+    y += Math.ceil(t.cartas.length / columnas) * FILA + 24;
   }
 
   // Pie: el logotipo y el sitio.

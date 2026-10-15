@@ -26,15 +26,12 @@ const MAX_ENTRADAS = 10_000;
 /** Cota antes de parsear: localStorage y los archivos traen cualquier cosa. */
 const MAX_CHARS = 512 * 1024;
 
-/** Copias que se pueden pedir de una carta que falta: las de una baraja. */
-export const MAX_COPIAS_FALTANTES = 3;
-
 export interface Coleccion {
   /** Id de impresion -> copias que tiene (de 1 en adelante). */
   readonly tengo: Readonly<Record<string, number>>;
   /**
-   * Id de impresion -> copias que le faltan (de 1 a 3). Nunca una que ya
-   * tiene: tenerla la saca de aqui.
+   * Id de impresion -> copias que le faltan (de 1 en adelante, con el mismo
+   * tope que las que tiene). Nunca una que ya tiene: tenerla la saca de aqui.
    */
   readonly quiero: Readonly<Record<string, number>>;
 }
@@ -45,7 +42,6 @@ export const COLECCION_VACIA: Coleccion = Object.freeze({
 });
 
 const copiasSchema = z.number().int().min(1).max(MAX_COPIAS_COLECCION);
-const faltantesSchema = z.number().int().min(1).max(MAX_COPIAS_FALTANTES);
 
 /**
  * Valida las entradas una a una: una rota no se lleva a las demas. Los ids
@@ -63,12 +59,7 @@ export function sanearColeccion(
   const faltan: Record<string, number> = {};
   let descartadas = 0;
   let leidas = 0;
-  const leer = (
-    origen: unknown,
-    destino: Record<string, number>,
-    esquema: typeof copiasSchema,
-    tope: number,
-  ) => {
+  const leer = (origen: unknown, destino: Record<string, number>) => {
     const pares: [unknown, unknown][] = Array.isArray(origen)
       ? origen.map((id) => [id, 1])
       : typeof origen === "object" && origen !== null
@@ -76,16 +67,16 @@ export function sanearColeccion(
         : [];
     for (const [clave, valor] of pares) {
       const id = cardRefSchema.safeParse(clave);
-      const n = esquema.safeParse(valor);
+      const n = copiasSchema.safeParse(valor);
       if (++leidas > MAX_ENTRADAS || !id.success || !n.success) {
         descartadas++;
         continue;
       }
-      destino[id.data] = Math.min(tope, (destino[id.data] ?? 0) + n.data);
+      destino[id.data] = Math.min(MAX_COPIAS_COLECCION, (destino[id.data] ?? 0) + n.data);
     }
   };
-  leer(cartas, tengo, copiasSchema, MAX_COPIAS_COLECCION);
-  leer(quiero, faltan, faltantesSchema, MAX_COPIAS_FALTANTES);
+  leer(cartas, tengo);
+  leer(quiero, faltan);
   for (const id of Object.keys(faltan)) if (id in tengo) delete faltan[id];
   return { coleccion: { tengo, quiero: faltan }, descartadas };
 }
@@ -125,12 +116,12 @@ export function conCopias(col: Coleccion, id: string, n: number): Coleccion {
 }
 
 /**
- * Las copias que faltan de `id`, de 0 (sale de la lista) a 3. Una carta que ya
- * se tiene no entra.
+ * Las copias que faltan de `id`; con 0 sale de la lista. Una carta que ya se
+ * tiene no entra.
  */
 export function conFaltantes(col: Coleccion, id: string, n: number): Coleccion {
   if (id in col.tengo) return col;
-  const acotado = acotar(n, MAX_COPIAS_FALTANTES);
+  const acotado = acotar(n, MAX_COPIAS_COLECCION);
   const quiero: Record<string, number> = { ...col.quiero };
   if (acotado === 0) delete quiero[id];
   else quiero[id] = acotado;

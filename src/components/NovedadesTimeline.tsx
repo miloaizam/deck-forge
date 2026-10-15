@@ -107,6 +107,9 @@ export function NovedadesTimeline() {
                         <Icon size={13} aria-hidden="true" />
                         {n.tipo}
                       </span>
+                      <span className="text-muted text-[12px] font-medium tabular-nums">
+                        v{n.version}
+                      </span>
                       {ultima && (
                         <span className="text-accent text-[12px] font-medium">
                           Lo más reciente

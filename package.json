@@ -16,6 +16,7 @@
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm run test",
     "prepare": "node scripts/install-hooks.mjs",
     "audit": ".venv/bin/python scripts/audit_build.py",
+    "e2e": "playwright test",
     "data:fetch": ".venv/bin/python scripts/fetch_edition.py",
     "data:card": ".venv/bin/python scripts/fetch_card.py",
     "data:cards": ".venv/bin/python scripts/build_cards.py",
@@ -33,6 +34,7 @@
     "zod": "^4.5.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

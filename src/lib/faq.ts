@@ -172,6 +172,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Cómo quito una carta?",
         respuesta: [
           "Con el botón **−** del pie de la carta en el catálogo del constructor, o con el **−** de su fila en el panel de la baraja. También desde el detalle de la carta, con **«Quitar una copia»**.",
+          "Para empezar de nuevo, **«Vaciar»** quita todas las cartas de una vez. Antes te pide confirmar, para que no la pierdas por un toque accidental.",
         ],
       },
       {
@@ -201,7 +202,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo guardo una baraja?",
         respuesta: [
-          "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**, desde donde puedes editarla, duplicarla, compartirla, exportarla o borrarla.",
+          "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**: toca su tarjeta para verla, o usa sus botones para editarla, descargarla como imagen, compartirla, exportarla, duplicarla o borrarla.",
           "Dos barajas **no pueden llamarse igual**: si el nombre ya existe, el constructor te pide otro. Al duplicar, importar o guardar una baraja compartida con un nombre repetido, se le agrega **«(copia)»**.",
           "Si la baraja está **incompleta** o lleva una carta **baneada**, el constructor te muestra qué le falta y pregunta antes de guardar: puedes **«Guardar igual»** y terminarla después. Al guardar cambios en una baraja que ya existía, también pide confirmar, porque reemplaza la versión anterior.",
         ],
@@ -209,9 +210,9 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Se pierde la baraja si salgo del constructor sin guardar?",
         respuesta: [
-          "No. Mientras armas, la baraja en curso se guarda sola como **borrador** en tu navegador: si recargas la página, vas a otra sección o cierras la pestaña, al volver al constructor **se retoma donde quedó**, con un aviso arriba del panel.",
-          "El aviso tiene **«Descartar»** por si prefieres empezar de cero (o volver a la versión guardada, si estabas editando una). Si abres otra baraja mientras hay un borrador pendiente, el aviso ofrece **«Retomar»** el borrador o descartarlo. Al **guardar**, el borrador se borra.",
-          "Hay un solo borrador a la vez: es la baraja que estabas armando, no una lista.",
+          "No. Mientras armas, el sitio recuerda la baraja en curso: si recargas la página, vas a otra sección o cierras la pestaña, al volver al constructor te pregunta **«¿Recuperar baraja sin guardar?»**.",
+          "**«Recuperar»** sigue donde quedaste. **«Descartar»** la deja ir: empiezas de cero o, si estabas editando una baraja guardada, vuelve a como estaba. Al **guardar**, la pregunta ya no aparece.",
+          "Se recuerda una sola baraja a la vez: la última que estabas armando.",
         ],
       },
       {
@@ -235,7 +236,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Puedo compartir la baraja como imagen?",
         respuesta: [
-          "Sí. El **botón de la imagen**, en la página de la baraja o en su tarjeta de Mis barajas, descarga un PNG con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
+          "Sí. El **botón de la imagen**, en la página de la baraja o en su tarjeta de Mis barajas, descarga una imagen con el nombre, todas las cartas agrupadas por tipo y cuántas copias llevas de cada una. Sirve para redes o para un chat.",
         ],
       },
       {
@@ -268,7 +269,7 @@ export const FAQ: FaqSection[] = [
         ],
         lista: [
           "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
-          "El **corazón** la anota en las que te faltan. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan, hasta **3**.",
+          "El **corazón** la anota en las que te faltan. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan: las que quieras.",
         ],
       },
       {
@@ -288,7 +289,7 @@ export const FAQ: FaqSection[] = [
         respuesta: ["Sí, de dos formas:"],
         lista: [
           "**«Compartir»** copia un enlace con tus dos listas. Quien lo abra ve lo que tienes y lo que te falta, sin poder cambiarlo, y su propia colección no se toca.",
-          "**«Imagen»** descarga un PNG de la lista que estás viendo, «Tengo» o «Me faltan», con los filtros que tengas puestos.",
+          "**«Imagen»** descarga una imagen de la lista que estás viendo, «Tengo» o «Me faltan», con los filtros que tengas puestos. Bajo cada carta van su **nombre**, su **edición** y su **frecuencia**, para que quien la vea sepa exactamente cuál es.",
         ],
       },
       {

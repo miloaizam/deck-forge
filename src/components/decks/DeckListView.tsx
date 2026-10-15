@@ -148,7 +148,9 @@ export function DeckListView({ cards }: DeckListViewProps) {
                 key={deck.id}
                 // Se levanta al pasar el cursor, como las cartas del catalogo:
                 // dice que la tarjeta es algo con que se puede hacer cosas.
-                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:border-brand-500 hover:shadow-glow flex gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5"
+                // `relative`: el enlace del titulo se estira sobre la tarjeta
+                // entera (su ::after), y los botones van por encima con z-10.
+                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:border-brand-500 hover:shadow-glow group relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5"
               >
                 {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no
@@ -176,7 +178,10 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/baraja/?m=${deck.id}`}
-                        className="text-ink hover:text-accent focus-visible:outline-brand-500 block truncate rounded font-medium transition-colors"
+                        // Toda la tarjeta abre la baraja: un solo enlace, con
+                        // su ::after cubriendola, en vez de un enlace que
+                        // envuelva los botones (no se anida lo interactivo).
+                        className="text-ink focus-visible:outline-brand-500 rounded-panel group-hover:text-accent block truncate font-medium transition-colors after:absolute after:inset-0 after:content-['']"
                       >
                         {deckTitle(deck)}
                       </Link>
@@ -201,7 +206,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
 
                   {/* `mt-auto` los manda al fondo: la portada fija el alto de
                       la tarjeta y los botones cierran contra su borde. */}
-                  <div className="mt-auto flex flex-wrap gap-1.5">
+                  <div className="relative z-10 mt-auto flex flex-wrap gap-1.5 self-start">
                     <Link href={`/constructor/?m=${deck.id}`} className={ACCION}>
                       <Hammer size={14} aria-hidden="true" />
                       Editar

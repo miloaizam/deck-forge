@@ -9,12 +9,7 @@ import {
   idDe,
   refDe,
 } from "./deck-code";
-import {
-  MAX_COPIAS_COLECCION,
-  MAX_COPIAS_FALTANTES,
-  sanearColeccion,
-  type Coleccion,
-} from "./coleccion";
+import { MAX_COPIAS_COLECCION, sanearColeccion, type Coleccion } from "./coleccion";
 
 /**
  * La coleccion en un enlace (`/coleccion/#c=…`), para mostrarle a alguien lo
@@ -110,7 +105,7 @@ export function encodeColeccion(col: Coleccion): string {
 /**
  * Lee un codigo. `null` si no es una coleccion. Nunca lanza: el codigo viene de
  * una URL, y pasa por la misma validacion que lo guardado (`sanearColeccion`),
- * que acota las copias (las que faltan, a 3) y descarta lo que no cuadre.
+ * que acota las copias y descarta lo que no cuadre.
  */
 export function decodeColeccion(codigo: string | null | undefined): Coleccion | null {
   if (!codigo || codigo.length > MAX_CODIGO) return null;
@@ -121,18 +116,10 @@ export function decodeColeccion(codigo: string | null | undefined): Coleccion | 
     if (r.read(ANCHO_VERSION) !== VERSION) return null;
     const tengo = leerLista(r);
     const quiero = leerLista(r);
-    return sanearColeccion(tengo, recortarFaltantes(quiero)).coleccion;
+    return sanearColeccion(tengo, quiero).coleccion;
   } catch {
     return null;
   }
-}
-
-/** Un codigo hecho a mano puede pedir 50 copias de una faltante: se dejan en 3. */
-function recortarFaltantes(lista: Record<string, number>): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const [id, n] of Object.entries(lista))
-    out[id] = Math.min(n, MAX_COPIAS_FALTANTES);
-  return out;
 }
 
 /** El enlace completo para compartir la coleccion. */

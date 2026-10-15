@@ -2,12 +2,7 @@ import { useState } from "react";
 import { Check, Heart, Minus, Plus } from "lucide-react";
 
 import { marcarCargada } from "../CardTile";
-import {
-  MAX_COPIAS_COLECCION,
-  MAX_COPIAS_FALTANTES,
-  porTipo,
-  type Coleccion,
-} from "@/lib/coleccion";
+import { MAX_COPIAS_COLECCION, porTipo, type Coleccion } from "@/lib/coleccion";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -208,7 +203,7 @@ function Contador({
 /**
  * Lo que se puede hacer con una fila:
  * - en «Tengo», cambiar las copias;
- * - en «Me faltan», cambiar las copias que faltan (hasta 3) o pasarla a
+ * - en «Me faltan», cambiar las copias que faltan o pasarla a
  *   «Tengo» con «Ya la tengo»;
  * - en «Agregar cartas», «Tengo» y el corazon de las que faltan, o el
  *   contador si ya se tiene.
@@ -237,7 +232,7 @@ function Controles({
         <Contador
           card={c}
           n={faltan}
-          max={MAX_COPIAS_FALTANTES}
+          max={MAX_COPIAS_COLECCION}
           que="copia que falta"
           onCambiar={(n) => onFaltantes(c, n)}
         />

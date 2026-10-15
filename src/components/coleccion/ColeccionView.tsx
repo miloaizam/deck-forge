@@ -32,6 +32,7 @@ import {
   type Coleccion,
 } from "@/lib/coleccion";
 import { decodeColeccion } from "@/lib/coleccion-code";
+import { editionTitle, origenTitle } from "@/lib/editions";
 import type { Card } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -155,6 +156,11 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
         cartas: g.cards.map((c) => ({
           thumb: c.thumb,
           etiqueta: `×${copias[c.id] ?? 0}`,
+          pie: [
+            c.nombre,
+            c.origen ? `Arte de ${origenTitle(c.origen)}` : editionTitle(c.edicion),
+            c.frecuencia,
+          ],
         })),
       })),
       archivo: vistaReal === "faltan" ? "coleccion-me-faltan" : "coleccion-tengo",

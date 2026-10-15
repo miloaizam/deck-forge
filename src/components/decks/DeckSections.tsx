@@ -160,7 +160,9 @@ function Pila({
             y cada copia extra suma su franja. En padding los % van contra el
             ancho, y en translate contra el alto propio: de ahi los dos factores. */}
         <div
-          className="ease-out-soft relative w-full transition-transform duration-200 group-hover:-translate-y-1"
+          // Al apuntar, un contorno de color rodea la pila entera: dice sobre
+          // que carta va a caer el clic.
+          className="ease-out-soft rounded-card group-hover:outline-brand-500 relative w-full outline-2 outline-offset-2 outline-transparent transition-[translate,outline-color] duration-200 group-hover:-translate-y-1"
           style={{ paddingBottom: `${ALTO * (1 + (fila.n - 1) * ASOMO) * 100}%` }}
         >
           {Array.from({ length: fila.n }, (_, i) => (

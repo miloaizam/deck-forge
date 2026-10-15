@@ -40,6 +40,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Iconos | `lucide-react` |
 | Búsqueda | `minisearch` (buscador del catálogo, en `src/lib/catalog.ts`) |
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
+| Pruebas en navegador | `@playwright/test` (solo desarrollo; `e2e/` contra el sitio construido) |
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -58,6 +59,7 @@ pnpm run preview     # sirve out/ en http://localhost:4173
 pnpm run check       # typecheck + lint + formato + tests (lo corre el pre-commit)
 pnpm run test        # tests de las reglas de baraja (corredor de Node, sin dependencias)
 pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
+pnpm run e2e         # recorridos en Chromium, escritorio y teléfono (tras `pnpm run build`)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
 pnpm run data:images         # images-src/*    -> public/cards/*.webp
@@ -133,6 +135,7 @@ public/        se sirve tal cual
 src/app/       rutas (App Router), layout y globals.css
 src/components/ componentes de React
 src/lib/       lógica pura: tipos, esquemas, utilidades
+e2e/           pruebas de Playwright (playwright.config.ts en la raíz)
 out/           build estático (git-ignorado)
 ```
 
@@ -939,8 +942,8 @@ el tema claro).
 framework empieza a crear otros scripts en tiempo de ejecución, la auditoría
 no los ve —no están en el HTML— y solo el navegador lo delata (Chrome lo dice
 en la consola: "Refused to execute inline script", con el hash que esperaba).
-La prueba se hizo con Playwright desde fuera del repo, que no lo tiene como
-dependencia.
+La prueba se hizo con Playwright, que hoy es dependencia de desarrollo
+(ver "Pruebas en el navegador", en la sección 9).
 
 ---
 
@@ -1035,8 +1038,10 @@ quiere conseguir — no todo el catálogo: la primera versión medía el avance
 sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
 `src/lib/coleccion.ts` (con su test) y la vista, `src/components/coleccion/`.
 
-- **Tres pestañas**: «Tengo» (− n +), «Me faltan» (− n + de **1 a 3
-  copias**, y «Ya la tengo», que la pasa a Tengo con esas copias) y
+- **Tres pestañas**: «Tengo» (− n +), «Me faltan» (− n + **sin más tope
+  que el de Tengo**, 99 —hubo uno de 3, las copias de una baraja, y el
+  proyecto lo quitó: se colecciona para cambiar, no solo para jugar—, y
+  «Ya la tengo», que la pasa a Tengo con esas copias) y
   «Agregar cartas», el catálogo entero con «Tengo» y un corazón que la anota
   en las que faltan. **Tener una carta la saca de las que faltan**
   (`conCopias`) y una que se tiene no entra (`conFaltantes`). Las filas dicen
@@ -1060,6 +1065,9 @@ sobre las 2652 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
 - **«Imagen»** baja un PNG de la pestaña que se ve, con sus filtros y su
   orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
+  Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
+  `CartaEnPlancha`): quien recibe la imagen tiene que saber qué impresión
+  es. La imagen de una baraja no lo lleva; el arte ya basta.
 - **«Compartir»** copia un enlace con las dos listas, `/coleccion/#c=…`
   (`coleccion-code.ts`). Es el formato binario del enlace de una baraja, con
   los mismos ayudantes de `deck-code.ts` (prefijo y número de cada
@@ -1086,7 +1094,12 @@ en el mismo commit que el cambio que los afecta:**
 - **`src/lib/novedades.ts`**, la línea de tiempo de `/novedades`. Entra solo lo
   que al usuario le cambia algo, contado para quien juega: nada de seguridad
   interna, herramientas de desarrollo ni refactors. La fecha es la del commit,
-  y `novedades.test.ts` exige que vayan de la más nueva a la más antigua. La
+  y `novedades.test.ts` exige que vayan de la más nueva a la más antigua.
+  **Cada entrada lleva una `version`**, estimada hacia atrás desde la 0.1.0
+  del 28-08-2026: el primer número sube con los cambios grandes (el
+  constructor, las diez ediciones, las erratas aplicadas, la colección), el
+  segundo con cada Novedad o Mejora y el tercero con cada Arreglo o Aviso; el
+  test exige que bajen estrictamente. La
   primera de la lista es "lo más reciente": la página le pone borde violeta y
   esa etiqueta. La línea de tiempo (`NovedadesTimeline.tsx`) se muestra **por
   tandas de seis**: "Ver más" suma la siguiente, no el resto de golpe, y lleva
@@ -1809,6 +1822,15 @@ en 10 000 px de alto (una colección grande) **achica las cartas** sumando
 columnas: Safari de iOS deja en blanco, sin avisar, un canvas de más de ~16,7
 millones de píxeles.
 
+**Toda la tarjeta de Mis barajas abre la baraja** (15-10-2026), no solo el
+título. Es un solo enlace, el del título, con un `::after` absoluto que cubre
+el `<li>` (que lleva `relative`); los botones de acciones van encima con
+`relative z-10`. Envolver la tarjeta en un `<a>` anidaría botones dentro de
+un enlace, que no es HTML válido y rompe el teclado. En `/baraja`, cada pila
+de cartas lleva al apuntar un **contorno del color de marca** alrededor de la
+pila entera (`outline` en el contenedor, no el borde de cada copia, que en
+una pila de tres dibujaba tres marcos).
+
 **Los botones dicen cuánto se pierde** (15-10-2026). `HOVER_PELIGRO` y
 `HOVER_AVISO` (`src/lib/ui.ts`) ponen rojo o ámbar el hover de lo que borra o
 vacía (borrar una baraja, vaciarla, vaciar la colección) y de lo que descarta
@@ -1855,8 +1877,11 @@ Cuatro reglas que no son obvias:
   hasta que se toque la que llegó. Un enlace roto retoma el borrador en vez de
   costarlo.
 - El aviso (`DraftNotice.tsx`) va sobre el panel, y en el teléfono sobre los
-  filtros, porque la hoja de la baraja está cerrada. Guardar borra el
-  borrador.
+  filtros, porque la hoja de la baraja está cerrada. Pregunta siempre lo
+  mismo, **«¿Recuperar baraja sin guardar?»**, con dos botones: en una
+  recuperada la baraja ya está en pantalla y «Recuperar» solo confirma y
+  cierra; en una en espera, la trae. «Descartar» vuelve a la guardada o a
+  empezar de cero. Guardar borra el borrador.
 
 Las barajas viven en `localStorage` y se leen con `useSyncExternalStore`, no con
 un efecto que llame a `setState` — el compilador de React bloquea eso y tiene
@@ -1875,6 +1900,29 @@ de fábrica: **cero dependencias nuevas**. Van contra el catálogo real y no
 contra fixtures, porque los bordes que duelen salen de los datos.
 `scripts/ts-imports.mjs` son quince líneas que le enseñan a Node a resolver los
 imports sin extensión que espera el bundler de Next.
+
+**Pruebas en el navegador** (15-10-2026). `pnpm run e2e` corre los
+recorridos de `e2e/` con **Playwright** (`@playwright/test`, dependencia de
+desarrollo) en Chromium, en un escritorio y en un teléfono emulado, contra
+`out/` servido con `pnpm run preview`: lo que se prueba es lo que se publica,
+así que va **después de `pnpm run build`**. Cubren lo que los tests de `src/lib`
+no ven —que un botón exista, que un clic navegue—: el detalle de una carta,
+el aviso del borrador, la tarjeta de Mis barajas y las copias de «Me faltan».
+Los del constructor se saltan en el teléfono, donde el panel es una hoja.
+
+- **No baja navegadores al instalar**: el paquete no tiene `postinstall` y no
+  pide permiso en `allowBuilds`. Usa el Chromium de `PLAYWRIGHT_BROWSERS_PATH`
+  si existe (la sesión en la nube lo trae, `/opt/pw-browsers`); si no,
+  `pnpm exec playwright install chromium` una vez. Por eso la versión va
+  **fijada exacta** (`1.56.1`, sin `^`): cada versión de Playwright espera
+  una compilación concreta de Chromium, y subirla obliga a bajar otra.
+- **No está en el CI ni en el pre-commit**: necesitaría bajar el navegador en
+  cada corrida. Se corre a mano antes de publicar un cambio de interfaz.
+- Ojo al escribir selectores: el aviso del borrador va dos veces en la página
+  (sobre el panel y, bajo `lg`, sobre los filtros) y muchos textos se repiten
+  en la ayuda; se filtra por lo visible (`filter({ visible: true })`). Y en
+  Mis barajas el clic va a la tarjeta (`listitem`), no a un texto: el enlace
+  estirado del título lo tapa, que es justo lo que se quiere.
 
 **La Fe de Erratas y la Banlist se aplican** (decisión del proyecto,
 04-10-2026). Los datos están en `documentos/fuente/*.json`, se validan con los

@@ -12,7 +12,6 @@ import {
   fusionar,
   importarColeccion,
   MAX_COPIAS_COLECCION,
-  MAX_COPIAS_FALTANTES,
   parseColeccion,
   porTipo,
   yaLaTengo,
@@ -40,12 +39,12 @@ test("lo guardado se lee entrada por entrada: una rota no tira las demas", () =>
       "bu-004": MAX_COPIAS_COLECCION + 1,
       "pb-001": 1, // id viejo: se traduce
     },
-    quiero: { "bu-010": 2, "bu-001": 1, "bu-011": 9, "../y": 1 },
+    quiero: { "bu-010": 2, "bu-001": 1, "bu-011": 9, "bu-012": 500, "../y": 1 },
   });
   assert.deepEqual(parseColeccion(raw), {
     tengo: { "bu-001": 2, "ad-001": 1 },
-    // La que ya tiene no puede faltarle, y una faltante no pasa de 3.
-    quiero: { "bu-010": 2 },
+    // La que ya tiene no puede faltarle, y una faltante lleva el mismo tope.
+    quiero: { "bu-010": 2, "bu-011": 9 },
   });
   // La version anterior guardaba las faltantes como lista: una copia de cada una.
   assert.deepEqual(parseColeccion(JSON.stringify({ v: 1, quiero: ["bu-020"] })), {
@@ -56,14 +55,15 @@ test("lo guardado se lee entrada por entrada: una rota no tira las demas", () =>
   assert.deepEqual(parseColeccion(null), COLECCION_VACIA);
 });
 
-test("las faltantes llevan de 1 a 3 copias y tenerla la saca de la lista", () => {
+test("las faltantes llevan las copias que se quieran y tenerla la saca de la lista", () => {
   let col = alternarQuiero(COLECCION_VACIA, "bu-001");
   assert.deepEqual(col.quiero, { "bu-001": 1 });
   col = conFaltantes(col, "bu-001", 7);
-  assert.equal(col.quiero["bu-001"], MAX_COPIAS_FALTANTES);
+  assert.equal(col.quiero["bu-001"], 7);
+  assert.equal(conFaltantes(col, "bu-001", 500).quiero["bu-001"], MAX_COPIAS_COLECCION);
   // «Ya la tengo» pasa las copias que faltaban.
   col = yaLaTengo(col, "bu-001");
-  assert.deepEqual(col, { tengo: { "bu-001": 3 }, quiero: {} });
+  assert.deepEqual(col, { tengo: { "bu-001": 7 }, quiero: {} });
   // Una que ya tiene no entra a las que faltan.
   assert.equal(alternarQuiero(col, "bu-001"), col);
   col = conCopias(col, "bu-001", 0);

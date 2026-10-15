@@ -208,11 +208,14 @@ export function BuilderView({ cards }: BuilderViewProps) {
   // la baraja que llego: el borrador ya se piso.
   const aviso = borrador?.tipo === "en-espera" && !esperando ? null : borrador;
 
-  const retomar = () => {
-    if (borrador?.tipo !== "en-espera") return;
-    setDeck(borrador.draft.deck);
-    setCargada(borrador.draft.deck);
-    setBorrador({ tipo: "recuperada" });
+  // En una recuperada la baraja ya esta en pantalla: Recuperar solo cierra.
+  const recuperar = () => {
+    if (borrador?.tipo === "en-espera") {
+      setDeck(borrador.draft.deck);
+      setCargada(borrador.draft.deck);
+    }
+    setBorrador(null);
+    toast("Baraja sin guardar recuperada.", "success");
   };
 
   const descartar = () => {
@@ -239,9 +242,9 @@ export function BuilderView({ cards }: BuilderViewProps) {
     aviso && (
       <DraftNotice
         estado={aviso}
-        onRetomar={retomar}
+        nombre={deckTitle(deck)}
+        onRecuperar={recuperar}
         onDescartar={descartar}
-        onCerrar={() => setBorrador(null)}
         className={className}
       />
     );

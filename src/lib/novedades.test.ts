@@ -31,6 +31,20 @@ test("las novedades van de la mas nueva a la mas antigua", () => {
   }
 });
 
+test("las versiones bajan de una entrada a la siguiente y la primera es 0.1.0", () => {
+  const partes = (v: string) => v.split(".").map(Number);
+  for (const n of NOVEDADES) assert.match(n.version, /^\d+\.\d+\.\d+$/, n.titulo);
+  for (let i = 1; i < NOVEDADES.length; i++) {
+    const [a, b] = [partes(NOVEDADES[i - 1].version), partes(NOVEDADES[i].version)];
+    const mayor = a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+    assert.ok(
+      mayor > 0,
+      `${NOVEDADES[i - 1].titulo} no es mas nueva que ${NOVEDADES[i].titulo}`,
+    );
+  }
+  assert.equal(NOVEDADES.at(-1)?.version, "0.1.0");
+});
+
 test("dos entradas no comparten titulo, que es su clave al pintarlas", () => {
   const titulos = NOVEDADES.map((n) => n.titulo);
   assert.equal(new Set(titulos).size, titulos.length);

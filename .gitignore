@@ -52,3 +52,7 @@ __pycache__/
 
 # Artefactos de Windows/WSL
 *:Zone.Identifier
+
+# playwright
+/test-results/
+/playwright-report/
