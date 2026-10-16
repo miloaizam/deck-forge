@@ -5,6 +5,7 @@ import { ChevronDown, Megaphone, Sparkles, TrendingUp, Wrench } from "lucide-rea
 import type { LucideIcon } from "lucide-react";
 
 import { NOVEDADES, type Novedad, type TipoNovedad } from "@/lib/novedades";
+import { BOTON_SECUNDARIO, PASTILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -98,12 +99,7 @@ export function NovedadesTimeline() {
                     )}
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={cn(
-                          "rounded-chip inline-flex items-center gap-1.5 border px-2 py-0.5 text-[12px] font-medium",
-                          clase,
-                        )}
-                      >
+                      <span className={cn(PASTILLA, "gap-1.5 border", clase)}>
                         <Icon size={13} aria-hidden="true" />
                         {n.tipo}
                       </span>
@@ -140,9 +136,9 @@ export function NovedadesTimeline() {
               setEnfocar(visibles);
               setVisibles((v) => v + POR_TANDA);
             }}
-            className="border-line text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-5 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
+            className={BOTON_SECUNDARIO}
           >
-            <ChevronDown size={15} aria-hidden="true" />
+            <ChevronDown size={14} aria-hidden="true" />
             Ver más
           </button>
           <p className="text-muted text-[12px] tabular-nums">

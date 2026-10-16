@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { BOTON_CONFIRMAR, type TonoAccion } from "@/lib/ui";
+import { BOTON_CONFIRMAR, BOTON_SECUNDARIO, type TonoAccion } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface ConfirmDialogProps {
@@ -88,17 +88,14 @@ export function ConfirmDialog({
             // El foco entra aqui: la salida segura es la que queda bajo la mano.
             autoFocus
             onClick={() => ref.current?.close()}
-            className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center px-4 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
+            className={BOTON_SECUNDARIO}
           >
             {cancelar}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={cn(
-              "rounded-chip inline-flex h-11 items-center border px-4 text-[13px] font-medium transition-colors",
-              BOTON_CONFIRMAR[tonoMostrado],
-            )}
+            className={cn(BOTON_SECUNDARIO, "font-medium", BOTON_CONFIRMAR[tonoMostrado])}
           >
             {confirmar}
           </button>

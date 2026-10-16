@@ -6,7 +6,7 @@ import { Coins, Trash2 } from "lucide-react";
 import { CostCurve } from "../CostCurve";
 import { DeckIssues } from "../decks/DeckIssues";
 import { BOTON_FILA, CAJA_FILA, QuantityStepper } from "./QuantityStepper";
-import { CARD_RATIO } from "../CardTile";
+import { CARD_RATIO, marcarCargada } from "../CardTile";
 import type { DeckZone } from "@/lib/deck";
 import {
   canAdd,
@@ -19,7 +19,7 @@ import {
 } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Deck, type Tipo } from "@/lib/types";
 import { ETIQUETA_ORO } from "@/lib/oros";
-import { HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_SECUNDARIO, CONTADOR, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckPanelProps {
@@ -128,16 +128,19 @@ function Fila({
       <button
         type="button"
         onClick={() => onVer(entry.card.id)}
-        aria-label={`Ver ${entry.card.nombre}`}
+        // El nombre accesible es el texto visible, con la accion delante
+        // (WCAG 2.5.3).
         className="focus-visible:outline-brand-500 group flex min-w-0 flex-1 items-center gap-2.5 rounded text-left"
       >
+        <span className="sr-only">Ver </span>
         <Image
           src={entry.card.thumb}
           alt=""
           width={28}
           height={40}
           loading="lazy"
-          className="border-line shrink-0 rounded border"
+          onLoad={marcarCargada}
+          className="imagen-carga border-line shrink-0 rounded border"
           style={{ aspectRatio: CARD_RATIO }}
         />
         <span className="min-w-0 flex-1">
@@ -202,9 +205,7 @@ function Seccion({
           contra el panel, que es lo que pasaba antes. */}
       <h3 className="text-ink mb-2 flex items-center justify-between gap-2 text-sm font-bold tracking-[0.1em] uppercase">
         {titulo}
-        <span className="bg-brand-600 rounded-chip min-w-7 px-2 py-0.5 text-center text-xs font-bold tracking-normal text-white tabular-nums">
-          {total}
-        </span>
+        <span className={cn(CONTADOR, "tracking-normal")}>{total}</span>
       </h3>
       <ul className="divide-line divide-y">
         {filas.map((f) => (
@@ -295,10 +296,7 @@ export function DeckClearButton({ onClear }: { onClear: () => void }) {
     <button
       type="button"
       onClick={onClear}
-      className={cn(
-        "text-muted border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 items-center gap-1.5 border px-4 text-[13px] transition-colors",
-        HOVER_PELIGRO,
-      )}
+      className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO)}
     >
       <Trash2 size={14} aria-hidden="true" />
       Vaciar la baraja

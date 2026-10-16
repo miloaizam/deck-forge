@@ -5,6 +5,7 @@ import { CircleCheck, Info, Trash2, TriangleAlert, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { dismissToast, useToasts, type Toast } from "./toast";
+import { BOTON_ICONO_LIBRE_COMPACTO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -58,7 +59,7 @@ function ToastItem({ t }: { t: Toast }) {
             type="button"
             onClick={() => dismissToast(t.id)}
             aria-label="Cerrar el aviso"
-            className="text-muted hover:text-ink hover:bg-surface focus-visible:outline-brand-500 rounded-chip flex size-8 shrink-0 items-center justify-center transition-colors"
+            className={BOTON_ICONO_LIBRE_COMPACTO}
           >
             <X size={14} aria-hidden="true" />
           </button>

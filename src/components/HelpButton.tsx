@@ -5,6 +5,8 @@ import { useRef } from "react";
 import { ChevronDown, CircleHelp, Sparkles, X } from "lucide-react";
 
 import { FAQ, segmentos } from "@/lib/faq";
+import { BOTON_ICONO_LIBRE } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 /**
  * Ayuda del sitio: un signo de pregunta en la navbar que abre un panel lateral
@@ -51,9 +53,9 @@ export function HelpButton() {
         title="Ayuda"
         // Mismo trato que el boton de tema, que va justo al lado: sin caja en
         // reposo, el aro solo al apuntar o enfocar.
-        className="text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 active:border-brand-500 active:text-ink flex size-11 shrink-0 items-center justify-center rounded-full border border-transparent transition-colors hover:outline-2 hover:outline-offset-2"
+        className={cn(BOTON_ICONO_LIBRE, "rounded-full")}
       >
-        <CircleHelp size={17} aria-hidden="true" />
+        <CircleHelp size={16} aria-hidden="true" />
       </button>
 
       <dialog
@@ -80,9 +82,9 @@ export function HelpButton() {
               type="button"
               onClick={cerrar}
               aria-label="Cerrar la ayuda"
-              className="text-muted hover:text-ink hover:bg-panel focus-visible:outline-brand-500 rounded-chip flex size-11 items-center justify-center transition-colors"
+              className={BOTON_ICONO_LIBRE}
             >
-              <X size={18} aria-hidden="true" />
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
 

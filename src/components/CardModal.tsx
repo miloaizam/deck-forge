@@ -10,6 +10,14 @@ import { CARD_RATIO, marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
+import {
+  BLOQUEADO,
+  BOTON_ICONO_LIBRE,
+  BOTON_PRIMARIO,
+  BOTON_SECUNDARIO,
+  BOTON_SUAVE,
+  PASTILLA,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface CardModalProps {
@@ -130,9 +138,12 @@ export function CardModal({
             type="button"
             onClick={() => ref.current?.close()}
             aria-label="Cerrar"
-            className="text-muted hover:text-ink bg-surface/80 hover:bg-panel focus-visible:outline-brand-500 rounded-chip absolute top-3 right-3 z-10 flex size-11 items-center justify-center backdrop-blur transition-colors"
+            className={cn(
+              BOTON_ICONO_LIBRE,
+              "bg-surface/80 absolute top-3 right-3 z-10 backdrop-blur",
+            )}
           >
-            <X size={18} aria-hidden="true" />
+            <X size={16} aria-hidden="true" />
           </button>
 
           {/* En un telefono la carta no cabe entera. `dvh` y no `vh` para que la
@@ -170,9 +181,9 @@ export function CardModal({
                   <button
                     type="button"
                     onClick={cambiarArte.onCambiar}
-                    className="border-brand-500 bg-accent-soft text-accent hover:bg-brand-600 rounded-chip focus-visible:outline-brand-500 mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 border px-3 py-2 text-[13px] font-medium transition-colors hover:text-white"
+                    className={cn(BOTON_SUAVE, "mt-3 w-full")}
                   >
-                    <Replace size={15} aria-hidden="true" />
+                    <Replace size={14} aria-hidden="true" />
                     Usar este arte en la baraja ({cambiarArte.copias}{" "}
                     {cambiarArte.copias === 1 ? "copia" : "copias"})
                   </button>
@@ -190,16 +201,16 @@ export function CardModal({
                 </h2>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="border-line bg-accent-soft text-accent rounded-chip border px-2.5 py-1 text-xs">
+                  <span className={cn(PASTILLA, "bg-accent-soft text-accent")}>
                     {tipoDeCarta(mostrada)}
                   </span>
                   {mostrada.raza && (
-                    <span className="border-line bg-panel text-muted rounded-chip border px-2.5 py-1 text-xs">
+                    <span className={cn(PASTILLA, "border-line text-muted border")}>
                       {mostrada.raza}
                     </span>
                   )}
                   {mostrada.escuela && (
-                    <span className="border-line bg-panel text-muted rounded-chip border px-2.5 py-1 text-xs">
+                    <span className={cn(PASTILLA, "border-line text-muted border")}>
                       {mostrada.escuela}
                     </span>
                   )}
@@ -239,14 +250,11 @@ export function CardModal({
                       // pulsarlo puede explicar por que no se puede.
                       aria-disabled={addBlocked ? true : undefined}
                       title={addBlocked}
-                      className={cn(
-                        "rounded-chip focus-visible:outline-brand-500 inline-flex h-11 items-center gap-2 px-4 text-sm font-medium transition-colors",
-                        addBlocked
-                          ? "border-line text-muted/60 cursor-not-allowed border"
-                          : "bg-brand-600 hover:bg-brand-500 text-white",
-                      )}
+                      className={
+                        addBlocked ? cn(BOTON_SECUNDARIO, BLOQUEADO) : BOTON_PRIMARIO
+                      }
                     >
-                      <Plus size={16} aria-hidden="true" />
+                      <Plus size={14} aria-hidden="true" />
                       {destino === "baraja"
                         ? "Agregar a la baraja"
                         : "Agregar a la colección"}
@@ -257,9 +265,9 @@ export function CardModal({
                       <button
                         type="button"
                         onClick={onRemove}
-                        className="border-line text-muted hover:text-ink hover:outline-brand-500 rounded-chip focus-visible:outline-brand-500 inline-flex h-11 items-center gap-2 border px-4 text-sm transition-colors hover:outline-2 hover:outline-offset-2"
+                        className={BOTON_SECUNDARIO}
                       >
-                        <Minus size={16} aria-hidden="true" />
+                        <Minus size={14} aria-hidden="true" />
                         Quitar una copia
                       </button>
                     )}

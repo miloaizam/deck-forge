@@ -56,7 +56,7 @@ export function ScrollTopButton() {
           : "invisible translate-y-2 opacity-0",
       )}
     >
-      <ArrowUp size={17} aria-hidden="true" />
+      <ArrowUp size={16} aria-hidden="true" />
     </button>
   );
 }

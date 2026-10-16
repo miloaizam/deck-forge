@@ -18,6 +18,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { HelpButton } from "./HelpButton";
 import { ThemeToggle } from "./ThemeToggle";
+import { BOTON_ICONO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface NavLink {
@@ -119,12 +120,12 @@ export function Navbar() {
             aria-expanded={open}
             aria-controls="menu-principal"
             aria-label={open ? "Cerrar el menú" : "Abrir el menú"}
-            className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip flex size-11 shrink-0 items-center justify-center border transition-colors hover:outline-2 hover:outline-offset-2 lg:hidden"
+            className={cn(BOTON_ICONO, "lg:hidden")}
           >
             {open ? (
-              <X size={17} aria-hidden="true" />
+              <X size={16} aria-hidden="true" />
             ) : (
-              <Menu size={17} aria-hidden="true" />
+              <Menu size={16} aria-hidden="true" />
             )}
           </button>
         </div>
@@ -150,7 +151,7 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   aria-current={isActive(pathname, href) ? "page" : undefined}
                   className={cn(
-                    "rounded-chip flex h-12 items-center gap-2.5 px-3 text-[15px] transition-colors",
+                    "rounded-chip focus-visible:outline-brand-500 flex h-12 items-center gap-2.5 px-3 text-[15px] transition-colors",
                     isActive(pathname, href)
                       ? "text-accent bg-accent-soft"
                       : "text-muted hover:text-ink",

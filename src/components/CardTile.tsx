@@ -3,7 +3,7 @@ import { Minus, Plus, Sparkles } from "lucide-react";
 import { CardRibbons } from "./CardRibbons";
 import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
-import { CONTORNO_CARTA } from "@/lib/ui";
+import { BLOQUEADO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -56,9 +56,12 @@ export function CardTile({
       <button
         type="button"
         onClick={() => onSelect(card)}
-        aria-label={`Ver detalle de ${card.nombre}`}
+        // Sin aria-label: el nombre accesible es el texto que se ve (nombre y
+        // tipo), con la accion delante en sr-only (WCAG 2.5.3). Por eso la
+        // imagen va con alt vacio: repetiria el nombre.
         className="focus-visible:outline-brand-500 block w-full text-left"
       >
+        <span className="sr-only">Ver detalle de </span>
         <span className="relative block">
           {/* <img> y no next/image: con `unoptimized` (no hay servidor),
               next/image pisa el srcSet. La miniatura de 200 px se ve borrosa
@@ -69,7 +72,7 @@ export function CardTile({
           <img
             src={card.thumb}
             srcSet={`${card.thumb} 1x, ${card.imagen} 2x`}
-            alt={`Carta: ${card.nombre}`}
+            alt=""
             width={200}
             height={286}
             loading="lazy"
@@ -122,7 +125,10 @@ export function CardTile({
             onClick={() => onRemove?.(card)}
             disabled={copies === 0 || !onRemove}
             aria-label={`Quitar una copia de ${card.nombre}`}
-            className="text-muted hover:text-ink focus-visible:outline-brand-500 flex size-11 items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-0"
+            // El pie es parte de la carta: sus botones no llevan anillo (la
+            // carta entera ya lo lleva y el `overflow-hidden` lo cortaria). El
+            // foco del teclado va hacia adentro para que se vea entero.
+            className="text-muted hover:text-ink focus-visible:outline-brand-500 flex size-11 items-center justify-center transition-colors focus-visible:-outline-offset-2 disabled:pointer-events-none disabled:opacity-0"
           >
             <Minus size={16} aria-hidden="true" />
           </button>
@@ -149,13 +155,11 @@ export function CardTile({
             title={addBlocked}
             aria-label={addBlocked ?? `Agregar ${card.nombre} a la baraja`}
             className={cn(
-              "focus-visible:outline-brand-500 flex size-11 items-center justify-center transition-colors",
-              addBlocked
-                ? "text-muted/40 cursor-not-allowed"
-                : "text-accent hover:bg-brand-600 hover:text-white",
+              "focus-visible:outline-brand-500 flex size-11 items-center justify-center transition-colors focus-visible:-outline-offset-2",
+              addBlocked ? BLOQUEADO : "text-accent hover:bg-brand-600 hover:text-white",
             )}
           >
-            <Plus size={18} aria-hidden="true" />
+            <Plus size={16} aria-hidden="true" />
           </button>
         </div>
       )}

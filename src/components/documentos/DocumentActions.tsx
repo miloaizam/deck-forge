@@ -2,12 +2,11 @@ import Link from "next/link";
 import { BookOpen, Download, ExternalLink } from "lucide-react";
 
 import type { Documento } from "@/lib/documentos";
+import { BOTON_PRIMARIO, BOTON_SECUNDARIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
-const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
-const PRIMARIO =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip bg-brand-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-brand-500 focus-visible:outline-brand-300";
+const BOTON = BOTON_SECUNDARIO;
+const PRIMARIO = BOTON_PRIMARIO;
 
 /**
  * Lo que se puede hacer con un documento: leerlo en el sitio, abrir el PDF
@@ -41,26 +40,19 @@ export function DocumentActions({
           Leer en el sitio
         </Link>
       )}
-      <a
-        href={doc.pdf}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={BOTON}
-        aria-label={`Abrir el PDF de ${nombre} en una pestaña nueva`}
-      >
+      <a href={doc.pdf} target="_blank" rel="noopener noreferrer" className={BOTON}>
+        {/* Sin aria-label: el nombre accesible tiene que contener el texto que
+            se ve (WCAG 2.5.3). Lo que falta para un lector va en sr-only. */}
         <ExternalLink size={14} aria-hidden="true" />
         Abrir PDF
+        <span className="sr-only"> de {nombre} en una pestaña nueva</span>
       </a>
-      <a
-        href={doc.pdf}
-        download
-        className={verEnElSitio ? BOTON : PRIMARIO}
-        aria-label={`Descargar el PDF de ${nombre} (${peso})`}
-      >
+      <a href={doc.pdf} download className={verEnElSitio ? BOTON : PRIMARIO}>
         <Download size={14} aria-hidden="true" />
         Descargar
+        <span className="sr-only"> el PDF de {nombre}</span>
         <span
-          className={cn("tabular-nums", verEnElSitio ? "text-muted" : "text-white/75")}
+          className={cn("tabular-nums", verEnElSitio ? "text-muted" : "text-white/90")}
         >
           · {peso}
         </span>

@@ -9,7 +9,12 @@ import { etiquetaDeTipo } from "@/lib/oros";
 import { countActiveFilters } from "@/lib/catalog";
 import { ETIQUETA_ORDEN, esOrden, siguienteOrden } from "@/lib/card-order";
 import { editionTitle } from "@/lib/editions";
-import { TEXT_FIELD } from "@/lib/ui";
+import {
+  BOTON_ICONO_LIBRE_COMPACTO,
+  BOTON_SECUNDARIO,
+  CONTADOR,
+  TEXT_FIELD,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface FiltersProps {
@@ -86,18 +91,17 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
             aria-label={`Ordenar: ${ETIQUETA_ORDEN[esOrden(filters.orden) ? filters.orden : ""]}. Pulsa para cambiar.`}
             title={ETIQUETA_ORDEN[esOrden(filters.orden) ? filters.orden : ""]}
             className={cn(
-              "rounded-chip focus-visible:outline-brand-500 absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center transition-colors",
-              filters.orden
-                ? "bg-accent-soft text-accent"
-                : "text-muted hover:text-ink hover:bg-surface",
+              BOTON_ICONO_LIBRE_COMPACTO,
+              "absolute top-1/2 right-1 -translate-y-1/2",
+              filters.orden && "bg-accent-soft text-accent hover:text-accent",
             )}
           >
             {filters.orden === "nombre" ? (
-              <ArrowDownAZ size={17} aria-hidden="true" />
+              <ArrowDownAZ size={16} aria-hidden="true" />
             ) : filters.orden === "nombre-desc" ? (
-              <ArrowDownZA size={17} aria-hidden="true" />
+              <ArrowDownZA size={16} aria-hidden="true" />
             ) : (
-              <ArrowUpDown size={17} aria-hidden="true" />
+              <ArrowUpDown size={16} aria-hidden="true" />
             )}
           </button>
         </div>
@@ -108,7 +112,7 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
               type="button"
               onClick={onReset}
               aria-label="Limpiar filtros"
-              className="text-muted hover:text-ink hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 border px-3 text-[13px] whitespace-nowrap transition-colors hover:outline-2 hover:outline-offset-2 sm:px-4"
+              className={cn(BOTON_SECUNDARIO, "min-w-11 px-3 whitespace-nowrap sm:px-4")}
             >
               <X size={14} aria-hidden="true" />
               <span className="hidden sm:inline">Limpiar filtros</span>
@@ -121,19 +125,16 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
             aria-expanded={open}
             aria-controls={panelId}
             className={cn(
-              "focus-visible:outline-brand-500 rounded-chip inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-2 border px-3 text-sm whitespace-nowrap transition-colors sm:px-4",
-              open || activos > 0
-                ? "border-brand-600 bg-accent-soft text-ink"
-                : "border-line text-muted hover:outline-brand-500 hover:text-ink hover:outline-2 hover:outline-offset-2",
+              BOTON_SECUNDARIO,
+              "min-w-11 px-3 whitespace-nowrap sm:px-4",
+              // Abierto o con filtros puestos queda marcado, como un segmento activo.
+              (open || activos > 0) && "border-brand-600 bg-accent-soft text-ink",
             )}
           >
-            <Funnel size={15} aria-hidden="true" />
+            <Funnel size={14} aria-hidden="true" />
             <span className="sr-only sm:not-sr-only">Filtros</span>
             {activos > 0 && (
-              <span
-                aria-label={`${activos} filtros aplicados`}
-                className="bg-brand-600 inline-flex size-5 items-center justify-center rounded-full text-[11px] font-medium text-white tabular-nums"
-              >
+              <span aria-label={`${activos} filtros aplicados`} className={CONTADOR}>
                 {activos}
               </span>
             )}

@@ -21,6 +21,9 @@ import {
 } from "@/lib/catalog";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import type { Card } from "@/lib/types";
+import { ENLACE, VACIO } from "@/lib/ui";
+import { irArriba } from "@/lib/scroll";
+import { cn } from "@/lib/utils";
 
 interface CatalogViewProps {
   cards: Card[];
@@ -83,7 +86,7 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
 
   const goTo = (next: number) => {
     setPage(next);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    irArriba();
   };
 
   return (
@@ -96,17 +99,15 @@ export function CatalogView({ cards, otrasImpresiones }: CatalogViewProps) {
       />
 
       {cards.length === 0 ? (
-        <p className="text-muted border-line rounded-panel border border-dashed px-6 py-16 text-center">
-          Esta edición todavía no está cargada.
-        </p>
+        <p className={cn(VACIO, "text-muted")}>Esta edición todavía no está cargada.</p>
       ) : results.length === 0 ? (
-        <div className="border-line rounded-panel border border-dashed px-6 py-16 text-center">
+        <div className={VACIO}>
           <p className="text-ink">Ninguna carta coincide con esa búsqueda.</p>
           {hasActiveFilters(filters) && (
             <button
               type="button"
               onClick={() => update(EMPTY_FILTERS)}
-              className="text-accent focus-visible:outline-brand-500 mt-3 rounded text-[15px] underline underline-offset-4 transition-opacity hover:opacity-75"
+              className={cn(ENLACE, "mt-3 text-[15px]")}
             >
               Limpiar los filtros
             </button>

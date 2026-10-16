@@ -6,6 +6,7 @@ import { ChevronUp, X } from "lucide-react";
 import { AutoHeight } from "../AutoHeight";
 import { EstadoPastilla, type EstadoDeBaraja } from "../decks/DeckIssues";
 import { DECK_TOTAL } from "@/lib/deck-rules";
+import { BOTON_ICONO_LIBRE } from "@/lib/ui";
 
 interface DeckSheetProps {
   total: number;
@@ -51,9 +52,11 @@ export function DeckSheet({
         <button
           type="button"
           onClick={() => onOpenChange(true)}
-          aria-label="Abrir el panel de la baraja"
-          className="focus-visible:outline-brand-500 flex h-14 w-full items-center gap-3 px-4"
+          // Sin aria-label: el nombre es el texto visible (WCAG 2.5.3), con la
+          // accion dicha antes para quien no ve la flecha.
+          className="focus-visible:outline-brand-500 hover:bg-surface flex h-14 w-full items-center gap-3 px-4 transition-colors"
         >
+          <span className="sr-only">Abrir el panel de la baraja:</span>
           <span className="text-ink text-lg font-bold tabular-nums">
             {total}
             <span className="text-muted text-sm font-normal">/{DECK_TOTAL}</span>
@@ -83,9 +86,9 @@ export function DeckSheet({
               type="button"
               onClick={() => ref.current?.close()}
               aria-label="Cerrar el panel de la baraja"
-              className="text-muted hover:text-ink hover:bg-panel focus-visible:outline-brand-500 rounded-chip flex size-11 items-center justify-center transition-colors"
+              className={BOTON_ICONO_LIBRE}
             >
-              <X size={18} aria-hidden="true" />
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
           <div className="scrollbar-slim max-h-[70dvh] overflow-y-auto overscroll-contain px-4 py-4">

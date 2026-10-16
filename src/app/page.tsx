@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Flame, Hammer, LibraryBig } from "lucide-react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PRIMARY_BUTTON } from "@/lib/ui";
 
 const ACCESO =
   "text-muted hover:text-ink focus-visible:outline-brand-500 inline-flex h-11 items-center gap-1.5 rounded-chip px-3 underline-offset-4 transition-colors hover:underline";
@@ -59,10 +60,7 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex justify-center">
-          <Link
-            href="/catalogo"
-            className="bg-brand-600 hover:bg-brand-500 shadow-glow focus-visible:outline-brand-300 rounded-card ease-out-soft inline-flex h-14 items-center gap-2.5 px-8 text-[17px] font-medium text-white transition duration-200 hover:-translate-y-0.5"
-          >
+          <Link href="/catalogo" className={PRIMARY_BUTTON}>
             <Flame size={19} aria-hidden="true" />
             Entrar a la forja
           </Link>

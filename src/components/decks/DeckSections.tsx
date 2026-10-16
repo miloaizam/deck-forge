@@ -99,7 +99,9 @@ function BotonPortada({
       }
       title={activa ? "Quitar de la portada" : "Usar de portada"}
       className={cn(
-        "focus-visible:outline-brand-500 rounded-chip inline-flex size-7 shrink-0 items-center justify-center transition",
+        // Se ve de 28 sobre la carta, pero se pulsa de 44: el `after` se
+        // estira 8 px hacia cada lado (AREA_TACTIL, mas holgado).
+        "focus-visible:outline-brand-500 rounded-chip relative inline-flex size-7 shrink-0 items-center justify-center transition after:absolute after:-inset-2 after:content-['']",
         activa
           ? "text-accent"
           : // Oculta hasta pasar el cursor, salvo en pantallas tactiles: sin cursor

@@ -39,20 +39,16 @@ import {
 } from "@/lib/deck-rules";
 import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
-import { HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_ICONO, BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckDetailViewProps {
   cards: Card[];
 }
 
-const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 /** Las dos tarjetas de analisis del final: mano de prueba y curva. */
 const PANEL_ANALISIS =
   "border-line bg-panel rounded-panel flex flex-col border p-5 sm:p-6";
-const ICONO =
-  "inline-flex size-11 items-center justify-center rounded-chip border border-line text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /**
  * Muestra una baraja, sea tuya (`?m=`) o de un enlace compartido (`#d=`, o
@@ -152,17 +148,14 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
   if (error || !deck) {
     return (
-      <div className="border-line rounded-panel border border-dashed px-6 py-20 text-center">
+      <div className={VACIO}>
         <Layers
           size={28}
           aria-hidden="true"
           className="text-muted mx-auto mb-4 opacity-60"
         />
         <p className="text-ink text-lg">{error || "No hay ninguna baraja aquí."}</p>
-        <Link
-          href="/barajas"
-          className="text-accent focus-visible:outline-brand-500 mt-4 inline-block rounded text-[15px] underline underline-offset-4 transition-opacity hover:opacity-75"
-        >
+        <Link href="/barajas" className={cn(ENLACE, "mt-4 inline-block text-[15px]")}>
           Ver mis barajas
         </Link>
       </div>
@@ -201,12 +194,12 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
 
           <div className="flex flex-wrap gap-2">
             {compartido ? (
-              <button type="button" onClick={guardar} className={BOTON}>
+              <button type="button" onClick={guardar} className={BOTON_SECUNDARIO}>
                 <Save size={14} aria-hidden="true" />
                 Guardar en mis barajas
               </button>
             ) : (
-              <Link href={`/constructor/?m=${deck.id}`} className={BOTON}>
+              <Link href={`/constructor/?m=${deck.id}`} className={BOTON_SECUNDARIO}>
                 <Hammer size={14} aria-hidden="true" />
                 Editar
               </Link>
@@ -219,27 +212,27 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
               onClick={() => descargarImagenDeBaraja(deck, res)}
               aria-label="Descargar como imagen"
               title="Descargar como imagen PNG"
-              className={ICONO}
+              className={BOTON_ICONO}
             >
-              <ImageDown size={14} aria-hidden="true" />
+              <ImageDown size={16} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => void copyShareLink(deck)}
               aria-label="Copiar enlace"
               title="Copiar enlace"
-              className={ICONO}
+              className={BOTON_ICONO}
             >
-              <Link2 size={14} aria-hidden="true" />
+              <Link2 size={16} aria-hidden="true" />
             </button>
             <button
               type="button"
               onClick={() => downloadDeck(deck)}
               aria-label="Exportar a un archivo"
               title="Exportar a un archivo de respaldo"
-              className={ICONO}
+              className={BOTON_ICONO}
             >
-              <Download size={14} aria-hidden="true" />
+              <Download size={16} aria-hidden="true" />
             </button>
 
             {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
@@ -259,18 +252,18 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
                   }}
                   aria-label="Duplicar la baraja"
                   title="Duplicar"
-                  className={ICONO}
+                  className={BOTON_ICONO}
                 >
-                  <Copy size={14} aria-hidden="true" />
+                  <Copy size={16} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setPorBorrar(true)}
                   aria-label="Borrar la baraja"
                   title="Borrar"
-                  className={cn(ICONO, HOVER_PELIGRO)}
+                  className={cn(BOTON_ICONO, HOVER_PELIGRO)}
                 >
-                  <Trash2 size={14} aria-hidden="true" />
+                  <Trash2 size={16} aria-hidden="true" />
                 </button>
               </>
             )}

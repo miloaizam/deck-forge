@@ -7,6 +7,7 @@ import { toast, type ToastTone } from "../toast";
 import { exportFile, importFile } from "@/lib/deck-code";
 import { MAX_BARAJAS, type MergeResult } from "@/lib/deck-storage";
 import type { Deck } from "@/lib/types";
+import { BOTON_SECUNDARIO } from "@/lib/ui";
 
 /** Lo que paso al importar: cuantas entraron y si se pudo escribir. */
 export interface ImportOutcome extends MergeResult {
@@ -64,9 +65,6 @@ function mensajeImportacion(r: ImportOutcome, descartados: number): [string, Toa
   }
   return [partes.join(" "), "success"];
 }
-
-const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
 
 /** Mas de esto no es un respaldo de barajas, es otra cosa. */
 const MAX_ARCHIVO = 1024 * 1024;
@@ -135,7 +133,7 @@ export function DeckTransfer({ decks, onImport }: DeckTransferProps) {
         type="button"
         onClick={exportar}
         disabled={decks.length === 0}
-        className={`${BOTON} disabled:pointer-events-none disabled:opacity-40`}
+        className={BOTON_SECUNDARIO}
       >
         <Download size={14} aria-hidden="true" />
         Exportar todo
@@ -145,7 +143,7 @@ export function DeckTransfer({ decks, onImport }: DeckTransferProps) {
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={ocupado}
-        className={`${BOTON} disabled:pointer-events-none disabled:opacity-40`}
+        className={BOTON_SECUNDARIO}
       >
         <Upload size={14} aria-hidden="true" />
         Importar

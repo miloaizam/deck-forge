@@ -7,7 +7,7 @@ import { Hand, RotateCcw, Shuffle } from "lucide-react";
 import { CARD_RATIO, marcarCargada } from "../CardTile";
 import type { ResolvedDeck, RuleCard } from "@/lib/deck-rules";
 import { mazoParaRobar, robarMano, MANO_INICIAL, MANO_MINIMA } from "@/lib/hand-test";
-import { CONTORNO_CARTA } from "@/lib/ui";
+import { BOTON_PRIMARIO, BOTON_SECUNDARIO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface HandTesterProps {
@@ -16,9 +16,6 @@ interface HandTesterProps {
   onVer: (cardId: string) => void;
   className?: string;
 }
-
-const BOTON =
-  "inline-flex h-11 items-center gap-1.5 rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500 disabled:pointer-events-none disabled:opacity-40";
 
 /**
  * Probar una mano inicial: roba MANO_INICIAL cartas al azar del principal, sin
@@ -70,7 +67,7 @@ export function HandTester({ res, oroInicial, onVer, className }: HandTesterProp
           type="button"
           onClick={() => robar(MANO_INICIAL)}
           disabled={mazo.length === 0}
-          className="bg-brand-600 hover:bg-brand-500 rounded-chip focus-visible:outline-brand-300 inline-flex h-11 items-center gap-1.5 px-4 text-[13px] font-medium text-white transition-colors disabled:pointer-events-none disabled:opacity-40"
+          className={BOTON_PRIMARIO}
         >
           {mano ? (
             <RotateCcw size={14} aria-hidden="true" />
@@ -83,7 +80,7 @@ export function HandTester({ res, oroInicial, onVer, className }: HandTesterProp
           type="button"
           onClick={() => robar(tamano - 1)}
           disabled={!puedeMulligan}
-          className={BOTON}
+          className={BOTON_SECUNDARIO}
         >
           <Shuffle size={14} aria-hidden="true" />
           Mulligan{puedeMulligan ? ` (${tamano - 1})` : ""}
@@ -124,7 +121,9 @@ export function HandTester({ res, oroInicial, onVer, className }: HandTesterProp
                       onClick={() => onVer(id)}
                       aria-label={`Ver ${card.nombre}`}
                       className={cn(
-                        "border-line block w-full overflow-hidden border",
+                        // El foco va en la propia carta: CONTORNO_CARTA solo
+                        // lo pinta en un descendiente (has-focus-visible).
+                        "border-line focus-visible:outline-brand-500 block w-full overflow-hidden border",
                         CONTORNO_CARTA,
                       )}
                     >

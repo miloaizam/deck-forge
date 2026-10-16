@@ -11,6 +11,8 @@ import {
 } from "@/lib/documentos";
 import { FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
 import { wordDiff } from "@/lib/word-diff";
+import { BOTON_SECUNDARIO_COMPACTO, CONTADOR } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Fe de Erratas",
@@ -56,7 +58,7 @@ export default function FeDeErratasPage() {
             <li key={ed}>
               <a
                 href={`#${ancla(ed)}`}
-                className="border-line text-muted hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-2 border px-3 text-[13px] transition-colors hover:outline-2 hover:outline-offset-2"
+                className={cn(BOTON_SECUNDARIO_COMPACTO, "gap-2")}
               >
                 {ed}
                 <span className="bg-accent-soft text-accent rounded-chip px-1.5 text-[11px] font-semibold tabular-nums">
@@ -80,9 +82,7 @@ export default function FeDeErratasPage() {
             className="text-ink flex items-center gap-2 text-xl font-bold"
           >
             {ed}
-            <span className="bg-brand-600 rounded-chip px-2 text-[12px] font-bold text-white tabular-nums">
-              {l.length}
-            </span>
+            <span className={CONTADOR}>{l.length}</span>
           </h2>
           <ul className="mt-5 flex flex-col gap-4">
             {l.map((e) => (

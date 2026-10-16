@@ -95,7 +95,7 @@
   --color-accent-soft: #ede9fe;
   --color-success: #047857;
   --color-danger: #b91c1c;
-  --color-warning: #b45309;
+  --color-warning: #92400e; /* amber-800: el 700 no llegaba a 4.5:1 sobre sus tintes */
 
   --color-halo: rgb(167 139 250 / 0.3);
 

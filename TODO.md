@@ -18,17 +18,114 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ### Evaluar una mejora visual
 
-- **Qué:** revisar el aspecto del sitio entero y decidir si conviene una
-  mejora visual: jerarquía, espaciados, contraste en los dos temas,
-  consistencia entre páginas (catálogo, constructor, barajas, colección,
-  documentos) y cómo se ve en el teléfono.
-- **Por dónde:** recorrer cada ruta en escritorio y teléfono, con tema claro
-  y oscuro, capturar lo que desentona y contrastarlo con
-  [DESIGN.md](DESIGN.md) y la guía de marca (`docs/brand.html`).
-- **A decidir antes:** si es un repaso puntual (arreglar lo que desentona)
-  o una renovación, que tocaría DESIGN.md.
+- **Qué:** la consistencia ya se resolvió (botones, controles y contenedores
+  salen de `src/lib/ui.ts` y están en DESIGN.md §6, 16-10-2026). Falta decidir
+  si conviene una mejora de fondo: jerarquía de cada página, espaciados y
+  densidad, y el aspecto en el tema claro, que se diseñó después del oscuro.
+- **Por dónde:** el artifact «Sistema de diseño DeckForge» tiene la galería
+  de componentes y capturas de cada vista; contrastarlas con la guía de marca
+  (`docs/brand.html`).
+- **A decidir antes:** si es un repaso puntual o una renovación, que tocaría
+  DESIGN.md.
 - **Terminado cuando:** hay una lista de cambios acordada y aplicada, o la
   decisión de que no hace falta.
+
+### Revisar el sitio en pantallas medianas y pequeñas
+
+- **Qué:** probar la navegación entera en teléfono y tableta (de 360 a 1024 px
+  de ancho): navbar plegada, filtros, constructor con su hoja, colección,
+  modales y documentos.
+- **Por dónde:** Playwright ya emula un Pixel 7 (`pnpm run e2e`); sumar una
+  tableta (`devices["iPad Mini"]`) y recorridos de las rutas que hoy solo se
+  prueban en escritorio (los del constructor se saltan en el teléfono).
+  Capturar cada ruta a 360, 768 y 1024 y revisarlas a ojo.
+- **Terminado cuando:** cada ruta se usa sin scroll horizontal ni controles
+  tapados en los tres anchos, y hay pruebas que lo vigilan.
+
+### Imagen de la carta en «3D» en el detalle
+
+- **Qué:** que la imagen del modal de una carta se incline un poco siguiendo
+  el cursor (o el giroscopio en el teléfono), con un brillo que se mueve, como
+  en tor.myl.
+- **Por dónde:** `CardModal.tsx`. Se puede hacer con CSS (`perspective` y
+  `rotateX`/`rotateY` desde variables que pone un `pointermove`) sin
+  dependencias. Ojo: con «reducir movimiento» no se inclina, y el
+  giroscopio en iOS pide permiso.
+- **Terminado cuando:** la carta se inclina con suavidad, vuelve a su sitio al
+  salir y respeta «reducir movimiento».
+
+## Por evaluar
+
+Preguntas abiertas: cada una termina en una decisión anotada (en DESIGN.md o
+CLAUDE.md), se adopte o no.
+
+### ¿Framer Motion en vez de CSS?
+
+- **Qué:** hoy todo se anima con CSS (`@starting-style`,
+  `transition-behavior: allow-discrete`, `AutoHeight`), sin dependencias.
+  Evaluar si una librería como Framer Motion (`motion`) aporta lo bastante:
+  animaciones de salida de listas, reordenamientos, gestos.
+- **A pesar:** peso del bundle (~30–50 KB), una dependencia más (CLAUDE.md
+  §6 y §7), y que ya funciona sin ella.
+- **Terminado cuando:** hay una decisión con un ejemplo concreto que con CSS
+  no se pueda.
+
+### Lighthouse para medir el rendimiento
+
+- **Qué:** instalar Lighthouse como dependencia de desarrollo para medir
+  rendimiento, accesibilidad y buenas prácticas del sitio construido, y
+  mejorar lo que salga.
+- **Por dónde:** `lighthouse` usa el Chromium de Playwright; un script
+  `pnpm run lighthouse` sobre `out/` servido. Mirar sobre todo `/catalogo`
+  (HTML grande) y el constructor.
+- **Terminado cuando:** hay un informe por ruta y los arreglos que salgan,
+  o anotados aquí.
+
+### ¿View Transitions para las animaciones entre páginas?
+
+- **Qué:** la API de View Transitions anima el paso de una página a otra (y
+  entre estados de una misma página) sin librerías. Evaluar si mejora la
+  plataforma: abrir una carta desde la grilla, pasar del constructor al
+  detalle de la baraja.
+- **Por dónde:** Next 16 la soporta en el App Router; ver su efecto en un
+  export estático y con «reducir movimiento».
+- **Terminado cuando:** hay una decisión, con una prueba si se adopta.
+
+### ¿Container queries?
+
+- **Qué:** que un componente se adapte al ancho de **su contenedor** y no al de
+  la pantalla (`@container` en CSS, `@container` / `@sm:` en Tailwind v4).
+  Serviría, por ejemplo, para que la tarjeta de una baraja o la fila de la
+  colección se reacomoden igual en una grilla de tres columnas que en una.
+- **Terminado cuando:** hay una decisión y, si se adopta, un primer
+  componente que la use.
+
+## Datos
+
+### Reimpresiones en los kits entre Conjuros y Furia
+
+- **Qué:** revisar los kits y mazos que salieron entre Conjuros y Furia
+  buscando reimpresiones de cartas del catálogo que falten en Arte
+  Alternativo. Ejemplo: **Mariamman**, de los kits raciales, tiene una.
+  Quedan fuera las ediciones ya revisadas entre Bushido y Escuelas
+  Elementales.
+- **Por dónde:** el listado de productos del fandom y de la API
+  (`/cards/edition/…`); mismo criterio que la carga de Arte Alternativo
+  (CLAUDE.md): que la habilidad sea igual o casi igual, y consultar los
+  casos dudosos.
+- **Terminado cuando:** cada kit está revisado y sus reimpresiones cargadas
+  en `data-src/arte-alternativo.json`.
+
+## Colección
+
+### Exportar la colección como lista
+
+- **Qué:** en `/coleccion`, poder copiar o bajar como texto la lista de lo que
+  se tiene o lo que falta («3 Akiko Yamamoto (Escuelas Elementales, Ultra
+  Real)…»), para pegarla en un chat o un foro.
+- **Por dónde:** junto a «Imagen» en `ColeccionAcciones.tsx`; respeta la
+  pestaña, los filtros y el orden que se ven, como la imagen.
+- **Terminado cuando:** la lista se copia y se baja, y la ayuda lo explica.
 
 ## Grande y con decisiones previas
 

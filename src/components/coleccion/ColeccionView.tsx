@@ -34,6 +34,15 @@ import {
 import { decodeColeccion } from "@/lib/coleccion-code";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import type { Card } from "@/lib/types";
+import {
+  AVISO_EN_LINEA,
+  ENLACE,
+  SEGMENTO,
+  SEGMENTOS,
+  SEGMENTO_ACTIVO,
+  SEGMENTO_INACTIVO,
+  VACIO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const VISTAS: { valor: VistaColeccion; titulo: string }[] = [
@@ -172,12 +181,9 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
   return (
     <div className="flex flex-col gap-6">
       {compartida && (
-        <div
-          role="status"
-          className="aparece border-brand-500/50 bg-accent-soft rounded-card flex flex-wrap items-center gap-3 border p-3.5"
-        >
+        <div role="status" className={cn(AVISO_EN_LINEA, "items-center")}>
           <Share2 size={16} aria-hidden="true" className="text-accent shrink-0" />
-          <p className="text-ink min-w-0 flex-1 text-[14px]">
+          <p className="text-ink min-w-0 flex-1">
             <strong className="font-semibold">Colección compartida.</strong>{" "}
             <span className="text-muted">
               Estás viendo lo que otra persona tiene y le falta. Tu colección no cambia.
@@ -196,7 +202,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
                 `${window.location.pathname}${window.location.search}`,
               );
             }}
-            className="text-accent focus-visible:outline-brand-500 rounded text-[14px] underline underline-offset-4"
+            className={ENLACE}
           >
             Ver mi colección
           </button>
@@ -210,11 +216,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div
-          role="group"
-          aria-label="Qué cartas mostrar"
-          className="border-line bg-panel rounded-chip inline-flex max-w-full overflow-x-auto border p-1"
-        >
+        <div role="group" aria-label="Qué cartas mostrar" className={SEGMENTOS}>
           {vistas.map(({ valor, titulo }) => (
             <button
               key={valor}
@@ -222,10 +224,8 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
               onClick={() => setVista(valor)}
               aria-pressed={vistaReal === valor}
               className={cn(
-                "rounded-chip focus-visible:outline-brand-500 inline-flex h-9 shrink-0 items-center gap-2 px-3.5 text-[14px] whitespace-nowrap transition-colors sm:px-4",
-                vistaReal === valor
-                  ? "bg-brand-600 font-medium text-white"
-                  : "text-muted hover:text-ink",
+                SEGMENTO,
+                vistaReal === valor ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
               )}
             >
               {titulo}
@@ -233,7 +233,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
                 <span
                   className={cn(
                     "text-[12px] tabular-nums",
-                    vistaReal === valor ? "text-white/80" : "text-muted",
+                    vistaReal === valor ? "text-white/90" : "text-muted",
                   )}
                 >
                   {cuenta[valor]}
@@ -259,7 +259,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
           acciones={compartida ? undefined : acciones}
         />
       ) : (
-        <div className="border-line rounded-panel border border-dashed px-6 py-14 text-center">
+        <div className={VACIO}>
           <p className="text-ink">
             {hasActiveFilters(filters)
               ? "Ninguna carta de esta lista coincide con la búsqueda."
@@ -273,7 +273,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
             <button
               type="button"
               onClick={() => setFilters(EMPTY_FILTERS)}
-              className="text-accent focus-visible:outline-brand-500 mt-3 rounded text-[15px] underline underline-offset-4 transition-opacity hover:opacity-75"
+              className={cn(ENLACE, "mt-3 text-[15px]")}
             >
               Limpiar los filtros
             </button>
@@ -283,7 +283,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
               <button
                 type="button"
                 onClick={() => setVista("agregar")}
-                className="text-accent focus-visible:outline-brand-500 rounded underline underline-offset-4"
+                className={ENLACE}
               >
                 Agregar cartas
               </button>{" "}

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 
-import { TEXT_FIELD } from "@/lib/ui";
+import { BOTON_ICONO_LIBRE_COMPACTO, TEXT_FIELD } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface SelectProps {
@@ -214,7 +214,10 @@ export function Select({
               close(false);
             }}
             aria-label={`Quitar el filtro ${label}`}
-            className="text-accent hover:bg-brand-600 focus-visible:outline-brand-500 absolute top-1/2 right-1.5 flex size-8 -translate-y-1/2 items-center justify-center rounded-full transition-colors hover:text-white"
+            className={cn(
+              BOTON_ICONO_LIBRE_COMPACTO,
+              "text-accent hover:text-accent absolute top-1/2 right-1 -translate-y-1/2",
+            )}
           >
             <X size={14} aria-hidden="true" />
           </button>

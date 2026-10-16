@@ -5,6 +5,11 @@ import { marcarCargada } from "../CardTile";
 import { MAX_COPIAS_COLECCION, porTipo, type Coleccion } from "@/lib/coleccion";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import type { Card } from "@/lib/types";
+import {
+  BOTON_ICONO_LIBRE_COMPACTO,
+  BOTON_SECUNDARIO,
+  BOTON_SECUNDARIO_COMPACTO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface ColeccionListaProps {
@@ -29,14 +34,11 @@ export type VistaColeccion = "tengo" | "faltan" | "agregar";
 /** Filas por tipo antes de pedir mas. */
 const TANDA = 150;
 
-const MAS =
-  "inline-flex h-10 items-center rounded-chip border border-line px-4 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
-
-const PASO =
-  "inline-flex size-9 items-center justify-center rounded-chip text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:outline-brand-500 disabled:opacity-40 disabled:hover:bg-transparent";
-
-const BOTON =
-  "inline-flex h-9 shrink-0 items-center gap-1 rounded-chip border border-line px-3 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500";
+// Los botones de una fila van compactos (se ven de 36, se pulsan de 44); el
+// de pedir mas filas es uno de pagina.
+const MAS = BOTON_SECUNDARIO;
+const PASO = BOTON_ICONO_LIBRE_COMPACTO;
+const BOTON = BOTON_SECUNDARIO_COMPACTO;
 
 /**
  * La coleccion como lista: por tipo, en el orden del catalogo (o el que se
@@ -81,9 +83,11 @@ export function ColeccionLista({
                 <button
                   type="button"
                   onClick={() => onSelect(c)}
-                  aria-label={`Ver detalle de ${c.nombre}`}
+                  // El nombre accesible es el texto visible, con la accion
+                  // delante (WCAG 2.5.3).
                   className="focus-visible:outline-brand-500 flex min-w-0 flex-1 items-center gap-3 rounded text-left"
                 >
+                  <span className="sr-only">Ver detalle de </span>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={c.thumb}
@@ -97,7 +101,7 @@ export function ColeccionLista({
                       if (el?.complete && el.naturalWidth) el.dataset.cargada = "";
                     }}
                     className={cn(
-                      "imagen-carga w-9 shrink-0 rounded-[3px]",
+                      "imagen-carga w-9 shrink-0 rounded",
                       vista === "faltan" && "opacity-60 grayscale",
                     )}
                   />
@@ -179,7 +183,7 @@ function Contador({
         aria-label={`Quitar una ${que} de ${card.nombre}`}
         className={PASO}
       >
-        <Minus size={15} aria-hidden="true" />
+        <Minus size={14} aria-hidden="true" />
       </button>
       <span
         className="text-ink w-6 text-center text-[14px] font-semibold tabular-nums"
@@ -194,7 +198,7 @@ function Contador({
         aria-label={`Sumar una ${que} de ${card.nombre}`}
         className={PASO}
       >
-        <Plus size={15} aria-hidden="true" />
+        <Plus size={14} aria-hidden="true" />
       </button>
     </div>
   );
@@ -277,9 +281,10 @@ function Controles({
         aria-pressed={faltan > 0}
         aria-label={`${c.nombre} me falta`}
         title={faltan > 0 ? "Quitar de las que faltan" : "Me falta"}
-        className={cn(PASO, faltan > 0 && "text-danger hover:text-danger")}
+        // Violeta y no rojo: el rojo es para lo que se borra.
+        className={cn(PASO, faltan > 0 && "text-accent hover:text-accent")}
       >
-        <Heart size={15} aria-hidden="true" fill={faltan > 0 ? "currentColor" : "none"} />
+        <Heart size={14} aria-hidden="true" fill={faltan > 0 ? "currentColor" : "none"} />
       </button>
     </div>
   );

@@ -41,6 +41,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Búsqueda | `minisearch` (buscador del catálogo, en `src/lib/catalog.ts`) |
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Pruebas en navegador | `@playwright/test` (solo desarrollo; `e2e/` contra el sitio construido) |
+| Accesibilidad | `axe-core` (solo desarrollo; lo inyecta `e2e/accesibilidad.spec.ts`) |
 | Validación | `zod` |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -60,6 +61,7 @@ pnpm run check       # typecheck + lint + formato + tests (lo corre el pre-commi
 pnpm run test        # tests de las reglas de baraja (corredor de Node, sin dependencias)
 pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
 pnpm run e2e         # recorridos en Chromium, escritorio y teléfono (tras `pnpm run build`)
+pnpm run a11y        # axe-core en todas las páginas, los dos temas (tras `pnpm run build`)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
 pnpm run data:images         # images-src/*    -> public/cards/*.webp
@@ -135,7 +137,8 @@ public/        se sirve tal cual
 src/app/       rutas (App Router), layout y globals.css
 src/components/ componentes de React
 src/lib/       lógica pura: tipos, esquemas, utilidades
-e2e/           pruebas de Playwright (playwright.config.ts en la raíz)
+e2e/           pruebas de Playwright (playwright.config.ts en la raíz):
+               recorridos (sitio.spec.ts) y accesibilidad (accesibilidad.spec.ts)
 out/           build estático (git-ignorado)
 ```
 
@@ -1842,6 +1845,25 @@ con la estrella de portada). Es `outline` y no el borde: no cambia el grosor
 de la carta, y en una pila de tres copias rodea la pila entera en vez de
 dibujar tres marcos. Antes cada vista hacía lo suyo (borde, brillo o nada).
 
+**Los botones, los controles y los contenedores salen de constantes de
+`src/lib/ui.ts`** (16-10-2026), documentadas en DESIGN.md §6 («Componentes»):
+`BOTON_PRIMARIO`, `BOTON_SECUNDARIO`, `BOTON_SUAVE`, `BOTON_ICONO`,
+`BOTON_ICONO_LIBRE`, sus cuatro versiones `_COMPACTO`, `SEGMENTOS` /
+`SEGMENTO`, `ENLACE`, `AVISO_EN_LINEA`, `VACIO`, `PASTILLA` y `CONTADOR`.
+Antes cada componente tenía su `BOTON` local y la revisión encontró ocho
+versiones del botón violeta. Tres cosas que no son obvias:
+
+- Son **strings enteros** (con `${}` de otras constantes, que Tailwind igual
+  lee porque cada trozo es una clase completa), no funciones: una clase armada
+  en tiempo de ejecución no se genera.
+- Los **compactos** se ven de 36 y se pulsan de 44: `AREA_TACTIL` es un
+  `::after` con `-inset-1` y necesita `relative`. Si el botón además va
+  `absolute` (el orden del buscador, limpiar un `Select`), se pone `absolute`
+  **después** en el `cn()`, y twMerge se queda con ese.
+- Un botón con texto **no lleva `aria-label`**: axe falla con
+  `label-content-name-mismatch` si el nombre no contiene lo que se ve. Lo que
+  falta para un lector va en un `<span className="sr-only">`.
+
 **Y lo mismo vale para todo lo que se apunta** (15-10-2026): botones, filtros,
 selectores, la tarjeta de Mis barajas, las filas de la colección, la paginación,
 el `−/+` y la moneda del panel. Al pasar el cursor **no cambia el borde**: sale
@@ -1943,6 +1965,15 @@ Los del constructor se saltan en el teléfono, donde el panel es una hoja.
   una compilación concreta de Chromium, y subirla obliga a bajar otra.
 - **No está en el CI ni en el pre-commit**: necesitaría bajar el navegador en
   cada corrida. Se corre a mano antes de publicar un cambio de interfaz.
+- **`pnpm run a11y`** (16-10-2026) corre `e2e/accesibilidad.spec.ts`: inyecta
+  `axe-core` (dependencia de desarrollo, versión exacta, sin `postinstall`)
+  con `addScriptTag` desde `node_modules` y revisa cada página en los dos
+  temas, más el constructor, el detalle, Mis barajas y los dos modales
+  abiertos. Falla con cualquier violación `serious` o `critical` de WCAG 2.2
+  AA. Sus pruebas llevan `@a11y` en el título: `e2e` las salta
+  (`--grep-invert`) y `a11y` corre solo esas, porque son 48 y tardan un
+  minuto. Espera medio segundo antes de medir: la animación `aparece` pinta a
+  media opacidad y axe mediría un contraste que no es el final.
 - Ojo al escribir selectores: el aviso del borrador va dos veces en la página
   (sobre el panel y, bajo `lg`, sobre los filtros) y muchos textos se repiten
   en la ayuda; se filtra por lo visible (`filter({ visible: true })`). Y en

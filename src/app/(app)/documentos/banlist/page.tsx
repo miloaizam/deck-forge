@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { DocumentHeader } from "@/components/documentos/DocumentHeader";
 import { DOCUMENTOS, fechaLarga } from "@/lib/documentos";
 import { BANLIST, pesoDelPdf } from "@/lib/documentos-data";
+import { CONTADOR } from "@/lib/ui";
 
 export const metadata: Metadata = {
   title: "Banlist Estándar",
@@ -16,8 +17,7 @@ const ordenar = (l: string[]) => [...l].sort(col.compare);
 
 const SECCION = "mt-12";
 const TITULO = "text-ink flex items-center gap-2 text-xl font-bold";
-const CUENTA =
-  "bg-brand-600 rounded-chip px-2 text-[12px] font-bold text-white tabular-nums";
+const CUENTA = CONTADOR;
 const BAJADA = "text-muted mt-1.5 leading-relaxed";
 const ITEM =
   "bg-panel border-line rounded-card flex items-center gap-2.5 border px-3.5 py-2.5 text-[14px] font-medium";
@@ -63,10 +63,7 @@ export default function BanlistPage() {
         <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {ordenar(doc.unicas).map((c) => (
             <li key={c} className={ITEM}>
-              <span
-                aria-hidden="true"
-                className="bg-brand-600 inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-              >
+              <span aria-hidden="true" className={CONTADOR}>
                 1
               </span>
               {c}

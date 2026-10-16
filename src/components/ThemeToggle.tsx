@@ -3,6 +3,8 @@
 import { Moon, Sun } from "lucide-react";
 
 import { THEME_KEY } from "@/lib/theme";
+import { BOTON_ICONO_LIBRE } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 
 /**
  * Cambia entre el tema oscuro (por defecto) y el claro.
@@ -37,9 +39,9 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label="Cambiar entre tema claro y oscuro"
       title="Cambiar tema"
-      // El borde circular solo aparece al apuntar, enfocar o pulsar: en reposo
-      // la navbar es una fila de iconos sin cajas, y un aro fijo la cargaria.
-      className="text-muted hover:text-ink hover:outline-brand-500 focus-visible:outline-brand-500 active:border-brand-500 active:text-ink flex size-11 shrink-0 items-center justify-center rounded-full border border-transparent transition-colors hover:outline-2 hover:outline-offset-2"
+      // Sin caja en reposo: la navbar es una fila de iconos, y un aro fijo la
+      // cargaria. El anillo sale al apuntar o enfocar, como en todo el sitio.
+      className={cn(BOTON_ICONO_LIBRE, "rounded-full")}
     >
       <Sun size={16} aria-hidden="true" className="solo-oscuro" />
       <Moon size={16} aria-hidden="true" className="solo-claro" />

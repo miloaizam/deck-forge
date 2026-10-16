@@ -33,6 +33,17 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-16",
+    version: "4.5.0",
+    tipo: "Mejora",
+    titulo: "Botones iguales en todo el sitio",
+    texto: [
+      "Los botones del mismo tipo se ven y responden igual en todas las páginas: el violeta para la acción principal, el de contorno para el resto, y rojo o ámbar al pasar el cursor por lo que borra o descarta.",
+      "En el teléfono, los botones chicos de las tarjetas de Mis barajas, de las filas de la colección y del aviso para recuperar una baraja son más fáciles de tocar. Y el corazón de «Me falta» ahora es violeta: el rojo queda para lo que se borra.",
+      "El sitio se lee mejor con lector de pantalla y con el teclado: las cartas de «Probar una mano» muestran dónde está el foco y los textos de algunos avisos tienen más contraste en el tema claro.",
+    ],
+  },
+  {
     fecha: "2026-10-15",
     version: "4.4.1",
     tipo: "Arreglo",

@@ -39,9 +39,15 @@ import {
   saveDecks,
 } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
-import { HOVER_PELIGRO } from "@/lib/ui";
+import {
+  BOTON_ICONO_COMPACTO,
+  BOTON_PRIMARIO,
+  BOTON_SECUNDARIO_COMPACTO,
+  HOVER_PELIGRO,
+  VACIO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { CARD_RATIO } from "../CardTile";
+import { CARD_RATIO, marcarCargada } from "../CardTile";
 
 interface DeckListViewProps {
   cards: Card[];
@@ -58,17 +64,13 @@ function formatFecha(ms: number): string {
   return Number.isFinite(fecha.getTime()) ? FECHA.format(fecha) : "—";
 }
 
-/**
- * Los botones de una tarjeta, mas compactos que los de una pagina.
- *
- * Aqui van cinco seguidos bajo dos lineas de texto: a la altura de un boton
- * suelto (h-11) la fila pesaba mas que la baraja que describe. A 36px siguen
- * comodos de pulsar y la tarjeta se lee de una.
+/*
+ * Los botones de una tarjeta van en su version COMPACTA (ui.ts): cinco
+ * seguidos bajo dos lineas de texto, a 44 px la fila pesaba mas que la baraja
+ * que describe. Se ven de 36 y se pulsan de 44.
  */
-const ACCION =
-  "text-muted hover:text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex h-9 items-center gap-1.5 border px-2.5 text-[13px] transition-colors";
-const ACCION_ICONO =
-  "text-muted hover:text-ink hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 border-line focus-visible:outline-brand-500 rounded-chip inline-flex size-9 items-center justify-center border transition-colors";
+const ACCION = BOTON_SECUNDARIO_COMPACTO;
+const ACCION_ICONO = BOTON_ICONO_COMPACTO;
 
 export function DeckListView({ cards }: DeckListViewProps) {
   // La lista sale del store, no de estado propio: asi se mantiene al dia sola
@@ -108,11 +110,8 @@ export function DeckListView({ cards }: DeckListViewProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link
-          href="/constructor"
-          className="bg-brand-600 hover:bg-brand-500 rounded-chip focus-visible:outline-brand-300 inline-flex h-11 items-center gap-2 px-4 text-sm font-medium text-white transition-colors"
-        >
-          <Plus size={16} aria-hidden="true" />
+        <Link href="/constructor" className={BOTON_PRIMARIO}>
+          <Plus size={14} aria-hidden="true" />
           Armar una baraja
         </Link>
 
@@ -123,7 +122,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
         // Esqueleto, no spinner: la lista sale de localStorage al montar.
         <DeckListSkeleton />
       ) : decks.length === 0 ? (
-        <div className="border-line rounded-panel border border-dashed px-6 py-20 text-center">
+        <div className={VACIO}>
           <Layers
             size={28}
             aria-hidden="true"
@@ -169,7 +168,8 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     // 64 el recorte se comia los bordes del arte. Y como la
                     // proporcion tambien da el alto minimo, la tarjeta sin nota
                     // crece hasta la foto en vez de recortarla.
-                    className="border-line w-[92px] shrink-0 self-stretch rounded border object-cover"
+                    onLoad={marcarCargada}
+                    className="imagen-carga border-line w-[92px] shrink-0 self-stretch rounded border object-cover"
                   />
                 )}
 
@@ -223,7 +223,7 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     <button
                       type="button"
                       onClick={() => void copyShareLink(deck)}
-                      aria-label={`Compartir ${deckTitle(deck)}`}
+                      aria-label={`Copiar enlace de ${deckTitle(deck)}`}
                       title="Copiar enlace"
                       className={ACCION_ICONO}
                     >

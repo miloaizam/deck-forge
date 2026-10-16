@@ -1,6 +1,7 @@
 import { Ban, CircleCheck, Info, TriangleAlert } from "lucide-react";
 
 import { DECK_TOTAL, isLegal, type DeckIssue } from "@/lib/deck-rules";
+import { PASTILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckIssuesProps {
@@ -173,7 +174,8 @@ export function EstadoPastilla({
   return (
     <span
       className={cn(
-        "rounded-chip inline-flex shrink-0 items-center gap-1 px-2 py-0.5 text-[12px] font-semibold",
+        PASTILLA,
+        "font-semibold",
         estado === "legal" && "bg-success/15 text-success",
         estado === "incompleta" && "bg-warning/15 text-warning",
         estado === "baneada" && "bg-danger/15 text-danger",

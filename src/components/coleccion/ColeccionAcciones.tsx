@@ -15,7 +15,7 @@ import {
   type Coleccion,
 } from "@/lib/coleccion";
 import { coleccionUrl } from "@/lib/coleccion-code";
-import { HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_ICONO, BOTON_SECUNDARIO, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface ColeccionAccionesProps {
@@ -29,8 +29,7 @@ interface ColeccionAccionesProps {
   soloLectura?: boolean;
 }
 
-const BOTON =
-  "inline-flex h-10 items-center gap-1.5 rounded-chip border border-line px-3.5 text-[13px] text-muted transition-colors hover:outline-2 hover:outline-offset-2 hover:outline-brand-500 hover:text-ink focus-visible:outline-brand-500 disabled:pointer-events-none disabled:opacity-50";
+const BOTON = BOTON_SECUNDARIO;
 
 /** Mas que esto no es un respaldo de coleccion. */
 const MAX_ARCHIVO = 1024 * 1024;
@@ -47,6 +46,7 @@ export function ColeccionAcciones({
 }: ColeccionAccionesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [vaciar, setVaciar] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
   const vacia = estaVacia(coleccion);
 
   // El enlace lleva la coleccion entera, las dos listas: quien lo abre ve lo
@@ -74,6 +74,15 @@ export function ColeccionAcciones({
   };
 
   const importar = async (file: File) => {
+    setOcupado(true);
+    try {
+      await importarArchivo(file);
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const importarArchivo = async (file: File) => {
     if (file.size > MAX_ARCHIVO) {
       toast(
         "El archivo es demasiado grande para ser un respaldo de colección.",
@@ -120,7 +129,7 @@ export function ColeccionAcciones({
       title="Descargar la lista que se ve como imagen"
       className={BOTON}
     >
-      <ImageDown size={15} aria-hidden="true" />
+      <ImageDown size={14} aria-hidden="true" />
       Imagen
     </button>
   );
@@ -135,22 +144,31 @@ export function ColeccionAcciones({
         disabled={vacia}
         className={BOTON}
       >
-        <Link2 size={15} aria-hidden="true" />
+        <Link2 size={14} aria-hidden="true" />
         Compartir
       </button>
       <button type="button" onClick={exportar} disabled={vacia} className={BOTON}>
-        <Download size={15} aria-hidden="true" />
+        <Download size={14} aria-hidden="true" />
         Exportar
       </button>
-      <button type="button" onClick={() => inputRef.current?.click()} className={BOTON}>
-        <Upload size={15} aria-hidden="true" />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={ocupado}
+        className={BOTON}
+      >
+        <Upload size={14} aria-hidden="true" />
         Importar
       </button>
       <input
         ref={inputRef}
         type="file"
         accept="application/json,.json"
-        className="hidden"
+        // sr-only y no hidden, como en DeckTransfer: sigue en el arbol de
+        // accesibilidad con su nombre.
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Archivo de respaldo de la colección"
         onChange={(e) => {
           const file = e.target.files?.[0];
           e.target.value = "";
@@ -163,9 +181,9 @@ export function ColeccionAcciones({
         disabled={vacia}
         aria-label="Vaciar la colección"
         title="Vaciar la colección"
-        className={cn(BOTON, HOVER_PELIGRO)}
+        className={cn(BOTON_ICONO, HOVER_PELIGRO)}
       >
-        <Trash2 size={15} aria-hidden="true" />
+        <Trash2 size={16} aria-hidden="true" />
       </button>
 
       <ConfirmDialog
