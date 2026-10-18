@@ -39,6 +39,7 @@ export const NOVEDADES: Novedad[] = [
     titulo: "La imagen de una colección grande ya no se ve borrosa",
     texto: [
       "Con muchas cartas, la imagen de «Tengo» o «Me faltan» las achicaba hasta que no se leían. Ahora las cartas mantienen su tamaño y, si no caben en una, la lista sale en varias imágenes («Parte 1 de 3», «Parte 2 de 3»…). En el teléfono puedes compartirlas todas juntas.",
+      "Las imágenes de barajas y colecciones también pesan mucho menos (se descargan en JPG), así que se mandan sin problema por WhatsApp.",
     ],
   },
   {

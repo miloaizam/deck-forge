@@ -1072,7 +1072,7 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
-- **«Imagen»** baja un PNG de la pestaña que se ve, con sus filtros y su
+- **«Imagen»** baja un JPEG de la pestaña que se ve, con sus filtros y su
   orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
   Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
   `CartaEnPlancha`): quien recibe la imagen tiene que saber qué impresión
@@ -1835,12 +1835,15 @@ Fisher–Yates: el `sort` con un random que se ve por ahí no es uniforme.
 
 **La baraja se descarga como imagen** (`deck-image.ts`, que arma los datos
 para `card-sheet-image.ts`, el dibujo compartido con la colección), desde su
-detalle o desde su tarjeta en Mis barajas: un PNG de 1600 px de
+detalle o desde su tarjeta en Mis barajas: un JPEG de 1600 px de
 ancho dibujado en un `<canvas>`, con el nombre, la nota, las cartas por tipo
 con sus copias y el oro inicial marcado. Sin conteo, legalidad ni afinidad: en
 una imagen para compartir sobran. Sin servidor ni
 dependencias: las miniaturas son del propio origen, así que el canvas se puede
-exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
+exportar, y el JPEG baja por un Blob como el respaldo JSON. **Es JPEG al 92 % y
+no PNG** (18-10-2026): el arte es casi una foto y en PNG una imagen llena pesaba
+~26 MB, más de lo que WhatsApp manda como foto; en JPEG son ~6 MB y no se
+distingue. Usa **siempre los
 colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee
 clases: si cambia la paleta, se cambia ahí también.
 
@@ -1926,7 +1929,7 @@ a la red de golpe y en una red móvil algunas fallaban y quedaban en gris.
 imagen grande (misma ruta sin `thumb/`) y espera `img.decode()` antes de
 dibujar, porque Safari de iOS dispara `onload` antes de decodificar y
 `drawImage` de una imagen sin decodificar no pinta nada. Y el
-`revokeObjectURL` del PNG va con retraso: revocar en el acto puede cortar la
+`revokeObjectURL` de la imagen va con retraso: revocar en el acto puede cortar la
 descarga en iOS. Se reprodujo en Chromium con un teléfono emulado, red lenta
 y fallos inyectados: 12 huecos antes, cero después.
 
@@ -2053,7 +2056,7 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
 - **Una baneada se puede agregar.** `canAdd` la deja pasar con un `aviso`
   (el constructor lo dice en un `toast`), y `validateDeck` la marca como
   `carta-prohibida` con gravedad `error`: la baraja se guarda, pero «no
-  cumple». Lo dicen el panel del constructor, el detalle y la imagen PNG, que
+  cumple». Lo dicen el panel del constructor, el detalle y la imagen descargada, que
   la nombra bajo el título y la marca en rojo. El campo `legalidad` de
   `cards.json` sigue en `libre`: manda la Banlist.
 - **El documento de la Banlist no publica las cartas en observación** (ni su

@@ -1,11 +1,11 @@
 /**
- * Una plancha de cartas como imagen PNG: la baraja en /baraja y /barajas, y la
+ * Una plancha de cartas como imagen JPEG: la baraja en /baraja y /barajas, y la
  * coleccion (lo que se tiene o lo que falta) en /coleccion. Las dos se
  * comparten donde un enlace dice menos que una foto: redes, un chat.
  *
  * Se dibuja en un <canvas> del navegador: sin servidor, sin dependencias y sin
  * nada externo. Las miniaturas salen del propio origen, asi que el canvas no
- * queda "contaminado" y se puede exportar; y el PNG se baja con un Blob y un
+ * queda "contaminado" y se puede exportar; y el JPEG se baja con un Blob y un
  * <a download>, igual que el respaldo JSON. Nada de esto pasa por la CSP: no se
  * inyecta ningun script ni se carga nada de fuera.
  *
@@ -184,6 +184,9 @@ function recortar(ctx: CanvasRenderingContext2D, texto: string, ancho: number): 
   return `${t.trimEnd()}…`;
 }
 
+/** Calidad del JPEG: al 92 % el texto y el arte no se distinguen del PNG. */
+const CALIDAD_JPEG = 0.92;
+
 /** Lo que una pagina necesita para dibujarse. */
 interface Pagina {
   numero: number;
@@ -202,7 +205,7 @@ const altoCabecera = (nota: number, aviso: boolean) =>
 const ALTO_PIE = 80 + MARGEN / 2;
 
 /**
- * Dibuja la plancha y la devuelve como PNG: un archivo, o varios si la lista
+ * Dibuja la plancha y la devuelve como JPEG: un archivo, o varios si la lista
  * no cabe en una imagen con las cartas a su tamano. Lanza si el navegador no
  * puede.
  */
@@ -249,7 +252,7 @@ export async function generarPlancha(p: Plancha): Promise<File[]> {
     };
     const blob = await dibujarPagina(p, pagina, { f, fila, imagenes, logo });
     const sufijo = pagina.total > 1 ? `-parte-${pagina.numero}-de-${pagina.total}` : "";
-    archivos.push(new File([blob], `${p.archivo}${sufijo}.png`, { type: "image/png" }));
+    archivos.push(new File([blob], `${p.archivo}${sufijo}.jpg`, { type: "image/jpeg" }));
   }
   return archivos;
 }
@@ -410,7 +413,12 @@ async function dibujarPagina(
   ctx.fillText("deckforge-myl.pages.dev", ANCHO - MARGEN, y + 6);
   ctx.textAlign = "left";
 
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
+  // JPEG y no PNG: el arte de las cartas es casi una foto y en PNG una pagina
+  // llena pesaba ~26 MB (WhatsApp manda como documento lo que pasa de ~16).
+  // Al 92 % pesa ~6 MB y no se distingue; el fondo es oscuro y liso.
+  const blob = await new Promise<Blob | null>((r) =>
+    canvas.toBlob(r, "image/jpeg", CALIDAD_JPEG),
+  );
   if (!blob) throw new Error("toBlob fallo");
   return blob;
 }

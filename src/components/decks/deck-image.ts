@@ -5,7 +5,7 @@ import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Deck } from "@/lib/types";
 
 /**
- * La baraja como imagen PNG (el dibujo vive en `card-sheet-image.ts`, que
+ * La baraja como imagen JPEG (el dibujo vive en `card-sheet-image.ts`, que
  * comparte con la coleccion).
  *
  * Solo lleva el nombre, la nota y las cartas: sin conteo, legalidad ni

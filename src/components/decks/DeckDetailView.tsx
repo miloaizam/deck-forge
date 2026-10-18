@@ -211,7 +211,7 @@ export function DeckDetailView({ cards }: DeckDetailViewProps) {
               type="button"
               onClick={() => descargarImagenDeBaraja(deck, res)}
               aria-label="Descargar como imagen"
-              title="Descargar como imagen PNG"
+              title="Descargar como imagen"
               className={BOTON_ICONO}
             >
               <ImageDown size={16} aria-hidden="true" />
