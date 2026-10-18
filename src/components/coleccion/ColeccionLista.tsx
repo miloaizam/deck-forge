@@ -23,8 +23,8 @@ interface ColeccionListaProps {
     onCopias: (card: Card, n: number) => void;
     /** Copias que le faltan (0 la saca de la lista). */
     onFaltantes: (card: Card, n: number) => void;
-    /** «Ya la tengo»: pasa de las que faltan a las que tiene. */
-    onYaLaTengo: (card: Card) => void;
+    /** «Conseguí una»: una copia pasa de las que faltan a las que tiene. */
+    onConsegui: (card: Card) => void;
   };
 }
 
@@ -116,6 +116,7 @@ export function ColeccionLista({
                         ? `Arte de ${origenTitle(c.origen)}`
                         : editionTitle(c.edicion)}{" "}
                       · {c.frecuencia}
+                      <Cruce card={c} coleccion={coleccion} vista={vista} />
                     </span>
                   </span>
                 </button>
@@ -158,6 +159,35 @@ export function ColeccionLista({
       ))}
     </div>
   );
+}
+
+/**
+ * Lo que la otra lista dice de la carta, para que se vea que esta en las dos:
+ * en «Tengo», las que faltan; en «Me faltan», las que tiene.
+ */
+function Cruce({
+  card,
+  coleccion,
+  vista,
+}: {
+  card: Card;
+  coleccion: Coleccion;
+  vista: VistaColeccion;
+}) {
+  if (vista === "faltan") {
+    const n = coleccion.tengo[card.id] ?? 0;
+    return n > 0 ? <> · tienes {n}</> : null;
+  }
+  if (vista === "tengo") {
+    const n = coleccion.quiero[card.id] ?? 0;
+    return n > 0 ? (
+      <>
+        {" "}
+        · te {n === 1 ? "falta" : "faltan"} {n}
+      </>
+    ) : null;
+  }
+  return null;
 }
 
 /** − n +, con su tope. */
@@ -206,11 +236,11 @@ function Contador({
 
 /**
  * Lo que se puede hacer con una fila:
- * - en «Tengo», cambiar las copias;
- * - en «Me faltan», cambiar las copias que faltan o pasarla a
- *   «Tengo» con «Ya la tengo»;
- * - en «Agregar cartas», «Tengo» y el corazon de las que faltan, o el
- *   contador si ya se tiene.
+ * - en «Tengo», cambiar las copias (sumar descuenta de las que faltan);
+ * - en «Me faltan», cambiar las copias que faltan o pasar una a «Tengo» con
+ *   «Conseguí una»;
+ * - en «Agregar cartas», «Tengo» (o el contador si ya se tiene) y el corazon
+ *   de las que faltan, que vale tambien para una que ya se tiene.
  */
 function Controles({
   card: c,
@@ -218,14 +248,14 @@ function Controles({
   vista,
   onCopias,
   onFaltantes,
-  onYaLaTengo,
+  onConsegui,
 }: {
   card: Card;
   coleccion: Coleccion;
   vista: VistaColeccion;
   onCopias: (card: Card, n: number) => void;
   onFaltantes: (card: Card, n: number) => void;
-  onYaLaTengo: (card: Card) => void;
+  onConsegui: (card: Card) => void;
 }) {
   const tengo = coleccion.tengo[c.id] ?? 0;
   const faltan = coleccion.quiero[c.id] ?? 0;
@@ -242,39 +272,42 @@ function Controles({
         />
         <button
           type="button"
-          onClick={() => onYaLaTengo(c)}
-          aria-label={`Ya tengo ${c.nombre}`}
-          title="Ya la tengo"
+          onClick={() => onConsegui(c)}
+          aria-label={`Conseguí una copia de ${c.nombre}`}
+          title="Conseguí una"
           className={BOTON}
         >
           <Check size={14} aria-hidden="true" />
-          <span className="hidden sm:inline">Ya la tengo</span>
+          <span className="hidden sm:inline">Conseguí una</span>
         </button>
       </div>
     );
   }
-  if (tengo > 0) {
-    return (
-      <Contador
-        card={c}
-        n={tengo}
-        max={MAX_COPIAS_COLECCION}
-        que="copia"
-        onCambiar={(n) => onCopias(c, n)}
-      />
-    );
-  }
+  const contador = (
+    <Contador
+      card={c}
+      n={tengo}
+      max={MAX_COPIAS_COLECCION}
+      que="copia"
+      onCambiar={(n) => onCopias(c, n)}
+    />
+  );
+  if (vista === "tengo") return contador;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <button
-        type="button"
-        onClick={() => onCopias(c, 1)}
-        aria-label={`Tengo ${c.nombre}`}
-        className={BOTON}
-      >
-        <Plus size={14} aria-hidden="true" />
-        Tengo
-      </button>
+      {tengo > 0 ? (
+        contador
+      ) : (
+        <button
+          type="button"
+          onClick={() => onCopias(c, 1)}
+          aria-label={`Tengo ${c.nombre}`}
+          className={BOTON}
+        >
+          <Plus size={14} aria-hidden="true" />
+          Tengo
+        </button>
+      )}
       <button
         type="button"
         onClick={() => onFaltantes(c, faltan > 0 ? 0 : 1)}

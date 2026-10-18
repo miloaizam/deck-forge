@@ -77,3 +77,38 @@ test("en «Me faltan» se anotan mas de tres copias", async ({ page }) => {
   await expect(page.getByLabel("5 copias")).toBeVisible();
   await expect(sumar).toBeEnabled();
 });
+
+test("una carta puede estar en «Tengo» y en «Me faltan» a la vez", async ({ page }) => {
+  await page.goto("/coleccion/?ver=agregar");
+  // La primera fila del catalogo; los botones se buscan dentro de ella, porque
+  // un nombre puede estar contenido en otro («Caín», «Marca de Caín»).
+  const primera = page.getByRole("listitem").filter({ hasText: /./ }).first();
+  const corazon = primera.getByRole("button", { name: / me falta$/ });
+  const nombre = (await corazon.getAttribute("aria-label"))!.replace(/ me falta$/, "");
+  await primera.getByRole("button", { name: `Tengo ${nombre}` }).click();
+  // Con la carta ya en «Tengo», el corazon sigue disponible.
+  await corazon.click();
+  await expect(corazon).toHaveAttribute("aria-pressed", "true");
+
+  // En las dos listas solo esta esa carta: su fila es la unica.
+  await page.getByRole("button", { name: /^Me faltan/ }).click();
+  const fila = page.locator(".fila-coleccion");
+  await expect(fila).toHaveCount(1);
+  await fila.getByRole("button", { name: /^Sumar una copia que falta/ }).click();
+  await expect(fila).toContainText("tienes 1");
+  await expect(fila.getByLabel("2 copias")).toBeVisible();
+
+  // «Conseguí una» pasa una sola copia.
+  await fila.getByRole("button", { name: /^Conseguí una copia/ }).click();
+  await expect(fila).toContainText("tienes 2");
+  await expect(fila.getByLabel("1 copia", { exact: true })).toBeVisible();
+
+  await page
+    .getByRole("button", { name: /^Tengo/ })
+    .first()
+    .click();
+  await expect(fila).toHaveCount(1);
+  await expect(fila).toContainText(nombre);
+  await expect(fila).toContainText("te falta 1");
+  await expect(fila.getByLabel("2 copias")).toBeVisible();
+});

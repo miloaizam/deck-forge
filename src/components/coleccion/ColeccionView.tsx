@@ -26,9 +26,9 @@ import {
 import {
   conCopias,
   conFaltantes,
+  conseguiUna,
   porTipo,
   saveColeccion,
-  yaLaTengo,
   type Coleccion,
 } from "@/lib/coleccion";
 import { decodeColeccion } from "@/lib/coleccion-code";
@@ -147,7 +147,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
   const acciones = {
     onCopias: ponerCopias,
     onFaltantes: (card: Card, n: number) => guardar(conFaltantes(propia, card.id, n)),
-    onYaLaTengo: (card: Card) => guardar(yaLaTengo(propia, card.id)),
+    onConsegui: (card: Card) => guardar(conseguiUna(propia, card.id)),
   };
 
   if (!hidratada) return <ColeccionSkeleton />;

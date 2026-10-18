@@ -1044,11 +1044,17 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
 - **Tres pestañas**: «Tengo» (− n +), «Me faltan» (− n + **sin más tope
   que el de Tengo**, 99 —hubo uno de 3, las copias de una baraja, y el
   proyecto lo quitó: se colecciona para cambiar, no solo para jugar—, y
-  «Ya la tengo», que la pasa a Tengo con esas copias) y
-  «Agregar cartas», el catálogo entero con «Tengo» y un corazón que la anota
-  en las que faltan. **Tener una carta la saca de las que faltan**
-  (`conCopias`) y una que se tiene no entra (`conFaltantes`). Las filas dicen
-  edición y frecuencia, sin el código: el jugador busca por nombre.
+  «Conseguí una», que pasa **una** copia a Tengo) y «Agregar cartas», el
+  catálogo entero con «Tengo» y un corazón que la anota en las que faltan.
+- **Una carta puede estar en las dos listas** (18-10-2026): «Me faltan»
+  cuenta las copias que faltan **además** de las que se tienen (tengo 1, me
+  faltan 2 para llegar a 3). Antes se excluían y eso no se podía anotar.
+  Sumar en Tengo **descuenta** de las que faltan (`conCopias`: «conseguí
+  una»); bajar no las repone, porque suele ser un error corregido. Cada fila
+  dice lo que hay en la otra lista («te faltan 2», «tienes 1»). El formato
+  guardado y el del enlace no cambiaron: solo dejó de borrarse el cruce al
+  leer. Las filas dicen edición y frecuencia, sin el código: el jugador busca
+  por nombre.
 - **Se cuenta por impresión (`id`), no por `identidad`**: quien colecciona
   distingue el arte normal del alternativo.
 - **Vive en `localStorage`, en su propia clave** (`deckforge-coleccion`, sobre

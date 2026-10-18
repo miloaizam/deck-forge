@@ -33,6 +33,16 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-18",
+    version: "4.6.0",
+    tipo: "Mejora",
+    titulo: "Una carta puede estar en «Tengo» y en «Me faltan»",
+    texto: [
+      "Si tienes una copia y quieres tres, ahora puedes anotarlo: deja una en «Tengo» y dos en «Me faltan». Cada fila te recuerda lo que hay en la otra lista.",
+      "Al conseguir una, toca «Conseguí una» en «Me faltan»: pasa una copia a «Tengo» y descuenta una de las que te faltan. Sumar copias en «Tengo» también las descuenta.",
+    ],
+  },
+  {
     fecha: "2026-10-16",
     version: "4.5.0",
     tipo: "Mejora",

@@ -8,13 +8,13 @@ import {
   COLECCION_VACIA,
   conCopias,
   conFaltantes,
+  conseguiUna,
   exportarColeccion,
   fusionar,
   importarColeccion,
   MAX_COPIAS_COLECCION,
   parseColeccion,
   porTipo,
-  yaLaTengo,
 } from "./coleccion";
 import {
   codigoDeColeccion,
@@ -43,8 +43,8 @@ test("lo guardado se lee entrada por entrada: una rota no tira las demas", () =>
   });
   assert.deepEqual(parseColeccion(raw), {
     tengo: { "bu-001": 2, "ad-001": 1 },
-    // La que ya tiene no puede faltarle, y una faltante lleva el mismo tope.
-    quiero: { "bu-010": 2, "bu-011": 9 },
+    // Una que tiene puede faltarle (quiere mas), y una faltante lleva el mismo tope.
+    quiero: { "bu-010": 2, "bu-001": 1, "bu-011": 9 },
   });
   // La version anterior guardaba las faltantes como lista: una copia de cada una.
   assert.deepEqual(parseColeccion(JSON.stringify({ v: 1, quiero: ["bu-020"] })), {
@@ -55,24 +55,40 @@ test("lo guardado se lee entrada por entrada: una rota no tira las demas", () =>
   assert.deepEqual(parseColeccion(null), COLECCION_VACIA);
 });
 
-test("las faltantes llevan las copias que se quieran y tenerla la saca de la lista", () => {
+test("las faltantes llevan las copias que se quieran y conviven con las que tiene", () => {
   let col = alternarQuiero(COLECCION_VACIA, "bu-001");
   assert.deepEqual(col.quiero, { "bu-001": 1 });
   col = conFaltantes(col, "bu-001", 7);
   assert.equal(col.quiero["bu-001"], 7);
   assert.equal(conFaltantes(col, "bu-001", 500).quiero["bu-001"], MAX_COPIAS_COLECCION);
-  // «Ya la tengo» pasa las copias que faltaban.
-  col = yaLaTengo(col, "bu-001");
-  assert.deepEqual(col, { tengo: { "bu-001": 7 }, quiero: {} });
-  // Una que ya tiene no entra a las que faltan.
-  assert.equal(alternarQuiero(col, "bu-001"), col);
-  col = conCopias(col, "bu-001", 0);
-  assert.deepEqual(col, COLECCION_VACIA);
   assert.equal(conCopias(col, "bu-002", 500).tengo["bu-002"], MAX_COPIAS_COLECCION);
+
+  // Tiene 1 y quiere 3: le faltan 2.
+  col = conFaltantes(conCopias(COLECCION_VACIA, "bu-001", 1), "bu-001", 2);
+  assert.deepEqual(col, { tengo: { "bu-001": 1 }, quiero: { "bu-001": 2 } });
+  // Sumar en «Tengo» descuenta de las que faltan; bajar no las repone.
+  col = conCopias(col, "bu-001", 2);
+  assert.deepEqual(col, { tengo: { "bu-001": 2 }, quiero: { "bu-001": 1 } });
+  assert.deepEqual(conCopias(col, "bu-001", 1).quiero, { "bu-001": 1 });
+  assert.deepEqual(conCopias(col, "bu-001", 0), { tengo: {}, quiero: { "bu-001": 1 } });
+  // Pasarse de lo que faltaba la saca de la lista sin dejar negativos.
+  assert.deepEqual(conCopias(col, "bu-001", 5), { tengo: { "bu-001": 5 }, quiero: {} });
+
+  // «Conseguí una» pasa de a una copia.
+  col = conFaltantes(col, "bu-001", 2);
+  col = conseguiUna(col, "bu-001");
+  assert.deepEqual(col, { tengo: { "bu-001": 3 }, quiero: { "bu-001": 1 } });
+  col = conseguiUna(col, "bu-001");
+  assert.deepEqual(col, { tengo: { "bu-001": 4 }, quiero: {} });
+  // Sin faltantes no hace nada.
+  assert.equal(conseguiUna(col, "bu-001"), col);
 });
 
 test("importar se queda con la mayor cantidad y no duplica", () => {
-  const actual = { tengo: { "bu-001": 3, "bu-002": 1 }, quiero: { "bu-009": 1 } };
+  const actual = {
+    tengo: { "bu-001": 3, "bu-002": 1 },
+    quiero: { "bu-009": 1, "bu-002": 2 },
+  };
   const archivo = exportarColeccion({
     tengo: { "bu-001": 1, "bu-002": 4, "bu-005": 2 },
     quiero: { "bu-009": 2, "bu-010": 1 },
@@ -83,7 +99,8 @@ test("importar se queda con la mayor cantidad y no duplica", () => {
   const una = fusionar(actual, leido.coleccion);
   assert.deepEqual(una, {
     tengo: { "bu-001": 3, "bu-002": 4, "bu-005": 2 },
-    quiero: { "bu-009": 2, "bu-010": 1 },
+    // La que tiene y le faltan conserva sus faltantes.
+    quiero: { "bu-009": 2, "bu-002": 2, "bu-010": 1 },
   });
   assert.deepEqual(fusionar(una, leido.coleccion), una);
 
@@ -101,7 +118,8 @@ test("la coleccion va y vuelve por el enlace, entera y corta", () => {
   const quiero: Record<string, number> = {};
   CATALOGO.forEach((c, i) => {
     if (i % 3 === 0) tengo[c.id] = (i % 7) + 1;
-    else if (i % 11 === 0) quiero[c.id] = (i % 3) + 1;
+    // Algunas en las dos listas: las que tiene y quiere mas.
+    if (i % 11 === 0) quiero[c.id] = (i % 3) + 1;
   });
   tengo[CATALOGO[1].id] = MAX_COPIAS_COLECCION;
   const col = { tengo, quiero };

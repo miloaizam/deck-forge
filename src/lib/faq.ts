@@ -269,13 +269,20 @@ export const FAQ: FaqSection[] = [
         ],
         lista: [
           "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
-          "El **corazón** la anota en las que te faltan. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan: las que quieras.",
+          "El **corazón** la anota en las que te faltan, aunque ya tengas alguna copia. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan: las que quieras.",
+        ],
+      },
+      {
+        pregunta: "Tengo una copia y quiero tres, ¿cómo lo anoto?",
+        respuesta: [
+          "Una carta puede estar en las dos listas: deja **1** en **«Tengo»** y anota **2** en **«Me faltan»**. Cada fila dice lo que hay en la otra lista («te faltan 2», «tienes 1»).",
         ],
       },
       {
         pregunta: "¿Qué pasa cuando consigo una carta que me faltaba?",
         respuesta: [
-          "En **«Me faltan»**, toca **«Ya la tengo»**: sale de esa lista y pasa a **«Tengo»** con las copias que te faltaban. Para sacarla de la lista sin marcarla como tuya, baja sus copias con el **−** hasta cero.",
+          "En **«Me faltan»**, toca **«Conseguí una»**: suma una copia en **«Tengo»** y resta una de las que te faltan. Cuando ya no falta ninguna, sale de la lista.",
+          "Si sumas copias directamente en **«Tengo»**, también se descuentan de las que te faltan. Para sacar una carta de «Me faltan» sin marcarla como tuya, baja sus copias con el **−** hasta cero.",
         ],
       },
       {

@@ -5,7 +5,8 @@ import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./t
 /**
  * La coleccion del usuario: las cartas que tiene, con sus copias, y las que le
  * faltan, que son las que QUIERE conseguir (no todo el catalogo: nadie
- * colecciona las 2649).
+ * colecciona las 2649). Una carta puede estar en las dos: tiene 1 y le faltan
+ * 2 para las 3 que quiere.
  *
  * Se cuenta por impresion (`id`): quien colecciona distingue el arte normal
  * del alternativo. Vive en `localStorage`, aparte de las barajas, y como todo
@@ -30,8 +31,8 @@ export interface Coleccion {
   /** Id de impresion -> copias que tiene (de 1 en adelante). */
   readonly tengo: Readonly<Record<string, number>>;
   /**
-   * Id de impresion -> copias que le faltan (de 1 en adelante, con el mismo
-   * tope que las que tiene). Nunca una que ya tiene: tenerla la saca de aqui.
+   * Id de impresion -> copias que le faltan, ADEMAS de las que tiene (de 1 en
+   * adelante, con el mismo tope). Puede convivir con `tengo`.
    */
   readonly quiero: Readonly<Record<string, number>>;
 }
@@ -77,7 +78,6 @@ export function sanearColeccion(
   };
   leer(cartas, tengo);
   leer(quiero, faltan);
-  for (const id of Object.keys(faltan)) if (id in tengo) delete faltan[id];
   return { coleccion: { tengo, quiero: faltan }, descartadas };
 }
 
@@ -100,27 +100,27 @@ export const estaVacia = (col: Coleccion) =>
 const acotar = (n: number, tope: number) => Math.max(0, Math.min(tope, Math.trunc(n)));
 
 /**
- * La coleccion con `n` copias de `id`; con 0 sale de las que tiene. Tenerla
- * la saca de las que faltan: ya no falta.
+ * La coleccion con `n` copias de `id`; con 0 sale de las que tiene. Las copias
+ * que se suman se descuentan de las que faltan (las consiguio); bajar no las
+ * repone, porque puede ser un error corregido y no una carta perdida.
  */
 export function conCopias(col: Coleccion, id: string, n: number): Coleccion {
   const acotado = acotar(n, MAX_COPIAS_COLECCION);
+  const antes = col.tengo[id] ?? 0;
   const tengo: Record<string, number> = { ...col.tengo };
   const quiero: Record<string, number> = { ...col.quiero };
   if (acotado === 0) delete tengo[id];
-  else {
-    tengo[id] = acotado;
-    delete quiero[id];
+  else tengo[id] = acotado;
+  if (acotado > antes && id in quiero) {
+    const faltan = quiero[id] - (acotado - antes);
+    if (faltan > 0) quiero[id] = faltan;
+    else delete quiero[id];
   }
   return { tengo, quiero };
 }
 
-/**
- * Las copias que faltan de `id`; con 0 sale de la lista. Una carta que ya se
- * tiene no entra.
- */
+/** Las copias que faltan de `id`, aparte de las que tiene; con 0 sale de la lista. */
 export function conFaltantes(col: Coleccion, id: string, n: number): Coleccion {
-  if (id in col.tengo) return col;
   const acotado = acotar(n, MAX_COPIAS_COLECCION);
   const quiero: Record<string, number> = { ...col.quiero };
   if (acotado === 0) delete quiero[id];
@@ -133,9 +133,10 @@ export function alternarQuiero(col: Coleccion, id: string): Coleccion {
   return conFaltantes(col, id, id in col.quiero ? 0 : 1);
 }
 
-/** La carta que faltaba llego: pasa a las que tiene con las copias que faltaban. */
-export function yaLaTengo(col: Coleccion, id: string): Coleccion {
-  return conCopias(col, id, col.quiero[id] ?? 1);
+/** Llego una de las que faltaban: una copia mas en las que tiene y una menos aqui. */
+export function conseguiUna(col: Coleccion, id: string): Coleccion {
+  if (!(id in col.quiero)) return col;
+  return conCopias(col, id, (col.tengo[id] ?? 0) + 1);
 }
 
 /**
@@ -154,7 +155,6 @@ export function fusionar(actual: Coleccion, importada: Coleccion): Coleccion {
   };
   const tengo = mayor(actual.tengo, importada.tengo);
   const quiero = mayor(actual.quiero, importada.quiero);
-  for (const id of Object.keys(quiero)) if (id in tengo) delete quiero[id];
   return { tengo, quiero };
 }
 
