@@ -10,7 +10,13 @@ import { toast } from "../toast";
 import { ColeccionAcciones } from "./ColeccionAcciones";
 import { ColeccionLista, type VistaColeccion } from "./ColeccionLista";
 import { useCodigoCompartido, useColeccion } from "./use-coleccion";
-import { downloadCardSheet } from "../card-sheet-image";
+import { ConfirmDialog } from "../ConfirmDialog";
+import {
+  compartirArchivos,
+  descargarArchivos,
+  generarPlancha,
+  puedeCompartir,
+} from "../card-sheet-image";
 import { ColeccionSkeleton } from "@/components/Skeleton";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import {
@@ -74,6 +80,12 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [vista, setVista] = useState<VistaColeccion>("tengo");
   const [selected, setSelected] = useState<Card | null>(null);
+  const [generando, setGenerando] = useState(false);
+  // Una lista larga sale en varias imagenes: se guardan hasta que el usuario
+  // elige compartirlas o bajarlas, con un clic nuevo (compartir lo exige).
+  const [partes, setPartes] = useState<{ archivos: File[]; cartas: number } | null>(null);
+  // Aparte de `partes`, para que el dialogo no se quede sin texto mientras sale.
+  const [verPartes, setVerPartes] = useState(false);
 
   const index = useMemo(() => buildSearchIndex(cards), [cards]);
   const facets = useMemo(() => buildFacets(cards), [cards]);
@@ -153,10 +165,11 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
   if (!hidratada) return <ColeccionSkeleton />;
 
   // La imagen de la lista que se ve, con sus filtros y su orden.
-  const imagen = () => {
+  const imagen = async () => {
     const copias = vistaReal === "faltan" ? coleccion.quiero : coleccion.tengo;
     const nombre = vistaReal === "faltan" ? "Me faltan" : "Tengo";
-    void downloadCardSheet({
+    setGenerando(true);
+    const generada = generarPlancha({
       etiqueta: "Colección · Escuelas Elementales",
       titulo: compartida ? `Colección compartida: ${nombre.toLowerCase()}` : nombre,
       tramos: porTipo(lista).map((g) => ({
@@ -173,9 +186,36 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
         })),
       })),
       archivo: vistaReal === "faltan" ? "coleccion-me-faltan" : "coleccion-tengo",
-    })
-      .then(() => toast("Imagen de la colección descargada.", "info"))
-      .catch(() => toast("No se pudo generar la imagen de la colección.", "warning"));
+    });
+    try {
+      const archivos = await generada;
+      if (archivos.length === 1) {
+        await descargarArchivos(archivos);
+        toast("Imagen de la colección descargada.", "info");
+      } else {
+        setPartes({ archivos, cartas: lista.length });
+        setVerPartes(true);
+      }
+    } catch {
+      toast("No se pudo generar la imagen de la colección.", "warning");
+    } finally {
+      setGenerando(false);
+    }
+  };
+
+  const entregarPartes = async () => {
+    if (!partes) return;
+    const { archivos } = partes;
+    setVerPartes(false);
+    if (puedeCompartir(archivos)) {
+      const r = await compartirArchivos(archivos);
+      if (r === "descargadas") {
+        toast(`${archivos.length} imágenes de la colección descargadas.`, "info");
+      }
+    } else {
+      await descargarArchivos(archivos);
+      toast(`${archivos.length} imágenes de la colección descargadas.`, "info");
+    }
   };
 
   return (
@@ -244,7 +284,10 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
         </div>
         <ColeccionAcciones
           coleccion={coleccion}
-          onImagen={vistaReal === "agregar" || lista.length === 0 ? null : imagen}
+          onImagen={
+            vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
+          }
+          generandoImagen={generando}
           soloLectura={compartida !== null}
         />
       </div>
@@ -313,6 +356,20 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
             : undefined
         }
         copiasDe={(id) => coleccion.tengo[id] ?? 0}
+      />
+
+      <ConfirmDialog
+        open={verPartes}
+        titulo={`Imagen en ${partes?.archivos.length ?? 0} partes`}
+        mensaje={`La lista tiene ${partes?.cartas ?? 0} cartas: para que se vean bien, va en ${partes?.archivos.length ?? 0} imágenes.`}
+        confirmar={
+          partes && puedeCompartir(partes.archivos)
+            ? `Compartir las ${partes.archivos.length}`
+            : `Descargar las ${partes?.archivos.length ?? 0}`
+        }
+        tono="normal"
+        onConfirm={() => void entregarPartes()}
+        onCancel={() => setVerPartes(false)}
       />
     </div>
   );

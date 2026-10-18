@@ -17,7 +17,8 @@ interface ConfirmDialogProps {
   cancelar?: string;
   /**
    * Rojo (por defecto) si la accion no tiene vuelta atras; ambar si se puede
-   * rehacer, como guardar cambios o guardar una baraja incompleta.
+   * rehacer, como guardar cambios o guardar una baraja incompleta; violeta si
+   * no pierde nada, como bajar la imagen de la coleccion en partes.
    */
   tono?: TonoAccion;
   /** Algo mas bajo el mensaje: el estado de la baraja, al guardarla. */

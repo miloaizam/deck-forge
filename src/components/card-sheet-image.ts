@@ -14,7 +14,25 @@
  * fallaban y quedaban como hueco gris. Por eso se piden de a pocas, con
  * reintentos, con la imagen grande como respaldo y esperando a que esten
  * decodificadas antes de dibujarlas (`cargar`).
+ *
+ * Una lista larga no achica las cartas: se parte en varias imagenes de diez
+ * columnas (`paginar`, en `lib/plancha-paginas.ts`, que explica por que).
  */
+
+import {
+  ALTO_TITULO_TRAMO,
+  ANCHO,
+  COLUMNAS,
+  ESPACIO_TRAS_TRAMO,
+  HUECO,
+  LINEA_PIE,
+  MARGEN,
+  altoFila,
+  altoTramos,
+  medidas,
+  paginar,
+  type TramoEnPagina,
+} from "@/lib/plancha-paginas";
 
 /**
  * Los colores del tema OSCURO, siempre: la imagen se ve igual la baje quien la
@@ -33,18 +51,6 @@ const COLOR = {
   /** Las cartas baneadas: el mismo rojo del lazo `.lazo-baneada`. */
   baneada: "#b91c1c",
 } as const;
-
-const ANCHO = 1600;
-const MARGEN = 56;
-const HUECO = 14;
-/** Columnas de cartas: diez, y mas si la plancha no cabe (ver `columnasPara`). */
-const COLUMNAS = 10;
-/**
- * Alto maximo del canvas. Safari de iOS no dibuja un canvas de mas de ~16,7
- * millones de pixeles (y lo deja en blanco sin avisar): a 1600 de ancho, unos
- * 10 000 de alto. Una coleccion grande achica las cartas antes que pasarse.
- */
-const ALTO_MAXIMO = 10_000;
 
 export interface CartaEnPlancha {
   thumb: string;
@@ -170,38 +176,6 @@ function lineas(
   return out;
 }
 
-/** El tamano de las cartas con `columnas` por fila. */
-function medidas(columnas: number) {
-  const w = Math.floor((ANCHO - MARGEN * 2 - HUECO * (columnas - 1)) / columnas);
-  // Proporcion del arte: 512 x 732 (CARD_RATIO).
-  return { w, h: Math.round((w * 732) / 512) };
-}
-
-/** Las pastillas, la cinta y el pie se achican con la carta. */
-const escalaPara = (columnas: number) =>
-  Math.min(1, medidas(columnas).w / medidas(COLUMNAS).w);
-
-/** Alto de una linea del pie, a escala 1. */
-const LINEA_PIE = 18;
-
-/** Lo que suma el pie bajo cada fila: el de la carta con mas lineas. */
-function altoPieDeCarta(tramos: TramoDePlancha[], columnas: number): number {
-  const n = Math.max(
-    0,
-    ...tramos.flatMap((t) => t.cartas.map((c) => c.pie?.length ?? 0)),
-  );
-  return n === 0 ? 0 : Math.ceil((8 + n * LINEA_PIE) * escalaPara(columnas));
-}
-
-/** El alto que ocupan los tramos con `columnas` por fila. */
-function altoTramos(tramos: TramoDePlancha[], columnas: number): number {
-  const fila = medidas(columnas).h + altoPieDeCarta(tramos, columnas) + HUECO;
-  return tramos.reduce(
-    (s, t) => s + 40 + Math.ceil(t.cartas.length / columnas) * fila + 24,
-    0,
-  );
-}
-
 /** El texto recortado con "…" para que quepa en `ancho`. */
 function recortar(ctx: CanvasRenderingContext2D, texto: string, ancho: number): string {
   if (ctx.measureText(texto).width <= ancho) return texto;
@@ -210,17 +184,29 @@ function recortar(ctx: CanvasRenderingContext2D, texto: string, ancho: number): 
   return `${t.trimEnd()}…`;
 }
 
-/** Diez columnas si caben; si no, las que hagan falta para no pasar del alto. */
-function columnasPara(tramos: TramoDePlancha[], resto: number): number {
-  let c = COLUMNAS;
-  while (c < 40 && resto + altoTramos(tramos, c) > ALTO_MAXIMO) c++;
-  return c;
+/** Lo que una pagina necesita para dibujarse. */
+interface Pagina {
+  numero: number;
+  total: number;
+  tramos: TramoEnPagina<CartaEnPlancha>[];
+  /** La nota ya partida en lineas: solo en la primera pagina. */
+  nota: string[];
+  avisoRojo?: string;
+  alto: number;
 }
 
+/** Alto de la cabecera: etiqueta, titulo, nota y aviso rojo. */
+const altoCabecera = (nota: number, aviso: boolean) =>
+  34 + 70 + nota * 30 + (aviso ? 52 : 0) + 28;
+/** El pie con el logotipo y el sitio. */
+const ALTO_PIE = 80 + MARGEN / 2;
+
 /**
- * Dibuja la plancha y la baja como PNG. Lanza si el navegador no puede.
+ * Dibuja la plancha y la devuelve como PNG: un archivo, o varios si la lista
+ * no cabe en una imagen con las cartas a su tamano. Lanza si el navegador no
+ * puede.
  */
-export async function downloadCardSheet(p: Plancha): Promise<void> {
+export async function generarPlancha(p: Plancha): Promise<File[]> {
   await document.fonts.ready;
   const fuente = getComputedStyle(document.body).fontFamily;
 
@@ -235,23 +221,59 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
   );
   const logo = await cargar("/brand/logo-white.svg");
 
+  const f = (peso: number, px: number) => `${peso} ${px}px ${fuente}`;
+  const medidor = document.createElement("canvas").getContext("2d");
+  if (!medidor) throw new Error("sin canvas 2d");
+
+  // Primero se reparte: la nota (solo en la primera) ocupa segun sus lineas,
+  // y cada pagina gasta lo suyo en cabecera y pie.
+  medidor.font = f(400, 20);
+  const nota = p.nota?.trim()
+    ? lineas(medidor, p.nota.trim(), ANCHO - MARGEN * 2, 2)
+    : [];
+  const fila = altoFila(p.tramos);
+  const fijoPrimera = MARGEN + altoCabecera(nota.length, Boolean(p.avisoRojo)) + ALTO_PIE;
+  const fijoResto = MARGEN + altoCabecera(0, false) + ALTO_PIE;
+  const reparto = paginar(p.tramos, fila, fijoPrimera, fijoResto);
+
+  const archivos: File[] = [];
+  for (const [i, tramos] of reparto.entries()) {
+    const primera = i === 0;
+    const pagina: Pagina = {
+      numero: i + 1,
+      total: reparto.length,
+      tramos,
+      nota: primera ? nota : [],
+      avisoRojo: primera ? p.avisoRojo : undefined,
+      alto: (primera ? fijoPrimera : fijoResto) + altoTramos(tramos, fila),
+    };
+    const blob = await dibujarPagina(p, pagina, { f, fila, imagenes, logo });
+    const sufijo = pagina.total > 1 ? `-parte-${pagina.numero}-de-${pagina.total}` : "";
+    archivos.push(new File([blob], `${p.archivo}${sufijo}.png`, { type: "image/png" }));
+  }
+  return archivos;
+}
+
+async function dibujarPagina(
+  p: Plancha,
+  pagina: Pagina,
+  {
+    f,
+    fila: FILA,
+    imagenes,
+    logo,
+  }: {
+    f: (peso: number, px: number) => string;
+    fila: number;
+    imagenes: Map<string, HTMLImageElement | null>;
+    logo: HTMLImageElement | null;
+  },
+): Promise<Blob> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("sin canvas 2d");
-  const f = (peso: number, px: number) => `${peso} ${px}px ${fuente}`;
-
-  // Primero se mide el alto: la cabecera depende de cuantas lineas ocupe la
-  // nota, y cada tramo de cuantas filas de cartas tenga.
-  ctx.font = f(400, 20);
-  const nota = p.nota?.trim() ? lineas(ctx, p.nota.trim(), ANCHO - MARGEN * 2, 2) : [];
-  const altoCabecera = 34 + 70 + nota.length * 30 + (p.avisoRojo ? 52 : 0) + 28;
-  const altoPie = 80 + MARGEN / 2;
-  const columnas = columnasPara(p.tramos, MARGEN + altoCabecera + altoPie);
-  const { w: CARTA_W, h: CARTA_H } = medidas(columnas);
-  // Las pastillas, la cinta y el pie se achican con la carta.
-  const escala = escalaPara(columnas);
-  const FILA = CARTA_H + altoPieDeCarta(p.tramos, columnas) + HUECO;
-  const alto = MARGEN + altoCabecera + altoTramos(p.tramos, columnas) + altoPie;
+  const { w: CARTA_W, h: CARTA_H } = medidas();
+  const alto = pagina.alto;
 
   canvas.width = ANCHO;
   canvas.height = alto;
@@ -263,7 +285,7 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, ANCHO, alto);
 
-  // Cabecera: etiqueta, titulo y nota.
+  // Cabecera: etiqueta, titulo (con la parte, si hay varias) y nota.
   let y = MARGEN;
   ctx.textBaseline = "top";
   ctx.fillStyle = COLOR.acento;
@@ -272,36 +294,41 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
   ctx.fillText(p.etiqueta.toUpperCase(), MARGEN, y);
   ctx.letterSpacing = "0px";
   y += 34;
+  const titulo =
+    pagina.total > 1
+      ? `${p.titulo} · Parte ${pagina.numero} de ${pagina.total}`
+      : p.titulo;
   ctx.fillStyle = COLOR.ink;
   ctx.font = f(700, 48);
-  ctx.fillText(p.titulo, MARGEN, y, ANCHO - MARGEN * 2);
+  ctx.fillText(titulo, MARGEN, y, ANCHO - MARGEN * 2);
   y += 70;
   ctx.fillStyle = COLOR.muted;
   ctx.font = f(400, 20);
-  for (const l of nota) {
+  for (const l of pagina.nota) {
     ctx.fillText(l, MARGEN, y);
     y += 30;
   }
-  if (p.avisoRojo) {
+  if (pagina.avisoRojo) {
     ctx.font = f(700, 18);
-    const w = Math.min(ctx.measureText(p.avisoRojo).width + 32, ANCHO - MARGEN * 2);
+    const w = Math.min(ctx.measureText(pagina.avisoRojo).width + 32, ANCHO - MARGEN * 2);
     ctx.fillStyle = COLOR.baneada;
     ctx.beginPath();
     ctx.roundRect(MARGEN, y + 6, w, 38, 19);
     ctx.fill();
     ctx.fillStyle = "#ffffff";
-    ctx.fillText(p.avisoRojo, MARGEN + 16, y + 16, w - 32);
+    ctx.fillText(pagina.avisoRojo, MARGEN + 16, y + 16, w - 32);
     y += 52;
   }
   y += 28;
 
   // Los tramos: titulo con su total y la grilla de cartas, con su pastilla.
-  for (const t of p.tramos) {
+  for (const t of pagina.tramos) {
+    const tituloTramo = `${t.titulo.toUpperCase()}${t.continua ? " (CONT.)" : ""}`;
     ctx.fillStyle = COLOR.ink;
     ctx.font = f(700, 18);
     ctx.letterSpacing = "2px";
-    ctx.fillText(t.titulo.toUpperCase(), MARGEN, y);
-    const anchoTitulo = ctx.measureText(t.titulo.toUpperCase()).width;
+    ctx.fillText(tituloTramo, MARGEN, y);
+    const anchoTitulo = ctx.measureText(tituloTramo).width;
     ctx.letterSpacing = "0px";
     ctx.font = f(700, 15);
     const cuenta = String(t.cuenta);
@@ -314,13 +341,13 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
     ctx.textAlign = "center";
     ctx.fillText(cuenta, MARGEN + anchoTitulo + 14 + anchoCuenta / 2, y + 2);
     ctx.textAlign = "left";
-    y += 40;
+    y += ALTO_TITULO_TRAMO;
 
     t.cartas.forEach((carta, i) => {
-      const x = MARGEN + (i % columnas) * (CARTA_W + HUECO);
-      const cy = y + Math.floor(i / columnas) * FILA;
+      const x = MARGEN + (i % COLUMNAS) * (CARTA_W + HUECO);
+      const cy = y + Math.floor(i / COLUMNAS) * FILA;
       const img = imagenes.get(carta.thumb);
-      const radio = Math.max(4, 9 * escala);
+      const radio = 9;
       ctx.save();
       ctx.beginPath();
       ctx.roundRect(x, cy, CARTA_W, CARTA_H, radio);
@@ -340,46 +367,32 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
       if (carta.baneada) {
         // La misma etiqueta que el lazo de la grilla, arriba de la carta.
         ctx.fillStyle = COLOR.baneada;
-        ctx.fillRect(x + 2, cy + 10 * escala, CARTA_W - 4, 26 * escala);
+        ctx.fillRect(x + 2, cy + 10, CARTA_W - 4, 26);
         ctx.fillStyle = "#ffffff";
-        ctx.font = f(700, Math.round(14 * escala));
+        ctx.font = f(700, 14);
         ctx.textAlign = "center";
-        ctx.fillText("BANEADA", x + CARTA_W / 2, cy + 15 * escala);
+        ctx.fillText("BANEADA", x + CARTA_W / 2, cy + 15);
         ctx.textAlign = "left";
       }
 
       // La pastilla abajo a la derecha: las copias.
-      ctx.font = f(700, Math.round(16 * escala));
-      const w = ctx.measureText(carta.etiqueta).width + 18 * escala;
+      ctx.font = f(700, 16);
+      const w = ctx.measureText(carta.etiqueta).width + 18;
       ctx.fillStyle = carta.destacada ? COLOR.marca : "rgba(13, 11, 20, 0.85)";
       ctx.beginPath();
-      ctx.roundRect(
-        x + CARTA_W - w - 6 * escala,
-        cy + CARTA_H - 34 * escala,
-        w,
-        28 * escala,
-        14 * escala,
-      );
+      ctx.roundRect(x + CARTA_W - w - 6, cy + CARTA_H - 34, w, 28, 14);
       ctx.fill();
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(
-        carta.etiqueta,
-        x + CARTA_W - w + 3 * escala,
-        cy + CARTA_H - 28 * escala,
-      );
+      ctx.fillText(carta.etiqueta, x + CARTA_W - w + 3, cy + CARTA_H - 28);
 
       // El pie: nombre y, debajo, edicion y frecuencia, cada uno en su linea.
       carta.pie?.forEach((texto, j) => {
         ctx.fillStyle = j === 0 ? COLOR.ink : COLOR.muted;
-        ctx.font = f(j === 0 ? 700 : 400, Math.round((j === 0 ? 14 : 12) * escala));
-        ctx.fillText(
-          recortar(ctx, texto, CARTA_W),
-          x,
-          cy + CARTA_H + (8 + j * LINEA_PIE) * escala,
-        );
+        ctx.font = f(j === 0 ? 700 : 400, j === 0 ? 14 : 12);
+        ctx.fillText(recortar(ctx, texto, CARTA_W), x, cy + CARTA_H + 8 + j * LINEA_PIE);
       });
     });
-    y += Math.ceil(t.cartas.length / columnas) * FILA + 24;
+    y += Math.ceil(t.cartas.length / COLUMNAS) * FILA + ESPACIO_TRAS_TRAMO;
   }
 
   // Pie: el logotipo y el sitio.
@@ -399,14 +412,65 @@ export async function downloadCardSheet(p: Plancha): Promise<void> {
 
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
   if (!blob) throw new Error("toBlob fallo");
-  const url = URL.createObjectURL(blob);
+  return blob;
+}
+
+/** Baja un archivo con un <a download>, como el respaldo JSON. */
+function bajar(archivo: File): void {
+  const url = URL.createObjectURL(archivo);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${p.archivo}.png`;
+  a.download = archivo.name;
   a.click();
   // Safari de iOS empieza la descarga despues de este tick: revocar en el acto
   // puede cortarla.
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
+/**
+ * Baja los archivos uno tras otro. La pausa evita que el navegador descarte
+ * descargas seguidas; Chrome pide permiso una vez para "varios archivos".
+ */
+export async function descargarArchivos(archivos: File[]): Promise<void> {
+  for (const [i, archivo] of archivos.entries()) {
+    if (i > 0) await espera(400);
+    bajar(archivo);
+  }
+}
+
+/** Si el navegador puede compartir estos archivos (el telefono, sobre todo). */
+export function puedeCompartir(archivos: File[]): boolean {
+  try {
+    return (
+      typeof navigator.canShare === "function" && navigator.canShare({ files: archivos })
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Abre la hoja de compartir del sistema con las imagenes. Tiene que llamarse
+ * desde un clic: el navegador lo exige, y el de «Imagen» ya caduco mientras se
+ * dibujaba. Si el usuario cierra la hoja no pasa nada; si el navegador se
+ * niega, se descargan.
+ */
+export async function compartirArchivos(
+  archivos: File[],
+): Promise<"compartidas" | "descargadas" | "canceladas"> {
+  try {
+    await navigator.share({ files: archivos });
+    return "compartidas";
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") return "canceladas";
+    await descargarArchivos(archivos);
+    return "descargadas";
+  }
+}
+
+/** Dibuja la plancha y la baja: la imagen de una baraja, siempre una pagina. */
+export async function downloadCardSheet(p: Plancha): Promise<void> {
+  await descargarArchivos(await generarPlancha(p));
 }
 
 /** Un texto apto para nombre de archivo: "Dragón Control" -> "dragon-control". */

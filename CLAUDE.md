@@ -1842,10 +1842,25 @@ una imagen para compartir sobran. Sin servidor ni
 dependencias: las miniaturas son del propio origen, así que el canvas se puede
 exportar, y el PNG baja por un Blob como el respaldo JSON. Usa **siempre los
 colores del tema oscuro**, copiados de `globals.css` porque el canvas no lee
-clases: si cambia la paleta, se cambia ahí también. Una plancha que no cabe
-en 10 000 px de alto (una colección grande) **achica las cartas** sumando
-columnas: Safari de iOS deja en blanco, sin avisar, un canvas de más de ~16,7
-millones de píxeles.
+clases: si cambia la paleta, se cambia ahí también.
+
+**Una plancha que no cabe en una imagen se parte en varias** (18-10-2026,
+`paginar` de `src/lib/plancha-paginas.ts`, con su test). Cada imagen mide
+1600 px de ancho y como mucho 10 000 de alto: Safari de iOS deja en blanco,
+sin avisar, un canvas de más de ~16,7 millones de píxeles. Antes, lo que no
+cabía **sumaba columnas y achicaba las cartas**: con 1000 cartas quedaban de
+~77 px y no se leían. Ensanchar no arregla nada, porque el límite es de
+**área**. Ahora las cartas van siempre a diez por fila (136 px) y caben unas
+350 por imagen con el pie de la colección. Lo que sobra pasa a «Parte 2 de
+N»: un tipo cortado sigue con «(cont.)» y ningún título queda solo al pie.
+Una baraja (60 entradas) cabe siempre en una.
+
+Con varias partes, la colección abre un `ConfirmDialog` (tono `normal`,
+violeta) antes de entregarlas: en el teléfono ofrece **compartirlas** todas
+juntas con `navigator.share({ files })` y, si no se puede, las **baja** una
+tras otra. El diálogo no sobra: compartir exige un clic reciente, y el de
+«Imagen» ya caducó mientras se dibujaban las páginas. Si el navegador se
+niega a compartir, se descargan.
 
 **Toda la tarjeta de Mis barajas abre la baraja** (15-10-2026), no solo el
 título. Es un solo enlace, el del título, con un `::after` absoluto que cubre

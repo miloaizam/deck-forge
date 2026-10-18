@@ -25,6 +25,8 @@ interface ColeccionAccionesProps {
    * esta pestana no hay imagen que dar: «Agregar cartas», o la lista vacia.
    */
   onImagen: (() => void) | null;
+  /** La imagen se esta dibujando: con mil cartas tarda unos segundos. */
+  generandoImagen?: boolean;
   /** Una coleccion compartida: solo se puede bajar su imagen. */
   soloLectura?: boolean;
 }
@@ -42,6 +44,7 @@ const MAX_ARCHIVO = 1024 * 1024;
 export function ColeccionAcciones({
   coleccion,
   onImagen,
+  generandoImagen = false,
   soloLectura = false,
 }: ColeccionAccionesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -125,12 +128,13 @@ export function ColeccionAcciones({
     <button
       type="button"
       onClick={() => onImagen?.()}
-      disabled={!onImagen}
+      disabled={!onImagen || generandoImagen}
+      aria-busy={generandoImagen}
       title="Descargar la lista que se ve como imagen"
       className={BOTON}
     >
       <ImageDown size={14} aria-hidden="true" />
-      Imagen
+      {generandoImagen ? "Generando…" : "Imagen"}
     </button>
   );
   if (soloLectura) return <div className="flex flex-wrap gap-2">{imagen}</div>;

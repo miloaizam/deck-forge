@@ -293,7 +293,7 @@ Reglas comunes a todos:
 | Compactos | `BOTON_PRIMARIO_COMPACTO`, `BOTON_SECUNDARIO_COMPACTO`, `BOTON_ICONO_COMPACTO`, `BOTON_ICONO_LIBRE_COMPACTO` | igual, de 36 visibles | dentro de tarjetas, filas y avisos | acciones de una tarjeta de Mis barajas, Tengo / Ya la tengo, Recuperar / Descartar, − y + de la colección, cerrar un aviso, limpiar un filtro |
 | Peligro | `HOVER_PELIGRO` (se suma) | anillo y texto rojos al apuntar | lo que borra o vacía sin vuelta | Borrar la baraja, Vaciar la baraja, Vaciar la colección |
 | Aviso | `HOVER_AVISO` (se suma) | anillo y texto ámbar al apuntar | lo que descarta algo menos grave | Descartar el borrador |
-| Confirmar | `BOTON_CONFIRMAR[tono]` (se suma al secundario) | tinte rojo o ámbar; se llena al apuntar | el botón que confirma en un modal | Vaciar la baraja, Borrar, Guardar igual |
+| Confirmar | `BOTON_CONFIRMAR[tono]` (se suma al secundario) | tinte rojo o ámbar que se llena al apuntar; violeta lleno (`normal`) si no se pierde nada | el botón que confirma en un modal | Vaciar la baraja, Borrar, Guardar igual, Compartir las 3 |
 | Enlace | `ENLACE` | texto `accent` subrayado; se atenúa al apuntar | una salida dentro de un texto o un estado vacío | Limpiar los filtros, Ver mis barajas, Ver mi colección |
 | Portada | `PRIMARY_BUTTON`, `SECONDARY_BUTTON` | 56 de alto, 17 px, brillo y ascenso | la única salida de una pantalla suelta | Entrar a la forja, Reintentar, Volver al inicio |
 

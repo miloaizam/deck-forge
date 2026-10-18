@@ -207,11 +207,11 @@ export const CONTADOR =
   "bg-brand-600 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white tabular-nums";
 
 /** El tono de una accion que se confirma en un modal. */
-export type TonoAccion = "peligro" | "aviso";
+export type TonoAccion = "peligro" | "aviso" | "normal";
 
 /**
  * El boton que confirma en un modal: rojo si la accion no tiene vuelta atras,
- * ambar si se puede rehacer. El texto del hover va en `text-bg`, el fondo de
+ * ambar si se puede rehacer, violeta si no pierde nada (bajar o compartir). El texto del hover va en `text-bg`, el fondo de
  * la pagina, que contrasta con el relleno en los dos temas.
  */
 export const BOTON_CONFIRMAR: Record<TonoAccion, string> = {
@@ -219,4 +219,6 @@ export const BOTON_CONFIRMAR: Record<TonoAccion, string> = {
     "border-danger bg-danger/15 text-danger hover:bg-danger hover:text-bg hover:outline-danger focus-visible:outline-danger",
   aviso:
     "border-warning bg-warning/15 text-warning hover:bg-warning hover:text-bg hover:outline-warning focus-visible:outline-warning",
+  normal:
+    "border-brand-600 bg-brand-600 text-white hover:bg-brand-500 hover:text-white hover:outline-brand-500 focus-visible:outline-brand-500",
 };
