@@ -5,7 +5,7 @@ import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./t
 /**
  * La coleccion del usuario: las cartas que tiene, con sus copias, y las que le
  * faltan, que son las que QUIERE conseguir (no todo el catalogo: nadie
- * colecciona las 2649). Una carta puede estar en las dos: tiene 1 y le faltan
+ * colecciona las 2650). Una carta puede estar en las dos: tiene 1 y le faltan
  * 2 para las 3 que quiere.
  *
  * Se cuenta por impresion (`id`): quien colecciona distingue el arte normal

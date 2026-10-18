@@ -9149,5 +9149,28 @@
     "imagen": "/cards/aa-419.webp",
     "thumb": "/cards/thumb/aa-419.webp",
     "origen": "furia"
+  },
+  {
+    "id": "aa-420",
+    "codigo": "AA-420",
+    "nombre": "Mariamman",
+    "identidad": "mariamman",
+    "tipo": "Aliado",
+    "raza": "Eterno",
+    "escuela": "Vigilantes Etéreos",
+    "atributo": null,
+    "coste": 2,
+    "fuerza": 3,
+    "habilidad": "Ilusión.\nEn tu Fase de Vigilia, una vez por turno, puedes elegir un Aliado de Raza Faerie o Eterno de tu Cementerio y ponerlo en juego bajo tu control como un Aliado sin habilidad. Luego, tu oponente Bota tantas cartas como Fuerza tenga ese Aliado.",
+    "legalidad": "libre",
+    "keywords": [
+      "Ilusión"
+    ],
+    "edicion": "arte-alternativo",
+    "frecuencia": "Promocional",
+    "ilustrador": "Waldo Retamales",
+    "imagen": "/cards/aa-420.webp",
+    "thumb": "/cards/thumb/aa-420.webp",
+    "origen": "colecciones-raciales-2021"
   }
 ]

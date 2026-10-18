@@ -106,11 +106,14 @@ CLAUDE.md), se adopte o no.
 
 - **Qué:** revisar los kits y mazos que salieron entre Conjuros y Furia
   buscando reimpresiones de cartas del catálogo que falten en Arte
-  Alternativo. Ejemplo: **Mariamman**, de los kits raciales, tiene una.
-  Quedan fuera las ediciones ya revisadas entre Bushido y Escuelas
-  Elementales.
-- **Por dónde:** el listado de productos del fandom y de la API
-  (`/cards/edition/…`); mismo criterio que la carga de Arte Alternativo
+  Alternativo. Quedan fuera las ediciones ya revisadas entre Bushido y
+  Escuelas Elementales. **Mariamman** del Kit Eterno ya está (`aa-420`); el
+  resto de los kits de **Colecciones Raciales 2021** (y los de 2020) está
+  sin revisar.
+- **Por dónde:** el listado de productos del fandom (la plantilla de cada
+  carta trae una tabla «Otras versiones» con cada reimpresión, y
+  `Lista de cartas de Colecciones Raciales 2021`); la API no tiene los kits.
+  Mismo criterio que la carga de Arte Alternativo
   (CLAUDE.md): que la habilidad sea igual o casi igual, y consultar los
   casos dudosos.
 - **Terminado cuando:** cada kit está revisado y sus reimpresiones cargadas

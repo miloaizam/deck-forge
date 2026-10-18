@@ -35,7 +35,7 @@ const ANCHO_COPIAS = 7;
 const SALTO_ESCAPE = (1 << ANCHO_SALTO) - 1;
 const COPIAS_ESCAPE = 3;
 
-/** Un codigo de mas de esto no es una coleccion (2649 cartas son ~6000). */
+/** Un codigo de mas de esto no es una coleccion (2650 cartas son ~6000). */
 const MAX_CODIGO = 20_000;
 
 function escribirLista(w: BitWriter, lista: Readonly<Record<string, number>>): void {

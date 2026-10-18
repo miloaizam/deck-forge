@@ -1068,7 +1068,7 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   borra nada. El archivo lleva `tipo: "coleccion"`, así que un respaldo de
   barajas no pasa por uno de colección.
 - **Es una lista y no la grilla**, por tipo y en el orden del catálogo. En
-  «Agregar cartas» son hasta 2649 filas: cada tipo pinta 150 y el resto se
+  «Agregar cartas» son hasta 2650 filas: cada tipo pinta 150 y el resto se
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
@@ -1439,8 +1439,8 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
 que no son ediciones del juego (ver abajo): **Adicionales** (74, en
-`data-src/extras.json`) y **Arte Alternativo** (416, en
-`data-src/arte-alternativo.json`). **2649** en total.
+`data-src/extras.json`) y **Arte Alternativo** (417, en
+`data-src/arte-alternativo.json`). **2650** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1456,8 +1456,8 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
   de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`).
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte: 416, de veinte ediciones del
-  juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
+  cargadas, para que el jugador elija el arte: 417, de veintiuna ediciones
+  y productos del juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
   copias. La edición se ordena por **`origen`** —la edición del juego de donde
   sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
   `editions.ts`), y el modal lo dice ("Arte de Templarios").
@@ -1487,6 +1487,16 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   carta, y sus WebP se borraron.
 - **Detalles de la carga**:
   - La API rotula **«Viriato» a la 280 de Tierra Austral, que es Venatio**.
+  - **Mariamman del Kit Eterno** (`aa-420`, 18-10-2026) es la primera de los
+    **kits de Colecciones Raciales 2021** (`CR2-58-60`, arte completo), que
+    la API no tiene: la imagen sale del fandom (`Mariamman_CR2.png`, en
+    realidad un WebP de 709×1016). La carta imprime otro texto —sin «una vez
+    por turno» ni «de Raza»— y, por decisión del proyecto, se carga con el
+    del catálogo, como todo Arte Alternativo. Su origen,
+    `colecciones-raciales-2021`, va primero en `ORIGENES`: es de julio de
+    2021, después de Conjuros. Ojo al convertir imágenes: `data:images`
+    regenera toda WebP que falte, así que los originales de las cartas
+    retiradas no pueden quedar en `images-src/`.
   - **Las 17 de los mazos raciales de Dinastía del Dragón** (código
     `CR-0NN`, como Alfa) no traen frecuencia en la API ni en el arte —el
     escudo lleva el emblema de la raza—: quedan **Promocional**.

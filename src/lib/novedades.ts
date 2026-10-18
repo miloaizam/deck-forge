@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-18",
+    version: "4.7.0",
+    tipo: "Novedad",
+    titulo: "Nuevo arte de Mariamman",
+    texto: [
+      "Llega a Arte Alternativo la Mariamman del Kit Eterno de Colecciones Raciales 2021, con su ilustración a arte completo. Se elige desde el detalle de la carta, en «Impresiones», y cuenta como Mariamman en la baraja.",
+    ],
+  },
+  {
+    fecha: "2026-10-18",
     version: "4.6.0",
     tipo: "Mejora",
     titulo: "Una carta puede estar en «Tengo» y en «Me faltan»",

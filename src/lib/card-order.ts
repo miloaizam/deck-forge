@@ -14,7 +14,7 @@ import { FRECUENCIAS, type Card } from "./types";
 const RANGO_FRECUENCIA = new Map(FRECUENCIAS.map((f, i) => [f, i]));
 
 /**
- * Arte Alternativo junta impresiones de veinte ediciones del juego: se agrupan
+ * Arte Alternativo junta impresiones de veintiuna ediciones del juego: se agrupan
  * por la edicion de donde salen, de la mas nueva a la mas vieja (`ORIGENES`).
  * Las demas cartas no llevan origen y empatan aqui.
  */
