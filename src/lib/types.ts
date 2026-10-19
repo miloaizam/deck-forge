@@ -69,7 +69,9 @@ export const ESCUELAS = [
 /**
  * Las 9 frecuencias del formato, en el orden en que se muestran.
  *
- * Es el orden del catalogo y el del filtro de frecuencia. `schema.py` declara
+ * Es el orden del catalogo y el del filtro de frecuencia, y lo decidio el
+ * proyecto (19-10-2026): Promocional va tras Mega Real y Milenaria tras ella,
+ * no por rareza estricta. `schema.py` declara
  * los mismos valores pero en el orden de la tabla `rarities` de la API: lo que
  * tiene que coincidir son los valores, no el orden, y `audit_build.py` los
  * compara como conjuntos.
@@ -78,10 +80,10 @@ export const ESCUELAS = [
  * carta de las 10 ediciones, asi que quedan fuera.
  */
 export const FRECUENCIAS = [
-  "Promocional",
   "Legendaria",
   "Ultra Real",
   "Mega Real",
+  "Promocional",
   "Milenaria",
   "Real",
   "Cortesano",

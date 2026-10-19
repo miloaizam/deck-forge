@@ -33,6 +33,15 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-19",
+    version: "4.8.0",
+    tipo: "Mejora",
+    titulo: "Nuevo orden de las frecuencias",
+    texto: [
+      "Dentro de cada edición, las cartas van ahora en este orden: Legendaria, Ultra Real, Mega Real, Promocional, Milenaria, Real, Cortesano, Vasallo y Oro. Es el mismo en el catálogo, el filtro de frecuencia, el constructor, tus barajas, la colección y las imágenes que descargas.",
+    ],
+  },
+  {
     fecha: "2026-10-18",
     version: "4.7.1",
     tipo: "Arreglo",

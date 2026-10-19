@@ -64,7 +64,7 @@ test("tipo, raza, escuela y habilidad van en orden alfabetico, tildes incluidas"
   assert.ok(facets.razas.indexOf("Bárbaro") < facets.razas.indexOf("Bestia"));
 });
 
-test("la frecuencia conserva su orden natural, de la mas rara a la mas comun", () => {
+test("la frecuencia sigue el orden de FRECUENCIAS", () => {
   assert.deepEqual(facets.frecuencias, [...FRECUENCIAS]);
 });
 

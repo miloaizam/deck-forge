@@ -62,8 +62,7 @@ export function countActiveFilters(f: CatalogFilters): number {
  * Tipo, raza, escuela y frecuencia usan las listas canonicas del formato: la
  * oferta es la misma en toda edicion, asi el filtro no cambia de forma segun
  * lo que este cargado. Tipo, raza, escuela y habilidad van en orden
- * alfabetico; frecuencia, de la mas rara a la mas comun, que es su orden
- * natural; edicion, de la mas nueva a la mas vieja. Coste y fuerza si se derivan de las cartas, porque son
+ * alfabetico; frecuencia, en el orden de `FRECUENCIAS`; edicion, de la mas nueva a la mas vieja. Coste y fuerza si se derivan de las cartas, porque son
  * rangos abiertos.
  *
  * El atributo NO tiene faceta propia: Luz y Oscuridad son keywords impresas

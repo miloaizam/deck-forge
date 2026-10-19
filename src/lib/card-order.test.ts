@@ -54,7 +54,7 @@ test("las ediciones van de la ultima en salir a la primera", () => {
   assert.equal(new Set(vistas).size, vistas.length);
 });
 
-test("dentro de una edicion las frecuencias van de la mas rara a la mas comun", () => {
+test("dentro de una edicion las frecuencias van en el orden de FRECUENCIAS", () => {
   const rango = new Map(FRECUENCIAS.map((f, i) => [f, i]));
 
   // En Arte Alternativo manda antes el origen: los tramos van por origen.
@@ -114,9 +114,16 @@ test("Arte Alternativo va por origen, de la edicion mas nueva a la mas vieja", (
     [...rangos].sort((a, b) => a - b),
   );
   // Dentro de un mismo origen manda la frecuencia, como en cualquier edicion:
-  // la promo de Sarras abre Templarios.
+  // la promo de Sarras va despues de las Mega Real y antes de las Milenarias.
   const templarios = aa.filter((c) => c.origen === "templarios");
-  assert.equal(templarios[0].id, "aa-001");
+  const sarras = templarios.findIndex((c) => c.id === "aa-001");
+  assert.ok(sarras >= 0);
+  assert.ok(templarios.slice(0, sarras).every((c) => c.frecuencia !== "Milenaria"));
+  assert.ok(
+    templarios
+      .slice(sarras + 1)
+      .every((c) => !["Legendaria", "Ultra Real", "Mega Real"].includes(c.frecuencia)),
+  );
 });
 
 test("el orden no depende de con que cartas se compare", () => {

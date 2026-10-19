@@ -82,8 +82,8 @@ function rangoDentroDeOro(card: Card): number {
 
 /**
  * Por edicion (de la ultima a la primera), en Arte Alternativo por el origen
- * de la impresion, y dentro de eso por frecuencia, de
- * la mas rara a la mas comun, que es el orden de `FRECUENCIAS`.
+ * de la impresion, y dentro de eso por frecuencia, en el orden de
+ * `FRECUENCIAS` (Legendaria, Ultra Real, Mega Real, Promocional, ...).
  *
  * Los JSON de `data-src/` vienen en el orden en que los entrega la API, que
  * agrupa por frecuencia dentro de cada edicion pero no siempre bien —en

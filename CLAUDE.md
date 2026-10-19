@@ -1263,7 +1263,7 @@ mostrarla.
 - **Tipo, raza, escuela y habilidad:** orden alfabético con
   `Intl.Collator("es")`. Un `sort()` a secas compara códigos y manda
   "Bárbaro" o "Única" detrás de la Z.
-- **Frecuencia:** su orden natural, de la más rara a la más común.
+- **Frecuencia:** el de `FRECUENCIAS` (ver abajo).
 - **Coste y fuerza:** numérico.
 
 `catalog.test.ts` lo comprueba contra el catálogo real.
@@ -1275,7 +1275,10 @@ manera, una carta cambiaría de sitio al pasar de una a otra y habría que
 volver a buscarla. Manda la **edición, de la última en salir a la primera**
 —Escuelas Elementales arriba, Bushido al fondo, o sea al revés que
 `EDITIONS`—, y dentro de cada una la **frecuencia** en el orden de
-`FRECUENCIAS`, de la más rara a la más común. Desempata el número impreso.
+`FRECUENCIAS`: **Legendaria, Ultra Real, Mega Real, Promocional, Milenaria,
+Real, Cortesano, Vasallo y Oro** (decisión del proyecto, 19-10-2026; antes
+Promocional iba primera y Milenaria antes que Real). Desempata el número
+impreso. Ese mismo orden es el del filtro de frecuencia.
 
 Dos decisiones dentro de ese orden. El **tramo de Oros** lleva el suyo propio:
 primero el **oro inicial** de la edición (se reconoce por el nombre, `Oro
