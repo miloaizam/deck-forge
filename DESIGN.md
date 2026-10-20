@@ -368,7 +368,7 @@ barrido `imagen-carga` mientras baja.
 | Detalle (`CardModal`) | 420 px | `card` | — | lazos grandes, selector de impresiones (56 px, borde violeta en la elegida) | aquí se lee la carta |
 | Fila de la colección | 36 px | 4 px (`rounded`) | la fila lleva el anillo | gris y atenuada en «Me faltan» | se recorren cientos: importa el nombre |
 | Fila del panel | 28 px | 4 px | el nombre pasa a `accent` | — | la lista de la baraja, no su arte |
-| Portada de Mis barajas | 92 px de ancho | 4 px | la tarjeta lleva el anillo | — | identifica la baraja |
+| Portada de Mis barajas | 92 × 131 fijo, arriba (nunca se estira con la tarjeta) | 4 px | la tarjeta lleva el anillo | — | identifica la baraja |
 
 Los lazos solo van donde la carta se elige o se lee (grilla y detalle): en la
 mesa, la mano y las filas, el estado de la baraja ya avisa de una baneada.

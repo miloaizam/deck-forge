@@ -65,7 +65,10 @@ function FiltersSkeleton() {
 /** Las tarjetas de Mis barajas. */
 export function DeckListSkeleton() {
   return (
-    <ul aria-hidden="true" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <ul
+      aria-hidden="true"
+      className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+    >
       {[0, 1, 2].map((i) => (
         <li key={i} className="border-line rounded-panel flex gap-3 border p-3.5">
           <Skeleton className="h-[131px] w-[92px] shrink-0" />

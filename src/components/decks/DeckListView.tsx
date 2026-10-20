@@ -47,7 +47,7 @@ import {
   VACIO,
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import { CARD_RATIO, marcarCargada } from "../CardTile";
+import { marcarCargada } from "../CardTile";
 
 interface DeckListViewProps {
   cards: Card[];
@@ -135,7 +135,10 @@ export function DeckListView({ cards }: DeckListViewProps) {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        // `grid-cols-1` y no una grilla sin columnas: sin ella la unica columna
+        // del telefono toma el ancho minimo del contenido y la tarjeta se sale
+        // de la pantalla en vez de truncar el titulo y bajar los botones.
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {decks.map((deck) => {
             const res = resolveDeck(deck, index);
             const stats = deckStats(res);
@@ -162,20 +165,23 @@ export function DeckListView({ cards }: DeckListViewProps) {
                     width={64}
                     height={92}
                     loading="lazy"
-                    style={{ aspectRatio: CARD_RATIO }}
-                    // Del titulo al pie de los botones. El ancho es el que
-                    // pide la proporcion de la carta a ese alto (92 por 131): a
-                    // 64 el recorte se comia los bordes del arte. Y como la
-                    // proporcion tambien da el alto minimo, la tarjeta sin nota
-                    // crece hasta la foto en vez de recortarla.
+                    // Tamano fijo en la proporcion de la carta (92 x 131,
+                    // CARD_RATIO) y arriba. Estirada al alto de la tarjeta se
+                    // recortaba: una nota de dos lineas o los botones en dos
+                    // filas la hacian mas alta que la foto, y `object-cover`
+                    // se comia los costados del arte. Asi la foto fija el alto
+                    // minimo y, si el contenido es mas alto, queda arriba.
                     onLoad={marcarCargada}
-                    className="imagen-carga border-line w-[92px] shrink-0 self-stretch rounded border object-cover"
+                    className="imagen-carga border-line h-[131px] w-[92px] shrink-0 self-start rounded border object-cover"
                   />
                 )}
 
                 <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
+                  {/* La pastilla baja bajo el texto cuando la tarjeta es
+                      angosta: a su lado dejaba el titulo en «Faerie …» y la
+                      fecha partida en cuatro lineas. */}
+                  <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1.5">
+                    <div className="min-w-0 flex-[1_1_11rem]">
                       <Link
                         href={`/baraja/?m=${deck.id}`}
                         // Toda la tarjeta abre la baraja: un solo enlace, con

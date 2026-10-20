@@ -33,6 +33,16 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-20",
+    version: "4.8.1",
+    tipo: "Arreglo",
+    titulo: "La portada de tus barajas ya no se ve cortada",
+    texto: [
+      "En Mis barajas, la carta de portada se recortaba por los costados cuando la tarjeta tenía nota o los botones ocupaban dos filas. Ahora se ve entera en cualquier pantalla.",
+      "En el teléfono, las tarjetas ya no se salen de la pantalla, y el nombre de la baraja se lee completo: el estado (Legal, Incompleta) pasa bajo el texto cuando no cabe al lado.",
+    ],
+  },
+  {
     fecha: "2026-10-19",
     version: "4.8.0",
     tipo: "Mejora",
