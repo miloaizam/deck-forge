@@ -63,6 +63,7 @@
      lista, donde el glow de arriba se montaba sobre el siguiente. */
   --shadow-halo: 0 0 18px -6px rgb(124 58 237 / 0.55);
   --shadow-panel: 0 12px 32px -20px rgb(0 0 0 / 0.9);
+  --color-sombra-carta: rgb(0 0 0 / 0.6);
 
   /* Movimiento --------------------------------------------------- */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -113,6 +114,7 @@
   --shadow-glow: 0 18px 40px -22px rgb(124 58 237 / 0.4);
   --shadow-halo: 0 0 16px -6px rgb(124 58 237 / 0.35);
   --shadow-panel: 0 12px 32px -20px rgb(27 23 48 / 0.25);
+  --color-sombra-carta: rgb(27 23 48 / 0.3);
 
   color-scheme: light;
 }
@@ -280,6 +282,60 @@ html[data-barajas="0"] .solo-sin-barajas {
 }
 html[data-barajas="0"] .solo-con-barajas {
   display: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Carta inclinable (el detalle de una carta)
+ *
+ * `CartaInclinable.tsx` escribe las variables (--rx/--ry el giro, --gx/--gy
+ * donde cae el reflejo, --sx/--sy la sombra) y marca `data-activa` mientras
+ * el puntero la mueve: ahi va sin transicion, para seguirlo sin retraso, y al
+ * soltar vuelve a su sitio en 400 ms. Sin variables, la carta queda plana.
+ * Con "reducir movimiento" no gira ni brilla.
+ * ------------------------------------------------------------------ */
+.carta-3d {
+  perspective: 900px;
+}
+.carta-3d-cuerpo {
+  position: relative;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  box-shadow: var(--sx, 0px) calc(var(--sy, 0px) + 12px) 28px -10px
+    var(--color-sombra-carta);
+  transition:
+    transform 400ms var(--ease-out-soft),
+    box-shadow 400ms var(--ease-out-soft);
+  /* Un gesto vertical sigue siendo el scroll del modal; uno que empieza en
+     horizontal inclina la carta. */
+  touch-action: pan-y;
+}
+.carta-3d-cuerpo[data-activa] {
+  transition: none;
+  will-change: transform;
+}
+.carta-3d-brillo {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgb(255 255 255 / 0.45),
+    transparent 55%
+  );
+  mix-blend-mode: soft-light;
+  transition: opacity 400ms var(--ease-out-soft);
+}
+.carta-3d-cuerpo[data-activa] .carta-3d-brillo {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .carta-3d-cuerpo {
+    transform: none !important;
+  }
+  .carta-3d-brillo {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------------ *

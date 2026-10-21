@@ -14,20 +14,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Diseño
-
-### Imagen de la carta en «3D» en el detalle
-
-- **Qué:** que la imagen del modal de una carta se incline un poco siguiendo
-  el cursor (o el giroscopio en el teléfono), con un brillo que se mueve, como
-  en tor.myl.
-- **Por dónde:** `CardModal.tsx`. Se puede hacer con CSS (`perspective` y
-  `rotateX`/`rotateY` desde variables que pone un `pointermove`) sin
-  dependencias. Ojo: con «reducir movimiento» no se inclina, y el
-  giroscopio en iOS pide permiso.
-- **Terminado cuando:** la carta se inclina con suavidad, vuelve a su sitio al
-  salir y respeta «reducir movimiento».
-
 ## Datos
 
 ### Reimpresiones en los kits entre Conjuros y Furia

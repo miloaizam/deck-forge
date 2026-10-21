@@ -125,6 +125,22 @@ test("cada cambio a mano encuentra su texto en todas las impresiones", () => {
   }
 });
 
+test("una Unica nunca es ademas Errante", () => {
+  // Una sola copia en la baraja ya impide la segunda en mesa. Si una edicion
+  // nueva las imprime juntas, esto falla y hay que decidir que hacer.
+  for (const c of CATALOGO) {
+    const k = conErratas(c).keywords;
+    assert.ok(!(k.includes("Única") && k.includes("Errante")), `${c.id} ${c.nombre}`);
+  }
+  // Las dos que la Banlist vuelve Unicas pierden la Errante impresa.
+  for (const nombre of ["Krisna", "Anubis de Inpu"]) {
+    const e = conErratas(porNombre(nombre));
+    assert.ok(e.keywords.includes("Única"), nombre);
+    assert.ok(!e.keywords.includes("Errante"), nombre);
+    assert.doesNotMatch(e.habilidad, /Errante/, nombre);
+  }
+});
+
 test("el catalogo lleva el texto erratado, con sus keywords", () => {
   const erratada = (nombre: string) => conErratas(porNombre(nombre));
   // La Unica de la Banlist entra al texto y a las keywords.

@@ -2028,6 +2028,14 @@ con la estrella de portada). Es `outline` y no el borde: no cambia el grosor
 de la carta, y en una pila de tres copias rodea la pila entera en vez de
 dibujar tres marcos. Antes cada vista hacía lo suyo (borde, brillo o nada).
 
+**La carta del detalle se inclina** (`CartaInclinable.tsx`, 21-10-2026) con
+el cursor, o con el dedo mientras la arrastra, con un reflejo y una sombra
+(DESIGN.md, «Movimiento»). No pasa por React: cada `pointermove` escribe
+variables CSS (`--rx`, `--ry`, `--gx`, `--gy`, `--sx`, `--sy`) en un
+`requestAnimationFrame`, y `globals.css` («Carta inclinable») hace el resto.
+En el táctil lleva `touch-action: pan-y`: un gesto vertical sigue siendo el
+scroll del modal y uno que empieza en horizontal la inclina.
+
 **Los botones, los controles y los contenedores salen de constantes de
 `src/lib/ui.ts`** (16-10-2026), documentadas en DESIGN.md §6 («Componentes»):
 `BOTON_PRIMARIO`, `BOTON_SECUNDARIO`, `BOTON_SUAVE`, `BOTON_ICONO`,
@@ -2223,6 +2231,11 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
   que no sale del texto de forma mecánica va en `EFECTOS_A_MANO`, comentado
   carta por carta. De la Fe de Erratas solo se SUMA la Única: su «debe decir»
   a veces es un trozo de la habilidad.
+- **Una Única no es además Errante** (21-10-2026): una sola copia en la
+  baraja ya impide la segunda en mesa. `conErratas` quita la `Errante` cuando
+  agrega la `Única`. Pasa en dos cartas que la Banlist vuelve Únicas, Krisna
+  (EE-317) y Anubis de Inpu (AD-034); ninguna la imprime así.
+  `erratas.test.ts` falla si alguna carta, impresa o erratada, junta las dos.
 - **Una baneada se puede agregar.** `canAdd` la deja pasar con un `aviso`
   (el constructor lo dice en un `toast`), y `validateDeck` la marca como
   `carta-prohibida` con gravedad `error`: la baraja se guarda, pero «no

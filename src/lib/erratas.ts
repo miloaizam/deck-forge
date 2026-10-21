@@ -255,7 +255,13 @@ export function conErratas(card: Card): Card {
   if (texto?.agrega) habilidad = `${habilidad}\n${texto.agrega}`;
   for (const k of texto?.declara ?? []) habilidad = declarar(habilidad, k);
   if (efecto.atributo) habilidad = declarar(habilidad, efecto.atributo);
-  if (efecto.unica === true) habilidad = declarar(habilidad, "Única");
+  if (efecto.unica === true) {
+    habilidad = declarar(habilidad, "Única");
+    // Errante sobra en una Unica: con una sola copia en la baraja no puede
+    // haber dos en mesa. Krisna y Anubis de Inpu la imprimen y la Banlist las
+    // vuelve Unicas; `erratas.test.ts` vigila que nunca convivan.
+    habilidad = quitarDeclaracion(habilidad, "Errante");
+  }
   if (efecto.unica === false) habilidad = quitarDeclaracion(habilidad, "Única");
 
   const antes = new Set(keywordsPropias(card.habilidad));

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Minus, Plus, Replace, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
+import { CartaInclinable } from "./CartaInclinable";
 import { CardRibbons } from "./CardRibbons";
 import { marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
@@ -156,19 +157,23 @@ export function CardModal({
               {/* Contenedor del ancho de la imagen: los lazos (`CardRibbons`)
                   se apoyan en su esquina. */}
               <div className="mx-auto w-full max-w-[13rem] self-start sm:max-w-none">
-                <div className="rounded-card relative w-full overflow-hidden">
-                  <Image
-                    src={mostrada.imagen}
-                    alt={`Carta: ${mostrada.nombre}`}
-                    width={420}
-                    height={600}
-                    priority
-                    onLoad={marcarCargada}
-                    className="imagen-carga border-line rounded-card w-full border"
-                    style={{ aspectRatio: CARD_RATIO }}
-                  />
-                  <CardRibbons card={mostrada} grande />
-                </div>
+                {/* Se inclina con el cursor o el dedo; los lazos van adentro
+                    para inclinarse con ella. */}
+                <CartaInclinable reinicio={mostrada.id}>
+                  <div className="rounded-card relative w-full overflow-hidden">
+                    <Image
+                      src={mostrada.imagen}
+                      alt={`Carta: ${mostrada.nombre}`}
+                      width={420}
+                      height={600}
+                      priority
+                      onLoad={marcarCargada}
+                      className="imagen-carga border-line rounded-card w-full border"
+                      style={{ aspectRatio: CARD_RATIO }}
+                    />
+                    <CardRibbons card={mostrada} grande />
+                  </div>
+                </CartaInclinable>
                 {onChangeCard && impresiones && impresiones.length > 1 && (
                   <Impresiones
                     impresiones={impresiones}

@@ -231,6 +231,13 @@ superficies, no de la sombra.
 ## 5. Movimiento
 
 - Duraciones 150–250 ms; easing `--ease-out-soft`.
+- **La carta del detalle se inclina** (21-10-2026): sigue al cursor, o al dedo
+  mientras la arrastra, hasta 10°, con un reflejo de luz blanca y una sombra
+  que se corre; al soltar vuelve plana. Igual para todas las cartas: **sin
+  brillo holográfico**, que sería un segundo acento compitiendo con el
+  violeta. **Sin escala** (la regla de abajo) y **sin giroscopio**:
+  `Permissions-Policy` lo bloquea a propósito, y pedir permiso al sistema por
+  un adorno no vale la pena. Con «reducir movimiento», quieta.
 - Hover en carta: sube 4 px y la rodea el anillo `brand-500` (no cambia el
   borde). Nada escala.
 - Las transiciones de color usan las de Tailwind (`transition-colors`, 150
@@ -245,6 +252,7 @@ superficies, no de la sombra.
   | Elemento | Clase | Al abrir | Al cerrar |
   |---|---|---|---|
   | Detalle de una carta | `panel-anim panel-sube` | fundido y sube 16 px | fundido |
+  | Carta del detalle (al apuntarla o arrastrarla) | `CartaInclinable`, `.carta-3d` | se inclina hasta 10°, un reflejo sigue al puntero y la sombra se corre | vuelve plana en 400 ms |
   | Confirmación | `panel-anim panel-crece` | fundido y crece desde 0,96 | fundido |
   | Panel de ayuda | `panel-anim panel-derecha` | entra desde la derecha | sale por la derecha |
   | Hoja de la baraja (teléfono) | `panel-anim panel-abajo` | sube desde abajo | baja |

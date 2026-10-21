@@ -34,6 +34,25 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-21",
+    version: "4.13.0",
+    tipo: "Novedad",
+    titulo: "La carta del detalle en 3D",
+    texto: [
+      "Al abrir una carta, la imagen se inclina siguiendo el cursor, con un reflejo de luz que se mueve sobre ella, y vuelve a su sitio al salir. En el teléfono, toca la carta y arrastra el dedo hacia los lados.",
+      "Si tu sistema tiene activado «reducir movimiento», la carta se queda quieta.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
+    version: "4.12.1",
+    tipo: "Arreglo",
+    titulo: "Krisna y Anubis de Inpu ya no son Errante",
+    texto: [
+      "La Banlist las vuelve Únicas, y una carta Única no puede tener dos copias en mesa: Errante sobraba. Ahora muestran solo Única, y el filtro de habilidad ya no las ofrece como Errante.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
     version: "4.12.0",
     tipo: "Mejora",
     titulo: "Más rápido en el teléfono y avisos más claros en el tema claro",

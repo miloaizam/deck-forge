@@ -246,3 +246,59 @@ test("a 360 px el menu, los filtros y la hoja caben en la pantalla", async ({
   await expect(hoja.getByRole("button", { name: "Guardar baraja" })).toBeInViewport();
   expect(await sobra()).toBeLessThanOrEqual(1);
 });
+
+test.describe("la carta del detalle se inclina", () => {
+  const cuerpo = (page: Page) => page.locator("dialog[open] .carta-3d-cuerpo");
+  const rotada = (page: Page) =>
+    cuerpo(page).evaluate((e) => getComputedStyle(e).transform.startsWith("matrix3d"));
+
+  async function abrir(page: Page) {
+    await page.goto("/catalogo/");
+    await page
+      .getByRole("button", { name: /^Ver detalle de / })
+      .first()
+      .click();
+    await expect(cuerpo(page)).toBeVisible();
+  }
+
+  test("con el cursor, y vuelve al salir", async ({ page, isMobile }) => {
+    test.skip(isMobile, "sin cursor");
+    await abrir(page);
+    const caja = (await cuerpo(page).boundingBox())!;
+    await page.mouse.move(caja.x + caja.width * 0.2, caja.y + caja.height * 0.2, {
+      steps: 4,
+    });
+    await expect.poll(() => rotada(page)).toBe(true);
+    await page.mouse.move(2, 2);
+    await expect.poll(() => rotada(page)).toBe(false);
+  });
+
+  test("con el dedo, mientras la arrastra", async ({ page }) => {
+    await abrir(page);
+    const caja = (await cuerpo(page).boundingBox())!;
+    const en = (fx: number, fy: number) => ({
+      pointerType: "touch",
+      pointerId: 7,
+      bubbles: true,
+      clientX: caja.x + caja.width * fx,
+      clientY: caja.y + caja.height * fy,
+    });
+    await cuerpo(page).dispatchEvent("pointerdown", { ...en(0.5, 0.5), buttons: 1 });
+    await cuerpo(page).dispatchEvent("pointermove", { ...en(0.85, 0.3), buttons: 1 });
+    await expect.poll(() => rotada(page)).toBe(true);
+    await cuerpo(page).dispatchEvent("pointerup", { ...en(0.85, 0.3), buttons: 0 });
+    await expect.poll(() => rotada(page)).toBe(false);
+  });
+
+  test("con «reducir movimiento» se queda quieta", async ({ page, isMobile }) => {
+    test.skip(isMobile, "sin cursor");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await abrir(page);
+    const caja = (await cuerpo(page).boundingBox())!;
+    await page.mouse.move(caja.x + caja.width * 0.2, caja.y + caja.height * 0.2, {
+      steps: 4,
+    });
+    await page.waitForTimeout(300);
+    expect(await rotada(page)).toBe(false);
+  });
+});
