@@ -1,5 +1,4 @@
-import { CARD_RATIO } from "./CardTile";
-import { COLUMNAS_GRILLA } from "@/lib/ui";
+import { CARD_RATIO, COLUMNAS_GRILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**

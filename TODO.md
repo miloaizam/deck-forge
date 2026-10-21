@@ -16,20 +16,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Diseño
 
-### Evaluar una mejora visual
-
-- **Qué:** la consistencia ya se resolvió (botones, controles y contenedores
-  salen de `src/lib/ui.ts` y están en DESIGN.md §6, 16-10-2026). Falta decidir
-  si conviene una mejora de fondo: jerarquía de cada página, espaciados y
-  densidad, y el aspecto en el tema claro, que se diseñó después del oscuro.
-- **Por dónde:** el artifact «Sistema de diseño DeckForge» tiene la galería
-  de componentes y capturas de cada vista; contrastarlas con la guía de marca
-  (`docs/brand.html`).
-- **A decidir antes:** si es un repaso puntual o una renovación, que tocaría
-  DESIGN.md.
-- **Terminado cuando:** hay una lista de cambios acordada y aplicada, o la
-  decisión de que no hace falta.
-
 ### Imagen de la carta en «3D» en el detalle
 
 - **Qué:** que la imagen del modal de una carta se incline un poco siguiendo
@@ -41,27 +27,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
   giroscopio en iOS pide permiso.
 - **Terminado cuando:** la carta se inclina con suavidad, vuelve a su sitio al
   salir y respeta «reducir movimiento».
-
-## Por evaluar
-
-Preguntas abiertas: cada una termina en una decisión anotada (en DESIGN.md o
-CLAUDE.md), se adopte o no.
-
-### Rendimiento: catálogo y Mis barajas bajo 80 en móvil
-
-- **Dónde está (21-10-2026):** Lighthouse en móvil, mediana de tres corridas
-  con gzip: catálogo 77 (73–89), constructor 85, colección 89, Mis barajas 78.
-  Lo hecho está en CLAUDE.md («El catálogo no va dentro del HTML»).
-- **Qué falta:** lo que queda es sobre todo el arranque de React y Next (las
-  mismas tareas largas salen en `/novedades`) y evaluar el chunk de la página.
-  En Mis barajas vacía, el LCP es el texto de «Todavía no tienes barajas», que
-  solo se pinta tras hidratar porque depende de `localStorage`.
-- **Por dónde:** medir con el perfil de CPU a 4x (CLAUDE.md lo describe) antes
-  de tocar nada; las corridas de Lighthouse varían ±10 puntos en este
-  contenedor. Ideas sin probar: cargar `faq.ts` (14 KB, en todas las páginas)
-  solo al abrir la ayuda.
-- **Terminado cuando:** catálogo y Mis barajas pasan de 80 en la mediana, o
-  se decide que no vale la pena y se anota por qué.
 
 ## Datos
 

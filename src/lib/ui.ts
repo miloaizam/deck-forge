@@ -1,6 +1,14 @@
 import { cn } from "./utils";
 
 /**
+ * Proporcion real del arte de las cartas MyL: 512 x 732. Vive aqui y no en
+ * CardTile.tsx para que importarla no arrastre al componente: `Skeleton.tsx`
+ * la usa, y por la ayuda de la navbar terminaba metiendo zod y las erratas en
+ * el JavaScript de todas las paginas.
+ */
+export const CARD_RATIO = "512 / 732";
+
+/**
  * Clases compartidas entre componentes, para lo que tiene que verse igual en
  * toda la app y se escribia suelto en cada archivo.
  *
@@ -218,7 +226,7 @@ export const BOTON_CONFIRMAR: Record<TonoAccion, string> = {
   peligro:
     "border-danger bg-danger/15 text-danger hover:bg-danger hover:text-bg hover:outline-danger focus-visible:outline-danger",
   aviso:
-    "border-warning bg-warning/15 text-warning hover:bg-warning hover:text-bg hover:outline-warning focus-visible:outline-warning",
+    "border-warning bg-warning-soft text-warning hover:bg-warning hover:text-bg hover:outline-warning focus-visible:outline-warning",
   normal:
     "border-brand-600 bg-brand-600 text-white hover:bg-brand-500 hover:text-white hover:outline-brand-500 focus-visible:outline-brand-500",
 };

@@ -65,7 +65,7 @@ export function DeckIssues({
       punto: "bg-danger",
     },
     falta: {
-      caja: "border-warning/50 bg-warning/5",
+      caja: "border-warning/50 bg-warning-soft",
       texto: "text-warning",
       barra: "bg-warning",
       punto: "bg-warning",
@@ -177,7 +177,7 @@ export function EstadoPastilla({
         PASTILLA,
         "font-semibold",
         estado === "legal" && "bg-success/15 text-success",
-        estado === "incompleta" && "bg-warning/15 text-warning",
+        estado === "incompleta" && "bg-warning-soft text-warning",
         estado === "baneada" && "bg-danger/15 text-danger",
         className,
       )}

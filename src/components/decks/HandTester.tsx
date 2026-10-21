@@ -4,10 +4,10 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Hand, RotateCcw, Shuffle } from "lucide-react";
 
-import { CARD_RATIO, marcarCargada } from "../CardTile";
+import { marcarCargada } from "../CardTile";
 import type { ResolvedDeck, RuleCard } from "@/lib/deck-rules";
 import { mazoParaRobar, robarMano, MANO_INICIAL, MANO_MINIMA } from "@/lib/hand-test";
-import { BOTON_PRIMARIO, BOTON_SECUNDARIO, CONTORNO_CARTA } from "@/lib/ui";
+import { BOTON_PRIMARIO, BOTON_SECUNDARIO, CARD_RATIO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface HandTesterProps {

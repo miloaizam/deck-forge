@@ -3,7 +3,7 @@ import { Minus, Plus, Sparkles } from "lucide-react";
 import { CardRibbons } from "./CardRibbons";
 import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
-import { BLOQUEADO, CONTORNO_CARTA } from "@/lib/ui";
+import { BLOQUEADO, CARD_RATIO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,9 +14,6 @@ import { cn } from "@/lib/utils";
 export function marcarCargada(e: React.SyntheticEvent<HTMLImageElement>): void {
   e.currentTarget.dataset.cargada = "";
 }
-
-/** Proporcion real del arte de las cartas MyL: 512 x 732. */
-export const CARD_RATIO = "512 / 732";
 
 interface CardTileProps {
   card: Card;

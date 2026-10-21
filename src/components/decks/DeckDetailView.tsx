@@ -187,6 +187,12 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
         <div className="min-w-0">
           <p className="eyebrow mb-3">Baraja</p>
           <h1 className="text-3xl font-bold tracking-[-0.02em]">{deckTitle(deck)}</h1>
+          {/* El conteo va bajo el titulo, que es lo que describe; arriba a la
+              derecha flotaba lejos de el, sobre los botones. */}
+          <p className="text-muted mt-1.5 text-[14px] tabular-nums">
+            {stats.totalPrincipal}/{DECK_TOTAL} cartas
+            {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
+          </p>
           {/* La descripcion es opcional: si esta vacia no deja hueco. */}
           {deck.descripcion.trim() !== "" && (
             <p className="text-muted mt-2 max-w-[60ch] text-[13px] leading-relaxed">
@@ -196,11 +202,6 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
         </div>
 
         <div className="flex flex-col items-start gap-3 sm:items-end">
-          <p className="text-muted text-[13px] tabular-nums">
-            {stats.totalPrincipal}/{DECK_TOTAL} cartas
-            {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-          </p>
-
           <div className="flex flex-wrap gap-2">
             {compartido ? (
               <button type="button" onClick={guardar} className={BOTON_SECUNDARIO}>

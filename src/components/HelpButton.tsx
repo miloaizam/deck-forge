@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, CircleHelp, Sparkles, X } from "lucide-react";
 
-import { FAQ, segmentos } from "@/lib/faq";
+import { Skeleton } from "./Skeleton";
+import type { FaqSection, Segmento } from "@/lib/faq";
 import { BOTON_ICONO_LIBRE } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -20,14 +21,29 @@ import { cn } from "@/lib/utils";
  * estuviera abierta. Tampoco hace falta codigo para eso.
  *
  * Solo esta en la navbar: la portada no la lleva, a proposito.
+ *
+ * Las preguntas (`faq.ts`) se bajan al abrir la ayuda, o antes, al pasar el
+ * cursor o el foco por el boton. Iban en el JavaScript y en el HTML de todas
+ * las paginas —unas treinta y cinco respuestas dentro de un dialogo cerrado— para
+ * que casi nadie las abriera. Mientras llegan, el panel muestra su silueta.
  */
+
+interface Ayuda {
+  FAQ: FaqSection[];
+  segmentos: (texto: string) => Segmento[];
+}
+
+/** Uno solo para toda la sesion: abrir la ayuda dos veces no la vuelve a pedir. */
+let pedido: Promise<Ayuda> | null = null;
+const cargarAyuda = () => (pedido ??= import("@/lib/faq"));
+
 /**
  * Un texto de la ayuda con sus palabras clave (`**asi**` en faq.ts) en negrita
  * violeta. Se arma con nodos de texto y <strong>: nada de HTML crudo. El
  * violeta es `text-accent`, el mismo de las keywords de las cartas, que en el
  * tema claro se oscurece para seguir siendo legible.
  */
-function Marcado({ texto }: { texto: string }) {
+function Marcado({ texto, segmentos }: { texto: string; segmentos: Ayuda["segmentos"] }) {
   return segmentos(texto).map((s, i) =>
     s.destacado ? (
       <strong key={i} className="text-accent font-semibold">
@@ -42,12 +58,21 @@ function Marcado({ texto }: { texto: string }) {
 export function HelpButton() {
   const ref = useRef<HTMLDialogElement>(null);
   const cerrar = () => ref.current?.close();
+  const [ayuda, setAyuda] = useState<Ayuda | null>(null);
+  const precargar = () => {
+    if (!ayuda) void cargarAyuda().then(setAyuda, () => (pedido = null));
+  };
 
   return (
     <>
       <button
         type="button"
-        onClick={() => ref.current?.showModal()}
+        onClick={() => {
+          precargar();
+          ref.current?.showModal();
+        }}
+        onPointerEnter={precargar}
+        onFocus={precargar}
         aria-haspopup="dialog"
         aria-label="Ayuda y preguntas frecuentes"
         title="Ayuda"
@@ -89,7 +114,14 @@ export function HelpButton() {
           </div>
 
           <div className="scrollbar-slim flex-1 overflow-y-auto px-5 py-4">
-            {FAQ.map((seccion) => (
+            {!ayuda && (
+              <div aria-hidden="true" className="flex flex-col gap-4">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-5 w-full" />
+                ))}
+              </div>
+            )}
+            {ayuda?.FAQ.map((seccion) => (
               <section key={seccion.titulo} className="mb-6">
                 <h3 className="text-muted mb-1 text-[12px] font-medium tracking-[0.22em] uppercase">
                   {seccion.titulo}
@@ -108,14 +140,14 @@ export function HelpButton() {
                       <div className="text-muted flex flex-col gap-2 pb-4 text-[14px] leading-relaxed">
                         {item.respuesta.map((parrafo) => (
                           <p key={parrafo}>
-                            <Marcado texto={parrafo} />
+                            <Marcado texto={parrafo} segmentos={ayuda.segmentos} />
                           </p>
                         ))}
                         {item.lista && (
                           <ul className="flex list-disc flex-col gap-1 pl-5">
                             {item.lista.map((linea) => (
                               <li key={linea}>
-                                <Marcado texto={linea} />
+                                <Marcado texto={linea} segmentos={ayuda.segmentos} />
                               </li>
                             ))}
                           </ul>

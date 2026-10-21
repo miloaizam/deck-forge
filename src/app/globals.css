@@ -40,6 +40,10 @@
   --color-success: #34d399; /* se creo o se guardo algo */
   --color-danger: #f87171; /* se borro algo */
   --color-warning: #fbbf24; /* algo no se pudo hacer */
+  /* El fondo de lo que esta en ambar (la caja de estado, la pastilla
+     «Incompleta»). Un token y no `bg-warning/10`: en el tema claro el tinte
+     del texto sobre el fondo lavanda daba malva, y el aviso se leia rosado. */
+  --color-warning-soft: rgb(251 191 36 / 0.1);
 
   /* Superficies claras (uso puntual: hojas de marca, impresion) --- */
   --color-light-bg: #f5f3fb;
@@ -95,7 +99,10 @@
   --color-accent-soft: #ede9fe;
   --color-success: #047857;
   --color-danger: #b91c1c;
-  --color-warning: #92400e; /* amber-800: el 700 no llegaba a 4.5:1 sobre sus tintes */
+  /* Ambar oscuro y no amber-800 (#92400e), que tiraba a ladrillo: 6.5:1 sobre
+     el fondo y sobre `warning-soft`. */
+  --color-warning: #7a4f00;
+  --color-warning-soft: #fdf4d6;
 
   --color-halo: rgb(167 139 250 / 0.3);
 
@@ -255,6 +262,24 @@
     background-image: none;
     animation: none;
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * Mis barajas antes de hidratar
+ *
+ * El script del layout raiz pone `data-barajas="0"` en <html> si no hay
+ * barajas guardadas. Mientras React no hidrata, Mis barajas pinta las dos
+ * cosas y aqui se elige: el aviso de vacio o el esqueleto de la lista.
+ * Despues de hidratar ya no se usan (la vista sabe que hay).
+ * ------------------------------------------------------------------ */
+.solo-sin-barajas {
+  display: none;
+}
+html[data-barajas="0"] .solo-sin-barajas {
+  display: block;
+}
+html[data-barajas="0"] .solo-con-barajas {
+  display: none;
 }
 
 /* ------------------------------------------------------------------ *

@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { Coins, Star } from "lucide-react";
 
-import { CARD_RATIO, marcarCargada } from "../CardTile";
+import { marcarCargada } from "../CardTile";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Tipo } from "@/lib/types";
-import { CONTORNO_CARTA_GRUPO } from "@/lib/ui";
+import { CARD_RATIO, CONTORNO_CARTA_GRUPO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** Las pilas se reparten en el mismo orden en que se lee la lista. */

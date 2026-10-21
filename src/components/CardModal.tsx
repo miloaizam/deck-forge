@@ -6,11 +6,12 @@ import { Minus, Plus, Replace, X } from "lucide-react";
 
 import { AbilityText } from "./AbilityText";
 import { CardRibbons } from "./CardRibbons";
-import { CARD_RATIO, marcarCargada } from "./CardTile";
+import { marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card } from "@/lib/types";
 import {
+  CARD_RATIO,
   BLOQUEADO,
   BOTON_ICONO_LIBRE,
   BOTON_PRIMARIO,

@@ -36,6 +36,14 @@ baraja. Esa acción está siempre a la vista.
 - El gradiente de wordmark es para el nombre de marca y títulos de portada.
   No para texto corrido.
 
+**Repaso visual (21-10-2026).** Se revisaron todas las vistas en los dos
+temas contra la guía de marca y se decidió un **repaso puntual, no una
+renovación**: la jerarquía, el espaciado y el tema claro se sostienen, y lo
+que se cambió fue concreto —el ámbar del tema claro (§2, «Estados»), el
+conteo de cartas del detalle de una baraja, que va bajo su título y no
+flotando sobre los botones, y el pie de página, que alinea su texto con el
+`<main>` de 1480 px en vez de pegarse al borde en pantallas anchas—.
+
 ---
 
 ## 2. Tokens
@@ -85,11 +93,18 @@ baraja, la pastilla «Legal»). Nunca de relleno lleno salvo en el botón que
 confirma algo destructivo, al apuntarlo. Cada uno lleva además su icono, así
 que el color no es el único indicador.
 
+**El ámbar del tema claro lleva fondo propio** (repaso visual, 21-10-2026).
+Un tinte del texto (`bg-warning/5`) sobre el fondo lavanda daba malva, y
+`#92400E` tiraba a ladrillo: «Incompleta» se leía como un error. Ahora el
+texto es `#7A4F00` (6,5:1 sobre el fondo y sobre su tinte) y el fondo, el
+token `warning-soft`.
+
 | Token | Oscuro | Claro | Uso |
 |---|---|---|---|
 | `success` | `#34D399` | `#047857` | se creó, guardó, importó o duplicó algo |
 | `danger` | `#F87171` | `#B91C1C` | se borró o se vació algo |
-| `warning` | `#FBBF24` | `#92400E` | algo no se pudo hacer, y el aviso dice por qué |
+| `warning` | `#FBBF24` | `#7A4F00` | algo no se pudo hacer, y el aviso dice por qué |
+| `warning-soft` | ámbar al 10 % | `#FDF4D6` | el fondo de lo que está en ámbar: la caja de estado y la pastilla «Incompleta» |
 | `accent` | (el de la marca) | | informativo: enlace copiado, archivo exportado |
 
 ### Al pasar el cursor
@@ -239,7 +254,7 @@ superficies, no de la sombra.
   | Desplegables de filtros | `despliegue` + `hidden` | fundido y baja 6 px | fundido |
   | Preguntas de la ayuda | `desplegable` | la respuesta se abre | se cierra |
   | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido, y los de abajo suben |
-  | Cambio de página | View Transitions, clase `pagina` | fundido y sube 6 px (220 ms) | fundido (150 ms); la navbar queda quieta |
+  | Cambio de página desde la navbar | View Transitions, clase `pagina` | fundido y sube 6 px (220 ms) | fundido (150 ms); la navbar queda quieta |
   | Panel y hoja de la baraja | `AutoHeight` (componente) | crece al agregar | se encoge al quitar |
   | Fila nueva del panel | `fila-entra` | fundido desde la izquierda | — |
   | Cartas de las grillas (catálogo, edición, constructor), cartas del detalle de una baraja, barajas de Mis barajas, novedades, mano de prueba | `aparece` | fundido y sube 4 px | — |

@@ -44,6 +44,14 @@ function isActive(pathname: string, href: string): boolean {
 const LINK =
   "inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip px-2 xl:px-3 text-sm transition-colors focus-visible:outline-brand-500";
 
+/**
+ * El tipo de transicion que pide el fundido entre paginas (layout de (app)).
+ * Solo lo llevan los enlaces de la navbar: la carga inicial no lleva tipo y no
+ * se anima. Animarla le costaba ~2 s de LCP al catalogo, porque React espera
+ * a que carguen las imagenes antes de revelar la pagina con una transicion.
+ */
+const TRANSICION = ["pagina"];
+
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -98,6 +106,7 @@ export function Navbar() {
             <Link
               key={href}
               href={href}
+              transitionTypes={TRANSICION}
               aria-current={isActive(pathname, href) ? "page" : undefined}
               className={cn(
                 LINK,
@@ -150,6 +159,7 @@ export function Navbar() {
               <li key={href}>
                 <Link
                   href={href}
+                  transitionTypes={TRANSICION}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(pathname, href) ? "page" : undefined}
                   className={cn(

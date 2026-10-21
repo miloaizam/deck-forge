@@ -6,7 +6,7 @@ import { Coins, Trash2 } from "lucide-react";
 import { CostCurve } from "../CostCurve";
 import { DeckIssues } from "../decks/DeckIssues";
 import { BOTON_FILA, CAJA_FILA, QuantityStepper } from "./QuantityStepper";
-import { CARD_RATIO, marcarCargada } from "../CardTile";
+import { marcarCargada } from "../CardTile";
 import type { DeckZone } from "@/lib/deck";
 import {
   canAdd,
@@ -19,7 +19,7 @@ import {
 } from "@/lib/deck-rules";
 import { SECCIONES_DE_LA_BARAJA, type Deck, type Tipo } from "@/lib/types";
 import { ETIQUETA_ORO } from "@/lib/oros";
-import { BOTON_SECUNDARIO, CONTADOR, HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_SECUNDARIO, CARD_RATIO, CONTADOR, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckPanelProps {

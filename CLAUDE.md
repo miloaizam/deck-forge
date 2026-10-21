@@ -1099,7 +1099,8 @@ colección» en vez de «en la baraja».
 **Dos contenidos para el usuario viven como datos y hay que mantenerlos a mano,
 en el mismo commit que el cambio que los afecta:**
 - **`src/lib/faq.ts`**, las preguntas frecuentes del panel de ayuda
-  (`HelpButton.tsx`, un `<dialog>` lateral con `<details>`). Describen lo que
+  (`HelpButton.tsx`, un `<dialog>` lateral con `<details>`) —que la descarga al abrirse, no va en el
+  JavaScript de cada página—. Describen lo que
   la interfaz hace **hoy**, con los nombres que muestra: si cambia un botón o
   una regla, se cambia la respuesta. Una ayuda que contradice al sitio es peor
   que no tenerla. Las palabras clave van entre `**` y se pintan en
@@ -1288,9 +1289,25 @@ al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
     `documentos.test.ts` exige que validarlos no los cambie, que es lo que
     hace seguro el `as`.
   - Lighthouse en móvil (mediana de tres corridas, con gzip): catálogo 77
-    (73–89), constructor 85, colección 89 y Mis barajas 78. Lo que queda es
-    el arranque de React y Next, que `/novedades` también paga, y evaluar el
-    chunk de la página.
+    (73–89), constructor 85, colección 89 y Mis barajas 78.
+- **Tercera pasada (21-10-2026)**, que dejó **catálogo 88, constructor 84,
+  colección 91 y Mis barajas 94**:
+  - **La View Transition de la carga inicial** costaba ~2 s de LCP: ahora solo
+    se anima la navegación desde la navbar (ver «El cambio de página se anima
+    con View Transitions»).
+  - **Mis barajas vacía pinta su aviso desde el HTML.** El script del tema del
+    layout raíz mira también `deckforge-decks` y, si no hay barajas, pone
+    `data-barajas="0"` en `<html>`; antes de hidratar la vista pinta el
+    esqueleto y el aviso, y `globals.css` (`.solo-sin-barajas`) muestra uno.
+    El aviso era el LCP y llegaba recién tras hidratar. Y como nadie pide el
+    catálogo, Mis barajas vacía ya no lo descarga.
+  - **La ayuda se descarga al abrirla** (o al pasar por su botón): `faq.ts`
+    iba en el JavaScript de todas las páginas y sus ~35 respuestas, en el HTML
+    de todas, dentro de un diálogo cerrado.
+  - **`CARD_RATIO` vive en `ui.ts`, no en `CardTile.tsx`.** Importar una
+    constante de un componente arrastra el componente: el esqueleto de la
+    ayuda la usaba y metía zod y las erratas en la navbar de todas las
+    páginas (+28 KB en `/novedades`).
 - El HTML de `/catalogo` bajó de 1,79 MB a 220 KB (de ~200 a 25 KB con gzip).
   La precarga de la navbar se dejó como está: ahora cada página pesa poco.
   `e2e/sitio.spec.ts` cubre los filtros de la URL, el fallo de red y el «+»
@@ -1302,8 +1319,9 @@ al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
 
 **El cambio de página se anima con View Transitions** (decisión del
 proyecto, 21-10-2026). El layout de `(app)` envuelve cada página en un
-`<ViewTransition update="pagina" default="none">` de React (lo trae el React
-canary de Next; sus tipos se suman en `src/types/react-canary.d.ts`), y
+`<ViewTransition update={{ pagina: "pagina", default: "none" }}>` de React
+(lo trae el React canary de Next; sus tipos se suman en
+`src/types/react-canary.d.ts`), y
 `globals.css` funde la vieja con la nueva con la regla de siempre: 150 ms la
 salida, 220 ms la entrada subiendo 6 px, nada con «reducir movimiento». Tres
 decisiones:
@@ -1311,9 +1329,15 @@ decisiones:
 - **La navbar lleva nombre propio** (`[view-transition-name:navbar]`): queda
   quieta y por encima. Sin eso, con la página a media altura, la captura del
   contenido se dibujaba sobre ella mientras se fundía.
-- **Solo el cambio de página**, y lo que React anima por su cuenta dentro de
-  él (el esqueleto de `loading.tsx` que da paso a la página). Los filtros y el
-  orden **no** reordenan con animación: DESIGN.md pide opacidad, no
+- **Solo la navegación desde la navbar.** Sus enlaces llevan
+  `transitionTypes={["pagina"]}` (`TRANSICION` en `Navbar.tsx`) y el
+  `<ViewTransition>` solo anima ese tipo. La primera versión animaba también
+  la carga inicial —el paso del esqueleto de `loading.tsx` a la página— y
+  **le costaba ~2 s de LCP al catálogo y al constructor** (Lighthouse en
+  móvil: de 88 a 71): para revelar con una transición, React espera a que
+  carguen las imágenes. Los demás enlaces internos, y atrás y adelante del
+  navegador, cambian de golpe. Los filtros y el orden **no** reordenan con
+  animación: DESIGN.md pide opacidad, no
   movimiento, en los cambios de filtro. Y la carta no «vuela» de la grilla al
   modal: el modal es un `<dialog>` en la capa superior, que las View
   Transitions no capturan bien.

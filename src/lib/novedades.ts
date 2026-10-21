@@ -34,6 +34,17 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-21",
+    version: "4.12.0",
+    tipo: "Mejora",
+    titulo: "Más rápido en el teléfono y avisos más claros en el tema claro",
+    texto: [
+      "El catálogo y el constructor muestran sus cartas antes: el fundido entre páginas queda solo para cuando navegas desde la barra de arriba, y la ayuda se descarga recién cuando la abres.",
+      "Si todavía no tienes barajas, Mis barajas te lo dice apenas abre, sin pasar por la silueta de carga.",
+      "En el tema claro, «Incompleta» y los avisos en ámbar se ven ámbar, y no rosados. En el detalle de una baraja, el número de cartas va bajo su nombre.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
     version: "4.11.0",
     tipo: "Mejora",
     titulo: "Cambios de página suaves y un sitio más liviano",
