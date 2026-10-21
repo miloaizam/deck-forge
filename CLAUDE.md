@@ -2036,12 +2036,27 @@ imports sin extensión que espera el bundler de Next.
 
 **Pruebas en el navegador** (15-10-2026). `pnpm run e2e` corre los
 recorridos de `e2e/` con **Playwright** (`@playwright/test`, dependencia de
-desarrollo) en Chromium, en un escritorio y en un teléfono emulado, contra
-`out/` servido con `pnpm run preview`: lo que se prueba es lo que se publica,
-así que va **después de `pnpm run build`**. Cubren lo que los tests de `src/lib`
-no ven —que un botón exista, que un clic navegue—: el detalle de una carta,
-el aviso del borrador, la tarjeta de Mis barajas y las copias de «Me faltan».
-Los del constructor se saltan en el teléfono, donde el panel es una hoja.
+desarrollo) en Chromium, en un escritorio, un teléfono (Pixel 7, 412 px) y
+una tableta (iPad Mini, 768 px; el dispositivo es de Safari y se fuerza
+Chromium), contra `out/` servido con `pnpm run preview`: lo que se prueba es lo
+que se publica, así que va **después de `pnpm run build`**. Cubren lo que los
+tests de `src/lib` no ven —que un botón exista, que un clic navegue—: el
+detalle de una carta, el aviso del borrador, la tarjeta de Mis barajas, las
+copias de «Me faltan», la lista de la colección y la carga del catálogo. Los
+del constructor corren en los tres: bajo `lg` usan la hoja de la baraja
+(`abrirPanel`).
+
+- **Pantallas medianas y chicas** (21-10-2026). Una prueba recorre todas las
+  rutas en los tres dispositivos y falla si alguna tiene scroll horizontal;
+  otra fija 360 px y comprueba el menú, los filtros y la hoja del
+  constructor. La revisión a ojo a 360, 768 y 1024 dejó tres arreglos: la
+  navbar se salía 20 px de su margen justo en 1024 (los enlaces van con
+  `px-2` hasta `xl`); el panel del constructor mide 24rem hasta `xl` y no
+  28, para que la grilla no quede en cuatro columnas de 110 px; y **en la
+  hoja de la baraja «Guardar» y «Vaciar» van en un pie fijo** (`acciones` de
+  `DeckSheet`), porque al fondo de la lista había que recorrer las 50 cartas
+  para guardar. El buscador dice «Nombre o habilidad…»: el texto anterior
+  salía cortado en el teléfono.
 
 - **No baja navegadores al instalar**: el paquete no tiene `postinstall` y no
   pide permiso en `allowBuilds`. Usa el Chromium de `PLAYWRIGHT_BROWSERS_PATH`

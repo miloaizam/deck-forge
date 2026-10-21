@@ -522,7 +522,7 @@ export function BuilderView({
         <DeckParamLoader onLoad={alCargar} onError={avisarError} onReady={alEstarListo} />
       </Suspense>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
         <div className="flex flex-col gap-5">
           {/* En el telefono el panel va en una hoja cerrada: el aviso sube aqui. */}
           {avisoBorrador("lg:hidden")}
@@ -660,6 +660,13 @@ export function BuilderView({
         afinidad={affinityLabel(stats.afinidad)}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
+
+        acciones={
+          <>
+            <GuardarButton guardado={guardado} onGuardar={guardar} />
+            <DeckClearButton onClear={vaciar} />
+          </>
+        }
       >
         <input
           value={deck.nombre}
@@ -686,10 +693,6 @@ export function BuilderView({
           className={cn(DECK_NOTE_FIELD, "mt-2 mb-4")}
         />
         {panel}
-        <div className="border-line mt-4 flex flex-wrap gap-2 border-t pt-4">
-          <GuardarButton guardado={guardado} onGuardar={guardar} />
-          <DeckClearButton onClear={vaciar} />
-        </div>
       </DeckSheet>
 
       <CardModal

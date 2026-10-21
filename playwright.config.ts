@@ -24,6 +24,10 @@ export default defineConfig({
   projects: [
     { name: "escritorio", use: { ...devices["Desktop Chrome"] } },
     { name: "telefono", use: { ...devices["Pixel 7"] } },
+    // Bajo `lg` (1024), con el menu plegado y el constructor en hoja, pero con
+    // mas columnas que el telefono. El dispositivo es de Safari: se fuerza
+    // Chromium, que es el navegador que hay.
+    { name: "tableta", use: { ...devices["iPad Mini"], browserName: "chromium" } },
   ],
   webServer: {
     command: "pnpm run preview",

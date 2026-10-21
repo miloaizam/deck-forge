@@ -77,7 +77,7 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
             type="search"
             value={filters.query}
             onChange={(e) => set("query")(e.target.value)}
-            placeholder="Buscar por nombre o habilidad…"
+            placeholder="Nombre o habilidad…"
             aria-keyshortcuts="/"
             aria-label="Buscar cartas"
             className={cn(TEXT_FIELD, "pr-12 pl-10")}

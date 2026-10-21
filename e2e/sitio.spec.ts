@@ -25,11 +25,17 @@ test("el catalogo abre el detalle de una carta y Esc lo cierra", async ({ page }
   await expect(modal).toBeHidden();
 });
 
-test.describe("constructor", () => {
-  // En el telefono la baraja va en una hoja aparte: estos recorridos son del
-  // panel de escritorio.
-  test.skip(({ isMobile }) => isMobile, "panel de escritorio");
+/**
+ * El panel de la baraja: al costado desde `lg` (1024) y, por debajo, en una
+ * hoja que se abre desde la barra fija del pie.
+ */
+async function abrirPanel(page: Page) {
+  if (page.viewportSize()!.width >= 1024) return page.locator("aside");
+  await page.getByRole("button", { name: /^Abrir el panel de la baraja/ }).click();
+  return page.getByRole("dialog");
+}
 
+test.describe("constructor", () => {
   test("pregunta si recuperar la baraja sin guardar", async ({ page }) => {
     await page.goto("/constructor/");
     await agregarPrimera(page);
@@ -48,8 +54,9 @@ test.describe("constructor", () => {
   test("toda la tarjeta de Mis barajas abre la baraja", async ({ page }) => {
     await page.goto("/constructor/");
     await agregarPrimera(page);
-    await page.getByRole("textbox", { name: "Nombre de la baraja" }).fill("Prueba");
-    await page.getByRole("button", { name: "Guardar baraja" }).click();
+    const panel = await abrirPanel(page);
+    await panel.getByRole("textbox", { name: "Nombre de la baraja" }).fill("Prueba");
+    await panel.getByRole("button", { name: "Guardar baraja" }).click();
     // Incompleta: pide confirmar.
     await page.getByRole("button", { name: "Guardar igual" }).click();
     await expect(page).toHaveURL(/\/baraja\/\?m=/);
@@ -172,4 +179,62 @@ test.describe("el catalogo llega aparte del HTML", () => {
     soltar();
     await expect(quitar.first()).toBeEnabled();
   });
+});
+
+/**
+ * Ninguna ruta se sale de la pantalla a lo ancho: en el telefono (412), en la
+ * tableta (768) y en el escritorio. El margen de 1 px es el redondeo
+ * sub-pixel.
+ */
+const RUTAS = [
+  "/",
+  "/catalogo/",
+  "/catalogo/escuelas-elementales/",
+  "/constructor/",
+  "/barajas/",
+  "/coleccion/",
+  "/coleccion/?ver=agregar",
+  "/documentos/",
+  "/documentos/fe-de-erratas/",
+  "/documentos/banlist/",
+  "/novedades/",
+  "/no-existe/",
+];
+
+test("ninguna ruta tiene scroll horizontal", async ({ page }) => {
+  for (const ruta of RUTAS) {
+    await page.goto(ruta);
+    await page.waitForLoadState("networkidle");
+    const sobra = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(sobra, ruta).toBeLessThanOrEqual(1);
+  }
+});
+
+test("a 360 px el menu, los filtros y la hoja caben en la pantalla", async ({
+  page,
+}, info) => {
+  // Fija su propio ancho: basta con correrla una vez.
+  test.skip(info.project.name !== "telefono", "una vez basta");
+  await page.setViewportSize({ width: 360, height: 740 });
+  const sobra = () =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+
+  await page.goto("/catalogo/");
+  await page.getByRole("button", { name: "Abrir el menú" }).click();
+  await expect(page.getByRole("link", { name: "Novedades" }).last()).toBeVisible();
+  expect(await sobra()).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "Cerrar el menú" }).click();
+
+  await page.getByRole("button", { name: /Filtros/ }).click();
+  expect(await sobra()).toBeLessThanOrEqual(1);
+
+  await page.goto("/constructor/");
+  await agregarPrimera(page);
+  const hoja = await abrirPanel(page);
+  await expect(hoja.getByRole("button", { name: "Guardar baraja" })).toBeInViewport();
+  expect(await sobra()).toBeLessThanOrEqual(1);
 });

@@ -204,7 +204,7 @@ export function PageSkeleton({ variante }: { variante: PageSkeletonVariant }) {
           </div>
         )}
         {variante === "constructor" && (
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start lg:gap-6">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
             <div className="flex flex-col gap-5">
               <FiltersSkeleton />
               <CardGridSkeleton variante="constructor" cuantas={12} />

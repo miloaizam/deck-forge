@@ -42,7 +42,7 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 const LINK =
-  "inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip px-3 text-sm transition-colors focus-visible:outline-brand-500";
+  "inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip px-2 xl:px-3 text-sm transition-colors focus-visible:outline-brand-500";
 
 export function Navbar() {
   const pathname = usePathname();

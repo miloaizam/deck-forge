@@ -201,7 +201,9 @@ superficies, no de la sombra.
   la línea de tiempo a 760 px).
 - Espaciado en múltiplos de 4; los saltos entre secciones son grandes (48–64 px).
 - Mobile-first: la grilla arranca en 2 columnas y crece; el panel de baraja pasa
-  a hoja inferior en pantallas chicas.
+  a hoja inferior bajo `lg`, con sus botones (guardar, vaciar) en un pie fijo
+  que no se va con el scroll. Entre `lg` y `xl` el panel mide 24rem y no 28,
+  para dejarle sitio a la grilla.
 - Breakpoints los de Tailwind por defecto. El punto crítico de la marca es
   **720 px** (donde las rejillas de dos columnas colapsan a una).
 

@@ -16,6 +16,12 @@ interface DeckSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: ReactNode;
+  /**
+   * Los botones de la baraja (guardar, vaciar). Van en un pie fijo, fuera del
+   * area que scrollea: con una baraja de 50 cartas quedaban al fondo de la
+   * lista y para guardar habia que recorrerla entera.
+   */
+  acciones?: ReactNode;
 }
 
 /**
@@ -36,6 +42,7 @@ export function DeckSheet({
   open,
   onOpenChange,
   children,
+  acciones,
 }: DeckSheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -94,6 +101,11 @@ export function DeckSheet({
           <div className="scrollbar-slim max-h-[70dvh] overflow-y-auto overscroll-contain px-4 py-4">
             <AutoHeight>{children}</AutoHeight>
           </div>
+          {acciones && (
+            <div className="border-line bg-surface flex flex-wrap gap-2 border-t px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              {acciones}
+            </div>
+          )}
         </div>
       </dialog>
     </div>

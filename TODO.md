@@ -30,18 +30,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 - **Terminado cuando:** hay una lista de cambios acordada y aplicada, o la
   decisión de que no hace falta.
 
-### Revisar el sitio en pantallas medianas y pequeñas
-
-- **Qué:** probar la navegación entera en teléfono y tableta (de 360 a 1024 px
-  de ancho): navbar plegada, filtros, constructor con su hoja, colección,
-  modales y documentos.
-- **Por dónde:** Playwright ya emula un Pixel 7 (`pnpm run e2e`); sumar una
-  tableta (`devices["iPad Mini"]`) y recorridos de las rutas que hoy solo se
-  prueban en escritorio (los del constructor se saltan en el teléfono).
-  Capturar cada ruta a 360, 768 y 1024 y revisarlas a ojo.
-- **Terminado cuando:** cada ruta se usa sin scroll horizontal ni controles
-  tapados en los tres anchos, y hay pruebas que lo vigilan.
-
 ### Imagen de la carta en «3D» en el detalle
 
 - **Qué:** que la imagen del modal de una carta se incline un poco siguiendo

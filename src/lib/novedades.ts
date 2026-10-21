@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-21",
+    version: "4.10.1",
+    tipo: "Arreglo",
+    titulo: "Guardar siempre a mano en el teléfono",
+    texto: [
+      "En el panel de la baraja del teléfono, «Guardar baraja» y «Vaciar la baraja» quedan fijos abajo: ya no hay que recorrer toda la lista de cartas para guardar.",
+      "En tabletas y pantallas de 1024 px, el panel de la baraja deja más espacio a las cartas y la barra de arriba ya no queda pegada al borde.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
     version: "4.10.0",
     tipo: "Mejora",
     titulo: "El catálogo y el constructor cargan más rápido",
