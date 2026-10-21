@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { editionTitle, origenTitle } from "./editions";
 import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./types";
@@ -43,7 +43,7 @@ export const COLECCION_VACIA: Coleccion = Object.freeze({
   quiero: Object.freeze({}),
 });
 
-const copiasSchema = z.number().int().min(1).max(MAX_COPIAS_COLECCION);
+const copiasSchema = z.int().check(z.minimum(1), z.maximum(MAX_COPIAS_COLECCION));
 
 /**
  * Valida las entradas una a una: una rota no se lleva a las demas. Los ids
@@ -208,7 +208,7 @@ const archivoSchema = z.object({
   tipo: z.literal("coleccion"),
   v: z.literal(1),
   cartas: z.unknown(),
-  quiero: z.unknown().optional(),
+  quiero: z.optional(z.unknown()),
 });
 
 export function exportarColeccion(col: Coleccion): string {

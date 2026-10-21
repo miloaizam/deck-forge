@@ -42,7 +42,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Pruebas en navegador | `@playwright/test` (solo desarrollo; `e2e/` contra el sitio construido) |
 | Accesibilidad | `axe-core` (solo desarrollo; lo inyecta `e2e/accesibilidad.spec.ts`) |
-| Validación | `zod` |
+| Validación | `zod` (la variante `zod/mini`, ver «El catálogo no va dentro del HTML») |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
 | Hosting | **Cloudflare Pages**, conectado al repo: cada push a `main` publica `out/`. Se configura desde su panel (build `pnpm run build`, salida `out`); no hay archivo de wrangler |
@@ -1257,10 +1257,40 @@ al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
 - Si el catálogo no baja, se dice y se ofrece **«Reintentar»**; las barajas y
   la colección siguen guardadas.
 - **El índice de búsqueda se arma de fondo** (`buildSearchIndex` de
-  `catalog.ts`): de a 100 cartas, cuando el navegador está libre. Indexar de
-  una vez era la tarea más larga de la página (~130 ms en escritorio, medio
-  segundo en un teléfono lento) aunque nadie buscara nada. Si se busca antes,
-  se completa en el acto.
+  `catalog.ts`): de a 25 cartas, encadenadas mientras `requestIdleCallback`
+  dé tiempo libre (Safari, sin esa API, va con `setTimeout`). Indexar de una
+  vez era la tarea más larga de la página (~130 ms en escritorio, medio
+  segundo en un teléfono lento) aunque nadie buscara nada; de a 100, cada
+  tanda todavía pasaba los 50 ms en un teléfono. Si se busca antes, se
+  completa en el acto.
+- **Segunda pasada (21-10-2026), con un perfil de CPU a 4x** (Playwright +
+  `Profiler` de Chrome) que atribuyó cada tarea larga a su función:
+  - **zod pesaba 338 KB** de JavaScript en cada página con catálogo, más que
+    todo el código propio junto: `import { z } from "zod"` arrastra el objeto
+    con todo (62 idiomas de mensajes, el generador de JSON Schema…) y el
+    bundler no puede recortarlo. Ahora los esquemas usan **`zod/mini`** con
+    **`import * as z from "zod/mini"`**: 60 KB. Las dos cosas hacen falta —con
+    `zod/mini` pero importando `{ z }` seguían siendo 318 KB—. La API cambia:
+    `z.string().check(z.maxLength(40))` en vez de `.max(40)`,
+    `z._default(z.nullable(x), null)` en vez de `x.nullable().default(null)`,
+    `z.pipe(x, z.transform(f))` en vez de `x.transform(f)`, `z.int()` en vez
+    de `z.number().int()`. **Un `import { z } from "zod"` nuevo vuelve a meter
+    unos 280 KB en esas páginas**: no se usa la variante clásica.
+  - **Ordenar el catálogo hacía decenas de miles de `localeCompare` con
+    opciones**, y cada uno arma un comparador nuevo. `compareCards` usa ahora
+    un `Intl.Collator` creado una vez (`CODIGO` en `card-order.ts`), con el
+    mismo resultado.
+  - **`useCatalogo` valida de a 200 cartas**, cediendo el hilo entre tandas:
+    validar las 2650 de una vez era una tarea de ~350 ms a 4x.
+  - **`erratas.ts` ya no valida los JSON de la Fe de Erratas y la Banlist en
+    el navegador.** Van dentro del bundle (no son una entrada de afuera:
+    seguridad #4), los valida el build (`documentos-data.ts`) y
+    `documentos.test.ts` exige que validarlos no los cambie, que es lo que
+    hace seguro el `as`.
+  - Lighthouse en móvil (mediana de tres corridas, con gzip): catálogo 77
+    (73–89), constructor 85, colección 89 y Mis barajas 78. Lo que queda es
+    el arranque de React y Next, que `/novedades` también paga, y evaluar el
+    chunk de la página.
 - El HTML de `/catalogo` bajó de 1,79 MB a 220 KB (de ~200 a 25 KB con gzip).
   La precarga de la navbar se dejó como está: ahora cada página pesa poco.
   `e2e/sitio.spec.ts` cubre los filtros de la URL, el fallo de red y el «+»
@@ -1269,6 +1299,50 @@ al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
   y `fetchPriority="high"`) y **empeoró** el LCP de Lighthouse en móvil (de
   4,6 a 5,3–6,2 s): le quitan ancho de banda al JavaScript. Se quedan
   diferidas.
+
+**El cambio de página se anima con View Transitions** (decisión del
+proyecto, 21-10-2026). El layout de `(app)` envuelve cada página en un
+`<ViewTransition update="pagina" default="none">` de React (lo trae el React
+canary de Next; sus tipos se suman en `src/types/react-canary.d.ts`), y
+`globals.css` funde la vieja con la nueva con la regla de siempre: 150 ms la
+salida, 220 ms la entrada subiendo 6 px, nada con «reducir movimiento». Tres
+decisiones:
+
+- **La navbar lleva nombre propio** (`[view-transition-name:navbar]`): queda
+  quieta y por encima. Sin eso, con la página a media altura, la captura del
+  contenido se dibujaba sobre ella mientras se fundía.
+- **Solo el cambio de página**, y lo que React anima por su cuenta dentro de
+  él (el esqueleto de `loading.tsx` que da paso a la página). Los filtros y el
+  orden **no** reordenan con animación: DESIGN.md pide opacidad, no
+  movimiento, en los cambios de filtro. Y la carta no «vuela» de la grilla al
+  modal: el modal es un `<dialog>` en la capa superior, que las View
+  Transitions no capturan bien.
+- Sin soporte del navegador, la página cambia de golpe, como antes. No hay
+  scripts nuevos: la CSP no cambia.
+
+Next sube el scroll a 0 dentro de la misma transición (medido: la página
+nueva ya está arriba cuando empieza a entrar), así que no hay salto al final.
+
+**Algunos componentes se acomodan a su contenedor y no a la pantalla**
+(container queries de Tailwind v4: `@container` en el padre, `@xs:`, `@sm:`,
+`@md:` en los hijos; decisión del proyecto, 21-10-2026). Se usan donde el
+mismo componente vive en sitios de distinto ancho:
+
+- **La fila del buscador** (`Filters.tsx`): en el constructor comparte la
+  pantalla con el panel, y a 1024 px el campo quedaba en 245 px con el texto
+  cortado. El contenedor es **la fila y no la sección**: un contenedor crea un
+  contexto de apilamiento, y los desplegables del panel de filtros quedarían
+  debajo de la grilla.
+- **La tarjeta de Mis barajas**: la portada se achica bajo 24rem de tarjeta y
+  la pastilla de estado baja bajo 20rem de **columna de texto** (sin la
+  portada), que reemplazó a un `flex-wrap` con `flex-basis` que hacía lo mismo
+  sin decirlo.
+- **La fila de la colección**: «Conseguí una» muestra su texto desde 28rem de
+  fila. En la tableta van dos filas por línea y le quitaba el sitio al nombre.
+
+Ojo: **un elemento no puede consultarse a sí mismo**. Un `@md:` puesto en el
+mismo elemento que lleva `@container` mira al contenedor de más arriba (o a
+ninguno, y nunca aplica).
 
 **La navbar no salta entre páginas** porque `html` lleva `scrollbar-gutter:
 stable`: sin eso, una página corta (Mis barajas vacía, Documentos) no tiene
@@ -2073,8 +2147,13 @@ del constructor corren en los tres: bajo `lg` usan la hoja de la baraja
   abiertos. Falla con cualquier violación `serious` o `critical` de WCAG 2.2
   AA. Sus pruebas llevan `@a11y` en el título: `e2e` las salta
   (`--grep-invert`) y `a11y` corre solo esas, porque son 48 y tardan un
-  minuto. Espera medio segundo antes de medir: la animación `aparece` pinta a
-  media opacidad y axe mediría un contraste que no es el final.
+  minuto. Antes de medir espera a que la página quede **quieta**:
+  la red en reposo y dos miradas seguidas sin animaciones finitas ni View
+  Transition (la animación `aparece` y las transiciones de color pintan
+  estados intermedios, y axe mediría un contraste que no es el final). Era
+  medio segundo fijo, y desde que el catálogo llega aparte del HTML no
+  alcanzaba: la pestaña de la colección que pide la URL cambiaba de color
+  justo cuando axe medía.
 - Ojo al escribir selectores: el aviso del borrador va dos veces en la página
   (sobre el panel y, bajo `lg`, sobre los filtros) y muchos textos se repiten
   en la ayuda; se filtra por lo visible (`filter({ visible: true })`). Y en

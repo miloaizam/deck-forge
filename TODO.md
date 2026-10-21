@@ -47,45 +47,21 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 Preguntas abiertas: cada una termina en una decisión anotada (en DESIGN.md o
 CLAUDE.md), se adopte o no.
 
-### Rendimiento: lo que falta para pasar de 80 en móvil
+### Rendimiento: catálogo y Mis barajas bajo 80 en móvil
 
-- **Hecho (21-10-2026):** el catálogo ya no va dentro de cada HTML, lo baja
-  el navegador una vez (CLAUDE.md, «El catálogo no va dentro del HTML»), y el
-  índice de búsqueda se arma de fondo. Lighthouse en móvil, con gzip como
-  Cloudflare: catálogo y constructor de 55 a ~71, colección de 66 a ~83,
-  edición ~74; portada y novedades siguen en 95+. FCP de 1,8 a 0,9 s.
-- **Qué falta:** catálogo, constructor y Mis barajas siguen en ~70. Queda un
-  LCP simulado de ~4,5 s, atado a la hidratación (las cartas y el texto de
-  Mis barajas se pintan después del JavaScript), y ~500 ms de TBT entre el
-  arranque de React y el procesado del catálogo.
-- **Por dónde:** mirar qué hay en el chunk grande de la app (~73 KB gzip;
-  `zod`, `minisearch` y las erratas viajan a todas las páginas) y si se
-  puede partir; medir el costo de `buildCardIndex` y `agruparImpresiones` al
-  llegar el catálogo. Dar prioridad a las imágenes de la primera fila ya se
-  probó y empeora (CLAUDE.md). Lighthouse se corre sin instalarlo en el
-  repo (`npx lighthouse` con el Chromium de Playwright, sobre `out/` servido
-  con gzip); decidir si vale un `pnpm run lighthouse`.
-- **Terminado cuando:** catálogo, constructor y colección pasan de 80 en
-  móvil, o se decide que no vale la pena y se anota por qué.
-
-### ¿View Transitions para las animaciones entre páginas?
-
-- **Qué:** la API de View Transitions anima el paso de una página a otra (y
-  entre estados de una misma página) sin librerías. Evaluar si mejora la
-  plataforma: abrir una carta desde la grilla, pasar del constructor al
-  detalle de la baraja.
-- **Por dónde:** Next 16 la soporta en el App Router; ver su efecto en un
-  export estático y con «reducir movimiento».
-- **Terminado cuando:** hay una decisión, con una prueba si se adopta.
-
-### ¿Container queries?
-
-- **Qué:** que un componente se adapte al ancho de **su contenedor** y no al de
-  la pantalla (`@container` en CSS, `@container` / `@sm:` en Tailwind v4).
-  Serviría, por ejemplo, para que la tarjeta de una baraja o la fila de la
-  colección se reacomoden igual en una grilla de tres columnas que en una.
-- **Terminado cuando:** hay una decisión y, si se adopta, un primer
-  componente que la use.
+- **Dónde está (21-10-2026):** Lighthouse en móvil, mediana de tres corridas
+  con gzip: catálogo 77 (73–89), constructor 85, colección 89, Mis barajas 78.
+  Lo hecho está en CLAUDE.md («El catálogo no va dentro del HTML»).
+- **Qué falta:** lo que queda es sobre todo el arranque de React y Next (las
+  mismas tareas largas salen en `/novedades`) y evaluar el chunk de la página.
+  En Mis barajas vacía, el LCP es el texto de «Todavía no tienes barajas», que
+  solo se pinta tras hidratar porque depende de `localStorage`.
+- **Por dónde:** medir con el perfil de CPU a 4x (CLAUDE.md lo describe) antes
+  de tocar nada; las corridas de Lighthouse varían ±10 puntos en este
+  contenedor. Ideas sin probar: cargar `faq.ts` (14 KB, en todas las páginas)
+  solo al abrir la ayuda.
+- **Terminado cuando:** catálogo y Mis barajas pasan de 80 en la mediana, o
+  se decide que no vale la pena y se anota por qué.
 
 ## Datos
 

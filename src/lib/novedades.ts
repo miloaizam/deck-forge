@@ -34,6 +34,17 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-21",
+    version: "4.11.0",
+    tipo: "Mejora",
+    titulo: "Cambios de página suaves y un sitio más liviano",
+    texto: [
+      "Al pasar de una página a otra, la nueva aparece con un fundido corto en vez de cambiar de golpe; la barra de arriba se queda quieta. Si tu sistema tiene activado «reducir movimiento», el cambio sigue siendo instantáneo.",
+      "El catálogo, el constructor, tu colección y tus barajas descargan menos código y lo procesan por partes, así que en el teléfono responden antes.",
+      "En el constructor, el buscador ocupa todo el ancho de la columna, y en Mis barajas y en la colección las tarjetas se acomodan mejor según el espacio que tienen.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
     version: "4.10.1",
     tipo: "Arreglo",
     titulo: "Guardar siempre a mano en el teléfono",

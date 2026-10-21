@@ -64,9 +64,15 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
     <section aria-label="Buscar y filtrar" className="flex flex-col gap-4">
       {/* Una sola fila tambien en el telefono: ahi los botones quedan solo con
           su icono, y la primera carta sube los ~60 px que costaba la segunda
-          fila. */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="relative min-w-0 flex-1 sm:flex-none sm:basis-1/2">
+          fila. Las medidas miran el ancho de esta fila (`@container`) y no el
+          de la pantalla: en el constructor la grilla comparte la pantalla con
+          el panel, y a 1024 px el buscador quedaba en 245 px con el texto
+          cortado. Hasta 42rem ocupa todo lo que dejan los botones. El
+          contenedor es la fila y no la seccion: un contenedor crea un
+          contexto de apilamiento, y los desplegables del panel quedarian
+          debajo de la grilla. */}
+      <div className="@container flex items-center gap-2 sm:gap-3">
+        <div className="relative min-w-0 flex-1 @2xl:flex-none @2xl:basis-1/2">
           <Search
             size={17}
             aria-hidden="true"
@@ -106,16 +112,16 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
           </button>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex items-center gap-2 @md:gap-3">
           {(activos > 0 || filters.query !== "" || filters.orden !== "") && (
             <button
               type="button"
               onClick={onReset}
               aria-label="Limpiar filtros"
-              className={cn(BOTON_SECUNDARIO, "min-w-11 px-3 whitespace-nowrap sm:px-4")}
+              className={cn(BOTON_SECUNDARIO, "min-w-11 px-3 whitespace-nowrap @md:px-4")}
             >
               <X size={14} aria-hidden="true" />
-              <span className="hidden sm:inline">Limpiar filtros</span>
+              <span className="hidden @md:inline">Limpiar filtros</span>
             </button>
           )}
 
@@ -126,13 +132,13 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
             aria-controls={panelId}
             className={cn(
               BOTON_SECUNDARIO,
-              "min-w-11 px-3 whitespace-nowrap sm:px-4",
+              "min-w-11 px-3 whitespace-nowrap @md:px-4",
               // Abierto o con filtros puestos queda marcado, como un segmento activo.
               (open || activos > 0) && "border-brand-600 bg-accent-soft text-ink",
             )}
           >
             <Funnel size={14} aria-hidden="true" />
-            <span className="sr-only sm:not-sr-only">Filtros</span>
+            <span className="sr-only @md:not-sr-only">Filtros</span>
             {activos > 0 && (
               <span aria-label={`${activos} filtros aplicados`} className={CONTADOR}>
                 {activos}

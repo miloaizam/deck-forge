@@ -78,7 +78,7 @@ export function ColeccionLista({
             {g.cards.slice(0, mostradas[g.tipo] ?? TANDA).map((c) => (
               <li
                 key={c.id}
-                className="fila-coleccion bg-panel border-line rounded-card hover:outline-brand-500 flex items-center gap-2 border p-1.5 pr-2 transition-colors hover:outline-2 hover:outline-offset-2"
+                className="fila-coleccion bg-panel border-line rounded-card hover:outline-brand-500 @container flex items-center gap-2 border p-1.5 pr-2 transition-colors hover:outline-2 hover:outline-offset-2"
               >
                 <button
                   type="button"
@@ -278,7 +278,9 @@ function Controles({
           className={BOTON}
         >
           <Check size={14} aria-hidden="true" />
-          <span className="hidden sm:inline">Conseguí una</span>
+          {/* Segun el ancho de la fila y no de la pantalla: en la tableta van
+              dos filas por linea y el texto le quitaba el sitio al nombre. */}
+          <span className="hidden @md:inline">Conseguí una</span>
         </button>
       </div>
     );

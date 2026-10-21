@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { idVigente } from "./ids-anteriores";
 
@@ -163,30 +163,32 @@ const SLUG = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 const CARD_IMAGE = /^\/cards\/(?:thumb\/)?[a-z0-9-]+\.webp$/;
 
 export const cardSchema = z.object({
-  id: z.string().regex(SLUG, "el id debe ser un slug seguro"),
-  codigo: z.string().min(1).max(40),
-  nombre: z.string().min(1).max(120),
-  identidad: z.string().regex(SLUG, "la identidad debe ser un slug seguro"),
-  edicion: z.string().regex(SLUG, "la edicion debe ser un slug seguro"),
+  id: z.string().check(z.regex(SLUG, "el id debe ser un slug seguro")),
+  codigo: z.string().check(z.minLength(1), z.maxLength(40)),
+  nombre: z.string().check(z.minLength(1), z.maxLength(120)),
+  identidad: z.string().check(z.regex(SLUG, "la identidad debe ser un slug seguro")),
+  edicion: z.string().check(z.regex(SLUG, "la edicion debe ser un slug seguro")),
   tipo: z.enum(TIPOS),
-  raza: z.enum(RAZAS).nullable().default(null),
-  escuela: z.enum(ESCUELAS).nullable().default(null),
-  atributo: z.enum(ATRIBUTOS).nullable().default(null),
-  coste: z.number().int().nonnegative().nullable().default(null),
-  fuerza: z.number().int().nullable().default(null),
+  raza: z._default(z.nullable(z.enum(RAZAS)), null),
+  escuela: z._default(z.nullable(z.enum(ESCUELAS)), null),
+  atributo: z._default(z.nullable(z.enum(ATRIBUTOS)), null),
+  coste: z._default(z.nullable(z.int().check(z.nonnegative())), null),
+  fuerza: z._default(z.nullable(z.int()), null),
   frecuencia: z.enum(FRECUENCIAS),
-  habilidad: z.string().default(""),
-  ilustrador: z.string().max(120).nullable().default(null),
-  imagen: z.string().regex(CARD_IMAGE, "la imagen debe vivir en /cards/"),
-  thumb: z.string().regex(CARD_IMAGE, "el thumb debe vivir en /cards/thumb/"),
-  legalidad: z.enum(LEGALIDADES).default("libre"),
-  keywords: z.array(z.string()).default([]),
+  habilidad: z._default(z.string(), ""),
+  ilustrador: z._default(z.nullable(z.string().check(z.maxLength(120))), null),
+  imagen: z.string().check(z.regex(CARD_IMAGE, "la imagen debe vivir en /cards/")),
+  thumb: z.string().check(z.regex(CARD_IMAGE, "el thumb debe vivir en /cards/thumb/")),
+  legalidad: z._default(z.enum(LEGALIDADES), "libre"),
+  keywords: z._default(z.array(z.string()), []),
   /**
    * Solo en Arte Alternativo: la edicion del juego de donde sale esa
    * impresion (un slug de `ORIGENES`, editions.ts). Ordena la edicion y se
    * muestra en el modal. Las demas cartas no lo llevan.
    */
-  origen: z.string().regex(SLUG, "el origen debe ser un slug seguro").optional(),
+  origen: z.optional(
+    z.string().check(z.regex(SLUG, "el origen debe ser un slug seguro")),
+  ),
 });
 
 export const catalogSchema = z.array(cardSchema);
@@ -264,11 +266,10 @@ const MAX_DESCRIPCION_LEIBLE = 600;
  */
 const MAX_FECHA = 8_640_000_000_000_000;
 
-const fechaSchema = z
-  .number()
-  .int()
-  .nonnegative()
-  .transform((n) => Math.min(n, MAX_FECHA));
+const fechaSchema = z.pipe(
+  z.int().check(z.nonnegative()),
+  z.transform((n: number) => Math.min(n, MAX_FECHA)),
+);
 
 /**
  * Caracteres de control y de direccion de texto.
@@ -310,12 +311,15 @@ const DECK_ID = /^[a-z0-9]{10}$/;
  *
  * Un id que cambio (`ids-anteriores.ts`) se traduce al leerse.
  */
-export const cardRefSchema = z.string().max(40).regex(SLUG).transform(idVigente);
+export const cardRefSchema = z.pipe(
+  z.string().check(z.maxLength(40), z.regex(SLUG)),
+  z.transform(idVigente),
+);
 
 export const deckEntrySchema = z.object({
   /** Id de IMPRESION: el usuario eligio ese arte y hay que respetarselo. */
   id: cardRefSchema,
-  n: z.number().int().min(1).max(MAX_COPIAS_REPRESENTABLES),
+  n: z.int().check(z.minimum(1), z.maximum(MAX_COPIAS_REPRESENTABLES)),
 });
 
 /**
@@ -333,45 +337,47 @@ export const deckAffinitySchema = z.discriminatedUnion("modo", [
 
 export const deckSchema = z.object({
   v: z.literal(DECK_VERSION),
-  id: z.string().regex(DECK_ID),
+  id: z.string().check(z.regex(DECK_ID)),
   /**
    * Puede venir vacio: el usuario tiene que poder borrar el campo para
    * escribir otro nombre. Es obligatorio para GUARDAR, no para existir, y de
    * eso se encarga `validateDeck`.
    */
-  nombre: z
-    .string()
-    .max(MAX_NOMBRE_LEIBLE)
-    .transform((t) => sinControles(t).slice(0, MAX_NOMBRE_BARAJA)),
+  nombre: z.pipe(
+    z.string().check(z.maxLength(MAX_NOMBRE_LEIBLE)),
+    z.transform((t: string) => sinControles(t).slice(0, MAX_NOMBRE_BARAJA)),
+  ),
   /**
    * Nota corta del autor sobre la baraja. Opcional: casi siempre viene vacia.
    * Con `.default("")` las barajas ya guardados se siguen leyendo.
    */
-  descripcion: z
-    .string()
-    .max(MAX_DESCRIPCION_LEIBLE)
-    .transform((t) => sinControles(t).slice(0, MAX_DESCRIPCION_BARAJA))
-    .default(""),
+  descripcion: z._default(
+    z.pipe(
+      z.string().check(z.maxLength(MAX_DESCRIPCION_LEIBLE)),
+      z.transform((t: string) => sinControles(t).slice(0, MAX_DESCRIPCION_BARAJA)),
+    ),
+    "",
+  ),
   /**
    * Que carta de la baraja hace de oro inicial. Es un PUNTERO a una entrada de
    * `principal`, no una zona aparte: el oro inicial cuenta dentro de las 50,
    * y darle un hueco propio garantizaba un error de conteo de uno.
    */
-  oroInicial: cardRefSchema.nullable().default(null),
+  oroInicial: z._default(z.nullable(cardRefSchema), null),
   /**
    * Que carta de la baraja hace de portada en la lista. Presentacion pura: no
    * entra en las reglas ni en el enlace compartido, como `afinidadFijada`.
    * Lleva `.default(null)` para que las barajas ya guardados sigan leyendose.
    */
-  portada: cardRefSchema.nullable().default(null),
-  principal: z.array(deckEntrySchema).max(MAX_ENTRADAS),
-  side: z.array(deckEntrySchema).max(MAX_ENTRADAS_SIDE),
+  portada: z._default(z.nullable(cardRefSchema), null),
+  principal: z.array(deckEntrySchema).check(z.maxLength(MAX_ENTRADAS)),
+  side: z.array(deckEntrySchema).check(z.maxLength(MAX_ENTRADAS_SIDE)),
   /**
    * Preferencia de la interfaz, no fuente de verdad. Sirve para filtrar el
    * catalogo del constructor. La legalidad de la baraja SIEMPRE se decide por las
    * cartas que lleva, nunca por este campo.
    */
-  afinidadFijada: deckAffinitySchema.nullable().default(null),
+  afinidadFijada: z._default(z.nullable(deckAffinitySchema), null),
   creado: fechaSchema,
   actualizado: fechaSchema,
 });

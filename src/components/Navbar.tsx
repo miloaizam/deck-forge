@@ -60,7 +60,9 @@ export function Navbar() {
   }, [open]);
 
   return (
-    <header className="border-line bg-bg/85 sticky top-0 z-30 border-b backdrop-blur">
+    // Con nombre propio en las View Transitions: queda quieta y por encima del
+    // contenido que se funde al cambiar de pagina (globals.css).
+    <header className="border-line bg-bg/85 sticky top-0 z-30 border-b backdrop-blur [view-transition-name:navbar]">
       <nav
         aria-label="Principal"
         className="mx-auto flex max-w-[1480px] items-center gap-2 px-4 py-3 sm:px-6"

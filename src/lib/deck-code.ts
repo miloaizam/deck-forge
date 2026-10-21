@@ -1,5 +1,5 @@
 import lzString from "lz-string";
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { createDeck } from "./deck";
 import { deckSchema, MAX_NOMBRE_BARAJA, type Deck, type DeckEntry } from "./types";
@@ -446,17 +446,17 @@ function decodeBinario(codigo: string): DecodeResult | null {
 
 const entradasSchema = z.array(
   // Mismo tope que el esquema de la baraja: los Oros sin habilidad no tienen limite.
-  z.tuple([z.string().regex(SLUG), z.number().int().min(1).max(50)]),
+  z.tuple([z.string().check(z.regex(SLUG)), z.int().check(z.minimum(1), z.maximum(50))]),
 );
 
 const wireLzSchema = z.tuple([
   z.literal(WIRE_VERSION_LZ),
   // Igual que el esquema de la baraja: se admite leer mas largo de lo que se
   // deja escribir, para no romper un enlace hecho cuando el tope era otro.
-  z.string().max(200),
-  z.string().regex(SLUG).nullable(),
-  entradasSchema.max(60),
-  entradasSchema.max(20),
+  z.string().check(z.maxLength(200)),
+  z.nullable(z.string().check(z.regex(SLUG))),
+  entradasSchema.check(z.maxLength(60)),
+  entradasSchema.check(z.maxLength(20)),
 ]);
 
 function decodeLz(codigo: string): DecodeResult {
@@ -562,7 +562,7 @@ const FILE_VERSION = 1;
 const archivoSchema = z.object({
   app: z.literal("deckforge"),
   v: z.literal(FILE_VERSION),
-  mazos: z.array(z.unknown()).max(200),
+  mazos: z.array(z.unknown()).check(z.maxLength(200)),
 });
 
 export function exportFile(decks: Deck[]): string {

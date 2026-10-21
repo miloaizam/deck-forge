@@ -5,12 +5,20 @@ import { expect, test, type Page } from "@playwright/test";
  * localStorage vacio (Playwright abre un contexto nuevo por prueba).
  */
 
-/** Agrega al constructor la primera carta que se pueda agregar. */
+/**
+ * Agrega al constructor la primera carta que se pueda agregar, y espera a que
+ * entre: un «+» pulsado antes de que llegue el catalogo queda en espera y se
+ * aplica al llegar, y recargar antes lo perderia.
+ */
 async function agregarPrimera(page: Page) {
-  await page
-    .getByRole("button", { name: /^Agregar .+ a la baraja$/ })
-    .first()
-    .click();
+  const mas = page.getByRole("button", { name: /^Agregar .+ a la baraja$/ }).first();
+  const nombre = (await mas.getAttribute("aria-label"))!
+    .replace(/^Agregar /, "")
+    .replace(/ a la baraja$/, "");
+  await mas.click();
+  await expect(
+    page.getByRole("button", { name: `Quitar una copia de ${nombre}` }).first(),
+  ).toBeEnabled();
 }
 
 test("el catalogo abre el detalle de una carta y Esc lo cierra", async ({ page }) => {

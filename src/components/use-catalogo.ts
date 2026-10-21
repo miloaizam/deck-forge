@@ -1,10 +1,11 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import * as z from "zod/mini";
 
 import { sortCards } from "@/lib/card-order";
 import { conErratas } from "@/lib/erratas";
-import { catalogSchema, type Card } from "@/lib/types";
+import { cardSchema, type Card } from "@/lib/types";
 
 /**
  * El catalogo entero, pedido UNA vez por sesion a `/data/cards.json`.
@@ -31,6 +32,9 @@ export interface EstadoCatalogo {
   error: boolean;
 }
 
+/** Un arreglo de cualquier cosa: cada carta la valida `cardSchema` despues. */
+const listaSchema = z.array(z.unknown()).check(z.maxLength(10_000));
+
 const CARGANDO: EstadoCatalogo = Object.freeze({ cards: null, error: false });
 const FALLO: EstadoCatalogo = Object.freeze({ cards: null, error: true });
 
@@ -46,14 +50,29 @@ function avisar(siguiente: EstadoCatalogo) {
 /** Cede el hilo principal entre pasos: cada uno es una tarea corta y no una larga. */
 const ceder = () => new Promise<void>((r) => setTimeout(r, 0));
 
+/**
+ * Cartas por tanda al validar. Validar las 2650 de una vez era una tarea de
+ * ~350 ms en un telefono lento; de a 200, cada tanda queda bajo los 50 ms
+ * que el navegador cuenta como bloqueo.
+ */
+const TANDA = 200;
+
 async function bajar(): Promise<Card[]> {
   const res = await fetch("/data/cards.json");
   if (!res.ok) throw new Error(`cards.json: ${res.status}`);
   const json: unknown = await res.json();
+  // La forma de afuera (un arreglo, y no demasiado largo) se valida entera;
+  // las cartas, de a tandas. El resultado es el mismo que catalogSchema.
+  const lista = listaSchema.parse(json);
+  const cards: Card[] = [];
+  for (let i = 0; i < lista.length; i += TANDA) {
+    await ceder();
+    cards.push(...lista.slice(i, i + TANDA).map((c) => cardSchema.parse(c)));
+  }
   await ceder();
-  const cards = catalogSchema.parse(json);
+  const erratadas = cards.map(conErratas);
   await ceder();
-  return sortCards(cards.map(conErratas));
+  return sortCards(erratadas);
 }
 
 function cargar() {

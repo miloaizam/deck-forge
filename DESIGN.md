@@ -206,6 +206,10 @@ superficies, no de la sombra.
   para dejarle sitio a la grilla.
 - Breakpoints los de Tailwind por defecto. El punto crítico de la marca es
   **720 px** (donde las rejillas de dos columnas colapsan a una).
+- **Lo que vive en sitios de distinto ancho se acomoda a su contenedor**, no a
+  la pantalla (container queries: `@container` y `@sm:`…): la fila del
+  buscador, la tarjeta de Mis barajas y la fila de la colección. La página
+  sigue usando los breakpoints de siempre; ver CLAUDE.md para el detalle.
 
 ---
 
@@ -235,6 +239,7 @@ superficies, no de la sombra.
   | Desplegables de filtros | `despliegue` + `hidden` | fundido y baja 6 px | fundido |
   | Preguntas de la ayuda | `desplegable` | la respuesta se abre | se cierra |
   | Avisos flotantes | `aviso` / `aviso-saliendo` | fundido y baja 6 px | fundido, y los de abajo suben |
+  | Cambio de página | View Transitions, clase `pagina` | fundido y sube 6 px (220 ms) | fundido (150 ms); la navbar queda quieta |
   | Panel y hoja de la baraja | `AutoHeight` (componente) | crece al agregar | se encoge al quitar |
   | Fila nueva del panel | `fila-entra` | fundido desde la izquierda | — |
   | Cartas de las grillas (catálogo, edición, constructor), cartas del detalle de una baraja, barajas de Mis barajas, novedades, mano de prueba | `aparece` | fundido y sube 4 px | — |

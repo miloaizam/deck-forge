@@ -2,12 +2,7 @@ import banlistJson from "../../documentos/fuente/banlist-estandar.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
 import { keywordsPropias, sinRecordatorios, splitAbility } from "./ability";
 import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
-import {
-  banlistSchema,
-  claveDeNombre,
-  feDeErratasSchema,
-  type Cambio,
-} from "./documentos";
+import { claveDeNombre, type Banlist, type Cambio, type FeDeErratas } from "./documentos";
 import { ATRIBUTOS, RAZAS, type Atributo, type Card, type Raza } from "./types";
 
 /**
@@ -29,8 +24,16 @@ import { ATRIBUTOS, RAZAS, type Atributo, type Card, type Raza } from "./types";
  * build y en los tests (scripts/ts-imports.mjs les pone el atributo json).
  */
 
-const FE = feDeErratasSchema.parse(feDeErratasJson);
-const BAN = banlistSchema.parse(banlistJson);
+/*
+ * Sin validar aqui, a proposito. Los dos JSON van DENTRO del bundle (no son
+ * una entrada de afuera, CLAUDE.md seguridad #4), y validarlos al cargar el
+ * modulo era parte de la tarea mas larga del catalogo en un telefono. Los
+ * valida el build (`documentos-data.ts`, que tumba el export si no cumplen) y
+ * `documentos.test.ts`, que ademas exige que validar no cambie nada: por eso
+ * el `as` es seguro.
+ */
+const FE = feDeErratasJson as FeDeErratas;
+const BAN = banlistJson as Banlist;
 
 export type FuenteErrata = "fe-de-erratas" | "banlist";
 

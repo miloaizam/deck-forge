@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import { TIPOS } from "./types";
 
@@ -13,9 +13,9 @@ import { TIPOS } from "./types";
  * con el catalogo real.
  */
 
-const texto = z.string().trim().min(1);
+const texto = z.string().check(z.trim(), z.minLength(1));
 /** AAAA-MM-DD. */
-const fecha = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const fecha = z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/));
 
 export const CAMBIOS = ["habilidad", "raza", "nombre", "frecuencia"] as const;
 export type Cambio = (typeof CAMBIOS)[number];
@@ -27,32 +27,34 @@ export const erratumSchema = z
     codigo: texto,
     edicion: texto,
     tipo: z.enum(TIPOS),
-    raza: texto.nullable(),
-    coste: z.number().int().min(0).nullable(),
-    fuerza: z.number().int().min(0).nullable(),
+    raza: z.nullable(texto),
+    coste: z.nullable(z.int().check(z.minimum(0))),
+    fuerza: z.nullable(z.int().check(z.minimum(0))),
     cambio: z.enum(CAMBIOS),
     /**
      * "Donde dice": el texto (o la raza, el nombre…) impreso en la carta. Es
      * `null` cuando la carta se imprimio con varias versiones: van en `versiones`.
      */
-    antes: texto.nullable(),
+    antes: z.nullable(texto),
     /** "Debe decir". */
     despues: texto,
     /** Varias versiones impresas del "Donde dice" (Ataque de Dragon). */
-    versiones: z.array(texto).min(2).optional(),
+    versiones: z.optional(z.array(texto).check(z.minLength(2))),
     /** Una errata anterior, entre la carta impresa y la vigente. */
-    intermedio: z.strictObject({ etiqueta: texto, texto }).optional(),
+    intermedio: z.optional(z.strictObject({ etiqueta: texto, texto })),
     /** El titulo del "Debe decir" cuando el original lo nombra distinto. */
-    etiquetaDespues: texto.optional(),
+    etiquetaDespues: z.optional(texto),
     /** Una aclaracion del propio documento. */
-    nota: texto.optional(),
+    nota: z.optional(texto),
     /** Lo que la transcripcion corrigio del original, y por que. */
-    correccion: texto.optional(),
+    correccion: z.optional(texto),
   })
   // O un "Donde dice" o varios, nunca los dos ni ninguno.
-  .refine((e) => (e.antes === null) === (e.versiones !== undefined), {
-    message: "cada entrada lleva `antes` o `versiones`, uno de los dos",
-  });
+  .check(
+    z.refine((e) => (e.antes === null) === (e.versiones !== undefined), {
+      message: "cada entrada lleva `antes` o `versiones`, uno de los dos",
+    }),
+  );
 export type Erratum = z.infer<typeof erratumSchema>;
 
 export const feDeErratasSchema = z.strictObject({
@@ -62,11 +64,11 @@ export const feDeErratasSchema = z.strictObject({
     titulo: texto,
     actualizacion: texto,
     archivo: texto,
-    paginas: z.number().int().positive(),
+    paginas: z.int().check(z.positive()),
   }),
   version: fecha,
   orden: texto,
-  entradas: z.array(erratumSchema).min(1),
+  entradas: z.array(erratumSchema).check(z.minLength(1)),
 });
 export type FeDeErratas = z.infer<typeof feDeErratasSchema>;
 
@@ -76,20 +78,22 @@ export const banlistSchema = z.strictObject({
   original: z.strictObject({
     titulo: texto,
     archivo: texto,
-    paginas: z.number().int().positive(),
+    paginas: z.int().check(z.positive()),
     modificado: fecha,
   }),
   version: fecha,
   construccion: texto,
-  prohibidas: z.array(texto).min(1),
-  unicas: z.array(texto).min(1),
+  prohibidas: z.array(texto).check(z.minLength(1)),
+  unicas: z.array(texto).check(z.minLength(1)),
   observacion: z.strictObject({
     descripcion: texto,
-    condiciones: z.array(z.strictObject({ carta: texto, condicion: texto.nullable() })),
+    condiciones: z.array(z.strictObject({ carta: texto, condicion: z.nullable(texto) })),
     porRaza: z.array(
       z.strictObject({
         raza: texto,
-        cartas: z.array(z.strictObject({ carta: texto, edicion: texto })).min(1),
+        cartas: z
+          .array(z.strictObject({ carta: texto, edicion: texto }))
+          .check(z.minLength(1)),
       }),
     ),
   }),
@@ -98,7 +102,7 @@ export const banlistSchema = z.strictObject({
       carta: texto,
       texto,
       /** Solo en las cartas de fuera del formato. */
-      edicion: texto.optional(),
+      edicion: z.optional(texto),
     }),
   ),
   correcciones: z.array(texto),

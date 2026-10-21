@@ -47,6 +47,14 @@ const NO_SON_CARTAS = ["Mazo Desafiante y/o Guerrero"];
 
 const EXCEPCIONES = new Set([...FUERA_DEL_FORMATO, ...NO_SON_CARTAS].map(claveDeNombre));
 
+test("validar los documentos no los cambia", () => {
+  // `erratas.ts` usa los JSON sin validarlos en el navegador: eso solo es
+  // seguro si el esquema los deja tal cual (sin recortar espacios, sin
+  // defaults que rellenar).
+  assert.deepStrictEqual(FE, leer("documentos/fuente/fe-de-erratas.json"));
+  assert.deepStrictEqual(BAN, leer("documentos/fuente/banlist-estandar.json"));
+});
+
 test("los conteos son los de la revision contra los originales", () => {
   assert.equal(FE.entradas.length, 63);
   assert.equal(BAN.prohibidas.length, 9);

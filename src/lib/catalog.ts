@@ -175,8 +175,12 @@ const nuevoIndice = () =>
     },
   });
 
-/** Cartas por tanda al armar el indice de fondo: unos milisegundos cada una. */
-const TANDA = 100;
+/**
+ * Cartas por tanda al armar el indice de fondo. De a 100 cada tanda pasaba
+ * los 50 ms en un telefono lento; de a 25 son unos 15, y con
+ * `requestIdleCallback` se encadenan mientras quede tiempo libre.
+ */
+const TANDA = 25;
 
 /**
  * Indexar las 2650 cartas de una vez cuesta ~130 ms en escritorio y medio
@@ -200,15 +204,23 @@ function indiceDiferido(cards: Card[]): SearchIndex {
   };
 
   if (typeof window !== "undefined") {
-    const programar: (cb: () => void) => void =
-      typeof window.requestIdleCallback === "function"
-        ? (cb) => window.requestIdleCallback(cb, { timeout: 2000 })
-        : (cb) => window.setTimeout(cb, 50);
-    const tanda = () => {
-      avanzar(TANDA);
-      if (hechas < cards.length) programar(tanda);
+    const idle = typeof window.requestIdleCallback === "function";
+    const programar = () => {
+      if (idle) window.requestIdleCallback(tanda, { timeout: 2000 });
+      else window.setTimeout(tanda, 50);
     };
-    programar(tanda);
+    // Tandas encadenadas mientras quede tiempo: el que da el navegador o, sin
+    // `requestIdleCallback` (Safari), unos 8 ms por turno. De a una tanda por
+    // turno, Safari tardaba ~5 s en terminar.
+    function tanda(plazo?: IdleDeadline) {
+      const inicio = performance.now();
+      const queda = () =>
+        plazo ? plazo.timeRemaining() - 8 : 8 - (performance.now() - inicio);
+      do avanzar(TANDA);
+      while (hechas < cards.length && queda() > 0);
+      if (hechas < cards.length) programar();
+    }
+    programar();
   }
 
   return {

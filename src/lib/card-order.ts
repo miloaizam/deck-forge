@@ -81,6 +81,14 @@ function rangoDentroDeOro(card: Card): number {
 }
 
 /**
+ * Compara codigos impresos con los numeros como numeros ("AI-9" antes que
+ * "AI-10"). Uno solo para todo el modulo: `localeCompare` con opciones arma
+ * un comparador nuevo en cada llamada, y ordenar el catalogo hace decenas de
+ * miles. Era la mitad de la tarea mas larga del catalogo en un telefono.
+ */
+const CODIGO = new Intl.Collator("es", { numeric: true });
+
+/**
  * Por edicion (de la ultima a la primera), en Arte Alternativo por el origen
  * de la impresion, y dentro de eso por frecuencia, en el orden de
  * `FRECUENCIAS` (Legendaria, Ultra Real, Mega Real, Promocional, ...).
@@ -107,7 +115,7 @@ export function compareCards(a: Card, b: Card): number {
     if (oro !== 0) return oro;
   }
 
-  return a.codigo.localeCompare(b.codigo, "es", { numeric: true });
+  return CODIGO.compare(a.codigo, b.codigo);
 }
 
 /** El catalogo entero en ese orden, sin tocar el arreglo que recibe. */

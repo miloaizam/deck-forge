@@ -258,6 +258,57 @@
 }
 
 /* ------------------------------------------------------------------ *
+ * Cambio de pagina (View Transitions)
+ *
+ * El layout de (app) envuelve cada pagina en un <ViewTransition> con la clase
+ * `pagina`. La vieja se va en 150 ms y la nueva entra en 220 ms subiendo 6 px,
+ * la misma regla de `aparece`. Lo demas no se anima: la transicion de la raiz
+ * que pone el navegador por defecto se apaga, y la navbar lleva nombre propio
+ * (`navbar`) para quedar quieta y POR ENCIMA de la pagina, que si no se
+ * dibujaria sobre ella mientras se funde con el scroll a media altura.
+ * "Reducir movimiento" la deja sin animacion; los pseudo-elementos
+ * ::view-transition-* no entran en el `*` de la base, por eso van aparte.
+ * ------------------------------------------------------------------ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-group(navbar) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(navbar) {
+  display: none;
+}
+::view-transition-new(navbar) {
+  animation: none;
+}
+::view-transition-old(.pagina) {
+  animation: 150ms var(--ease-out-soft) both pagina-sale;
+}
+::view-transition-new(.pagina) {
+  animation: 220ms var(--ease-out-soft) both pagina-entra;
+}
+@keyframes pagina-sale {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pagina-entra {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ *
  * Aparecer y desaparecer
  *
  * CSS puro, sin JavaScript: `@starting-style` da el estado del que se entra y

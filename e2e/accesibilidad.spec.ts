@@ -59,9 +59,30 @@ function informe(v: Violacion[]): string {
 }
 
 async function sinViolaciones(page: Page, donde: string) {
-  // Las animaciones de entrada (`aparece`) pintan a media opacidad: axe mediria
-  // un contraste que no es el final.
-  await page.waitForTimeout(500);
+  // Las animaciones de entrada (`aparece`) pintan a media opacidad y los
+  // colores cambian con transicion: axe mediria un contraste que no es el
+  // final. Se espera a que la pagina quede QUIETA: la red en reposo (el
+  // catalogo llega aparte del HTML y hay vistas que cambian al tenerlo, como la
+  // pestana de la coleccion que pide la URL) y dos miradas seguidas, separadas
+  // por 250 ms, sin animaciones finitas ni View Transition. El latido de una
+  // imagen que carga es infinito y no cuenta. Un tiempo fijo no alcanzaba con
+  // la maquina cargada.
+  await page.waitForLoadState("networkidle");
+  const quieta = () =>
+    page.evaluate(
+      () =>
+        !document.documentElement.matches(":active-view-transition") &&
+        document
+          .getAnimations()
+          .every(
+            (a) =>
+              a.playState !== "running" || a.effect?.getTiming().iterations === Infinity,
+          ),
+    );
+  for (let seguidas = 0; seguidas < 2;) {
+    await page.waitForTimeout(250);
+    seguidas = (await quieta()) ? seguidas + 1 : 0;
+  }
   const v = await revisar(page);
   expect(v, `${donde}\n${informe(v)}`).toEqual([]);
 }

@@ -169,7 +169,9 @@ function DeckList({ cards }: DeckListViewProps) {
                 // dice que la tarjeta es algo con que se puede hacer cosas.
                 // `relative`: el enlace del titulo se estira sobre la tarjeta
                 // entera (su ::after), y los botones van por encima con z-10.
-                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
+                // `@container`: lo de adentro se acomoda al ancho de la tarjeta,
+                // no al de la pantalla (una, dos o tres por fila).
+                className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group @container relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
               >
                 {/* La portada la elige el usuario en /baraja, y va a la izquierda
                     de todo lo demas. Si la carta ya no esta en el catalogo no
@@ -189,16 +191,19 @@ function DeckList({ cards }: DeckListViewProps) {
                     // se comia los costados del arte. Asi la foto fija el alto
                     // minimo y, si el contenido es mas alto, queda arriba.
                     onLoad={marcarCargada}
-                    className="imagen-carga border-line h-[131px] w-[92px] shrink-0 self-start rounded border object-cover"
+                    // En una tarjeta angosta (el telefono) la foto se achica y le
+                    // deja ese sitio al titulo.
+                    className="imagen-carga border-line h-[92px] w-[64px] shrink-0 self-start rounded border object-cover @sm:h-[131px] @sm:w-[92px]"
                   />
                 )}
 
-                <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                  {/* La pastilla baja bajo el texto cuando la tarjeta es
-                      angosta: a su lado dejaba el titulo en «Faerie …» y la
+                <div className="@container flex min-w-0 flex-1 flex-col gap-2.5">
+                  {/* La pastilla va bajo el texto cuando la columna de texto (sin
+                      la portada: es su propio `@container`) mide menos de
+                      20rem: a su lado dejaba el titulo en «Faerie …» y la
                       fecha partida en cuatro lineas. */}
-                  <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1.5">
-                    <div className="min-w-0 flex-[1_1_11rem]">
+                  <div className="flex flex-col items-start gap-x-2 gap-y-1.5 @xs:flex-row @xs:justify-between">
+                    <div className="w-full min-w-0 @xs:w-auto @xs:flex-1">
                       <Link
                         href={`/baraja/?m=${deck.id}`}
                         // Toda la tarjeta abre la baraja: un solo enlace, con
