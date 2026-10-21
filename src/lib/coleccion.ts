@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { editionTitle, origenTitle } from "./editions";
 import { cardRefSchema, SECCIONES_DE_LA_BARAJA, type Card, type Tipo } from "./types";
 
 /**
@@ -165,6 +166,37 @@ export function porTipo(cards: Card[]): { tipo: Tipo; titulo: string; cards: Car
     titulo,
     cards: cards.filter((c) => c.tipo === tipo),
   })).filter((g) => g.cards.length > 0);
+}
+
+/**
+ * La lista que se ve como texto, para pegarla en un chat (WhatsApp, sobre
+ * todo) o un foro: una carta por linea, con sus copias, y entre parentesis la
+ * edicion y la frecuencia, que es lo que hace falta para saber que impresion
+ * es. Un arte alternativo dice de donde sale («Arte de Templarios»), como el
+ * pie de la imagen.
+ *
+ * Los titulos van entre asteriscos, que WhatsApp pinta en negrita y en
+ * cualquier otro sitio se leen igual. Respeta el orden de `cards`: el de los
+ * filtros que se ven.
+ */
+export function coleccionComoTexto(
+  titulo: string,
+  cards: Card[],
+  copias: Readonly<Record<string, number>>,
+): string {
+  const n = (c: Card) => copias[c.id] ?? 0;
+  const total = cards.reduce((s, c) => s + n(c), 0);
+  const lineas = [`*${titulo}* (${total === 1 ? "1 carta" : `${total} cartas`})`];
+  for (const g of porTipo(cards)) {
+    lineas.push("", `*${g.titulo}* (${g.cards.reduce((s, c) => s + n(c), 0)})`);
+    for (const c of g.cards) {
+      const edicion = c.origen
+        ? `Arte de ${origenTitle(c.origen)}`
+        : editionTitle(c.edicion);
+      lineas.push(`${n(c)}x ${c.nombre} (${edicion}, ${c.frecuencia})`);
+    }
+  }
+  return lineas.join("\n");
 }
 
 /* ------------------------------------------------------------------ *

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Download, ImageDown, Link2, Trash2, Upload } from "lucide-react";
+import { ClipboardList, Download, ImageDown, Link2, Trash2, Upload } from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
@@ -25,6 +25,11 @@ interface ColeccionAccionesProps {
    * esta pestana no hay imagen que dar: «Agregar cartas», o la lista vacia.
    */
   onImagen: (() => void) | null;
+  /**
+   * La lista que se ve como texto, con un nombre de archivo por si hay que
+   * bajarla. `null` en las mismas pestanas que `onImagen`.
+   */
+  onLista: (() => { texto: string; archivo: string }) | null;
   /** La imagen se esta dibujando: con mil cartas tarda unos segundos. */
   generandoImagen?: boolean;
   /** Una coleccion compartida: solo se puede bajar su imagen. */
@@ -37,13 +42,14 @@ const BOTON = BOTON_SECUNDARIO;
 const MAX_ARCHIVO = 1024 * 1024;
 
 /**
- * La imagen de la lista que se ve, el enlace para compartir la coleccion,
+ * La imagen y el texto de la lista que se ve, el enlace para compartir la coleccion,
  * llevarsela a otro navegador y vaciarla. El respaldo se arma con un Blob, como el de las barajas: no sale
  * nada del navegador.
  */
 export function ColeccionAcciones({
   coleccion,
   onImagen,
+  onLista,
   generandoImagen = false,
   soloLectura = false,
 }: ColeccionAccionesProps) {
@@ -62,6 +68,26 @@ export function ColeccionAcciones({
       toast("Enlace de la colección copiado al portapapeles.", "info");
     } catch {
       toast("No se pudo copiar el enlace. Revisa los permisos del navegador.", "warning");
+    }
+  };
+
+  // La lista como texto va al portapapeles, para pegarla en WhatsApp. Si el
+  // navegador no deja copiar, se baja como .txt: algo tiene que salir.
+  const copiarLista = async () => {
+    const lista = onLista?.();
+    if (!lista) return;
+    try {
+      await navigator.clipboard.writeText(lista.texto);
+      toast("Lista copiada al portapapeles, lista para pegar en un chat.", "info");
+    } catch {
+      const blob = new Blob([lista.texto], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${lista.archivo}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("No se pudo copiar la lista: se descargó como archivo de texto.", "info");
     }
   };
 
@@ -137,11 +163,31 @@ export function ColeccionAcciones({
       {generandoImagen ? "Generando…" : "Imagen"}
     </button>
   );
-  if (soloLectura) return <div className="flex flex-wrap gap-2">{imagen}</div>;
+  const lista = (
+    <button
+      type="button"
+      onClick={() => void copiarLista()}
+      disabled={!onLista}
+      title="Copiar la lista que se ve como texto, para pegarla en un chat"
+      className={BOTON}
+    >
+      <ClipboardList size={14} aria-hidden="true" />
+      Lista
+    </button>
+  );
+  if (soloLectura) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {imagen}
+        {lista}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
       {imagen}
+      {lista}
       <button
         type="button"
         onClick={() => void compartir()}

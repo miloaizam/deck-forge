@@ -112,3 +112,20 @@ test("una carta puede estar en «Tengo» y en «Me faltan» a la vez", async ({ 
   await expect(fila).toContainText("te falta 1");
   await expect(fila.getByLabel("2 copias")).toBeVisible();
 });
+
+test("«Lista» copia la colección como texto para un chat", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "deckforge-coleccion",
+      JSON.stringify({ v: 1, cartas: { "ee-050": 3 }, quiero: {} }),
+    );
+  });
+  await page.goto("/coleccion/");
+  await page.getByRole("button", { name: "Lista", exact: true }).click();
+  await expect(page.getByText(/^Lista copiada/).first()).toBeAttached();
+  const texto = await page.evaluate(() => navigator.clipboard.readText());
+  expect(texto).toBe(
+    "*Tengo* (3 cartas)\n\n*Aliados* (3)\n3x Akiko Yamamoto (Escuelas Elementales, Mega Real)",
+  );
+});

@@ -33,6 +33,15 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-21",
+    version: "4.9.0",
+    tipo: "Novedad",
+    titulo: "Tu colección como lista de texto",
+    texto: [
+      "En Colección, el botón «Lista» copia la lista que estás viendo («Tengo» o «Me faltan», con tus filtros) como texto: una carta por línea, con sus copias y, entre paréntesis, la edición y la frecuencia. Lista para pegar en WhatsApp.",
+    ],
+  },
+  {
     fecha: "2026-10-20",
     version: "4.8.1",
     tipo: "Arreglo",

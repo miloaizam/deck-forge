@@ -293,10 +293,11 @@ export const FAQ: FaqSection[] = [
       },
       {
         pregunta: "¿Puedo compartir mis listas para cambiar cartas?",
-        respuesta: ["Sí, de dos formas:"],
+        respuesta: ["Sí, de tres formas:"],
         lista: [
           "**«Compartir»** copia un enlace con tus dos listas. Quien lo abra ve lo que tienes y lo que te falta, sin poder cambiarlo, y su propia colección no se toca.",
           "**«Imagen»** descarga una imagen de la lista que estás viendo, «Tengo» o «Me faltan», con los filtros que tengas puestos. Bajo cada carta van su **nombre**, su **edición** y su **frecuencia**, para que quien la vea sepa exactamente cuál es. Si la lista es muy larga, sale en **varias imágenes** para que las cartas se vean bien, y en el teléfono puedes compartirlas todas juntas.",
+          "**«Lista»** copia como texto la lista que estás viendo, una carta por línea: las copias, el nombre y, entre paréntesis, la **edición** y la **frecuencia** («3x Akiko Yamamoto (Escuelas Elementales, Mega Real)»). Pégala en **WhatsApp** o donde quieras; los títulos salen en negrita. Si el navegador no deja copiar, se descarga como archivo de texto.",
         ],
       },
       {

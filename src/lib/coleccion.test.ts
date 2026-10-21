@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   alternarQuiero,
   COLECCION_VACIA,
+  coleccionComoTexto,
   conCopias,
   conFaltantes,
   conseguiUna,
@@ -147,4 +148,26 @@ test("porTipo reparte todo el catalogo", () => {
     grupos.reduce((s, g) => s + g.cards.length, 0),
     CATALOGO.length,
   );
+});
+
+test("la lista como texto: titulo, tipos y una linea por carta", () => {
+  const akiko = CATALOGO.find((c) => c.id === "ee-050");
+  const oro = CATALOGO.find((c) => c.tipo === "Oro" && !c.origen);
+  const alterna = CATALOGO.find((c) => c.origen);
+  assert.ok(akiko && oro && alterna);
+  const texto = coleccionComoTexto("Tengo", [akiko, alterna, oro], {
+    [akiko.id]: 3,
+    [oro.id]: 1,
+    [alterna.id]: 2,
+  });
+  const lineas = texto.split("\n");
+  assert.equal(lineas[0], "*Tengo* (6 cartas)");
+  assert.ok(
+    lineas.includes(`3x Akiko Yamamoto (Escuelas Elementales, ${akiko.frecuencia})`),
+  );
+  // El arte alternativo dice de donde sale, como en la imagen.
+  assert.ok(lineas.some((l) => l.startsWith(`2x ${alterna.nombre} (Arte de `)));
+  // Los Oros van al final, como en la baraja y en la imagen.
+  assert.equal(lineas.at(-2), "*Oros* (1)");
+  assert.equal(coleccionComoTexto("Me faltan", [], {}), "*Me faltan* (0 cartas)");
 });

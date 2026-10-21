@@ -30,6 +30,7 @@ import {
   type CatalogFilters,
 } from "@/lib/catalog";
 import {
+  coleccionComoTexto,
   conCopias,
   conFaltantes,
   conseguiUna,
@@ -164,6 +165,16 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
 
   if (!hidratada) return <ColeccionSkeleton />;
 
+  // La lista que se ve como texto, con sus filtros y su orden, como la imagen.
+  const listaTexto = () => {
+    const copias = vistaReal === "faltan" ? coleccion.quiero : coleccion.tengo;
+    const nombre = vistaReal === "faltan" ? "Me faltan" : "Tengo";
+    return {
+      texto: coleccionComoTexto(nombre, lista, copias),
+      archivo: vistaReal === "faltan" ? "coleccion-me-faltan" : "coleccion-tengo",
+    };
+  };
+
   // La imagen de la lista que se ve, con sus filtros y su orden.
   const imagen = async () => {
     const copias = vistaReal === "faltan" ? coleccion.quiero : coleccion.tengo;
@@ -287,6 +298,7 @@ export function ColeccionView({ cards }: { cards: Card[] }) {
           onImagen={
             vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
           }
+          onLista={vistaReal === "agregar" || lista.length === 0 ? null : listaTexto}
           generandoImagen={generando}
           soloLectura={compartida !== null}
         />

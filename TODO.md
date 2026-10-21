@@ -119,17 +119,6 @@ CLAUDE.md), se adopte o no.
 - **Terminado cuando:** cada kit está revisado y sus reimpresiones cargadas
   en `data-src/arte-alternativo.json`.
 
-## Colección
-
-### Exportar la colección como lista
-
-- **Qué:** en `/coleccion`, poder copiar o bajar como texto la lista de lo que
-  se tiene o lo que falta («3 Akiko Yamamoto (Escuelas Elementales, Ultra
-  Real)…»), para pegarla en un chat o un foro.
-- **Por dónde:** junto a «Imagen» en `ColeccionAcciones.tsx`; respeta la
-  pestaña, los filtros y el orden que se ven, como la imagen.
-- **Terminado cuando:** la lista se copia y se baja, y la ayuda lo explica.
-
 ## Grande y con decisiones previas
 
 ### Base de datos y cuentas de usuario

@@ -1077,6 +1077,13 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
   `CartaEnPlancha`): quien recibe la imagen tiene que saber qué impresión
   es. La imagen de una baraja no lo lleva; el arte ya basta.
+- **«Lista»** (21-10-2026) copia la misma pestaña como **texto**, pensado
+  para WhatsApp: `coleccionComoTexto()` de `coleccion.ts`, una línea por
+  carta (`3x Akiko Yamamoto (Escuelas Elementales, Mega Real)`, o «Arte de
+  …» en un arte alternativo, como el pie de la imagen), por tipo y con los
+  títulos entre `*`, que WhatsApp pinta en negrita. Va al portapapeles; si
+  el navegador no deja copiar, baja como `.txt`. También sale en una
+  colección compartida.
 - **«Compartir»** copia un enlace con las dos listas, `/coleccion/#c=…`
   (`coleccion-code.ts`). Es el formato binario del enlace de una baraja, con
   los mismos ayudantes de `deck-code.ts` (prefijo y número de cada
