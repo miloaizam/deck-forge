@@ -152,8 +152,17 @@ function normalizeTerm(term: string): string {
  * transliterados pasa seguido) solo desde cuatro letras: en una palabra corta
  * una letra de diferencia ya es otra palabra.
  */
-export function buildSearchIndex(cards: Card[]): MiniSearch<Card> {
-  const index = new MiniSearch<Card>({
+export function buildSearchIndex(cards: Card[]): SearchIndex {
+  return indiceDiferido(cards);
+}
+
+/** Lo unico que `applyFilters` necesita del indice. */
+export interface SearchIndex {
+  search(query: string): { id: unknown }[];
+}
+
+const nuevoIndice = () =>
+  new MiniSearch<Card>({
     idField: "id",
     fields: ["nombre", "habilidad", "raza", "codigo"],
     storeFields: ["id"],
@@ -165,14 +174,55 @@ export function buildSearchIndex(cards: Card[]): MiniSearch<Card> {
       boost: { nombre: 3, codigo: 2 },
     },
   });
-  index.addAll(cards);
-  return index;
+
+/** Cartas por tanda al armar el indice de fondo: unos milisegundos cada una. */
+const TANDA = 100;
+
+/**
+ * Indexar las 2650 cartas de una vez cuesta ~130 ms en escritorio y medio
+ * segundo en un telefono lento, y Lighthouse lo marcaba como la tarea mas
+ * larga del catalogo, aunque nadie hubiera buscado nada. Por eso el indice
+ * se arma de fondo, por tandas, cuando el navegador esta libre
+ * (`requestIdleCallback`; Safari no lo tiene y va con `setTimeout`). Si se
+ * busca antes de que termine, se completa en el acto con lo que falte.
+ *
+ * Fuera del navegador (tests, build) no hay fondo: se arma en la primera
+ * busqueda.
+ */
+function indiceDiferido(cards: Card[]): SearchIndex {
+  const indice = nuevoIndice();
+  let hechas = 0;
+  const avanzar = (n: number) => {
+    const hasta = Math.min(hechas + n, cards.length);
+    if (hasta === hechas) return;
+    indice.addAll(cards.slice(hechas, hasta));
+    hechas = hasta;
+  };
+
+  if (typeof window !== "undefined") {
+    const programar: (cb: () => void) => void =
+      typeof window.requestIdleCallback === "function"
+        ? (cb) => window.requestIdleCallback(cb, { timeout: 2000 })
+        : (cb) => window.setTimeout(cb, 50);
+    const tanda = () => {
+      avanzar(TANDA);
+      if (hechas < cards.length) programar(tanda);
+    };
+    programar(tanda);
+  }
+
+  return {
+    search(query) {
+      avanzar(cards.length);
+      return indice.search(query);
+    },
+  };
 }
 
 export function applyFilters(
   cards: Card[],
   filters: CatalogFilters,
-  index: MiniSearch<Card>,
+  index: SearchIndex,
 ): Card[] {
   let result = cards;
 

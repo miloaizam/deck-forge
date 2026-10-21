@@ -15,7 +15,9 @@ import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
 import { Pagination } from "../Pagination";
+import { CardGridSkeleton, Skeleton } from "../Skeleton";
 import { toast } from "../toast";
+import { useCatalogo } from "../use-catalogo";
 import { useDecks } from "../decks/use-decks";
 import {
   applyFilters,
@@ -28,6 +30,7 @@ import {
   paginate,
   PAGE_SIZE_BUILDER,
   type CatalogFilters,
+  type Facets,
 } from "@/lib/catalog";
 import {
   addCard,
@@ -87,8 +90,16 @@ import { irArriba } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
 
 interface BuilderViewProps {
-  cards: Card[];
+  /** La primera pagina de la grilla sin filtros, prerenderizada en el HTML. */
+  inicial: Card[];
+  /** Cuantas cartas tiene el catalogo. */
+  total: number;
+  /** Las facetas del catalogo entero, calculadas en el build. */
+  facets: Facets;
 }
+
+/** Una baraja vacia y fija: la que se resuelve mientras baja el catalogo. */
+const SIN_CATALOGO = createDeck();
 
 /**
  * Los rechazos del constructor ("ya lleva 3 copias") van como aviso `warning`.
@@ -167,7 +178,20 @@ function ZonaSwitch({
   );
 }
 
-export function BuilderView({ cards }: BuilderViewProps) {
+export function BuilderView({
+  inicial,
+  total,
+  facets: facetsIniciales,
+}: BuilderViewProps) {
+  /*
+   * El catalogo no viaja en el HTML: llega de `/data/cards.json`
+   * (`useCatalogo`). Hasta entonces la grilla muestra `inicial` y la baraja
+   * no se toca: sin el catalogo entero no se puede resolver ni validar, y un
+   * borrador saldria con cartas de menos.
+   */
+  const catalogo = useCatalogo();
+  const completo = catalogo.cards !== null;
+  const cards = catalogo.cards ?? inicial;
   const [deck, setDeck] = useState<Deck>(() => createDeck());
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
@@ -184,6 +208,12 @@ export function BuilderView({ cards }: BuilderViewProps) {
    * solo se elige el destino.
    */
   const [zona, setZona] = useState<DeckZone>("principal");
+  /**
+   * Los "+" pulsados antes de que llegue el catalogo: la primera pagina ya se
+   * ve y se puede pulsar, pero sin el catalogo no se puede validar. Se aplican
+   * en orden en cuanto llega, en vez de perder el clic.
+   */
+  const [pendientes, setPendientes] = useState<{ card: Card; zone: DeckZone }[]>([]);
   const router = useRouter();
 
   /*
@@ -264,9 +294,10 @@ export function BuilderView({ cards }: BuilderViewProps) {
   const index = useMemo(() => buildCardIndex(cards), [cards]);
   const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
-  const res = useMemo(() => resolveDeck(deck, index), [deck, index]);
+  const vigente = completo ? deck : SIN_CATALOGO;
+  const res = useMemo(() => resolveDeck(vigente, index), [vigente, index]);
   const stats = useMemo(() => deckStats(res), [res]);
-  const issues = useMemo(() => validateDeck(deck, index), [deck, index]);
+  const issues = useMemo(() => validateDeck(vigente, index), [vigente, index]);
 
   // El nombre choca con otra baraja guardada: se avisa mientras se escribe, no
   // recien al pulsar Guardar.
@@ -302,20 +333,30 @@ export function BuilderView({ cards }: BuilderViewProps) {
 
   // Las facetas salen de lo que de verdad se puede agregar: si el filtro de
   // raza ofreciera razas que la grilla ya escondio, no devolveria nada nunca.
-  const facets = useMemo(() => buildFacets(disponibles), [disponibles]);
+  const facets = useMemo(
+    () => (completo ? buildFacets(disponibles) : facetsIniciales),
+    [completo, disponibles, facetsIniciales],
+  );
 
   const results = useMemo(
     () => ordenarCartas(applyFilters(disponibles, filters, search), filters.orden),
     [disponibles, filters, search],
   );
-  const totalPages = pageCount(results.length, PAGE_SIZE_BUILDER);
+  // Sin el catalogo, `results` sale de `inicial`: solo vale para la primera
+  // pagina sin filtros. Lo demas espera con el esqueleto de la grilla.
+  const cuantos = completo ? results.length : total;
+  const totalPages = pageCount(cuantos, PAGE_SIZE_BUILDER);
   const currentPage = Math.min(page, totalPages);
-  const visible = paginate(results, currentPage, PAGE_SIZE_BUILDER);
+  const visible =
+    completo || (!hasActiveFilters(filters) && currentPage === 1)
+      ? paginate(results, currentPage, PAGE_SIZE_BUILDER)
+      : null;
 
   // Guardar termina el trabajo del constructor, asi que lleva a la ficha del
   // baraja: es donde se ve entero, se comparte y se borra. La baraja ya esta en
   // localStorage cuando navegamos, y /baraja lo lee de ahi por su id.
   const guardar = () => {
+    if (!completo) return;
     if (deck.nombre.trim() === "") {
       avisarError("La baraja necesita un nombre para poder guardarse.");
       return;
@@ -371,6 +412,10 @@ export function BuilderView({ cards }: BuilderViewProps) {
   };
 
   const agregar = (card: Card, zone: DeckZone = zona) => {
+    if (!completo) {
+      setPendientes((p) => [...p, { card, zone }]);
+      return;
+    }
     const rc = index.porId.get(card.id);
     if (!rc) return;
     const check = canAdd(deck, rc, zone, index);
@@ -391,6 +436,7 @@ export function BuilderView({ cards }: BuilderViewProps) {
    * que tiene que poder quitar de las dos.
    */
   const quitar = (card: Card) => {
+    if (!completo) return;
     const otra: DeckZone = zona === "principal" ? "side" : "principal";
     const desde = copiesOf(deck, card.id, zona) > 0 ? zona : otra;
     setDeck((d) => removeCard(d, card.id, desde));
@@ -416,14 +462,46 @@ export function BuilderView({ cards }: BuilderViewProps) {
     );
   };
 
+  // Llego el catalogo: los "+" que esperaban se aplican en orden, con las
+  // mismas reglas que un clic normal.
+  useEffect(() => {
+    if (!completo || pendientes.length === 0) return;
+    let d = deck;
+    for (const { card, zone } of pendientes) {
+      const rc = index.porId.get(card.id);
+      if (!rc) continue;
+      const check = canAdd(d, rc, zone, index);
+      if (!check.ok) {
+        avisarError(check.mensaje);
+        continue;
+      }
+      d = addCard(d, card.id, zone);
+      if (check.aviso) toast(check.aviso, "warning");
+    }
+    // Aplica lo que el usuario pidio mientras faltaba un sistema externo (el
+    // catalogo, que llega por red), una sola vez.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPendientes([]);
+    setDeck(d);
+  }, [completo, pendientes, deck, index]);
+
   const bloqueoDe = (card: Card): string | undefined => {
+    if (!completo) return undefined;
     const rc = index.porId.get(card.id);
     if (!rc) return undefined;
     const check = canAdd(deck, rc, zona, index);
     return check.ok ? undefined : check.mensaje;
   };
 
-  const panel = (
+  // Sin el catalogo, la silueta del panel: resolverla con cartas de menos
+  // mostraria una baraja que no es.
+  const panel = !completo ? (
+    <div aria-hidden="true" className="flex flex-col gap-3">
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-4 w-1/2" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
+  ) : (
     <DeckPanel
       deck={deck}
       res={res}
@@ -479,7 +557,9 @@ export function BuilderView({ cards }: BuilderViewProps) {
             </p>
           )}
 
-          {results.length === 0 ? (
+          {!visible ? (
+            <CardGridSkeleton variante="constructor" cuantas={12} />
+          ) : cuantos === 0 ? (
             <div className={VACIO}>
               <p className="text-ink">Ninguna carta coincide con esa búsqueda.</p>
               {hasActiveFilters(filters) && (
@@ -510,8 +590,8 @@ export function BuilderView({ cards }: BuilderViewProps) {
               <Pagination
                 page={currentPage}
                 total={totalPages}
-                range={pageRange(currentPage, results.length, PAGE_SIZE_BUILDER)}
-                results={results.length}
+                range={pageRange(currentPage, cuantos, PAGE_SIZE_BUILDER)}
+                results={cuantos}
                 onChange={(n) => {
                   setPage(n);
                   irArriba();

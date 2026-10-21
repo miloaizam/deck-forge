@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 
 import { DeckDetailView } from "@/components/decks/DeckDetailView";
 import { DeckDetailSkeleton } from "@/components/Skeleton";
-import { getCards } from "@/lib/cards";
 
 export const metadata: Metadata = {
   title: "Baraja",
@@ -23,16 +22,14 @@ export const metadata: Metadata = {
  * El titulo lo pone la isla, no la pagina: es el nombre de la baraja, y ese solo se
  * conoce en el navegador.
  */
-export default async function BarajaPage() {
-  const cards = await getCards();
-
+export default function BarajaPage() {
   return (
     // 1480 es el ancho de toda la web: aqui sale de que a diez cartas por fila
     // deja la carta en 132px, que es donde se reconoce sin abrirla.
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       {/* Toda la pagina depende del parametro, asi que el limite va afuera. */}
       <Suspense fallback={<DeckDetailSkeleton />}>
-        <DeckDetailView cards={cards} />
+        <DeckDetailView />
       </Suspense>
     </main>
   );

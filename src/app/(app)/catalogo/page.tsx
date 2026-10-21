@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { CatalogView } from "@/components/CatalogView";
-import { getCards } from "@/lib/cards";
+import { getCatalogPage } from "@/lib/cards";
 
 export const metadata: Metadata = {
   title: "Catálogo",
@@ -10,20 +10,21 @@ export const metadata: Metadata = {
 };
 
 export default async function CatalogoPage() {
-  // Corre en tiempo de build: el catalogo queda prerenderizado en el HTML.
-  const cards = await getCards();
+  // Corre en tiempo de build: la primera pagina queda prerenderizada en el
+  // HTML y el resto lo baja el navegador.
+  const { inicial, total, facets } = await getCatalogPage();
 
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <p className="eyebrow mb-3">Todo</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Catálogo completo</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        {cards.length} cartas del formato. Busca por nombre o texto de habilidad, o afina
-        con los filtros.
+        {total} cartas del formato. Busca por nombre o texto de habilidad, o afina con los
+        filtros.
       </p>
 
       <div className="mt-10">
-        <CatalogView cards={cards} />
+        <CatalogView inicial={inicial} total={total} facets={facets} />
       </div>
     </main>
   );

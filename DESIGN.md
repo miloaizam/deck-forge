@@ -254,6 +254,11 @@ superficies, no de la sombra.
   carta y el último texto mientras se desvanecen.
 - **Se respeta `prefers-reduced-motion`** — ya está implementado en
   `globals.css`; no lo anules.
+- **Sin librerías de animación** (decisión del proyecto, 21-10-2026). Se
+  evaluó Framer Motion (`motion`) y quedó descartado: el CSS de arriba ya
+  cubre abrir, cerrar, entrar y salir, y la librería sumaría 30–50 KB de
+  JavaScript justo donde Lighthouse marca que el procesador del teléfono es
+  el cuello de botella. No se vuelve a proponer.
 
 ---
 

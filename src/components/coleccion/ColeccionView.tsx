@@ -10,6 +10,7 @@ import { toast } from "../toast";
 import { ColeccionAcciones } from "./ColeccionAcciones";
 import { ColeccionLista, type VistaColeccion } from "./ColeccionLista";
 import { useCodigoCompartido, useColeccion } from "./use-coleccion";
+import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
 import {
   compartirArchivos,
@@ -72,7 +73,15 @@ const esVista = (v: string | null): v is VistaColeccion =>
  * Con un enlace compartido (`#c=`) muestra la coleccion de otra persona, de
  * solo lectura: sus dos listas, sin «Agregar cartas» y sin tocar la propia.
  */
-export function ColeccionView({ cards }: { cards: Card[] }) {
+export function ColeccionView() {
+  return (
+    <ConCatalogo esqueleto={<ColeccionSkeleton />}>
+      {(cards) => <Coleccion cards={cards} />}
+    </ConCatalogo>
+  );
+}
+
+function Coleccion({ cards }: { cards: Card[] }) {
   const propia = useColeccion();
   const codigo = useCodigoCompartido();
   const compartida = useMemo(() => decodeColeccion(codigo), [codigo]);

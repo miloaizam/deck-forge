@@ -20,6 +20,7 @@ import { ConfirmDialog } from "../ConfirmDialog";
 import { CostCurve } from "../CostCurve";
 import { HandTester } from "./HandTester";
 import { descargarImagenDeBaraja } from "./deck-image";
+import { ConCatalogo } from "../ConCatalogo";
 import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { copyShareLink, downloadDeck } from "./actions";
@@ -58,7 +59,15 @@ const PANEL_ANALISIS =
  * ruta dinamica `/barajas/[id]` no puede existir, porque generateStaticParams no
  * conoce ids que se inventan en el navegador.
  */
-export function DeckDetailView({ cards }: DeckDetailViewProps) {
+export function DeckDetailView() {
+  return (
+    <ConCatalogo esqueleto={<DeckDetailSkeleton />}>
+      {(cards) => <DeckDetail cards={cards} />}
+    </ConCatalogo>
+  );
+}
+
+function DeckDetail({ cards }: DeckDetailViewProps) {
   const params = useSearchParams();
   const m = params.get("m");
   const d = useSharedCode();

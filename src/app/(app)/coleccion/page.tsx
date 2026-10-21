@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { ColeccionView } from "@/components/coleccion/ColeccionView";
-import { getCards } from "@/lib/cards";
 
 export const metadata: Metadata = {
   title: "Colección",
@@ -9,9 +8,7 @@ export const metadata: Metadata = {
     "Lleva la lista de las cartas de Mitos y Leyendas que tienes y de las que te faltan.",
 };
 
-export default async function ColeccionPage() {
-  const cards = await getCards();
-
+export default function ColeccionPage() {
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <p className="eyebrow mb-3">Colección</p>
@@ -21,7 +18,7 @@ export default async function ColeccionPage() {
       </p>
 
       <div className="mt-10">
-        <ColeccionView cards={cards} />
+        <ColeccionView />
       </div>
     </main>
   );

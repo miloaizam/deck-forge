@@ -129,3 +129,47 @@ test("«Lista» copia la colección como texto para un chat", async ({ page, con
     "*Tengo* (3 cartas)\n\n*Aliados* (3)\n3x Akiko Yamamoto (Escuelas Elementales, Mega Real)",
   );
 });
+
+test.describe("el catalogo llega aparte del HTML", () => {
+  test("los filtros de la URL se aplican al llegar el catalogo", async ({ page }) => {
+    await page.goto("/catalogo/?q=akiko");
+    await expect(
+      page.getByRole("button", { name: /Akiko Yamamoto/ }).first(),
+    ).toBeVisible();
+  });
+
+  test("si el catalogo no baja, se puede reintentar", async ({ page }) => {
+    let fallar = true;
+    await page.route("**/data/cards.json", (route) =>
+      fallar ? route.abort() : route.continue(),
+    );
+    // La coleccion no tiene nada que mostrar sin el catalogo.
+    await page.goto("/coleccion/");
+    await expect(page.getByText("No se pudo cargar el catálogo.")).toBeVisible();
+    fallar = false;
+    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("group", { name: "Qué cartas mostrar" })).toBeVisible();
+    await expect(page.getByText("No se pudo cargar el catálogo.")).toHaveCount(0);
+  });
+
+  test("un «+» pulsado antes del catalogo se aplica al llegar", async ({ page }) => {
+    let soltar: () => void = () => {};
+    const espera = new Promise<void>((r) => (soltar = r));
+    await page.route("**/data/cards.json", async (route) => {
+      await espera;
+      await route.continue();
+    });
+    await page.goto("/constructor/");
+    // La primera pagina ya esta en el HTML: se ve y se pulsa antes que llegue
+    // el catalogo.
+    const mas = page.getByRole("button", { name: /^Agregar .+ a la baraja$/ }).first();
+    const nombre = (await mas.getAttribute("aria-label"))!
+      .replace(/^Agregar /, "")
+      .replace(/ a la baraja$/, "");
+    await mas.click();
+    const quitar = page.getByRole("button", { name: `Quitar una copia de ${nombre}` });
+    await expect(quitar.first()).toBeDisabled();
+    soltar();
+    await expect(quitar.first()).toBeEnabled();
+  });
+});

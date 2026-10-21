@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-21",
+    version: "4.10.0",
+    tipo: "Mejora",
+    titulo: "El catálogo y el constructor cargan más rápido",
+    texto: [
+      "Las páginas del catálogo, el constructor, tu colección y tus barajas pesan ahora una fracción de lo que pesaban: las cartas se descargan una sola vez y se reutilizan mientras navegas. En el teléfono la página aparece en la mitad del tiempo.",
+      "Si tocas el + de una carta mientras el catálogo termina de llegar, la carta se agrega igual en cuanto está listo.",
+    ],
+  },
+  {
+    fecha: "2026-10-21",
     version: "4.9.0",
     tipo: "Novedad",
     titulo: "Tu colección como lista de texto",

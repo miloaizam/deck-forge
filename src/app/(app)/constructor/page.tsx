@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 import { BuilderView } from "@/components/builder/BuilderView";
-import { getCards } from "@/lib/cards";
+import { getCatalogPage } from "@/lib/cards";
+import { PAGE_SIZE_BUILDER } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   title: "Constructor",
@@ -10,9 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ConstructorPage() {
-  // Corre en tiempo de build: el catalogo queda en el HTML y el constructor
-  // trabaja en memoria, sin pedirle nada a ningun servidor.
-  const cards = await getCards();
+  // Corre en tiempo de build: la primera pagina de la grilla queda en el HTML
+  // y el resto del catalogo lo baja el navegador (`useCatalogo`). El
+  // constructor trabaja en memoria, sin servidor.
+  const { inicial, total, facets } = await getCatalogPage(undefined, PAGE_SIZE_BUILDER);
 
   return (
     // pb-24 bajo lg para que la barra fija de la baraja no tape la ultima fila.
@@ -25,7 +27,7 @@ export default async function ConstructorPage() {
       </p>
 
       <div className="mt-10">
-        <BuilderView cards={cards} />
+        <BuilderView inicial={inicial} total={total} facets={facets} />
       </div>
     </main>
   );

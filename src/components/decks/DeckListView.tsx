@@ -19,6 +19,8 @@ import { descargarImagenDeBaraja } from "./deck-image";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import { DeckTransfer } from "./DeckTransfer";
+import { ConCatalogo } from "../ConCatalogo";
+import { useCatalogo } from "../use-catalogo";
 import { DeckListSkeleton } from "../Skeleton";
 import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
@@ -72,7 +74,22 @@ function formatFecha(ms: number): string {
 const ACCION = BOTON_SECUNDARIO_COMPACTO;
 const ACCION_ICONO = BOTON_ICONO_COMPACTO;
 
-export function DeckListView({ cards }: DeckListViewProps) {
+/** Mis barajas: espera al catalogo, que trae el nombre y el arte de cada carta. */
+export function DeckListView() {
+  const decks = useDecks();
+  const cargado = useHydrated();
+  const { cards } = useCatalogo();
+  // Sin barajas no hay cartas que mostrar: la lista vacia no espera al
+  // catalogo (era lo ultimo en pintarse de la pagina).
+  if (cargado && decks.length === 0) return <DeckList cards={cards ?? []} />;
+  return (
+    <ConCatalogo esqueleto={<DeckListSkeleton />}>
+      {(cards) => <DeckList cards={cards} />}
+    </ConCatalogo>
+  );
+}
+
+function DeckList({ cards }: DeckListViewProps) {
   // La lista sale del store, no de estado propio: asi se mantiene al dia sola
   // cuando se guarda una baraja, aqui o en otra pestana.
   const decks = useDecks();

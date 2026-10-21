@@ -1226,9 +1226,49 @@ Efecto de los `loading.tsx` en el export estático, **a sabiendas**: Next escrib
 cada página de `(app)` en dos tiempos. El HTML trae primero el esqueleto y
 después el contenido en un `<div hidden>`, que un script inline de React pone en
 su sitio al llegar (ese script también va con hash en la CSP; la auditoría lo
-cubre). O sea que el esqueleto se ve mientras baja el HTML —en `/catalogo`, que
-es grande, se nota— y que **sin JavaScript** la página se queda en el
-esqueleto. El sitio ya necesitaba JavaScript para todo lo interactivo.
+cubre). O sea que el esqueleto se ve mientras baja el HTML y que **sin
+JavaScript** la página se queda en el esqueleto. El sitio ya necesitaba
+JavaScript para todo lo interactivo.
+
+**El catálogo no va dentro del HTML: lo baja el navegador una vez**
+(21-10-2026, `src/components/use-catalogo.ts`). Antes cada página recibía las
+2650 cartas como props de su Server Component, y eso las incrustaba **dos
+veces** en cada HTML (el marcado y el payload de React): ~1,45 MB por página,
+y la navbar precargaba el de cuatro páginas más. Lighthouse en móvil daba 55
+al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
+
+- `useCatalogo()` pide `/data/cards.json` **una vez por sesión**, lo valida con
+  Zod (seguridad #4), le aplica `conErratas` y lo ordena: sale igual que
+  `getCards()`. Cede el hilo entre pasos para no hacer una tarea larga. Se
+  guarda en un store de módulo, así que navegar no lo vuelve a pedir, y
+  `_headers` lo revalida con su ETag (`max-age=0, must-revalidate`): no hay
+  catálogo viejo después de publicar.
+- **Catálogo, edición y constructor** traen en el HTML solo su **primera
+  página** sin filtros, el total y las facetas (`getCatalogPage()` de
+  `cards.ts`). Eso es lo que se ve mientras baja el resto; con filtros en la
+  URL, o en otra página, sale el esqueleto de la grilla hasta que llega.
+- **En el constructor** la baraja no se resuelve ni se valida hasta tener el
+  catálogo (el panel muestra su silueta), porque un borrador con cartas de
+  menos se vería como otra baraja. Un «+» pulsado antes **queda en espera** y
+  se aplica al llegar, con las mismas reglas que un clic normal.
+- **Mis barajas, el detalle y la colección** esperan con su esqueleto
+  (`ConCatalogo.tsx`), que ya mostraban mientras leían `localStorage`. Mis
+  barajas **vacía** no espera: no tiene cartas que mostrar.
+- Si el catálogo no baja, se dice y se ofrece **«Reintentar»**; las barajas y
+  la colección siguen guardadas.
+- **El índice de búsqueda se arma de fondo** (`buildSearchIndex` de
+  `catalog.ts`): de a 100 cartas, cuando el navegador está libre. Indexar de
+  una vez era la tarea más larga de la página (~130 ms en escritorio, medio
+  segundo en un teléfono lento) aunque nadie buscara nada. Si se busca antes,
+  se completa en el acto.
+- El HTML de `/catalogo` bajó de 1,79 MB a 220 KB (de ~200 a 25 KB con gzip).
+  La precarga de la navbar se dejó como está: ahora cada página pesa poco.
+  `e2e/sitio.spec.ts` cubre los filtros de la URL, el fallo de red y el «+»
+  en espera.
+- Se probó dar prioridad a las imágenes de la primera fila (`loading="eager"`
+  y `fetchPriority="high"`) y **empeoró** el LCP de Lighthouse en móvil (de
+  4,6 a 5,3–6,2 s): le quitan ancho de banda al JavaScript. Se quedan
+  diferidas.
 
 **La navbar no salta entre páginas** porque `html` lleva `scrollbar-gutter:
 stable`: sin eso, una página corta (Mis barajas vacía, Documentos) no tiene
@@ -1522,8 +1562,9 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   `CardModal.tsx`): todas las cartas de la misma `identidad`, agrupadas con
   `agruparImpresiones()` (`card-order.ts`). Elegir una cambia la carta del
   modal, así que en el constructor agregar y quitar actúan sobre la elegida.
-  La página de una edición recibe además las impresiones de otras ediciones
-  (`getOtherPrintings`), porque solo lleva las suyas.
+  En la página de una edición el selector ofrece también las impresiones de
+  otras ediciones: el catálogo entero ya está en el navegador
+  (`useCatalogo`).
 - **Requisito de un arte alternativo**: que la habilidad, keywords incluidas,
   sea igual o casi igual a la cargada. Si cambia, es otra carta o una errata,
   y se consulta.
@@ -1982,7 +2023,8 @@ Ojo con `useSearchParams` en un export estático: **exige un `<Suspense>`**, y l
 trampa es que en desarrollo funciona sin él y falla el build de producción. En
 `/constructor` el límite envuelve una hoja que no pinta nada (`DeckParamLoader`),
 no la isla entera: envolverla entera tiraría a la basura el HTML prerenderizado
-de la grilla, que es lo caro de esa página.
+de la primera página de la grilla, que es lo que se ve mientras baja el
+catálogo.
 
 ### Tests
 

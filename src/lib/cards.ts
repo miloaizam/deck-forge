@@ -2,14 +2,16 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { sortCards } from "./card-order";
+import { buildFacets, PAGE_SIZE, paginate, type Facets } from "./catalog";
 import { conErratas } from "./erratas";
 import { catalogSchema, type Card } from "./types";
 
 /**
  * Lee el catalogo generado por `scripts/build_cards.py`.
  *
- * Corre solo en tiempo de build (Server Component + `output: "export"`), asi
- * que el JSON nunca viaja entero al navegador salvo que lo pidamos. Se valida
+ * Corre solo en tiempo de build (Server Component + `output: "export"`). Lo
+ * que un Server Component pase de aqui a una isla de cliente viaja dentro del
+ * HTML: para el catalogo entero, el navegador tiene `useCatalogo`. Se valida
  * con Zod aunque sea un archivo propio: si el generador cambia de forma,
  * preferimos fallar en el build y no en la cara del usuario.
  *
@@ -32,14 +34,23 @@ export async function getCardsByEdition(slug: string): Promise<Card[]> {
 }
 
 /**
- * Las impresiones de OTRAS ediciones de las cartas de una edicion: la pagina
- * de una edicion solo lleva sus cartas, y el selector de impresiones del modal
- * necesita tambien las demas. Viajan solo las que comparten identidad.
+ * Lo que la pagina de un catalogo necesita en el HTML estatico: su primera
+ * pagina sin filtros, cuantas cartas tiene y sus facetas. El resto de las
+ * cartas lo baja el navegador (`useCatalogo`): incrustar el catalogo entero
+ * en cada HTML costaba ~1,45 MB por pagina.
  */
-export async function getOtherPrintings(slug: string): Promise<Card[]> {
-  const cards = await getCards();
-  const identidades = new Set(
-    cards.filter((c) => c.edicion === slug).map((c) => c.identidad),
-  );
-  return cards.filter((c) => c.edicion !== slug && identidades.has(c.identidad));
+export async function getCatalogPage(
+  slug?: string,
+  pageSize = PAGE_SIZE,
+): Promise<{
+  inicial: Card[];
+  total: number;
+  facets: Facets;
+}> {
+  const cards = slug ? await getCardsByEdition(slug) : await getCards();
+  return {
+    inicial: paginate(cards, 1, pageSize),
+    total: cards.length,
+    facets: buildFacets(cards),
+  };
 }

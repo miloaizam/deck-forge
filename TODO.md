@@ -59,37 +59,24 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 Preguntas abiertas: cada una termina en una decisión anotada (en DESIGN.md o
 CLAUDE.md), se adopte o no.
 
-### ¿Framer Motion en vez de CSS?
+### Rendimiento: lo que falta para pasar de 80 en móvil
 
-- **Qué:** hoy todo se anima con CSS (`@starting-style`,
-  `transition-behavior: allow-discrete`, `AutoHeight`), sin dependencias.
-  Evaluar si una librería como Framer Motion (`motion`) aporta lo bastante:
-  animaciones de salida de listas, reordenamientos, gestos.
-- **A pesar:** peso del bundle (~30–50 KB), una dependencia más (CLAUDE.md
-  §6 y §7), y que ya funciona sin ella.
-- **Terminado cuando:** hay una decisión con un ejemplo concreto que con CSS
-  no se pueda.
-
-### Rendimiento: el catálogo va entero en cada página
-
-- **Medido (21-10-2026, Lighthouse 12 en móvil simulado, `out/` servido con
-  gzip como Cloudflare):** portada 94 y novedades 95, pero catálogo y
-  constructor 55, colección 66 y Mis barajas 72. Accesibilidad, buenas
-  prácticas y SEO dan 100 en todas. El cuello no es la red (FCP ~1,8 s) sino
-  el **hilo principal**: TBT de ~1,1 s en catálogo, constructor y colección.
-- **Por qué:** cada página que usa el catálogo lo recibe entero como props de
-  un Server Component (`getCards()`), así que las 2650 cartas van incrustadas
-  en el HTML **y** en el payload RSC (~1,45 MB cada uno, ~200 KB con gzip), y
-  el navegador las parsea e hidrata en cada página. Además los `Link` de la
-  navbar **precargan** los payloads de catálogo, constructor, colección y Mis
-  barajas: abrir `/barajas` en escritorio baja ~8,9 MB sin comprimir.
-- **Por dónde:** `prefetch={false}` en la navbar (arreglo de una línea) y,
-  de fondo, que las vistas de cliente lean `/data/cards.json` una sola vez
-  (cacheable) en vez de recibirlo por props; ojo con el HTML prerenderizado
-  de la grilla, que hoy es lo que pinta rápido el catálogo. Mirar también el
-  costo de `buildSearchIndex` al montar.
-- **Lighthouse como dependencia:** no hace falta para esto; se corrió sin
-  instalarlo en el repo. Decidir si se agrega un `pnpm run lighthouse`.
+- **Hecho (21-10-2026):** el catálogo ya no va dentro de cada HTML, lo baja
+  el navegador una vez (CLAUDE.md, «El catálogo no va dentro del HTML»), y el
+  índice de búsqueda se arma de fondo. Lighthouse en móvil, con gzip como
+  Cloudflare: catálogo y constructor de 55 a ~71, colección de 66 a ~83,
+  edición ~74; portada y novedades siguen en 95+. FCP de 1,8 a 0,9 s.
+- **Qué falta:** catálogo, constructor y Mis barajas siguen en ~70. Queda un
+  LCP simulado de ~4,5 s, atado a la hidratación (las cartas y el texto de
+  Mis barajas se pintan después del JavaScript), y ~500 ms de TBT entre el
+  arranque de React y el procesado del catálogo.
+- **Por dónde:** mirar qué hay en el chunk grande de la app (~73 KB gzip;
+  `zod`, `minisearch` y las erratas viajan a todas las páginas) y si se
+  puede partir; medir el costo de `buildCardIndex` y `agruparImpresiones` al
+  llegar el catálogo. Dar prioridad a las imágenes de la primera fila ya se
+  probó y empeora (CLAUDE.md). Lighthouse se corre sin instalarlo en el
+  repo (`npx lighthouse` con el Chromium de Playwright, sobre `out/` servido
+  con gzip); decidir si vale un `pnpm run lighthouse`.
 - **Terminado cuando:** catálogo, constructor y colección pasan de 80 en
   móvil, o se decide que no vale la pena y se anota por qué.
 

@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 
 import { DeckListView } from "@/components/decks/DeckListView";
-import { getCards } from "@/lib/cards";
 
 export const metadata: Metadata = {
   title: "Mis barajas",
   description: "Las barajas que guardaste en este navegador.",
 };
 
-export default async function BarajasPage() {
-  const cards = await getCards();
-
+export default function BarajasPage() {
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       <p className="eyebrow mb-3">Barajas</p>
@@ -21,7 +18,7 @@ export default async function BarajasPage() {
       </p>
 
       <div className="mt-10">
-        <DeckListView cards={cards} />
+        <DeckListView />
       </div>
     </main>
   );
