@@ -176,7 +176,8 @@ export function EstadoPastilla({
       className={cn(
         PASTILLA,
         "font-semibold",
-        estado === "legal" && "bg-success/15 text-success",
+        // /10 y no /15: en el tema claro el verde sobre /15 quedaba en 4,43:1.
+        estado === "legal" && "bg-success/10 text-success",
         estado === "incompleta" && "bg-warning-soft text-warning",
         estado === "baneada" && "bg-danger/15 text-danger",
         className,

@@ -7,6 +7,7 @@ import { createDeck, setQuantity, setStartingGold } from "../src/lib/deck";
 import { buildCardIndex, isLegal, validateDeck } from "../src/lib/deck-rules";
 import { conErratas } from "../src/lib/erratas";
 import { cardSchema, type Deck } from "../src/lib/types";
+import { sinViolaciones } from "./axe";
 import {
   publicarDe,
   sesion,
@@ -251,5 +252,28 @@ test.describe("con la nube encendida", () => {
     await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
     await page.goto("/barajas/");
     await expect(page.getByRole("link", { name: "Se queda" })).toBeVisible();
+  });
+
+  test("accesibilidad de la cuenta y la Comunidad, en los dos temas", async ({
+    page,
+  }) => {
+    const s = await simularSupabase(page);
+    const propia = barajaLegal("Mi baraja publicable");
+    const pid = publicarDe(s, USUARIO_B, "Otra_persona", barajaLegal("Baraja ajena"));
+    await conBarajas(page, [propia]);
+    await conSesion(page, USUARIO_A);
+    for (const tema of ["dark", "light"]) {
+      await page.addInitScript((t) => localStorage.setItem("deckforge-theme", t), tema);
+      for (const ruta of [
+        "/cuenta/",
+        "/comunidad/",
+        `/baraja/?p=${pid}`,
+        `/baraja/?m=${propia.id}`,
+        "/barajas/",
+      ]) {
+        await page.goto(ruta);
+        await sinViolaciones(page, `${ruta} (${tema})`);
+      }
+    }
   });
 });

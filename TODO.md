@@ -35,20 +35,15 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Grande y con decisiones previas
 
-### Base de datos y cuentas de usuario
+### Encender las cuentas y la Comunidad
 
-- **Qué:** cuentas opcionales con Supabase (Google), sincronización de
-  barajas y colección, y la Comunidad (barajas públicas, likes, copias,
-  reportes). **El código ya está y está apagado**: `supabase/proyecto.json`
-  lleva `url` y `key` en `null`. Esquema en `supabase/esquema.sql` (probado
-  contra Postgres 16), cliente en `src/components/nube/`, lógica pura en
-  `src/lib/sync.ts` y `src/lib/comunidad.ts`, pruebas con Supabase simulado
-  en `e2e/nube.spec.ts` (`pnpm run e2e:nube`).
-- **Falta:** decidir si se queda Supabase o se pasa a Cloudflare D1 (en
-  conversación); crear el proyecto y Google OAuth (guía en el plan, pasarla a
-  `docs/cuentas.md`); llenar `proyecto.json`; probar de punta a punta con
-  Google; y documentar en CLAUDE.md (§1, §2, §4, §6, §7, §9), DESIGN.md,
-  `faq.ts` y `novedades.ts`.
-- **Terminado cuando:** se puede crear una cuenta, iniciar sesión, guardar y
-  recuperar barajas desde otro dispositivo y publicar en la Comunidad, con
-  CLAUDE.md al día.
+- **Qué:** las cuentas (Supabase con Google) y la Comunidad ya están en el
+  código y documentadas en CLAUDE.md («Cuentas y Comunidad»), pero
+  **apagadas**: `supabase/proyecto.json` lleva `url` y `key` en `null`.
+- **Por dónde:** [`docs/cuentas.md`](docs/cuentas.md), pasos 1 a 5: crear el
+  proyecto, correr `supabase/esquema.sql`, configurar Google, llenar
+  `proyecto.json`, `pnpm run build && pnpm run audit`. En el mismo commit que
+  las enciende, la ayuda (`faq.ts`: la cuenta y la Comunidad) y la entrada de
+  `novedades.ts`.
+- **Terminado cuando:** la prueba de punta a punta de `docs/cuentas.md` pasa
+  en `deckforge-myl.pages.dev` con dos cuentas de Google.

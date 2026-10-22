@@ -374,6 +374,27 @@ un campo subrayado.
   el tipo, la raza y la escuela en el detalle de una carta.
 - `CONTADOR` — un número blanco sobre violeta, redondo de 20: filtros puestos,
   cartas de cada tipo en el panel, erratas y baneadas por sección.
+- **Pública** — `PASTILLA` en `bg-accent-soft text-accent` con globo y los
+  likes («Pública · 3 likes»), junto al estado en la tarjeta de Mis barajas.
+  **Oculta por moderación** va en `bg-warning-soft text-warning` con ojo
+  tachado: no es un error de la baraja, es una decisión de otro.
+
+### Cuenta y Comunidad
+
+- **El botón de la cuenta** va con la ayuda y el tema, `BOTON_ICONO_LIBRE`
+  redondo: una persona sin sesión, la inicial del alias sobre violeta con
+  ella. «Entrar con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
+  **en sus colores** (lo pide su guía de marca): es el único color ajeno que
+  entra a la interfaz.
+- **«Privada / Pública»** son `SEGMENTOS`, con candado y globo. Deshabilitado
+  «Pública» si la baraja no cumple, con la razón debajo en `text-muted`.
+- **El like** es un `BOTON_SECUNDARIO` con corazón y el número; dado, el
+  corazón se rellena y el botón toma `bg-accent-soft` y borde violeta
+  (`aria-pressed`). Responde en el acto y vuelve atrás si la nube lo rechaza.
+  **Reportar** es un `BOTON_ICONO` con bandera y `HOVER_AVISO`: ámbar, no
+  rojo, porque no borra nada.
+- **Los órdenes de la Comunidad** son `SEGMENTOS` (cuatro opciones a la vista)
+  y la afinidad un `Select`, como los filtros del catálogo.
 
 ### Contenedores
 
@@ -382,6 +403,7 @@ un campo subrayado.
 | Panel | `bg-panel rounded-panel border border-line` + `p-5 sm:p-6` | tarjetas de análisis, tarjetas de documento, panel del constructor |
 | Tarjeta | `bg-panel rounded-card border border-line` + `p-4 sm:p-5` | novedades, fichas de errata, ítems de la Banlist, filas de la colección |
 | Tarjeta de baraja | `rounded-panel`, sube 2 px y anillo al apuntar | Mis barajas: toda la tarjeta es un enlace |
+| Tarjeta pública | la de baraja, con alias en `text-accent`, afinidad y fecha, y likes y copias con icono | la Comunidad; sin portada, un hueco `bg-surface` del mismo tamaño |
 | Aviso en línea | `AVISO_EN_LINEA` | algo que espera una decisión: el borrador, la colección compartida |
 | Estado de la baraja | `DeckIssues` | caja, barra, título y lista del mismo tono |
 | Aviso flotante | `Toaster` | `bg-panel/95`, filete izquierdo del tono e icono; se va solo |

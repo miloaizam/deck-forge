@@ -8,11 +8,17 @@ agente), lee esto primero. Para lo visual, ver [DESIGN.md](DESIGN.md).
 ## 1. Qué es
 
 Deckbuilder web para el formato **Escuelas Elementales** de Mitos y Leyendas.
-Sitio **100% estático**: no hay backend, no hay base de datos, no hay cuentas.
-Todo corre en el navegador del usuario.
+Sitio **100% estático**: no hay servidor propio. Todo corre en el navegador
+del usuario.
 
 - El **catálogo** es data fija → archivos estáticos generados en build.
 - El **baraja** es del usuario → vive en su navegador (`localStorage` + URL).
+- Las **cuentas** son opcionales (Google, vía **Supabase**): el navegador
+  habla directo con Supabase para sincronizar barajas y colección y para la
+  **Comunidad** de barajas públicas. No hay código de servidor nuestro: la
+  seguridad la ponen las reglas por fila (RLS) de `supabase/esquema.sql`.
+  Quedan **apagadas** mientras `supabase/proyecto.json` no traiga el
+  proyecto. Ver «Cuentas y Comunidad» (§9) y [`docs/cuentas.md`](docs/cuentas.md).
 
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
@@ -42,6 +48,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
 | Pruebas en navegador | `@playwright/test` (solo desarrollo; `e2e/` contra el sitio construido) |
 | Accesibilidad | `axe-core` (solo desarrollo; lo inyecta `e2e/accesibilidad.spec.ts`) |
+| Cuentas y Comunidad | **Supabase** (Postgres + Auth con Google; plan gratuito). Solo `@supabase/auth-js` para la sesión; las tablas, por la API REST con `fetch` |
 | Validación | `zod` (la variante `zod/mini`, ver «El catálogo no va dentro del HTML») |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -62,6 +69,7 @@ pnpm run test        # tests de las reglas de baraja (corredor de Node, sin depe
 pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`)
 pnpm run e2e         # recorridos en Chromium, escritorio y teléfono (tras `pnpm run build`)
 pnpm run a11y        # axe-core en todas las páginas, los dos temas (tras `pnpm run build`)
+pnpm run e2e:nube    # build con un Supabase simulado + e2e/nube.spec.ts (deja out/ con ese build)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
 pnpm run data:images         # images-src/*    -> public/cards/*.webp
@@ -120,7 +128,9 @@ TODO.md        todo lo pendiente, por grupos (se borra la entrada al hacerla)
 documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
                fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
-docs/          plan y guía de marca (documentación, no se compila)
+docs/          plan, guía de marca y cómo encender las cuentas (cuentas.md)
+supabase/      esquema.sql (tablas, RLS y funciones; se pega en Supabase) y
+               proyecto.json (URL y clave PÚBLICA; null = cuentas apagadas)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
                extras.json (Adicionales) y arte-alternativo.json
 images-src/    originales pesados de las cartas (git-ignorado; su .gitkeep
@@ -792,8 +802,9 @@ out/           build estático (git-ignorado)
 
 ## 6. Seguridad
 
-La superficie de ataque es mínima por diseño —sin servidor, sin cuentas, sin
-cookies, sin datos personales—, pero eso no se deja al azar:
+La superficie de ataque es mínima por diseño —sin servidor propio, sin
+cookies, y datos personales solo de quien abre una cuenta, que es opcional—,
+pero eso no se deja al azar:
 
 1. **Cabeceras HTTP** en [`public/_headers`](public/_headers): CSP,
    `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
@@ -803,7 +814,9 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 
 2. **CSP**: `default-src 'self'`, `object-src 'none'`, `base-uri 'none'`,
    `form-action 'none'`, `frame-ancestors 'none'`, imágenes y fuentes solo del
-   propio origen.
+   propio origen. `connect-src` es `'self'` y, con las cuentas encendidas,
+   **solo** el host de Supabase de `supabase/proyecto.json`: lo agrega
+   `csp-hashes.mjs` y la auditoría falla si lleva otro.
    **`script-src` no lleva `'unsafe-inline'`: autoriza por hash**, página por
    página. Ver "La CSP por hashes", más abajo.
    `style-src` sí lo conserva: React escribe atributos `style="…"` y esos no
@@ -815,7 +828,11 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    renderiza siempre como texto plano. Tampoco `eval` ni `new Function`.
 
 4. **Todo lo que entra desde fuera del bundle se valida con Zod** antes de
-   usarse: `cards.json`, `localStorage` y la URL (query y fragmento). `localStorage` lo
+   usarse: `cards.json`, `localStorage`, la URL (query y fragmento) y **lo
+   que responde Supabase** (cada baraja con `deckSchema`, la colección con
+   `sanearColeccion`, las filas de la Comunidad con `comunidad.ts`). Lo que
+   escribe otro jugador —alias, nombre, nota— se limpia igual que una baraja
+   importada y se pinta como texto. `localStorage` lo
    puede editar el usuario o cualquier extensión del navegador — nunca se
    asume su forma. Al decodificar una baraja desde la URL: parsear a la
    defensiva, acotar tamaños y descartar ids desconocidos sin reventar la app.
@@ -839,9 +856,13 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    - Nombre y nota pierden los caracteres de control y de dirección de texto
      al leerse (un `U+202E` deja escribir un nombre que se lee como otro).
 
-5. **Cero terceros.** Sin analytics, sin CDNs, sin fuentes remotas, sin
-   hotlinking de imágenes, sin píxeles de seguimiento. Todo se sirve desde
-   nuestro origen. La telemetría de Next.js está desactivada.
+5. **Cero terceros, salvo Supabase para quien usa la cuenta.** Sin
+   analytics, sin CDNs, sin fuentes remotas, sin hotlinking de imágenes, sin
+   píxeles de seguimiento. Todo se sirve desde nuestro origen. La telemetría
+   de Next.js está desactivada. **Un visitante sin cuenta no hace ninguna
+   petición a Supabase** fuera de la Comunidad: `@supabase/auth-js` se
+   carga solo si hay una sesión guardada, al volver de Google o al pulsar
+   «Entrar» (`e2e/nube.spec.ts` lo vigila).
 
 6. **Cadena de suministro.** `pnpm-lock.yaml` commiteado; dependencias mínimas y
    justificadas; `pnpm audit` antes de publicar; revisar qué instala un
@@ -863,9 +884,13 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    pre-commit ejecuta hooks. Las GitHub Actions y los hooks de pre-commit van
    por SHA.
 
-7. **Privacidad.** Las barajas no se guardan en ningún servidor: viven en el
-   `localStorage` del usuario. No hay cuentas, ni datos personales, ni banner de
-   consentimiento. Que siga así.
+7. **Privacidad.** Sin cuenta, las barajas no se guardan en ningún servidor:
+   viven en el `localStorage` del usuario. Con cuenta, Supabase guarda el
+   correo y el nombre de Google (que no se muestran), el alias (que sí), las
+   barajas y la colección (ids y copias), los likes, las copias y los
+   reportes. `/privacidad` lo cuenta para quien juega y **se cambia en el
+   mismo commit** que cambie lo que se guarda. «Borrar mi cuenta» lo borra
+   todo en el acto. Sin cookies, sin banner de consentimiento.
 
    **Una baraja compartida viaja en el fragmento** (`/baraja/#d=…`), que el
    navegador nunca manda al servidor: no pasa por el borde de Cloudflare ni
@@ -879,7 +904,11 @@ cookies, sin datos personales—, pero eso no se deja al azar:
    servidor: el código no aparece en ninguno.
 
 8. **Sin secretos en el repo.** En un sitio estático no existe lugar seguro
-   para una clave: todo `NEXT_PUBLIC_*` termina en el bundle público.
+   para una clave: todo `NEXT_PUBLIC_*` termina en el bundle público. La
+   **publishable key** de Supabase es pública por diseño; la **secret key**
+   (o `service_role`), la contraseña de la base y el Client secret de Google
+   **nunca** entran al repo: la auditoría falla si una clave secreta llega a
+   `proyecto.json` o al build.
 
 9. **Enlaces externos** siempre con `rel="noopener noreferrer"`.
 
@@ -901,7 +930,8 @@ cookies, sin datos personales—, pero eso no se deja al azar:
 12. **`pnpm run audit`** revisa el sitio ya construido y falla si aparece un
     source map, una ruta absoluta de la máquina de build, un recurso externo,
     una imagen rota, una cabecera de seguridad ausente, un script inline sin
-    su hash en la CSP o los dos esquemas desincronizados. Correr siempre
+    su hash en la CSP, los dos esquemas desincronizados, un `connect-src`
+    que no sea el de Supabase o una clave secreta de Supabase. Correr siempre
     antes de publicar.
 
 ### La CSP por hashes
@@ -954,6 +984,11 @@ La prueba se hizo con Playwright, que hoy es dependencia de desarrollo
 
 - **No romper el export estático.** Nada de API routes, middleware, `cookies()`,
   `headers()`, `revalidate` ni Server Actions: `output: "export"` los rechaza.
+  Lo que necesite servidor va a Supabase como función de la base
+  (`supabase/esquema.sql`), no a una carpeta `functions/`.
+- **No usar el cliente completo de Supabase** (`@supabase/supabase-js`): trae
+  tiempo real, archivos y funciones que no se usan. Basta `auth-js` y `fetch`
+  (`src/components/nube/api.ts`).
 - **No agregar dependencias** sin una razón concreta. Cada una es superficie de
   ataque y peso de descarga.
 - **No editar a mano** `public/data/cards.json` ni `public/cards/`: se regeneran
@@ -988,7 +1023,9 @@ catálogo y al constructor) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
 `/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
-`/documentos/banlist` para leerlas · `/novedades` la línea de tiempo de cambios.
+`/documentos/banlist` para leerlas · `/novedades` la línea de tiempo de cambios ·
+`/cuenta` entrar y la cuenta · `/comunidad` las barajas públicas · `/privacidad`
+qué se guarda.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1031,8 +1068,10 @@ regenerarla. Dos límites a saber:
 La navbar es una fila plana de seis enlaces (sin desplegable): Catálogo,
 Constructor, Mis barajas, Colección, Documentos y Novedades. Bajo `lg` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
-siempre a la vista y también en el teléfono, la **ayuda** (un signo de
-pregunta) y el botón de tema. La portada no tiene navbar, así que tampoco
+siempre a la vista y también en el teléfono, la **cuenta** (solo con las
+cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.
+Encendidas, se suma **Comunidad** tras Mis barajas, y entre `lg` y `xl` los
+enlaces van sin icono para que quepan los siete. La portada no tiene navbar, así que tampoco
 ayuda.
 
 **La colección** (`/coleccion`, 05-10-2026) son dos listas del usuario: las
@@ -1734,6 +1773,72 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
 
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.
+
+### Cuentas y Comunidad
+
+Cuentas **opcionales** con Google y una **Comunidad** de barajas públicas con
+likes (22-10-2026, decisión del proyecto: Supabase y no Cloudflare D1, porque
+D1 obligaba a escribir y mantener el inicio de sesión y un servidor propio).
+Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md).
+
+- **Apagadas hasta configurar.** `supabase/proyecto.json` lleva la Project URL y
+  la publishable key; en `null`, `NUBE_ACTIVA` (`src/lib/supabase-config.ts`)
+  es falso y no hay botón de cuenta, ni Comunidad en la navbar, ni ninguna
+  petición. `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_KEY` lo pisan
+  en un build de pruebas. El archivo lo leen también `csp-hashes.mjs` y
+  `audit_build.py`.
+- **La base guarda solo ids y copias.** Una baraja es una fila con su
+  `datos` en jsonb —el mismo objeto de `deckSchema` que va al
+  `localStorage`—; la colección, una fila por usuario con `{ cartas, quiero }`.
+  El catálogo nunca entra: las cartas se resuelven por id en el navegador.
+- **Sin código de servidor nuestro.** Cada usuario lee y escribe solo lo suyo
+  por RLS; lo público (la lista, una baraja, likes, copias, reportes, borrar
+  la cuenta) pasa por funciones `security definer` de `esquema.sql`, y
+  `likes`, `copias` y `reportes` no tienen ninguna política: desde la API no
+  se tocan directo. Un trigger impide que el dueño cambie `oculta`, los
+  contadores o el `public_id`, y topa en 50 barajas vivas. Se mira el **rol**
+  (`authenticated`), no la sesión: los contadores los suben funciones que
+  corren como dueño de la base.
+- **Solo `@supabase/auth-js`** (sesión con PKCE, renovación del token) y
+  `fetch` a la API REST (`src/components/nube/api.ts`). Se carga diferido.
+- **Sincronizar** (`src/lib/sync.ts`, lógica pura con su test, y
+  `src/components/nube/sincronizar.ts`): por baraja gana el `actualizado`
+  más nuevo; un borrado deja una **lápida** (`deckforge-borradas`,
+  `deck-storage.ts`) con su fecha, para que otro equipo no la reviva; lo que
+  llega de la nube entra solo si cabe bajo las 50, **sin desplazar**, y un
+  nombre repetido entra como «X (copia)». La colección: la **primera vez**
+  que un navegador se une a la cuenta se suman (`fusionar`); después gana la
+  más reciente (`actualizado` en su sobre, aditivo). Corre al entrar, ~2 s
+  después de cada guardado (escuchando los stores de barajas y colección) y
+  al volver a la pestaña. El borrador del constructor no viaja.
+- **`deckforge-nube`** recuerda de qué cuenta es lo sincronizado, cuándo, el
+  alias y lo público de cada baraja, para pintar Mis barajas sin esperar a la
+  red. **Cerrar sesión deja todo en el navegador.**
+- **Publicar** (`PublicarControl.tsx`, en el detalle de una baraja propia):
+  «Privada / Pública», solo si la baraja **cumple** (`validateDeck`); la
+  primera vez pide el alias. Se guarda la **afinidad** para filtrar
+  (`claveAfinidad` de `comunidad.ts`: la vía más estrecha). Si una pública se
+  edita y deja de cumplir, al abrir su detalle se retira sola, con aviso; si
+  cambia de afinidad, se corrige.
+- **La Comunidad** (`/comunidad`, `ComunidadView.tsx`): tarjetas como las de
+  Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
+  copiadas), filtro por afinidad y buscador, todo en la URL. Se ve sin
+  cuenta. El detalle es **`/baraja/?p=<public_id>`** (`usePublica`), con el
+  alias, el **like**, «Guardar en mis barajas» (cuenta una **copia**, una vez
+  por persona con sesión) y **Reportar**. «Copiar enlace» copia esa
+  dirección, no el `#d=`.
+- **Moderación desde el panel de Supabase**: los reportes en la tabla
+  `reportes` y la casilla `oculta` en `barajas`. El dueño la ve en Mis barajas
+  como «Oculta por moderación».
+- **Pruebas**: `sync.test.ts` y `comunidad.test.ts` (texto hostil, filas
+  rotas); `pnpm run e2e:nube` con un Supabase simulado en memoria
+  (`e2e/supabase-simulado.ts`): fusión al entrar, publicar con alias, una
+  ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, y
+  que sin cuenta no salga ninguna petición. La SQL, contra Postgres local
+  (`docs/cuentas.md`).
+- **Al encenderlas** van en el mismo commit `faq.ts` (sección de la cuenta y
+  la Comunidad) y la entrada de `novedades.ts`: mientras estén apagadas, la
+  ayuda y las novedades no las nombran, porque contradirían al sitio.
 
 ### Constructor de barajas (Fase 2)
 

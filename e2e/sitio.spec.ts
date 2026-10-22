@@ -206,6 +206,9 @@ const RUTAS = [
   "/documentos/fe-de-erratas/",
   "/documentos/banlist/",
   "/novedades/",
+  "/cuenta/",
+  "/comunidad/",
+  "/privacidad/",
   "/no-existe/",
 ];
 
