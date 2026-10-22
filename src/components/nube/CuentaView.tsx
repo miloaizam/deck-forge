@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CloudCheck, LogOut, RefreshCw, Trash2 } from "lucide-react";
+import {
+  CloudAlert,
+  CloudCheck,
+  LogOut,
+  RefreshCw,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { Skeleton } from "../Skeleton";
@@ -18,12 +25,21 @@ import { cn } from "@/lib/utils";
 const TARJETA =
   "border-line bg-panel rounded-panel flex flex-col gap-4 border p-5 sm:p-6";
 
-const FECHA = new Intl.DateTimeFormat("es-CL", {
-  day: "numeric",
-  month: "long",
+const HORA = new Intl.DateTimeFormat("es-CL", {
   hour: "2-digit",
   minute: "2-digit",
+  hour12: false,
 });
+const DIA = new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "long" });
+
+/** «hoy a las 17:08», «ayer a las 17:08» o «el 22 de octubre a las 17:08». */
+function cuandoSincronizo(fecha: number): string {
+  const dias = (d: Date) =>
+    Math.floor(d.getTime() / 864e5 - d.getTimezoneOffset() / 1440);
+  const atras = dias(new Date()) - dias(new Date(fecha));
+  const dia = atras === 0 ? "hoy" : atras === 1 ? "ayer" : `el ${DIA.format(fecha)}`;
+  return `${dia} a las ${HORA.format(fecha)}`;
+}
 
 /**
  * `/cuenta`: entrar con Google y, con sesion, el alias, la sincronizacion,
@@ -95,97 +111,114 @@ export function CuentaView() {
 
   return (
     <div className="mt-8 grid max-w-4xl gap-4 md:grid-cols-2">
+      <section
+        aria-label="Tus datos"
+        className={cn(TARJETA, "sm:flex-row sm:items-center md:col-span-2")}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <span
+            aria-hidden="true"
+            className="bg-accent-soft text-accent grid size-14 shrink-0 place-items-center rounded-full"
+          >
+            <UserRound size={28} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-semibold">
+              {usuario.nombre ?? usuario.email ?? "Tu cuenta"}
+            </p>
+            {usuario.nombre && usuario.email && (
+              <p className="text-muted text-sm break-all">{usuario.email}</p>
+            )}
+            <p className="text-muted mt-1 text-[13px]">
+              Nadie más ve tu nombre ni tu correo.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            void salir().then(() => toast("Sesión cerrada.", "info"));
+          }}
+          className={cn(BOTON_SECUNDARIO, "self-start sm:self-center")}
+        >
+          <LogOut size={16} aria-hidden="true" />
+          Cerrar sesión
+        </button>
+      </section>
+
       <section className={TARJETA}>
-        <h2 className="text-lg font-semibold">Tu cuenta</h2>
-        <dl className="grid gap-1 text-sm">
-          {usuario.nombre && (
-            <>
-              <dt className="text-muted text-[12px]">Nombre</dt>
-              <dd className="mb-2">{usuario.nombre}</dd>
-            </>
-          )}
-          <dt className="text-muted text-[12px]">Correo</dt>
-          <dd className="break-all">{usuario.email ?? "—"}</dd>
-        </dl>
-        <p className="text-muted -mt-1 text-[13px]">
-          Nadie más ve tu nombre ni tu correo.
-        </p>
-        <AliasForm actual={alias} />
+        <h2 className="text-lg font-semibold">Alias</h2>
+        <AliasForm actual={alias} etiquetaOculta />
       </section>
 
       <section className={TARJETA}>
         <h2 className="text-lg font-semibold">Sincronización</h2>
-        <p
-          className="text-muted flex items-start gap-2 text-sm leading-relaxed"
-          aria-live="polite"
-        >
-          <CloudCheck
-            size={18}
-            aria-hidden="true"
-            className="text-success mt-0.5 shrink-0"
-          />
-          {sincronizando
-            ? "Sincronizando…"
-            : ultima
-              ? `Todo al día. Última vez: ${FECHA.format(ultima)}.`
-              : "Todavía no se ha sincronizado."}
-        </p>
-        {error && (
-          <p role="alert" className="text-warning text-sm">
-            {error}
+        <div className="flex items-center gap-3" aria-live="polite">
+          {sincronizando ? (
+            <RefreshCw
+              size={22}
+              aria-hidden="true"
+              className="text-accent shrink-0 animate-spin motion-reduce:animate-none"
+            />
+          ) : error ? (
+            <CloudAlert size={22} aria-hidden="true" className="text-warning shrink-0" />
+          ) : (
+            <CloudCheck size={22} aria-hidden="true" className="text-success shrink-0" />
+          )}
+          <p className="text-sm leading-snug">
+            {sincronizando ? (
+              "Sincronizando…"
+            ) : error ? (
+              <span role="alert" className="text-warning">
+                {error}
+              </span>
+            ) : ultima ? (
+              <>
+                <span className="block font-medium">Sincronizado</span>
+                <span className="text-muted whitespace-nowrap">
+                  {cuandoSincronizo(ultima)}
+                </span>
+              </>
+            ) : (
+              "Todavía no se ha sincronizado."
+            )}
           </p>
-        )}
+        </div>
         <p className="text-muted text-[13px] leading-relaxed">
           Tus barajas y tu colección se sincronizan solas cada vez que guardas.
         </p>
-        <div className="mt-auto flex flex-wrap gap-2">
+        <div>
           <button
             type="button"
             disabled={sincronizando}
             onClick={() => void sincronizar()}
             className={BOTON_SECUNDARIO}
           >
-            <RefreshCw
-              size={16}
-              aria-hidden="true"
-              className={cn(sincronizando && "animate-spin motion-reduce:animate-none")}
-            />
+            <RefreshCw size={16} aria-hidden="true" />
             Sincronizar ahora
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              void salir().then(() => toast("Sesión cerrada.", "info"));
-            }}
-            className={BOTON_SECUNDARIO}
-          >
-            <LogOut size={16} aria-hidden="true" />
-            Cerrar sesión
           </button>
         </div>
       </section>
 
-      <section className={cn(TARJETA, "md:col-span-2")}>
-        <h2 className="text-lg font-semibold">Borrar la cuenta</h2>
-        <p className="text-muted text-sm leading-relaxed">
-          Se borran tu cuenta, tus barajas (también las públicas), tu colección y tus
-          likes. No se puede deshacer.
-        </p>
-        <div>
-          <button
-            type="button"
-            onClick={() => setBorrando(true)}
-            className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO)}
-          >
-            <Trash2 size={16} aria-hidden="true" />
-            Borrar mi cuenta
-          </button>
+      <section className="border-line rounded-panel flex flex-col gap-3 border border-dashed p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6 md:col-span-2">
+        <div className="flex-1">
+          <h2 className="font-semibold">Borrar la cuenta</h2>
+          <p className="text-muted mt-1 text-[13px] leading-relaxed">
+            Se borran tu cuenta, tus barajas (también las públicas), tu colección y tus
+            likes. No se puede deshacer.{" "}
+            <Link href="/privacidad" className={ENLACE}>
+              Ver políticas de privacidad
+            </Link>
+          </p>
         </div>
-        <p className="text-muted text-[13px]">
-          <Link href="/privacidad" className={ENLACE}>
-            Ver políticas de privacidad
-          </Link>
-        </p>
+        <button
+          type="button"
+          onClick={() => setBorrando(true)}
+          className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO, "self-start sm:self-center")}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          Borrar mi cuenta
+        </button>
       </section>
 
       <ConfirmDialog

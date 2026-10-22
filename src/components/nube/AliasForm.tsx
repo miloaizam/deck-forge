@@ -17,13 +17,19 @@ interface AliasFormProps {
   actual: string | null;
   /** Tras guardarlo bien. El diálogo de publicar lo usa para seguir. */
   onGuardado?: (alias: string) => void;
+  /** La etiqueta solo para lectores: el titulo de la tarjeta ya dice «Alias». */
+  etiquetaOculta?: boolean;
 }
 
 /**
  * El alias publico: el nombre con que se firman las barajas en la Comunidad.
  * Lo usan `/cuenta` y el dialogo que lo pide antes de publicar la primera.
  */
-export function AliasForm({ actual, onGuardado }: AliasFormProps) {
+export function AliasForm({
+  actual,
+  onGuardado,
+  etiquetaOculta = false,
+}: AliasFormProps) {
   const id = useId();
   const [valor, setValor] = useState(actual ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +59,10 @@ export function AliasForm({ actual, onGuardado }: AliasFormProps) {
         });
       }}
     >
-      <label htmlFor={id} className="text-muted text-[12px]">
+      <label
+        htmlFor={id}
+        className={cn("text-muted text-[12px]", etiquetaOculta && "sr-only")}
+      >
         Alias
       </label>
       <div className="flex gap-2">

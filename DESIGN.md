@@ -382,8 +382,16 @@ un campo subrayado.
 ### Cuenta y Comunidad
 
 - **El botón de la cuenta** va con la ayuda y el tema, `BOTON_ICONO_LIBRE`
-  redondo: una persona sin sesión, la inicial del alias sobre violeta con
-  ella. «Iniciar sesión con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
+  redondo: sin sesión, la flecha de entrar (`LogIn`); con ella, una persona
+  (`UserRound`) sobre violeta. Iconos distintos para que se note de un
+  vistazo si hay sesión. Sin iniciales: el alias puede empezar por cualquier
+  cosa.
+- **`/cuenta` con sesión**: arriba una cabecera de perfil (la misma persona
+  en un círculo `bg-accent-soft`, nombre, correo y «Cerrar sesión»); debajo,
+  «Alias» y «Sincronización» lado a lado; al pie, en un recuadro punteado y
+  sin protagonismo, «Borrar mi cuenta». La hora va en 24 h y relativa («hoy
+  a las 17:08»): «p. m.» se partía entre líneas y se juntaba con el punto
+  final. «Iniciar sesión con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
   **en sus colores** (lo pide su guía de marca): es el único color ajeno que
   entra a la interfaz.
 - **«Privada / Pública»** son `SEGMENTOS`, con candado y globo. Deshabilitado
