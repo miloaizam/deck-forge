@@ -88,13 +88,10 @@ export async function api(ruta: string, opciones: Opciones = {}): Promise<unknow
 
 /** El texto para el usuario de un error de la nube, impersonal y con remedio. */
 export function mensajeDeError(e: unknown): string {
-  if (!(e instanceof ErrorNube)) return "Algo falló al hablar con la nube.";
-  if (e.status === 0)
-    return "Sin conexión con la nube. Lo guardado en este navegador sigue aquí.";
-  if (e.status === 401) return "La sesión caducó. Vuelve a entrar.";
-  if (e.status === 429)
-    return "Demasiadas peticiones seguidas. Intenta de nuevo en un rato.";
-  if (e.status >= 500)
-    return "La nube no está disponible ahora. Intenta de nuevo más tarde.";
-  return "La nube rechazó el cambio.";
+  if (!(e instanceof ErrorNube)) return "Algo salió mal. Inténtalo de nuevo.";
+  if (e.status === 0) return "No hay conexión. Inténtalo de nuevo en un momento.";
+  if (e.status === 401) return "Tu sesión expiró. Vuelve a iniciar sesión.";
+  if (e.status === 429) return "Demasiados intentos seguidos. Espera un momento.";
+  if (e.status >= 500) return "El servicio no está disponible. Inténtalo más tarde.";
+  return "No se pudo guardar el cambio.";
 }

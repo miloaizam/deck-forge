@@ -45,7 +45,7 @@ export function AliasForm({ actual, onGuardado }: AliasFormProps) {
           setGuardando(false);
           if (r === "ok") {
             setError(null);
-            toast(`Alias guardado: ${valor.trim()}.`, "success");
+            toast("Alias guardado.", "success");
             onGuardado?.(valor.trim());
           } else {
             setError(ERRORES[r]);
@@ -54,7 +54,7 @@ export function AliasForm({ actual, onGuardado }: AliasFormProps) {
       }}
     >
       <label htmlFor={id} className="text-muted text-[12px]">
-        Alias público (firma tus barajas en la Comunidad)
+        Alias
       </label>
       <div className="flex gap-2">
         <input
@@ -80,9 +80,13 @@ export function AliasForm({ actual, onGuardado }: AliasFormProps) {
           {guardando ? "Guardando…" : "Guardar"}
         </button>
       </div>
-      {error && (
+      {error ? (
         <p id={`${id}-error`} role="alert" className="text-warning text-[13px]">
           {error}
+        </p>
+      ) : (
+        <p className="text-muted text-[12px]">
+          Es el nombre que se ve en tus barajas públicas.
         </p>
       )}
     </form>

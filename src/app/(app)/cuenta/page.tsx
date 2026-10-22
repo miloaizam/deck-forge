@@ -16,8 +16,7 @@ export default function CuentaPage() {
       <p className="eyebrow mb-3">Cuenta</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Tu cuenta</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Con tu cuenta armas y guardas barajas y llevas tu colección, y te siguen a
-        cualquier equipo. El catálogo y la Comunidad se ven sin cuenta.
+        Tu alias, tus datos y la sincronización de tus barajas y tu colección.
       </p>
       <CuentaView />
     </main>

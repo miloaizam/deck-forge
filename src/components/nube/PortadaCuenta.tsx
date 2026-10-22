@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Layers } from "lucide-react";
 
-import { BotonGoogle } from "./BotonGoogle";
+import { BotonGoogle, CrearCuenta } from "./BotonGoogle";
 import { iniciarNube } from "./nube";
 import { useConCuenta } from "./use-con-cuenta";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
@@ -12,8 +12,8 @@ import { BOTON_SECUNDARIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
- * La cuenta en la portada, bajo «Entrar a la forja»: «Crear cuenta con
- * Google» sin sesion (crear y entrar son el mismo boton) y un atajo a Mis
+ * La cuenta en la portada, bajo «Entrar a la forja»: «Iniciar sesión con
+ * Google» y «¿No tienes cuenta? Crea una aquí» sin sesion, y un atajo a Mis
  * barajas con ella. La portada no tiene navbar, asi que arranca la cuenta
  * aqui. Con las cuentas apagadas no pinta nada.
  *
@@ -38,10 +38,8 @@ export function PortadaCuenta() {
         </Link>
       ) : (
         <>
-          <BotonGoogle texto="Crear cuenta con Google" />
-          <p className="text-muted text-[13px]">
-            ¿Ya tienes cuenta? El mismo botón te hace entrar.
-          </p>
+          <BotonGoogle />
+          <CrearCuenta />
         </>
       )}
     </div>

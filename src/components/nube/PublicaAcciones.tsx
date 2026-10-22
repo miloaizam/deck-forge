@@ -50,7 +50,7 @@ export function usePublica(pid: string | null): EstadoPublica | null {
               ? { fase: "ok", baraja }
               : {
                   fase: "error",
-                  mensaje: "Esta baraja ya no está publicada, o su dueño la retiró.",
+                  mensaje: "Esta baraja ya no está publicada.",
                 },
           ),
         (e: unknown) => fijar({ fase: "error", mensaje: mensajeDeError(e) }),
@@ -93,7 +93,7 @@ export function PublicaAcciones({ baraja }: PublicaAccionesProps) {
     return (
       <p className="text-muted inline-flex items-center gap-1.5 text-[13px] tabular-nums">
         <Heart size={14} aria-hidden="true" />
-        {like.n} {like.n === 1 ? "like" : "likes"} · es tuya
+        {like.n} {like.n === 1 ? "like" : "likes"} · Tu baraja
       </p>
     );
   }
@@ -136,12 +136,12 @@ export function PublicaAcciones({ baraja }: PublicaAccionesProps) {
       ) : (
         <Link
           href="/cuenta"
-          title="Entra con tu cuenta para dar like"
+          title="Inicia sesión para dar like"
           className={BOTON_SECUNDARIO}
         >
           <Heart size={15} aria-hidden="true" />
           <span className="tabular-nums">{like.n}</span>
-          <span className="sr-only">likes. Entra con tu cuenta para dar like</span>
+          <span className="sr-only">likes. Inicia sesión para dar like</span>
         </Link>
       )}
       {conSesion && (

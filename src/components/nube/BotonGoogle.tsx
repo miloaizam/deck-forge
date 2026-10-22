@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { entrar } from "./nube";
-import { BOTON_SECUNDARIO } from "@/lib/ui";
+import { BOTON_SECUNDARIO, ENLACE } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** El logotipo de Google, en sus colores: lo exige su guia de marca. */
@@ -31,16 +31,16 @@ function LogoGoogle() {
 }
 
 /**
- * «Entrar con Google»: lo usan `/cuenta` y la pantalla que piden el
+ * «Iniciar sesión con Google»: lo usan `/cuenta` y la pantalla que piden el
  * constructor, Mis barajas y la coleccion sin sesion. Recuerda la pagina
  * desde donde se pulso, para volver a ella despues de Google (`entrar`).
  */
 export function BotonGoogle({
   className,
-  texto = "Entrar con Google",
+  texto = "Iniciar sesión con Google",
 }: {
   className?: string;
-  /** Lo que dice el boton: «Crear cuenta con Google» en la portada. */
+  /** Lo que dice el boton. */
   texto?: string;
 }) {
   const [abriendo, setAbriendo] = useState(false);
@@ -57,5 +57,22 @@ export function BotonGoogle({
       <LogoGoogle />
       {abriendo ? "Abriendo Google…" : texto}
     </button>
+  );
+}
+
+/**
+ * «¿No tienes cuenta? Crea una aquí.» bajo el boton de Google. Crear la cuenta
+ * e iniciar sesion son lo mismo con Google (la primera vez se crea sola), asi
+ * que el enlace hace exactamente lo que el boton: no hay formulario aparte.
+ */
+export function CrearCuenta() {
+  return (
+    <p className="text-muted text-[13px]">
+      ¿No tienes cuenta?{" "}
+      <button type="button" onClick={() => void entrar()} className={ENLACE}>
+        Crea una aquí
+      </button>
+      .
+    </p>
   );
 }

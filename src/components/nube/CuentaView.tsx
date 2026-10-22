@@ -10,7 +10,7 @@ import { Skeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { mensajeDeError } from "./api";
 import { AliasForm } from "./AliasForm";
-import { BotonGoogle } from "./BotonGoogle";
+import { BotonGoogle, CrearCuenta } from "./BotonGoogle";
 import { borrarCuenta, salir, sincronizar, tomarVuelta, useNube } from "./nube";
 import { BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -45,8 +45,7 @@ export function CuentaView() {
   if (nube.fase === "apagada") {
     return (
       <p className="text-muted mt-8 leading-relaxed">
-        Las cuentas todavía no están disponibles. Mientras tanto, todo se guarda en este
-        navegador.
+        Las cuentas todavía no están disponibles.
       </p>
     );
   }
@@ -65,29 +64,28 @@ export function CuentaView() {
   if (nube.fase === "sin-sesion") {
     return (
       <section className={cn(TARJETA, "mt-8 max-w-2xl")}>
-        <h2 className="text-lg font-semibold">Guarda tus barajas en la nube</h2>
-        <ul className="text-muted list-disc space-y-1.5 pl-5 leading-relaxed">
-          <li>Tus barajas y tu colección, en todos tus equipos.</li>
-          <li>Publica tus barajas en la Comunidad y dale like a las de otros.</li>
-          <li>
-            Lo que ya tengas guardado en este navegador se suma a tu cuenta al entrar.
-          </li>
+        <h2 className="text-lg font-semibold">Inicia sesión</h2>
+        <p className="text-muted leading-relaxed">Con tu cuenta puedes:</p>
+        <ul className="text-muted -mt-2 list-disc space-y-1 pl-5 leading-relaxed">
+          <li>Armar y guardar barajas.</li>
+          <li>Llevar tu colección.</li>
+          <li>Ver todo desde cualquier equipo.</li>
+          <li>Publicar barajas en la Comunidad y dar like.</li>
         </ul>
         {nube.error && (
           <p role="alert" className="text-warning text-sm">
             {nube.error}
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col items-start gap-2">
           <BotonGoogle />
+          <CrearCuenta />
         </div>
         <p className="text-muted text-[13px] leading-relaxed">
-          Solo se usa tu correo para identificarte; nunca se muestra. Qué se guarda y cómo
-          borrarlo:{" "}
+          Tu correo solo sirve para identificarte y nunca se muestra.{" "}
           <Link href="/privacidad" className={ENLACE}>
-            políticas de privacidad
+            Ver políticas de privacidad
           </Link>
-          .
         </p>
       </section>
     );
@@ -102,13 +100,16 @@ export function CuentaView() {
         <dl className="grid gap-1 text-sm">
           {usuario.nombre && (
             <>
-              <dt className="text-muted text-[12px]">Nombre (no se muestra)</dt>
+              <dt className="text-muted text-[12px]">Nombre</dt>
               <dd className="mb-2">{usuario.nombre}</dd>
             </>
           )}
-          <dt className="text-muted text-[12px]">Correo (no se muestra)</dt>
+          <dt className="text-muted text-[12px]">Correo</dt>
           <dd className="break-all">{usuario.email ?? "—"}</dd>
         </dl>
+        <p className="text-muted -mt-1 text-[13px]">
+          Nadie más ve tu nombre ni tu correo.
+        </p>
         <AliasForm actual={alias} />
       </section>
 
@@ -126,7 +127,7 @@ export function CuentaView() {
           {sincronizando
             ? "Sincronizando…"
             : ultima
-              ? `Barajas y colección al día. Última vez: ${FECHA.format(ultima)}.`
+              ? `Todo al día. Última vez: ${FECHA.format(ultima)}.`
               : "Todavía no se ha sincronizado."}
         </p>
         {error && (
@@ -135,8 +136,7 @@ export function CuentaView() {
           </p>
         )}
         <p className="text-muted text-[13px] leading-relaxed">
-          Se sincroniza sola al entrar, al guardar y al volver a esta pestaña. El borrador
-          del constructor no viaja: se queda en este navegador.
+          Tus barajas y tu colección se sincronizan solas cada vez que guardas.
         </p>
         <div className="mt-auto flex flex-wrap gap-2">
           <button
@@ -168,9 +168,8 @@ export function CuentaView() {
       <section className={cn(TARJETA, "md:col-span-2")}>
         <h2 className="text-lg font-semibold">Borrar la cuenta</h2>
         <p className="text-muted text-sm leading-relaxed">
-          Borra la cuenta y todo lo que tiene en la nube: tus barajas (también las
-          públicas), tu colección, tus likes y tus reportes. Lo guardado en este navegador
-          se queda.
+          Se borran tu cuenta, tus barajas (también las públicas), tu colección y tus
+          likes. No se puede deshacer.
         </p>
         <div>
           <button
@@ -184,7 +183,7 @@ export function CuentaView() {
         </div>
         <p className="text-muted text-[13px]">
           <Link href="/privacidad" className={ENLACE}>
-            Políticas de privacidad: qué se guarda y quién lo ve
+            Ver políticas de privacidad
           </Link>
         </p>
       </section>
@@ -192,13 +191,13 @@ export function CuentaView() {
       <ConfirmDialog
         open={borrando}
         titulo="¿Borrar tu cuenta?"
-        mensaje="Se borran la cuenta y todo lo que tiene en la nube. No se puede deshacer. Lo guardado en este navegador se queda."
+        mensaje="Se borrarán tu cuenta, tus barajas, tu colección y tus likes. No se puede deshacer."
         confirmar="Borrar mi cuenta"
         onCancel={() => setBorrando(false)}
         onConfirm={() => {
           setBorrando(false);
           borrarCuenta().then(
-            () => toast("Cuenta borrada. Lo de este navegador sigue aquí.", "delete"),
+            () => toast("Cuenta borrada.", "delete"),
             (e: unknown) =>
               toast(`No se pudo borrar la cuenta. ${mensajeDeError(e)}`, "warning"),
           );

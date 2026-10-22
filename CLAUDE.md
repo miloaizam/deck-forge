@@ -1021,7 +1021,7 @@ enlace para compartir. Lo que falta y lo que está mal, en
 [TODO.md](TODO.md).
 
 Rutas: `/` portada (sin navbar, con «Entrar a la forja», que va al catálogo, y
-debajo «Crear cuenta con Google», o «Ir a mis barajas» con sesión:
+debajo «Iniciar sesión con Google» y «¿No tienes cuenta? Crea una aquí», o «Ir a mis barajas» con sesión:
 `PortadaCuenta.tsx`) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
@@ -1856,7 +1856,7 @@ quien toca el código.
 - **Lo personal pide cuenta** (22-10-2026, decisión del proyecto; antes era
   opcional). `RequiereCuenta.tsx` envuelve el constructor, Mis barajas, la
   colección y el detalle de una baraja propia (`?m=`): sin sesión muestra
-  «Entra para …» con «Entrar con Google» y, si hay barajas o colección en el
+  «Inicia sesión para …» con «Iniciar sesión con Google» y, si hay barajas o colección en el
   navegador, avisa que se suman a la cuenta al entrar. **No** piden cuenta el
   catálogo, los documentos, las novedades, la Comunidad, una baraja
   compartida (`#d=`) o pública (`?p=`) ni una colección compartida (`#c=`).

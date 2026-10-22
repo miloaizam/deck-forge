@@ -383,7 +383,7 @@ un campo subrayado.
 
 - **El botón de la cuenta** va con la ayuda y el tema, `BOTON_ICONO_LIBRE`
   redondo: una persona sin sesión, la inicial del alias sobre violeta con
-  ella. «Entrar con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
+  ella. «Iniciar sesión con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
   **en sus colores** (lo pide su guía de marca): es el único color ajeno que
   entra a la interfaz.
 - **«Privada / Pública»** son `SEGMENTOS`, con candado y globo. Deshabilitado
@@ -518,3 +518,23 @@ No es opcional. Una baraja mal etiquetado es una baraja que alguien no puede arm
   "X".", "No se pudo copiar el enlace."—, nunca en primera persona ("Borré…",
   "No pude…"): no es un chatbot que cuenta lo que hizo.
 - Sin signos de exclamación ni emojis en la UI.
+- **Que no suene a máquina** (revisión del 22-10-2026). Lo que delataba los
+  textos escritos con IA, y cómo se arregló:
+  - Explicar de más con dos puntos: «Gratis y sin instalar nada: crea tu
+    cuenta con Google y tus barajas te siguen a cualquier equipo». Mejor una
+    frase corta por idea, y lo demás a la ayuda.
+  - Tranquilizar sin que nadie pregunte: «no se pierde nada», «sigue aquí».
+    Se dice el hecho: «Se pasarán a tu cuenta cuando inicies sesión».
+  - Frases ingeniosas en vez de las de siempre: «El mismo botón te hace
+    entrar» por «¿No tienes cuenta? Crea una aquí». Si hay una fórmula que
+    todo el mundo conoce, se usa esa.
+  - Contar cómo funciona por dentro («la nube», «se sincroniza al volver a la
+    pestaña», «el borrador no viaja»). Al jugador le basta el resultado.
+  - Paréntesis y etiquetas que aclaran todo: «Nombre (no se muestra)». Mejor
+    una línea aparte, una vez: «Nadie más ve tu nombre ni tu correo».
+- **Vocabulario de la cuenta**: «Iniciar sesión» (no «entrar» ni «ingresar»),
+  «Cerrar sesión», «Iniciar sesión con Google», «¿No tienes cuenta? Crea una
+  aquí». Con Google crear la cuenta e iniciar sesión son lo mismo: el botón
+  dice «Iniciar sesión con Google» y el enlace de crear hace lo mismo.
+- **Los subtítulos de cada vista van en una sola línea** en escritorio: sin
+  `max-w` que los parta, y cortos.

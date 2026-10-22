@@ -5,7 +5,7 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import { CircleUser } from "lucide-react";
 
 import { useDecks } from "../decks/use-decks";
-import { BotonGoogle } from "./BotonGoogle";
+import { BotonGoogle, CrearCuenta } from "./BotonGoogle";
 import { useNube } from "./nube";
 import { useConCuenta } from "./use-con-cuenta";
 import { estaVacia, getColeccionSnapshot } from "@/lib/coleccion";
@@ -29,7 +29,7 @@ interface RequiereCuentaProps {
   children: ReactNode;
   /** Lo que se ve mientras se sabe si hay sesion: la silueta de la pagina. */
   esqueleto: ReactNode;
-  /** Para que sirve la pagina, en la frase «Entra para …». */
+  /** Para que sirve la pagina, en la frase «Inicia sesión para …». */
   para: string;
   /**
    * Un enlace compartido no pide cuenta: `"c"` deja pasar `#c=` (una
@@ -42,7 +42,7 @@ interface RequiereCuentaProps {
 
 /**
  * Lo personal —el constructor, Mis barajas, la coleccion y el detalle de una
- * baraja propia— pide entrar con Google (decision del proyecto, 22-10-2026).
+ * baraja propia— pide iniciar sesion con Google (decision del proyecto, 22-10-2026).
  * El catalogo, los documentos, la Comunidad y los enlaces compartidos siguen
  * abiertos para cualquiera.
  *
@@ -70,28 +70,30 @@ export function RequiereCuenta({
   return <PideCuenta para={para} error={nube.error} />;
 }
 
+/** «Tienes 3 barajas guardadas en este navegador y una colección.» */
+function loGuardado(barajas: number, coleccion: boolean): string | null {
+  const lista = [
+    barajas === 1 ? "1 baraja" : barajas > 1 ? `${barajas} barajas` : null,
+    coleccion ? "una colección" : null,
+  ].filter(Boolean);
+  if (lista.length === 0) return null;
+  const uno = barajas + (coleccion ? 1 : 0) === 1;
+  return `Tienes ${lista.join(" y ")} ${uno ? "guardada" : "guardadas"} en este navegador. ${uno ? "Se pasará" : "Se pasarán"} a tu cuenta cuando inicies sesión.`;
+}
+
 function PideCuenta({ para, error }: { para: string; error: string | null }) {
-  const barajas = useDecks().length;
-  const conColeccion = !estaVacia(getColeccionSnapshot());
-  const guardado =
-    barajas > 0
-      ? `${barajas === 1 ? "La baraja guardada" : `Las ${barajas} barajas guardadas`} en este navegador${conColeccion ? " y tu colección" : ""}`
-      : conColeccion
-        ? "Tu colección guardada en este navegador"
-        : null;
+  const guardado = loGuardado(useDecks().length, !estaVacia(getColeccionSnapshot()));
 
   return (
     <section className="border-line bg-panel rounded-panel mx-auto flex max-w-xl flex-col items-center gap-4 border px-6 py-12 text-center">
       <CircleUser size={32} aria-hidden="true" className="text-accent" />
-      <h2 className="text-xl font-semibold">Entra para {para}</h2>
+      <h2 className="text-xl font-semibold">Inicia sesión para {para}</h2>
       <p className="text-muted leading-relaxed">
-        Tus barajas y tu colección se guardan en tu cuenta y te siguen a cualquier equipo.
-        Es gratis y se entra con Google.
+        Así tus barajas y tu colección quedan guardadas y las ves desde cualquier equipo.
       </p>
       {guardado && (
         <p className="bg-accent-soft text-ink rounded-card px-4 py-2.5 text-[14px]">
-          {guardado} {guardado.startsWith("Las ") ? "se suman" : "se suma"} a tu cuenta al
-          entrar: no se pierde nada.
+          {guardado}
         </p>
       )}
       {error && (
@@ -100,18 +102,15 @@ function PideCuenta({ para, error }: { para: string; error: string | null }) {
         </p>
       )}
       <BotonGoogle />
+      <CrearCuenta />
       <p className="text-muted text-[13px] leading-relaxed">
-        Sin cuenta puedes ver el{" "}
+        Sin iniciar sesión puedes ver el{" "}
         <Link href="/catalogo" className={ENLACE}>
           catálogo
         </Link>{" "}
         y la{" "}
         <Link href="/comunidad" className={ENLACE}>
           Comunidad
-        </Link>
-        . Qué se guarda:{" "}
-        <Link href="/privacidad" className={ENLACE}>
-          políticas de privacidad
         </Link>
         .
       </p>

@@ -32,7 +32,7 @@ export function AccountButton() {
         .charAt(0)
         .toUpperCase()
     : null;
-  const etiqueta = conSesion ? "Tu cuenta" : "Entrar con tu cuenta";
+  const etiqueta = conSesion ? "Tu cuenta" : "Iniciar sesión";
 
   return (
     <Link

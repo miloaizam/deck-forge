@@ -238,12 +238,14 @@ export function iniciarNube(): void {
       if (!data.session) {
         setEstado({
           fase: "sin-sesion",
-          error: errorDeVuelta ? "No se pudo entrar con Google. Intenta de nuevo." : null,
+          error: errorDeVuelta
+            ? "No se pudo iniciar sesión con Google. Inténtalo de nuevo."
+            : null,
         });
       }
     })
     .catch(() =>
-      setEstado({ fase: "sin-sesion", error: "No se pudo cargar la cuenta." }),
+      setEstado({ fase: "sin-sesion", error: "No se pudo cargar tu cuenta." }),
     );
 }
 
@@ -317,7 +319,7 @@ export async function entrar(): Promise<void> {
   } catch {
     setEstado({
       fase: "sin-sesion",
-      error: "No se pudo abrir Google. Intenta de nuevo.",
+      error: "No se pudo abrir Google. Inténtalo de nuevo.",
     });
   }
 }

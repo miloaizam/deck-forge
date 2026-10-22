@@ -120,15 +120,15 @@ export async function sincronizarAhora(): Promise<void> {
   if (primeraVez && plan.traidas > 0) {
     toast(
       plan.traidas === 1
-        ? "Se trajo 1 baraja de tu cuenta."
-        : `Se trajeron ${plan.traidas} barajas de tu cuenta.`,
+        ? "Se cargó 1 baraja desde tu cuenta."
+        : `Se cargaron ${plan.traidas} barajas desde tu cuenta.`,
       "success",
     );
   }
   // Solo la primera vez: despues seria el mismo aviso en cada guardado.
   if (primeraVez && plan.noCupieron > 0) {
     toast(
-      `${plan.noCupieron} ${plan.noCupieron === 1 ? "baraja de tu cuenta no cupo" : "barajas de tu cuenta no cupieron"} en este navegador: ya hay 50. Siguen guardadas en la cuenta.`,
+      `${plan.noCupieron === 1 ? "1 baraja de tu cuenta no cabe" : `${plan.noCupieron} barajas de tu cuenta no caben`} en este navegador porque ya tienes 50. Siguen en tu cuenta.`,
       "warning",
     );
   }

@@ -51,7 +51,7 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
       cambiarPublica(deck, false, null).then(
         () =>
           toast(
-            `"${deck.nombre}" ya no cumple las reglas: se retiró de la Comunidad.`,
+            `"${deck.nombre}" dejó de ser legal y se quitó de la Comunidad.`,
             "warning",
           ),
         () => undefined,
@@ -67,7 +67,7 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
     return (
       <p className="text-muted text-[13px]">
         <Link href="/cuenta" className={ENLACE}>
-          Entra con tu cuenta
+          Inicia sesión
         </Link>{" "}
         para publicarla en la Comunidad.
       </p>
@@ -90,7 +90,8 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
               : `"${deck.nombre}" ya no es pública.`,
             publicar ? "success" : "info",
           ),
-        (e: unknown) => toast(`No se pudo cambiar. ${mensajeDeError(e)}`, "warning"),
+        (e: unknown) =>
+          toast(`No se pudo cambiar la visibilidad. ${mensajeDeError(e)}`, "warning"),
       )
       .finally(() => setOcupado(false));
   };
@@ -113,9 +114,7 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
           aria-pressed={esPublica}
           disabled={ocupado || (!esPublica && !legal)}
           onClick={() => cambiar(true)}
-          title={
-            !legal ? "Solo se pueden publicar barajas que cumplen las reglas" : undefined
-          }
+          title={!legal ? "Para publicarla, la baraja tiene que ser legal" : undefined}
           className={cn(
             SEGMENTO,
             esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
@@ -129,7 +128,7 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
 
       {!esPublica && !legal && (
         <p className="text-muted text-[12px]">
-          Solo se publican las barajas que cumplen.
+          Para publicarla, la baraja tiene que ser legal.
         </p>
       )}
 
@@ -160,10 +159,7 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
 
       {pidiendoAlias && (
         <div className="border-line bg-panel rounded-card w-full max-w-sm border p-3.5">
-          <p className="mb-2 text-[13px]">
-            Antes de publicar, elige el alias que firmará tus barajas. Tu nombre y tu
-            correo no se muestran.
-          </p>
+          <p className="mb-2 text-[13px]">Para publicar, primero elige un alias.</p>
           <AliasForm
             actual={null}
             onGuardado={() => {

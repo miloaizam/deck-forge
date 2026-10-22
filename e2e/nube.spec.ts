@@ -112,14 +112,14 @@ test("sin cuenta no se pide nada a Supabase", async ({ page }) => {
     await expect(page.getByRole("link", { name: /cuenta/i })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Comunidad" })).toHaveCount(0);
   } else {
-    await expect(page.getByRole("link", { name: "Entrar con tu cuenta" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Iniciar sesión" })).toBeVisible();
     // Sin cuenta, la navbar no ofrece lo personal; la portada ofrece crearla.
     for (const nombre of ["Constructor", "Mis barajas", "Colección"]) {
       await expect(page.getByRole("link", { name: nombre, exact: true })).toHaveCount(0);
     }
     await page.goto("/");
     await expect(
-      page.getByRole("button", { name: "Crear cuenta con Google" }),
+      page.getByRole("button", { name: "Iniciar sesión con Google" }),
     ).toBeVisible();
     expect(pedidos).toEqual([]);
   }
@@ -131,7 +131,9 @@ test.describe("con la nube encendida", () => {
   test("/cuenta sin sesion ofrece entrar con Google", async ({ page }) => {
     await simularSupabase(page);
     await page.goto("/cuenta/");
-    await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Iniciar sesión con Google" }),
+    ).toBeVisible();
   });
 
   test("al entrar se juntan las barajas de aqui y las de la cuenta", async ({ page }) => {
@@ -156,7 +158,9 @@ test.describe("con la nube encendida", () => {
     await conSesion(page, USUARIO_A);
 
     await page.goto("/barajas/");
-    await expect(page.getByText("Se trajo 1 baraja de tu cuenta.").last()).toBeVisible();
+    await expect(
+      page.getByText("Se cargó 1 baraja desde tu cuenta.").last(),
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: "Baraja de alla" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Baraja de aqui" })).toBeVisible();
     await expect
@@ -172,7 +176,7 @@ test.describe("con la nube encendida", () => {
 
     await page.goto(`/baraja/?m=${deck.id}`);
     await page.getByRole("button", { name: "Pública" }).click();
-    await page.getByLabel(/Alias público/).fill("Milo_ñandú");
+    await page.getByLabel("Alias", { exact: true }).fill("Milo_ñandú");
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
     await expect(
       page.getByText(`"Para publicar" publicada en la Comunidad.`).last(),
@@ -201,7 +205,7 @@ test.describe("con la nube encendida", () => {
     await page.goto(`/baraja/?m=${incompleta.id}`);
     await expect(page.getByRole("button", { name: "Pública" })).toBeDisabled();
     await expect(
-      page.getByText("Solo se publican las barajas que cumplen."),
+      page.getByText("Para publicarla, la baraja tiene que ser legal."),
     ).toBeVisible();
   });
 
@@ -231,9 +235,7 @@ test.describe("con la nube encendida", () => {
     const dialogo = page.getByRole("dialog");
     await dialogo.getByLabel("Es spam o publicidad").check();
     await dialogo.getByRole("button", { name: "Reportar" }).click();
-    await expect(
-      page.getByText("Reporte enviado. Gracias por avisar.").last(),
-    ).toBeVisible();
+    await expect(page.getByText("Reporte enviado. Gracias.").last()).toBeVisible();
     expect(s.reportes).toEqual([
       { user_id: USUARIO_A, baraja: pid, motivo: "spam", nota: "" },
     ]);
@@ -245,7 +247,7 @@ test.describe("con la nube encendida", () => {
     await page.goto("/comunidad/");
     await page.getByRole("link", { name: "Se ve sin cuenta" }).click();
     await expect(
-      page.getByRole("link", { name: /Entra con tu cuenta para dar like/ }),
+      page.getByRole("link", { name: /Inicia sesión para dar like/ }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Reportar la baraja" })).toHaveCount(0);
     expect(s.peticiones.every((p) => !p.includes("/rest/v1/barajas"))).toBe(true);
@@ -266,13 +268,17 @@ test.describe("con la nube encendida", () => {
     await conSesion(page, USUARIO_A);
     await page.goto("/cuenta/");
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
-    await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Iniciar sesión con Google" }),
+    ).toBeVisible();
     // Mis barajas pide entrar, y avisa que la guardada se suma a la cuenta.
     await page.goto("/barajas/");
     await expect(
-      page.getByRole("heading", { name: "Entra para ver tus barajas" }),
+      page.getByRole("heading", { name: "Inicia sesión para ver tus barajas" }),
     ).toBeVisible();
-    await expect(page.getByText("La baraja guardada en este navegador")).toBeVisible();
+    await expect(
+      page.getByText("Tienes 1 baraja guardada en este navegador"),
+    ).toBeVisible();
   });
 
   test("lo personal pide cuenta; lo compartido no", async ({ page }) => {
@@ -290,7 +296,7 @@ test.describe("con la nube encendida", () => {
     ]) {
       await page.goto(ruta);
       await expect(
-        page.getByRole("heading", { name: `Entra para ${para}` }),
+        page.getByRole("heading", { name: `Inicia sesión para ${para}` }),
       ).toBeVisible();
     }
     // Un enlace compartido y una coleccion compartida se abren sin cuenta.

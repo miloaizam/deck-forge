@@ -237,15 +237,15 @@ export function ComunidadView() {
           />
           <p className="text-ink text-lg">
             {consulta.q || consulta.afinidad
-              ? "Ninguna baraja pública coincide."
+              ? "No hay barajas que coincidan con tu búsqueda."
               : "Todavía no hay barajas públicas."}
           </p>
           <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
-            Publica una desde su detalle en{" "}
+            Puedes publicar una desde{" "}
             <Link href="/barajas" className={ENLACE}>
               Mis barajas
             </Link>
-            : solo hace falta una cuenta y que la baraja cumpla las reglas.
+            .
           </p>
         </div>
       )}

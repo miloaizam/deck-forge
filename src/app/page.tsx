@@ -53,9 +53,8 @@ export default function Home() {
         </h1>
 
         <p className="text-muted mx-auto mt-6 max-w-[54ch] text-[17px] leading-relaxed">
-          Consulta el catálogo completo del formato, encuentra la carta exacta que buscas
-          y arma tu baraja. Gratis y sin instalar nada: crea tu cuenta con Google y tus
-          barajas te siguen a cualquier equipo.
+          Consulta el catálogo completo del formato, encuentra la carta que buscas y arma
+          tu baraja. Gratis y sin instalar nada.
         </p>
 
         <div className="mt-10 flex justify-center">

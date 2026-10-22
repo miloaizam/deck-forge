@@ -54,7 +54,7 @@ export function ReportarDialog({ open, publicId, nombre, onClose }: ReportarDial
           reportar(publicId, motivo, nota.trim())
             .then(
               () => {
-                toast("Reporte enviado. Gracias por avisar.", "info");
+                toast("Reporte enviado. Gracias.", "info");
                 setNota("");
                 ref.current?.close();
               },
@@ -86,7 +86,7 @@ export function ReportarDialog({ open, publicId, nombre, onClose }: ReportarDial
           ))}
         </fieldset>
         <label htmlFor={`${id}-nota`} className="text-muted text-[13px]">
-          Algo más (opcional)
+          Comentario (opcional)
         </label>
         <textarea
           id={`${id}-nota`}

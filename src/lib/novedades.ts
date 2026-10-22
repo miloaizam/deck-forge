@@ -38,10 +38,9 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Mejora",
     titulo: "Tus barajas, siempre en tu cuenta",
     texto: [
-      "El constructor, Mis barajas y la colección ahora piden entrar con Google. Así tus barajas y tu colección quedan siempre guardadas en tu cuenta y no se pierden si cambias de equipo o borras los datos del navegador.",
-      "Lo que ya tenías guardado en el navegador no se pierde: se suma a tu cuenta la primera vez que entras. El catálogo, los documentos, la Comunidad y los enlaces que te compartan se siguen viendo sin cuenta.",
-      "Sin cuenta, la barra de arriba muestra solo lo que se puede ver sin entrar; con ella, aparecen el constructor, Mis barajas y la colección. La cuenta se crea desde la portada, con «Crear cuenta con Google».",
-      "Y en la barra de arriba, la sección donde estás ahora va subrayada.",
+      "Para usar el constructor, Mis barajas y la colección ahora hay que iniciar sesión con Google. Así tus barajas quedan guardadas aunque cambies de equipo o borres los datos del navegador.",
+      "Si ya tenías barajas en el navegador, se pasan a tu cuenta la primera vez que inicias sesión. El catálogo, los documentos y la Comunidad se siguen viendo sin cuenta.",
+      "Además, la barra de arriba subraya la sección en la que estás.",
     ],
   },
   {
@@ -50,9 +49,9 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Novedad",
     titulo: "Cuentas y Comunidad",
     texto: [
-      "Ahora puedes entrar con tu cuenta de Google, si quieres: tus barajas y tu colección se guardan también en la nube y aparecen en cualquier equipo donde entres. Sin cuenta, todo sigue funcionando como antes, en tu navegador.",
-      "Y llega la Comunidad: publica tus barajas, mira las de otros jugadores y dales like. Se ordenan por más likes, tendencia de la semana, más recientes o más copiadas, y se pueden guardar en tus barajas con un toque.",
-      "Qué se guarda y quién lo ve está en la nueva página de Políticas de privacidad, al pie de cada página.",
+      "Ya puedes iniciar sesión con Google. Tus barajas y tu colección quedan en tu cuenta y las ves desde cualquier equipo.",
+      "También llega la Comunidad: publica tus barajas, mira las de otros jugadores y dales like. Puedes ordenarlas por más likes, tendencia de la semana, más recientes o más copiadas.",
+      "Al pie de cada página están las nuevas Políticas de privacidad.",
     ],
   },
   {

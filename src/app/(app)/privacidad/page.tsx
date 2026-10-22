@@ -27,31 +27,28 @@ export default function PrivacidadPage() {
 
       <div className="mt-8 flex max-w-3xl flex-col gap-6">
         <section>
-          <h2 className={TITULO}>Sin cuenta</h2>
+          <h2 className={TITULO}>Sin iniciar sesión</h2>
           <div className={TEXTO}>
             <p>
-              El catálogo, los documentos y la Comunidad se ven sin cuenta. El borrador
-              del constructor y el tema se guardan solo en{" "}
-              <strong className="text-ink">este navegador</strong>, y no salen de él.
+              Puedes ver el catálogo, los documentos y la Comunidad sin iniciar sesión. El
+              tema que elijas y el borrador del constructor se guardan solo en{" "}
+              <strong className="text-ink">este navegador</strong>.
             </p>
             <p>
-              Una baraja o una colección compartida por enlace viaja dentro del propio
-              enlace, tras el <code>#</code>, que el navegador no envía a ningún servidor.
+              Las barajas y colecciones que compartes por enlace van dentro del mismo
+              enlace y no pasan por ningún servidor.
             </p>
-            <p>
-              No hay cookies, ni publicidad, ni estadísticas de visitas, ni servicios de
-              terceros: todo se sirve desde este mismo sitio.
-            </p>
+            <p>El sitio no usa cookies, publicidad ni estadísticas de visitas.</p>
           </div>
         </section>
 
         <section className={SECCION}>
-          <h2 className={TITULO}>Con cuenta</h2>
+          <h2 className={TITULO}>Con tu cuenta</h2>
           <div className={TEXTO}>
             <p>
-              Para armar y guardar barajas y llevar la colección hace falta una cuenta,
-              que se crea entrando con Google. Se guarda en{" "}
-              <strong className="text-ink">Supabase</strong>, en servidores de São Paulo:
+              Tu cuenta se crea al iniciar sesión con Google. Los datos se guardan en{" "}
+              <strong className="text-ink">Supabase</strong>, en servidores ubicados en
+              São Paulo (Brasil):
             </p>
             <ul className="list-disc space-y-1 pl-5">
               <li>
@@ -59,19 +56,22 @@ export default function PrivacidadPage() {
                 para identificarte. Nunca se muestran a nadie.
               </li>
               <li>
-                Tu <strong className="text-ink">alias</strong>, si eliges uno: es el
-                nombre que firma tus barajas públicas.
+                Tu <strong className="text-ink">alias</strong>, que es el nombre que se ve
+                en tus barajas públicas.
               </li>
               <li>
-                Tus <strong className="text-ink">barajas y tu colección</strong>: los
-                códigos de las cartas y sus copias, el nombre y la nota de cada baraja.
+                Tus <strong className="text-ink">barajas y tu colección</strong>: qué
+                cartas tienen, cuántas copias, y el nombre y la nota de cada baraja.
               </li>
               <li>
                 Tus <strong className="text-ink">likes, las barajas que guardaste</strong>{" "}
                 de la Comunidad y tus <strong className="text-ink">reportes</strong>.
               </li>
             </ul>
-            <p>Google no recibe nada de DeckForge: solo confirma quién eres al entrar.</p>
+            <p>
+              Google solo confirma tu identidad al iniciar sesión. DeckForge no le envía
+              ningún dato.
+            </p>
           </div>
         </section>
 
@@ -79,15 +79,15 @@ export default function PrivacidadPage() {
           <h2 className={TITULO}>Quién ve qué</h2>
           <div className={TEXTO}>
             <p>
-              Tus barajas son <strong className="text-ink">privadas</strong> hasta que tú
-              publicas una. Una baraja pública la puede ver cualquiera, con tu alias, su
+              Tus barajas son <strong className="text-ink">privadas</strong>, salvo las
+              que publiques. Cualquiera puede ver una baraja pública, con tu alias, su
               nombre, su nota y sus cartas.
             </p>
             <p>
-              De los likes y las copias solo se muestra el número, no quién los dio. Los
-              reportes los lee solo quien administra el sitio, para moderar.
+              De los likes y las copias solo se muestra el total. Los reportes solo los ve
+              quien administra el sitio.
             </p>
-            <p>Nada se vende ni se comparte con nadie.</p>
+            <p>Tus datos no se venden ni se comparten con nadie.</p>
           </div>
         </section>
 
@@ -95,13 +95,13 @@ export default function PrivacidadPage() {
           <h2 className={TITULO}>Cómo borrarlo</h2>
           <div className={TEXTO}>
             <p>
-              En{" "}
+              Desde{" "}
               <Link href="/cuenta" className={ENLACE}>
                 tu cuenta
               </Link>
-              , «Borrar mi cuenta» borra la cuenta y todo lo que tiene en la nube, en el
-              acto. Lo guardado en el navegador se borra desde el propio navegador,
-              borrando los datos del sitio.
+              , con «Borrar mi cuenta», se borran al instante tu cuenta y todos sus datos.
+              Lo que quede en el navegador se borra desde su configuración, eliminando los
+              datos del sitio.
             </p>
           </div>
         </section>

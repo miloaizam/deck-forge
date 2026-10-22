@@ -120,7 +120,7 @@ completo trae tiempo real, archivos y funciones que el sitio no usa.
 
 ### La sesión
 
-1. «Entrar con Google» (`entrar()`) carga `auth-js` y abre Google con **PKCE**.
+1. «Iniciar sesión con Google» (`entrar()`) carga `auth-js` y abre Google con **PKCE**.
    Antes guarda en `sessionStorage` (`deckforge-volver`) la página desde
    donde se pulsó.
 2. Google vuelve a Supabase, y Supabase a **`/cuenta/?code=…`**: es la única
@@ -138,7 +138,7 @@ completo trae tiempo real, archivos y funciones que el sitio no usa.
 ### Lo que pide cuenta
 
 El constructor, Mis barajas, la colección y el detalle de una baraja propia
-(`/baraja/?m=`) pasan por **`RequiereCuenta`**: sin sesión muestran «Entra para
+(`/baraja/?m=`) pasan por **`RequiereCuenta`**: sin sesión muestran «Inicia sesión para
 …» y, si el navegador ya tenía barajas o colección, avisan que se suman a la
 cuenta al entrar. La navbar no muestra esos tres enlaces sin cuenta
 (`useConCuenta`). **No** piden cuenta el catálogo, los documentos, las
@@ -352,7 +352,7 @@ Y luego `pnpm run build && pnpm run audit`: la auditoría tiene que decir
 **Antes de anunciarlo, la prueba de punta a punta** (la parte de Google solo
 la puede hacer una persona):
 
-1. Entrar con Google en el computador, elegir alias, armar y publicar una
+1. Iniciar sesión con Google en el computador, elegir alias, armar y publicar una
    baraja legal.
 2. En el teléfono, con la misma cuenta: aparecen las barajas y la colección.
 3. Con una segunda cuenta de Google: ver la baraja en la Comunidad, darle
