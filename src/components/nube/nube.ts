@@ -300,7 +300,8 @@ export function tomarVuelta(): string | null {
 export async function entrar(): Promise<void> {
   try {
     const { pathname, search, hash } = window.location;
-    if (!pathname.startsWith("/cuenta")) {
+    // Desde la portada se queda en /cuenta, para elegir el alias.
+    if (pathname !== "/" && !pathname.startsWith("/cuenta")) {
       sessionStorage.setItem(VOLVER_KEY, `${pathname}${search}${hash}`);
     }
   } catch {

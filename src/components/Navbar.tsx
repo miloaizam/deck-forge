@@ -19,6 +19,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { HelpButton } from "./HelpButton";
 import { AccountButton } from "./nube/AccountButton";
+import { useConCuenta } from "./nube/use-con-cuenta";
 import { ThemeToggle } from "./ThemeToggle";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import { BOTON_ICONO } from "@/lib/ui";
@@ -28,14 +29,16 @@ interface NavLink {
   href: string;
   label: string;
   Icon: LucideIcon;
+  /** Lo personal: sin cuenta no se muestra (`useConCuenta`). */
+  privado?: boolean;
 }
 
 /** La Comunidad solo existe con las cuentas encendidas (`supabase-config.ts`). */
 const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
-  { href: "/constructor", label: "Constructor", Icon: Hammer },
-  { href: "/barajas", label: "Mis barajas", Icon: Layers },
-  { href: "/coleccion", label: "Colección", Icon: Library },
+  { href: "/constructor", label: "Constructor", Icon: Hammer, privado: true },
+  { href: "/barajas", label: "Mis barajas", Icon: Layers, privado: true },
+  { href: "/coleccion", label: "Colección", Icon: Library, privado: true },
   ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
   { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
@@ -60,6 +63,10 @@ const TRANSICION = ["pagina"];
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // Sin cuenta, el constructor, Mis barajas y la coleccion no se ofrecen: los
+  // piden (`RequiereCuenta`). Se entra desde el icono de la cuenta.
+  const conCuenta = useConCuenta();
+  const links = conCuenta ? LINKS : LINKS.filter((l) => !l.privado);
 
   // Cerrar con Escape. Al navegar lo cierra el onClick de cada enlace: hacerlo
   // en un efecto sobre pathname dispararia un render en cascada.
@@ -107,7 +114,7 @@ export function Navbar() {
         {/* Los cinco enlaces no caben junto al logotipo en un telefono, asi
             que ahi se pliegan detras del boton de menu. */}
         <div className="hidden items-center gap-1 lg:flex">
-          {LINKS.map(({ href, label, Icon }) => (
+          {links.map(({ href, label, Icon }) => (
             <Link
               key={href}
               href={href}
@@ -173,7 +180,7 @@ export function Navbar() {
       >
         <div className="overflow-hidden">
           <ul className="border-line bg-bg mx-auto flex max-w-[1480px] flex-col border-t px-4 py-2">
-            {LINKS.map(({ href, label, Icon }) => (
+            {links.map(({ href, label, Icon }) => (
               <li key={href}>
                 <Link
                   href={href}

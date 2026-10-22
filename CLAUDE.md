@@ -1020,8 +1020,9 @@ con las reglas del formato, lista y detalle de barajas, exportar e importar, y
 enlace para compartir. Lo que falta y lo que está mal, en
 [TODO.md](TODO.md).
 
-Rutas: `/` portada (sin navbar, con «Entrar a la forja» y dos accesos directos, al
-catálogo y al constructor) · `/catalogo` todo · `/catalogo/<edicion>` ·
+Rutas: `/` portada (sin navbar, con «Entrar a la forja», que va al catálogo, y
+debajo «Crear cuenta con Google», o «Ir a mis barajas» con sesión:
+`PortadaCuenta.tsx`) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
 `/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
@@ -1068,7 +1069,11 @@ regenerarla. Dos límites a saber:
   caduque.
 
 La navbar es una fila plana de siete enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Colección, Comunidad, Documentos y Novedades. Bajo `lg` se pliegan detrás de
+Constructor, Mis barajas, Colección, Comunidad, Documentos y Novedades. **Sin
+cuenta no se muestran Constructor, Mis barajas ni Colección** (`privado` en
+`LINKS`, `useConCuenta()` de `nube/use-con-cuenta.ts`, el mismo criterio que
+`RequiereCuenta`: con una sesión guardada se muestran de una, sin esperar a
+`auth-js`); sus rutas siguen existiendo y piden entrar. Bajo `lg` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **cuenta** (solo con las
 cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.

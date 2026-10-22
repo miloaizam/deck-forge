@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { CircleUser } from "lucide-react";
 
-import { useDecks, useHydrated } from "../decks/use-decks";
+import { useDecks } from "../decks/use-decks";
 import { BotonGoogle } from "./BotonGoogle";
 import { useNube } from "./nube";
+import { useConCuenta } from "./use-con-cuenta";
 import { estaVacia, getColeccionSnapshot } from "@/lib/coleccion";
-import { SESION_KEY } from "@/lib/supabase-config";
 import { ENLACE } from "@/lib/ui";
 
 function subscribeHash(cb: () => void): () => void {
@@ -23,14 +23,6 @@ function useFragmento(clave: string | undefined): boolean {
     () => clave !== undefined && window.location.hash.startsWith(`#${clave}=`),
     () => false,
   );
-}
-
-function haySesionGuardada(): boolean {
-  try {
-    return localStorage.getItem(SESION_KEY) !== null;
-  } catch {
-    return false;
-  }
 }
 
 interface RequiereCuentaProps {
@@ -70,15 +62,11 @@ export function RequiereCuenta({
   libre = false,
 }: RequiereCuentaProps) {
   const nube = useNube();
-  const hidratado = useHydrated();
+  const conCuenta = useConCuenta();
   const compartido = useFragmento(libreConFragmento);
 
-  if (libre || compartido || nube.fase === "apagada" || nube.fase === "con-sesion") {
-    return children;
-  }
-  if (nube.fase === "cargando") {
-    return hidratado && haySesionGuardada() ? children : esqueleto;
-  }
+  if (libre || compartido || conCuenta) return children;
+  if (nube.fase !== "sin-sesion") return esqueleto;
   return <PideCuenta para={para} error={nube.error} />;
 }
 
@@ -123,7 +111,7 @@ function PideCuenta({ para, error }: { para: string; error: string | null }) {
         </Link>
         . Qué se guarda:{" "}
         <Link href="/privacidad" className={ENLACE}>
-          privacidad
+          políticas de privacidad
         </Link>
         .
       </p>

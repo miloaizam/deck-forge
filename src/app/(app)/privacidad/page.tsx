@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ENLACE } from "@/lib/ui";
 
 export const metadata: Metadata = {
-  title: "Privacidad",
+  title: "Políticas de privacidad",
   description: "Qué guarda DeckForge, dónde, quién lo ve y cómo borrarlo.",
 };
 
@@ -20,7 +20,7 @@ const TEXTO = "text-muted mt-2 space-y-2 leading-relaxed";
 export default function PrivacidadPage() {
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
-      <p className="eyebrow mb-3">Privacidad</p>
+      <p className="eyebrow mb-3">Políticas de privacidad</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">
         Qué se guarda y quién lo ve
       </h1>

@@ -85,7 +85,7 @@ export function CuentaView() {
           Solo se usa tu correo para identificarte; nunca se muestra. Qué se guarda y cómo
           borrarlo:{" "}
           <Link href="/privacidad" className={ENLACE}>
-            privacidad
+            políticas de privacidad
           </Link>
           .
         </p>
@@ -184,7 +184,7 @@ export function CuentaView() {
         </div>
         <p className="text-muted text-[13px]">
           <Link href="/privacidad" className={ENLACE}>
-            Privacidad: qué se guarda y quién lo ve
+            Políticas de privacidad: qué se guarda y quién lo ve
           </Link>
         </p>
       </section>

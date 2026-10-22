@@ -113,6 +113,15 @@ test("sin cuenta no se pide nada a Supabase", async ({ page }) => {
     await expect(page.getByRole("link", { name: "Comunidad" })).toHaveCount(0);
   } else {
     await expect(page.getByRole("link", { name: "Entrar con tu cuenta" })).toBeVisible();
+    // Sin cuenta, la navbar no ofrece lo personal; la portada ofrece crearla.
+    for (const nombre of ["Constructor", "Mis barajas", "Colección"]) {
+      await expect(page.getByRole("link", { name: nombre, exact: true })).toHaveCount(0);
+    }
+    await page.goto("/");
+    await expect(
+      page.getByRole("button", { name: "Crear cuenta con Google" }),
+    ).toBeVisible();
+    expect(pedidos).toEqual([]);
   }
 });
 

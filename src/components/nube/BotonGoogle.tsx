@@ -35,7 +35,14 @@ function LogoGoogle() {
  * constructor, Mis barajas y la coleccion sin sesion. Recuerda la pagina
  * desde donde se pulso, para volver a ella despues de Google (`entrar`).
  */
-export function BotonGoogle({ className }: { className?: string }) {
+export function BotonGoogle({
+  className,
+  texto = "Entrar con Google",
+}: {
+  className?: string;
+  /** Lo que dice el boton: «Crear cuenta con Google» en la portada. */
+  texto?: string;
+}) {
   const [abriendo, setAbriendo] = useState(false);
   return (
     <button
@@ -48,7 +55,7 @@ export function BotonGoogle({ className }: { className?: string }) {
       className={cn(BOTON_SECUNDARIO, "text-ink bg-surface gap-2.5", className)}
     >
       <LogoGoogle />
-      {abriendo ? "Abriendo Google…" : "Entrar con Google"}
+      {abriendo ? "Abriendo Google…" : texto}
     </button>
   );
 }

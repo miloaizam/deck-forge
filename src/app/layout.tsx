@@ -67,7 +67,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Proyecto sin fines de lucro hecho por un fan y jugador de Mitos y Leyendas. El
             arte y los nombres de las cartas son propiedad de su editor.{" "}
             <Link href="/privacidad" className={ENLACE}>
-              Privacidad
+              Políticas de privacidad
             </Link>
           </p>
         </footer>

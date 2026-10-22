@@ -356,7 +356,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo borro mi cuenta?",
         respuesta: [
-          "En **«Tu cuenta»**, **«Borrar mi cuenta»** borra en el acto la cuenta y todo lo que tiene en la nube: barajas, colección, likes y reportes. Lo guardado en el navegador se queda. Qué se guarda y quién lo ve está en **Privacidad**, al pie de cada página.",
+          "En **«Tu cuenta»**, **«Borrar mi cuenta»** borra en el acto la cuenta y todo lo que tiene en la nube: barajas, colección, likes y reportes. Lo guardado en el navegador se queda. Qué se guarda y quién lo ve está en **Políticas de privacidad**, al pie de cada página.",
         ],
       },
     ],
@@ -366,7 +366,9 @@ export const FAQ: FaqSection[] = [
     items: [
       {
         pregunta: "¿Qué hay en cada sección?",
-        respuesta: [],
+        respuesta: [
+          "**Constructor**, **Mis barajas** y **Colección** aparecen en la barra de arriba cuando entras con tu cuenta.",
+        ],
         lista: [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",

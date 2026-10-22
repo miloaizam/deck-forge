@@ -1,12 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Flame, Hammer, LibraryBig } from "lucide-react";
+import { Flame } from "lucide-react";
 
+import { PortadaCuenta } from "@/components/nube/PortadaCuenta";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PRIMARY_BUTTON } from "@/lib/ui";
-
-const ACCESO =
-  "text-muted hover:text-ink focus-visible:outline-brand-500 inline-flex h-11 items-center gap-1.5 rounded-chip px-3 underline-offset-4 transition-colors hover:underline";
 
 export default function Home() {
   return (
@@ -56,7 +54,8 @@ export default function Home() {
 
         <p className="text-muted mx-auto mt-6 max-w-[54ch] text-[17px] leading-relaxed">
           Consulta el catálogo completo del formato, encuentra la carta exacta que buscas
-          y arma tu baraja. Gratis, sin cuentas y sin instalar nada.
+          y arma tu baraja. Gratis y sin instalar nada: crea tu cuenta con Google y tus
+          barajas te siguen a cualquier equipo.
         </p>
 
         <div className="mt-10 flex justify-center">
@@ -66,24 +65,9 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Accesos directos para quien ya sabe a que viene. Van como enlaces
-            de texto, chicos y sin fondo, para no competir con el boton. */}
-        <nav
-          aria-label="Accesos directos"
-          className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[15px]"
-        >
-          <Link href="/catalogo" className={ACCESO}>
-            <LibraryBig size={16} aria-hidden="true" />
-            Ver el catálogo
-          </Link>
-          <span aria-hidden="true" className="text-muted/60">
-            ·
-          </span>
-          <Link href="/constructor" className={ACCESO}>
-            <Hammer size={16} aria-hidden="true" />
-            Armar una baraja
-          </Link>
-        </nav>
+        {/* Debajo, la cuenta: el constructor, Mis barajas y la coleccion la
+            piden, y aqui se crea con Google. */}
+        <PortadaCuenta />
       </div>
     </main>
   );
