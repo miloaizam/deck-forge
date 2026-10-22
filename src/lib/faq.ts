@@ -55,7 +55,8 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Necesito crear una cuenta?",
         respuesta: [
-          "**No.** Todo funciona en tu navegador: no hay registro ni contraseña, y es **gratis**.",
+          "**No.** Todo funciona sin cuenta, en tu navegador, y es **gratis**.",
+          "La cuenta es **opcional**: con ella, tus barajas y tu colección te siguen a cualquier equipo, y puedes publicar barajas en la **Comunidad** y darles like a las de otros. Se entra con **Google**, desde el icono de persona arriba a la derecha.",
         ],
       },
     ],
@@ -218,7 +219,8 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Dónde quedan guardadas?",
         respuesta: [
-          "En **tu navegador**, en este equipo. No se suben a ningún servidor. Por eso no aparecen en otro navegador ni en otro equipo, y **se pierden si borras los datos del sitio**. Para no perderlas, **expórtalas** a un archivo de vez en cuando.",
+          "Sin cuenta, en **tu navegador**, en este equipo: no aparecen en otro navegador ni en otro equipo, y **se pierden si borras los datos del sitio**. Para no perderlas, **entra con tu cuenta** o **expórtalas** a un archivo de vez en cuando.",
+          "Con cuenta, se guardan además **en la nube** y aparecen en cualquier equipo donde entres.",
         ],
       },
       {
@@ -242,7 +244,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo paso mis barajas a otro computador?",
         respuesta: [
-          "En Mis barajas, **«Exportar todo»** baja un archivo con todas tus barajas. En el otro computador, **«Importar»** las carga. Importar **no borra** las que ya tienes: solo agrega las que quepan, hasta un máximo de **50**.",
+          "Lo más simple es **entrar con tu cuenta** en los dos: las barajas aparecen solas. Sin cuenta, en Mis barajas, **«Exportar todo»** baja un archivo con todas tus barajas. En el otro computador, **«Importar»** las carga. Importar **no borra** las que ya tienes: solo agrega las que quepan, hasta un máximo de **50**.",
         ],
       },
       {
@@ -303,7 +305,58 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Dónde se guarda mi colección?",
         respuesta: [
-          "En **tu navegador**, igual que las barajas: no se sube a ningún servidor y **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con tus dos listas y **«Importar»** las carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda la cantidad mayor.",
+          "En **tu navegador**, igual que las barajas, y **en la nube** si entras con tu cuenta. Sin cuenta, **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con tus dos listas y **«Importar»** las carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda la cantidad mayor.",
+        ],
+      },
+    ],
+  },
+  {
+    titulo: "Tu cuenta y la Comunidad",
+    items: [
+      {
+        pregunta: "¿Cómo entro con mi cuenta?",
+        respuesta: [
+          "Toca el **icono de persona**, arriba a la derecha, y luego **«Entrar con Google»**. No hay contraseña propia del sitio: entras con tu cuenta de Google.",
+          "Tu **nombre y tu correo** de Google **no se muestran a nadie**. En la Comunidad apareces con un **alias** que eliges tú.",
+        ],
+      },
+      {
+        pregunta: "¿Qué se guarda en la cuenta?",
+        respuesta: [
+          "Tus **barajas** y tu **colección**. Se sincronizan solas al entrar, al guardar y al volver a la pestaña; en **«Tu cuenta»** está también **«Sincronizar ahora»**.",
+          "La primera vez que entras en un equipo, lo que ya tenías ahí se **suma** a lo de la cuenta: no se pierde nada. El borrador del constructor no viaja: se queda en cada navegador.",
+        ],
+      },
+      {
+        pregunta: "¿Qué pasa si cierro sesión?",
+        respuesta: [
+          "Tus barajas y tu colección **se quedan en ese navegador**, y en la cuenta. Solo deja de sincronizar hasta que vuelvas a entrar.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo publico una baraja?",
+        respuesta: [
+          "Abre la baraja desde **Mis barajas** y elige **«Pública»** junto a sus botones. La primera vez te pide un **alias**. Solo se pueden publicar barajas que **cumplen las reglas**; si después la cambias y deja de cumplir, sale sola de la Comunidad.",
+          "Para retirarla, vuelve a **«Privada»**. En Mis barajas, una baraja pública lleva la etiqueta **«Pública»** con sus likes.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo funciona la Comunidad?",
+        respuesta: [
+          "En **Comunidad** están las barajas públicas, ordenadas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, con un filtro por raza, escuela o atributo y un buscador por nombre. Se puede ver sin cuenta.",
+          "Al abrir una puedes darle **like** (con cuenta, uno por persona), **guardarla en tus barajas** o **reportarla** con la bandera si tiene algo ofensivo o es spam.",
+        ],
+      },
+      {
+        pregunta: "Mi baraja dice «Oculta por moderación»",
+        respuesta: [
+          "Alguien la reportó y quien administra el sitio la retiró de la Comunidad. Sigue en tus barajas, igual que siempre; solo dejó de verse en público.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo borro mi cuenta?",
+        respuesta: [
+          "En **«Tu cuenta»**, **«Borrar mi cuenta»** borra en el acto la cuenta y todo lo que tiene en la nube: barajas, colección, likes y reportes. Lo guardado en el navegador se queda. Qué se guarda y quién lo ve está en **Privacidad**, al pie de cada página.",
         ],
       },
     ],
@@ -317,7 +370,8 @@ export const FAQ: FaqSection[] = [
         lista: [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
           "**Constructor:** donde armas y editas una baraja.",
-          "**Mis barajas:** las barajas que guardaste en este navegador.",
+          "**Mis barajas:** las barajas que guardaste.",
+          "**Comunidad:** las barajas que otros jugadores publicaron.",
           "**Colección:** las cartas que tienes y las que te faltan.",
           "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya las aplican.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",

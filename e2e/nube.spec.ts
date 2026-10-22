@@ -19,12 +19,20 @@ import {
 /**
  * Las cuentas y la Comunidad, contra un Supabase simulado
  * (`supabase-simulado.ts`). Necesitan el sitio construido con la nube
- * encendida hacia ese simulado, y eso lo hace `pnpm run e2e:nube`; con el
- * build normal (nube apagada) corre solo la primera prueba, que comprueba
- * justo eso.
+ * encendida hacia ese simulado, y eso lo hace `pnpm run e2e:nube`. Con el
+ * build normal corre solo la primera prueba: que un visitante sin cuenta no
+ * le pida nada a Supabase, y que el boton de la cuenta este o no segun
+ * `supabase/proyecto.json`.
  */
 
+/** El build apunta al Supabase simulado (`pnpm run e2e:nube`). */
 const NUBE = process.env.E2E_NUBE === "1";
+
+/** Las cuentas estan encendidas en el build: el simulado o el proyecto real. */
+const proyecto = JSON.parse(
+  readFileSync(path.join(__dirname, "..", "supabase", "proyecto.json"), "utf8"),
+) as { url: unknown }; // solo se mira si `url` viene
+const ENCENDIDA = NUBE || Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || proyecto.url);
 
 /** Las cartas del build, con las erratas aplicadas, como las ve el sitio. */
 const cartas = (
@@ -100,7 +108,7 @@ test("sin cuenta no se pide nada a Supabase", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   expect(pedidos).toEqual([]);
   // Apagada, ni el boton ni el enlace existen.
-  if (!NUBE) {
+  if (!ENCENDIDA) {
     await expect(page.getByRole("link", { name: /cuenta/i })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Comunidad" })).toHaveCount(0);
   } else {

@@ -92,7 +92,7 @@ export function Navbar() {
             width={140}
             height={28}
             priority
-            className="solo-oscuro"
+            className="solo-oscuro h-auto w-28 sm:w-[140px]"
           />
           <Image
             src="/brand/logo-violet.svg"
@@ -100,7 +100,7 @@ export function Navbar() {
             width={140}
             height={28}
             priority
-            className="solo-claro"
+            className="solo-claro h-auto w-28 sm:w-[140px]"
           />
         </Link>
 
@@ -130,7 +130,9 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        {/* A 360 px la cuenta, la ayuda, el tema y el menu no caben junto al
+            logotipo entero: bajo `sm` el logotipo se achica y se juntan. */}
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
           {/* La cuenta, la ayuda y el tema quedan a la vista tambien en el
               telefono: no se pliegan en el menu. */}
           <AccountButton />

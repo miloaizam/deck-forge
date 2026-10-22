@@ -33,6 +33,17 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-22",
+    version: "5.0.0",
+    tipo: "Novedad",
+    titulo: "Cuentas y Comunidad",
+    texto: [
+      "Ahora puedes entrar con tu cuenta de Google, si quieres: tus barajas y tu colección se guardan también en la nube y aparecen en cualquier equipo donde entres. Sin cuenta, todo sigue funcionando como antes, en tu navegador.",
+      "Y llega la Comunidad: publica tus barajas, mira las de otros jugadores y dales like. Se ordenan por más likes, tendencia de la semana, más recientes o más copiadas, y se pueden guardar en tus barajas con un toque.",
+      "Qué se guarda y quién lo ve está en la nueva página de Privacidad, al pie de cada página.",
+    ],
+  },
+  {
     fecha: "2026-10-21",
     version: "4.13.0",
     tipo: "Novedad",

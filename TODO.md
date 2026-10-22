@@ -35,15 +35,12 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Grande y con decisiones previas
 
-### Encender las cuentas y la Comunidad
+### Probar las cuentas de punta a punta
 
-- **Qué:** las cuentas (Supabase con Google) y la Comunidad ya están en el
-  código y documentadas en CLAUDE.md («Cuentas y Comunidad»), pero
-  **apagadas**: `supabase/proyecto.json` lleva `url` y `key` en `null`.
-- **Por dónde:** [`docs/cuentas.md`](docs/cuentas.md), pasos 1 a 5: crear el
-  proyecto, correr `supabase/esquema.sql`, configurar Google, llenar
-  `proyecto.json`, `pnpm run build && pnpm run audit`. En el mismo commit que
-  las enciende, la ayuda (`faq.ts`: la cuenta y la Comunidad) y la entrada de
-  `novedades.ts`.
-- **Terminado cuando:** la prueba de punta a punta de `docs/cuentas.md` pasa
-  en `deckforge-myl.pages.dev` con dos cuentas de Google.
+- **Qué:** las cuentas y la Comunidad están encendidas (22-10-2026), pero
+  falta la prueba con Google de verdad, que solo puede hacer una persona: la
+  sesión en la nube no llega a `supabase.co`.
+- **Por dónde:** la lista «Antes de anunciarlo» de
+  [`docs/cuentas.md`](docs/cuentas.md), paso 5, en `deckforge-myl.pages.dev`
+  y con dos cuentas de Google. Lo que falle se anota aquí.
+- **Terminado cuando:** los seis puntos de esa lista pasan.

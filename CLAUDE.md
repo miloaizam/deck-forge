@@ -17,8 +17,9 @@ del usuario.
   habla directo con Supabase para sincronizar barajas y colección y para la
   **Comunidad** de barajas públicas. No hay código de servidor nuestro: la
   seguridad la ponen las reglas por fila (RLS) de `supabase/esquema.sql`.
-  Quedan **apagadas** mientras `supabase/proyecto.json` no traiga el
-  proyecto. Ver «Cuentas y Comunidad» (§9) y [`docs/cuentas.md`](docs/cuentas.md).
+  **Encendidas desde el 22-10-2026** (`supabase/proyecto.json`); con `url` y
+  `key` en `null` se apagan. Ver «Cuentas y Comunidad» (§9) y
+  [`docs/cuentas.md`](docs/cuentas.md).
 
 Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/brand.html).
 
@@ -1065,8 +1066,8 @@ regenerarla. Dos límites a saber:
   compartió antes del cambio puede seguir saliendo sin imagen hasta que
   caduque.
 
-La navbar es una fila plana de seis enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Colección, Documentos y Novedades. Bajo `lg` se pliegan detrás de
+La navbar es una fila plana de siete enlaces (sin desplegable): Catálogo,
+Constructor, Mis barajas, Comunidad, Colección, Documentos y Novedades. Bajo `lg` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **cuenta** (solo con las
 cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.
@@ -1781,10 +1782,14 @@ likes (22-10-2026, decisión del proyecto: Supabase y no Cloudflare D1, porque
 D1 obligaba a escribir y mantener el inicio de sesión y un servidor propio).
 Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md).
 
-- **Apagadas hasta configurar.** `supabase/proyecto.json` lleva la Project URL y
-  la publishable key; en `null`, `NUBE_ACTIVA` (`src/lib/supabase-config.ts`)
-  es falso y no hay botón de cuenta, ni Comunidad en la navbar, ni ninguna
-  petición. `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_KEY` lo pisan
+- **Encendidas el 22-10-2026**, con el proyecto `deck-forge-db` (São Paulo).
+  `supabase/proyecto.json` lleva la Project URL y la publishable key; en
+  `null`, `NUBE_ACTIVA` (`src/lib/supabase-config.ts`) es falso y no hay
+  botón de cuenta, ni Comunidad en la navbar, ni ninguna petición: así se
+  apagan si hace falta. El inicio de sesión lo da un proyecto de Google Cloud
+  de la cuenta `deck.forge.myl@gmail.com`, con solo los permisos básicos
+  (`openid`, correo y perfil) y sin logo, para no pasar por la verificación
+  de Google. `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_KEY` lo pisan
   en un build de pruebas. El archivo lo leen también `csp-hashes.mjs` y
   `audit_build.py`.
 - **La base guarda solo ids y copias.** Una baraja es una fila con su
@@ -1836,9 +1841,11 @@ Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md)
   ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, y
   que sin cuenta no salga ninguna petición. La SQL, contra Postgres local
   (`docs/cuentas.md`).
-- **Al encenderlas** van en el mismo commit `faq.ts` (sección de la cuenta y
-  la Comunidad) y la entrada de `novedades.ts`: mientras estén apagadas, la
-  ayuda y las novedades no las nombran, porque contradirían al sitio.
+- **La ayuda las da por encendidas** (`faq.ts`, «Tu cuenta y la
+  Comunidad»). Si se apagan, se quita esa sección en el mismo commit.
+- **Desde la sesión en la nube no se llega a `supabase.co`** (el proxy del
+  contenedor lo bloquea): lo que toca el proyecto real se prueba en el
+  navegador; aquí, con el simulado.
 
 ### Constructor de barajas (Fase 2)
 
