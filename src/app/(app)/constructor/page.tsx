@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { BuilderView } from "@/components/builder/BuilderView";
+import { RequiereCuenta } from "@/components/nube/RequiereCuenta";
+import { CardGridSkeleton } from "@/components/Skeleton";
 import { getCatalogPage } from "@/lib/cards";
 import { PAGE_SIZE_BUILDER } from "@/lib/catalog";
 
@@ -23,11 +25,16 @@ export default async function ConstructorPage() {
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Constructor</h1>
       <p className="text-muted mt-3 leading-relaxed">
         Arma tu baraja del formato Escuelas Elementales con el + de cada carta. Al
-        guardarla queda en Mis barajas.
+        guardarla queda en Mis barajas y en tu cuenta.
       </p>
 
       <div className="mt-10">
-        <BuilderView inicial={inicial} total={total} facets={facets} />
+        <RequiereCuenta
+          para="armar tus barajas"
+          esqueleto={<CardGridSkeleton variante="constructor" />}
+        >
+          <BuilderView inicial={inicial} total={total} facets={facets} />
+        </RequiereCuenta>
       </div>
     </main>
   );

@@ -29,6 +29,7 @@ import { registrarCopia } from "../nube/comunidad-api";
 import { PublicaAcciones, usePublica } from "../nube/PublicaAcciones";
 import { PublicarControl } from "../nube/PublicarControl";
 import { useNube } from "../nube/nube";
+import { RequiereCuenta } from "../nube/RequiereCuenta";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
 import { agruparImpresiones } from "@/lib/card-order";
@@ -66,10 +67,20 @@ const PANEL_ANALISIS =
  * conoce ids que se inventan en el navegador.
  */
 export function DeckDetailView() {
+  const params = useSearchParams();
+  const compartida = useSharedCode();
+  // Una baraja propia (`?m=`) pide cuenta; una compartida o publica, no.
+  const ajena = compartida !== null || params.get("p") !== null;
   return (
-    <ConCatalogo esqueleto={<DeckDetailSkeleton />}>
-      {(cards) => <DeckDetail cards={cards} />}
-    </ConCatalogo>
+    <RequiereCuenta
+      para="ver tus barajas"
+      esqueleto={<DeckDetailSkeleton />}
+      libre={ajena}
+    >
+      <ConCatalogo esqueleto={<DeckDetailSkeleton />}>
+        {(cards) => <DeckDetail cards={cards} />}
+      </ConCatalogo>
+    </RequiereCuenta>
   );
 }
 

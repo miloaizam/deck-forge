@@ -6,9 +6,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { createDeck, setQuantity, setStartingGold } from "../src/lib/deck";
 import { buildCardIndex, isLegal, validateDeck } from "../src/lib/deck-rules";
 import { conErratas } from "../src/lib/erratas";
+import { encodeDeck } from "../src/lib/deck-code";
 import { cardSchema, type Deck } from "../src/lib/types";
 import { sinViolaciones } from "./axe";
 import {
+  NUBE_ENCENDIDA,
+  NUBE_SIMULADA,
   publicarDe,
   sesion,
   simularSupabase,
@@ -25,14 +28,8 @@ import {
  * `supabase/proyecto.json`.
  */
 
-/** El build apunta al Supabase simulado (`pnpm run e2e:nube`). */
-const NUBE = process.env.E2E_NUBE === "1";
-
-/** Las cuentas estan encendidas en el build: el simulado o el proyecto real. */
-const proyecto = JSON.parse(
-  readFileSync(path.join(__dirname, "..", "supabase", "proyecto.json"), "utf8"),
-) as { url: unknown }; // solo se mira si `url` viene
-const ENCENDIDA = NUBE || Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || proyecto.url);
+const NUBE = NUBE_SIMULADA;
+const ENCENDIDA = NUBE_ENCENDIDA;
 
 /** Las cartas del build, con las erratas aplicadas, como las ve el sitio. */
 const cartas = (
@@ -82,7 +79,10 @@ function barajaLegal(nombre: string): Deck {
 async function conSesion(page: Page, userId: string) {
   await page.addInitScript(
     ([clave, valor]) => {
-      if (!localStorage.getItem(clave)) localStorage.setItem(clave, valor);
+      // Una sola vez por pestana: si la prueba cierra sesion, no vuelve sola.
+      if (sessionStorage.getItem("e2e-sesion")) return;
+      sessionStorage.setItem("e2e-sesion", "1");
+      localStorage.setItem(clave, valor);
     },
     ["deckforge-sesion", sesion(userId)],
   );
@@ -258,8 +258,37 @@ test.describe("con la nube encendida", () => {
     await page.goto("/cuenta/");
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
+    // Mis barajas pide entrar, y avisa que la guardada se suma a la cuenta.
     await page.goto("/barajas/");
-    await expect(page.getByRole("link", { name: "Se queda" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Entra para ver tus barajas" }),
+    ).toBeVisible();
+    await expect(page.getByText("La baraja guardada en este navegador")).toBeVisible();
+  });
+
+  test("lo personal pide cuenta; lo compartido no", async ({ page }) => {
+    // Cuatro paginas y una revision de axe: mas que los 30 s de siempre.
+    test.setTimeout(60_000);
+    await simularSupabase(page);
+    await page.goto("/constructor/");
+    await sinViolaciones(page, "pide cuenta");
+    const deck = barajaLegal("Compartible");
+    for (const [ruta, para] of [
+      ["/constructor/", "armar tus barajas"],
+      ["/barajas/", "ver tus barajas"],
+      ["/coleccion/", "llevar tu colección"],
+      [`/baraja/?m=${deck.id}`, "ver tus barajas"],
+    ]) {
+      await page.goto(ruta);
+      await expect(
+        page.getByRole("heading", { name: `Entra para ${para}` }),
+      ).toBeVisible();
+    }
+    // Un enlace compartido y una coleccion compartida se abren sin cuenta.
+    await page.goto(`/baraja/#d=${encodeDeck(deck)}`);
+    await expect(page.getByRole("heading", { name: "Compartible" })).toBeVisible();
+    await page.goto("/catalogo/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
   test("accesibilidad de la cuenta y la Comunidad, en los dos temas", async ({

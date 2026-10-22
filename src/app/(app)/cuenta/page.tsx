@@ -16,8 +16,8 @@ export default function CuentaPage() {
       <p className="eyebrow mb-3">Cuenta</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Tu cuenta</h1>
       <p className="text-muted mt-3 max-w-2xl leading-relaxed">
-        Opcional: sin cuenta, DeckForge guarda todo en este navegador. Con ella, tus
-        barajas y tu colección te siguen a cualquier equipo.
+        Con tu cuenta armas y guardas barajas y llevas tu colección, y te siguen a
+        cualquier equipo. El catálogo y la Comunidad se ven sin cuenta.
       </p>
       <CuentaView />
     </main>

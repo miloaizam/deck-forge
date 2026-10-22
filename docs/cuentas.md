@@ -1,10 +1,11 @@
 # Cuentas y Comunidad: cómo encenderlas
 
-DeckForge tiene cuentas opcionales (entrar con Google, sincronizar barajas y
-colección entre equipos) y una **Comunidad** de barajas públicas con likes. El
-código ya está en el repo y queda **apagado** mientras
-[`supabase/proyecto.json`](../supabase/proyecto.json) lleve `url` y `key` en
-`null`. Esta guía es lo que hay que hacer, una sola vez, para encenderlo.
+DeckForge tiene cuentas con Google —obligatorias para armar y guardar barajas
+y llevar la colección, que se sincronizan entre equipos— y una **Comunidad**
+de barajas públicas con likes. Se apagan con `url` y `key` en `null` en
+[`supabase/proyecto.json`](../supabase/proyecto.json). Están **encendidas
+desde el 22-10-2026**; esta guía es lo que se hizo, una sola vez, para
+encenderlas, por si hay que repetirlo con otro proyecto.
 
 Son unos 45–60 minutos. Hace falta una cuenta de Google y una de GitHub (o un
 correo). **No cuesta dinero**: plan gratuito de Supabase y de Google Cloud, sin

@@ -115,7 +115,11 @@ export function Navbar() {
               aria-current={isActive(pathname, href) ? "page" : undefined}
               className={cn(
                 LINK,
-                isActive(pathname, href) ? "text-ink" : "text-muted hover:text-ink",
+                // La pagina actual va subrayada en violeta, ademas de en
+                // `ink`: el color solo no basta para distinguirla.
+                isActive(pathname, href)
+                  ? "text-ink decoration-brand-500 underline decoration-2 underline-offset-[6px]"
+                  : "text-muted hover:text-ink",
               )}
             >
               {/* Con siete enlaces y la cuenta no caben los iconos entre lg y

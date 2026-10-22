@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 
 import { DeckListView } from "@/components/decks/DeckListView";
+import { RequiereCuenta } from "@/components/nube/RequiereCuenta";
+import { DeckListSkeleton } from "@/components/Skeleton";
 
 export const metadata: Metadata = {
   title: "Mis barajas",
-  description: "Las barajas que guardaste en este navegador.",
+  description: "Las barajas que guardaste en tu cuenta.",
 };
 
 export default function BarajasPage() {
@@ -13,12 +15,14 @@ export default function BarajasPage() {
       <p className="eyebrow mb-3">Barajas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Mis barajas</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Tus barajas guardadas en este navegador. Compártelas por enlace o pásalas a otro
-        equipo con un archivo de respaldo.
+        Tus barajas guardadas, en este equipo y en tu cuenta. Compártelas por enlace o
+        bájalas a un archivo de respaldo.
       </p>
 
       <div className="mt-10">
-        <DeckListView />
+        <RequiereCuenta para="ver tus barajas" esqueleto={<DeckListSkeleton />}>
+          <DeckListView />
+        </RequiereCuenta>
       </div>
     </main>
   );

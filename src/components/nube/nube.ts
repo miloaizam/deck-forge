@@ -275,8 +275,37 @@ async function alCambiarSesion(session: Session | null): Promise<void> {
   void sincronizar();
 }
 
+/**
+ * La pagina desde donde se pulso «Entrar», para volver a ella. Google solo
+ * puede volver a /cuenta (las Redirect URLs de Supabase), y /cuenta termina
+ * de entrar y despues lleva aqui. Va en sessionStorage: es de esta pestana.
+ */
+const VOLVER_KEY = "deckforge-volver";
+
+/** Una ruta propia y nada mas: ni otro host (`//x`) ni un esquema. */
+const RUTA_PROPIA = /^\/(?!\/)[^\s\\]*$/;
+
+/** La pagina a la que volver tras entrar, una sola vez; null si no hay. */
+export function tomarVuelta(): string | null {
+  try {
+    const v = sessionStorage.getItem(VOLVER_KEY);
+    sessionStorage.removeItem(VOLVER_KEY);
+    return v && RUTA_PROPIA.test(v) && !v.startsWith("/cuenta") ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Abre Google. Vuelve a /cuenta, que termina de entrar y sincroniza. */
 export async function entrar(): Promise<void> {
+  try {
+    const { pathname, search, hash } = window.location;
+    if (!pathname.startsWith("/cuenta")) {
+      sessionStorage.setItem(VOLVER_KEY, `${pathname}${search}${hash}`);
+    }
+  } catch {
+    // Sin sessionStorage se vuelve a /cuenta, nada mas.
+  }
   try {
     const c = await cliente();
     const { error } = await c.signInWithOAuth({

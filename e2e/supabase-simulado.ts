@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import type { Page, Route } from "@playwright/test";
 
 /**
@@ -15,6 +18,17 @@ import type { Page, Route } from "@playwright/test";
  */
 
 export const URL_SIMULADA = "https://prueba.supabase.co";
+
+/** El build apunta al Supabase simulado (`pnpm run e2e:nube`). */
+export const NUBE_SIMULADA = process.env.E2E_NUBE === "1";
+
+const proyecto = JSON.parse(
+  readFileSync(path.join(__dirname, "..", "supabase", "proyecto.json"), "utf8"),
+) as { url: unknown }; // solo se mira si `url` viene
+
+/** Las cuentas estan encendidas en el build: el simulado o el proyecto real. */
+export const NUBE_ENCENDIDA =
+  NUBE_SIMULADA || Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || proyecto.url);
 export const CLAVE_SIMULADA = "sb_publishable_prueba";
 
 interface Fila {
@@ -147,7 +161,9 @@ export async function simularSupabase(
   page: Page,
   s = nuevoSimulado(),
 ): Promise<Simulado> {
-  await page.route(`${URL_SIMULADA}/**`, async (route) => {
+  // Cualquier proyecto: el simulado y, en el build real, el de verdad, que
+  // asi no recibe nada de las pruebas.
+  await page.route("https://*.supabase.co/**", async (route) => {
     const req = route.request();
     const url = new URL(req.url());
     const ruta = url.pathname;
@@ -326,5 +342,24 @@ export async function simularSupabase(
     }
     return json(route, { message: `simulado: ${metodo} ${ruta} no existe` }, 404);
   });
+  return s;
+}
+
+/**
+ * Entra con una cuenta de mentira: el constructor, Mis barajas y la coleccion
+ * la piden. Sin las cuentas encendidas no hace nada. Devuelve el simulado.
+ */
+export async function entrarSimulado(page: Page, userId = USUARIO_A): Promise<Simulado> {
+  const s = await simularSupabase(page);
+  if (!NUBE_ENCENDIDA) return s;
+  await page.addInitScript(
+    ([clave, valor]) => {
+      // Una sola vez por pestana: si la prueba cierra sesion, no vuelve sola.
+      if (sessionStorage.getItem("e2e-sesion")) return;
+      sessionStorage.setItem("e2e-sesion", "1");
+      localStorage.setItem(clave, valor);
+    },
+    ["deckforge-sesion", sesion(userId)],
+  );
   return s;
 }

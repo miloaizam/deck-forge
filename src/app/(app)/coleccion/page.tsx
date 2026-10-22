@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { ColeccionView } from "@/components/coleccion/ColeccionView";
+import { RequiereCuenta } from "@/components/nube/RequiereCuenta";
+import { ColeccionSkeleton } from "@/components/Skeleton";
 
 export const metadata: Metadata = {
   title: "Colección",
@@ -18,7 +20,14 @@ export default function ColeccionPage() {
       </p>
 
       <div className="mt-10">
-        <ColeccionView />
+        {/* Una coleccion compartida (`#c=`) se abre sin cuenta. */}
+        <RequiereCuenta
+          para="llevar tu colección"
+          esqueleto={<ColeccionSkeleton />}
+          libreConFragmento="c"
+        >
+          <ColeccionView />
+        </RequiereCuenta>
       </div>
     </main>
   );

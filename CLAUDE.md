@@ -13,7 +13,8 @@ del usuario.
 
 - El **catálogo** es data fija → archivos estáticos generados en build.
 - El **baraja** es del usuario → vive en su navegador (`localStorage` + URL).
-- Las **cuentas** son opcionales (Google, vía **Supabase**): el navegador
+- Las **cuentas** (Google, vía **Supabase**) son obligatorias para lo
+  personal —constructor, Mis barajas, colección— y no para mirar: el navegador
   habla directo con Supabase para sincronizar barajas y colección y para la
   **Comunidad** de barajas públicas. No hay código de servidor nuestro: la
   seguridad la ponen las reglas por fila (RLS) de `supabase/esquema.sql`.
@@ -1071,6 +1072,8 @@ Constructor, Mis barajas, Colección, Comunidad, Documentos y Novedades. Bajo `l
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **cuenta** (solo con las
 cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.
+La página actual va en `ink` y **subrayada en violeta** (`decoration-brand-500`,
+2 px, separada 6 px); el menú del teléfono la marca con su fondo violeta.
 Encendidas, se suma **Comunidad** tras Colección, y entre `lg` y `xl` los
 enlaces van sin icono para que quepan los siete. La portada no tiene navbar, así que tampoco
 ayuda.
@@ -1777,7 +1780,7 @@ de **habilidad** las ofrece desde ahora.
 
 ### Cuentas y Comunidad
 
-Cuentas **opcionales** con Google y una **Comunidad** de barajas públicas con
+Cuentas con Google y una **Comunidad** de barajas públicas con
 likes (22-10-2026, decisión del proyecto: Supabase y no Cloudflare D1, porque
 D1 obligaba a escribir y mantener el inicio de sesión y un servidor propio).
 Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md).
@@ -1841,6 +1844,22 @@ Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md)
   ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, y
   que sin cuenta no salga ninguna petición. La SQL, contra Postgres local
   (`docs/cuentas.md`).
+- **Lo personal pide cuenta** (22-10-2026, decisión del proyecto; antes era
+  opcional). `RequiereCuenta.tsx` envuelve el constructor, Mis barajas, la
+  colección y el detalle de una baraja propia (`?m=`): sin sesión muestra
+  «Entra para …» con «Entrar con Google» y, si hay barajas o colección en el
+  navegador, avisa que se suman a la cuenta al entrar. **No** piden cuenta el
+  catálogo, los documentos, las novedades, la Comunidad, una baraja
+  compartida (`#d=`) o pública (`?p=`) ni una colección compartida (`#c=`).
+  Es un candado de **interfaz**: el sitio es estático y lo guardado vive igual
+  en el navegador. Con una sesión guardada (`SESION_KEY`) la página se pinta
+  de una, sin esperar a `auth-js`; sin ella, la silueta y después la
+  pantalla. Al entrar desde una de esas páginas se vuelve a ella:
+  `entrar()` deja la ruta en `sessionStorage` (`deckforge-volver`) y
+  `/cuenta`, que es la única vuelta que Google admite, la toma
+  (`tomarVuelta`, solo rutas propias). Las pruebas de `sitio.spec.ts` y
+  `accesibilidad.spec.ts` entran con una cuenta de mentira
+  (`entrarSimulado`); lo que se ve sin cuenta lo prueba `nube.spec.ts`.
 - **La ayuda las da por encendidas** (`faq.ts`, «Tu cuenta y la
   Comunidad»). Si se apagan, se quita esa sección en el mismo commit.
 - **Desde la sesión en la nube no se llega a `supabase.co`** (el proxy del

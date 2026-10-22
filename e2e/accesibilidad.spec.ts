@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { entrarSimulado } from "./supabase-simulado";
+
 import { sinViolaciones } from "./axe";
 
 /**
@@ -12,6 +14,13 @@ import { sinViolaciones } from "./axe";
  * `_headers`). Las paginas de la cuenta y la Comunidad con la nube encendida
  * se revisan en `nube.spec.ts`.
  */
+
+// El constructor, Mis barajas y la coleccion piden cuenta: cada prueba entra
+// con una de mentira contra un Supabase simulado (no hace nada si las cuentas
+// estan apagadas). Lo que se ve sin cuenta lo prueba `nube.spec.ts`.
+test.beforeEach(async ({ page }) => {
+  await entrarSimulado(page);
+});
 
 /** Arma y guarda una baraja chica; devuelve la URL de su detalle. */
 async function armarBaraja(page: Page): Promise<string> {

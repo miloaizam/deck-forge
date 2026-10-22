@@ -1,9 +1,18 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { entrarSimulado } from "./supabase-simulado";
+
 /**
  * Recorridos basicos del sitio construido. Cada prueba arranca con el
  * localStorage vacio (Playwright abre un contexto nuevo por prueba).
  */
+
+// El constructor, Mis barajas y la coleccion piden cuenta: cada prueba entra
+// con una de mentira contra un Supabase simulado (no hace nada si las cuentas
+// estan apagadas). Lo que se ve sin cuenta lo prueba `nube.spec.ts`.
+test.beforeEach(async ({ page }) => {
+  await entrarSimulado(page);
+});
 
 /**
  * Agrega al constructor la primera carta que se pueda agregar, y espera a que

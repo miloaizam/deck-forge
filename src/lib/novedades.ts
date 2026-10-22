@@ -34,6 +34,17 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-22",
+    version: "5.1.0",
+    tipo: "Mejora",
+    titulo: "Tus barajas, siempre en tu cuenta",
+    texto: [
+      "El constructor, Mis barajas y la colección ahora piden entrar con Google. Así tus barajas y tu colección quedan siempre guardadas en tu cuenta y no se pierden si cambias de equipo o borras los datos del navegador.",
+      "Lo que ya tenías guardado en el navegador no se pierde: se suma a tu cuenta la primera vez que entras. El catálogo, los documentos, la Comunidad y los enlaces que te compartan se siguen viendo sin cuenta.",
+      "Y en la barra de arriba, la sección donde estás ahora va subrayada.",
+    ],
+  },
+  {
+    fecha: "2026-10-22",
     version: "5.0.0",
     tipo: "Novedad",
     titulo: "Cuentas y Comunidad",

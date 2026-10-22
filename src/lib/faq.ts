@@ -55,8 +55,8 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Necesito crear una cuenta?",
         respuesta: [
-          "**No.** Todo funciona sin cuenta, en tu navegador, y es **gratis**.",
-          "La cuenta es **opcional**: con ella, tus barajas y tu colección te siguen a cualquier equipo, y puedes publicar barajas en la **Comunidad** y darles like a las de otros. Se entra con **Google**, desde el icono de persona arriba a la derecha.",
+          "Para mirar, **no**: el **Catálogo**, los **Documentos**, las **Novedades** y la **Comunidad** se ven sin cuenta, igual que una baraja o una colección que alguien te comparte por enlace.",
+          "Para **armar y guardar barajas** y llevar tu **colección**, **sí**. Se entra con **Google**, desde el icono de persona arriba a la derecha, y es **gratis**. Así tus barajas y tu colección te siguen a cualquier equipo.",
         ],
       },
     ],
@@ -219,8 +219,8 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Dónde quedan guardadas?",
         respuesta: [
-          "Sin cuenta, en **tu navegador**, en este equipo: no aparecen en otro navegador ni en otro equipo, y **se pierden si borras los datos del sitio**. Para no perderlas, **entra con tu cuenta** o **expórtalas** a un archivo de vez en cuando.",
-          "Con cuenta, se guardan además **en la nube** y aparecen en cualquier equipo donde entres.",
+          "En **tu cuenta**, en la nube, y también en el navegador del equipo donde las armaste. Aparecen en cualquier equipo donde entres con tu cuenta.",
+          "Si guardaste barajas en este navegador antes de que existieran las cuentas, **se suman a tu cuenta** la primera vez que entras: no se pierde ninguna.",
         ],
       },
       {
@@ -244,7 +244,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo paso mis barajas a otro computador?",
         respuesta: [
-          "Lo más simple es **entrar con tu cuenta** en los dos: las barajas aparecen solas. Sin cuenta, en Mis barajas, **«Exportar todo»** baja un archivo con todas tus barajas. En el otro computador, **«Importar»** las carga. Importar **no borra** las que ya tienes: solo agrega las que quepan, hasta un máximo de **50**.",
+          "**Entra con tu cuenta** en los dos: las barajas aparecen solas. También puedes guardar un respaldo: en Mis barajas, **«Exportar todo»** baja un archivo con todas tus barajas, e **«Importar»** las carga. Importar **no borra** las que ya tienes: solo agrega las que quepan, hasta un máximo de **50**.",
         ],
       },
       {
@@ -305,7 +305,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Dónde se guarda mi colección?",
         respuesta: [
-          "En **tu navegador**, igual que las barajas, y **en la nube** si entras con tu cuenta. Sin cuenta, **se pierde si borras los datos del sitio**. **«Exportar»** baja un archivo con tus dos listas y **«Importar»** las carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda la cantidad mayor.",
+          "En **tu cuenta**, igual que las barajas, y en el navegador donde la llevas. **«Exportar»** baja un archivo con tus dos listas y **«Importar»** las carga en otro equipo. Importar **no borra nada**: si una carta está en los dos lados, se queda la cantidad mayor.",
         ],
       },
     ],
@@ -330,7 +330,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué pasa si cierro sesión?",
         respuesta: [
-          "Tus barajas y tu colección **se quedan en ese navegador**, y en la cuenta. Solo deja de sincronizar hasta que vuelvas a entrar.",
+          "Tus barajas y tu colección **siguen en tu cuenta** y en ese navegador, pero el constructor, Mis barajas y la colección te piden volver a entrar para usarlos.",
         ],
       },
       {

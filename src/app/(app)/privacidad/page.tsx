@@ -30,9 +30,9 @@ export default function PrivacidadPage() {
           <h2 className={TITULO}>Sin cuenta</h2>
           <div className={TEXTO}>
             <p>
-              Tus barajas, tu colección, el borrador del constructor y el tema se guardan
-              solo en <strong className="text-ink">este navegador</strong>. No salen de
-              él.
+              El catálogo, los documentos y la Comunidad se ven sin cuenta. El borrador
+              del constructor y el tema se guardan solo en{" "}
+              <strong className="text-ink">este navegador</strong>, y no salen de él.
             </p>
             <p>
               Una baraja o una colección compartida por enlace viaja dentro del propio
@@ -49,7 +49,8 @@ export default function PrivacidadPage() {
           <h2 className={TITULO}>Con cuenta</h2>
           <div className={TEXTO}>
             <p>
-              La cuenta es opcional y se crea entrando con Google. Se guarda en{" "}
+              Para armar y guardar barajas y llevar la colección hace falta una cuenta,
+              que se crea entrando con Google. Se guarda en{" "}
               <strong className="text-ink">Supabase</strong>, en servidores de São Paulo:
             </p>
             <ul className="list-disc space-y-1 pl-5">

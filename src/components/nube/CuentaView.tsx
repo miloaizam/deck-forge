@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { CloudCheck, LogOut, RefreshCw, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
@@ -9,7 +10,8 @@ import { Skeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { mensajeDeError } from "./api";
 import { AliasForm } from "./AliasForm";
-import { borrarCuenta, entrar, salir, sincronizar, useNube } from "./nube";
+import { BotonGoogle } from "./BotonGoogle";
+import { borrarCuenta, salir, sincronizar, tomarVuelta, useNube } from "./nube";
 import { BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -23,30 +25,6 @@ const FECHA = new Intl.DateTimeFormat("es-CL", {
   minute: "2-digit",
 });
 
-/** El logotipo de Google, en sus colores: lo exige su guia de marca. */
-function LogoGoogle() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 48 48" className="size-5 shrink-0">
-      <path
-        fill="#EA4335"
-        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-      />
-      <path
-        fill="#4285F4"
-        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-      />
-      <path
-        fill="#34A853"
-        d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-      />
-    </svg>
-  );
-}
-
 /**
  * `/cuenta`: entrar con Google y, con sesion, el alias, la sincronizacion,
  * cerrar sesion y borrar la cuenta. Es tambien la pagina a la que vuelve
@@ -55,7 +33,14 @@ function LogoGoogle() {
 export function CuentaView() {
   const nube = useNube();
   const [borrando, setBorrando] = useState(false);
-  const [abriendo, setAbriendo] = useState(false);
+  const router = useRouter();
+
+  // Quien entro desde el constructor, Mis barajas o la coleccion vuelve ahi.
+  useEffect(() => {
+    if (nube.fase !== "con-sesion") return;
+    const vuelta = tomarVuelta();
+    if (vuelta) router.replace(vuelta);
+  }, [nube.fase, router]);
 
   if (nube.fase === "apagada") {
     return (
@@ -84,7 +69,9 @@ export function CuentaView() {
         <ul className="text-muted list-disc space-y-1.5 pl-5 leading-relaxed">
           <li>Tus barajas y tu colección, en todos tus equipos.</li>
           <li>Publica tus barajas en la Comunidad y dale like a las de otros.</li>
-          <li>Sin cuenta, todo sigue funcionando como hasta ahora, en este navegador.</li>
+          <li>
+            Lo que ya tengas guardado en este navegador se suma a tu cuenta al entrar.
+          </li>
         </ul>
         {nube.error && (
           <p role="alert" className="text-warning text-sm">
@@ -92,18 +79,7 @@ export function CuentaView() {
           </p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            disabled={abriendo}
-            onClick={() => {
-              setAbriendo(true);
-              void entrar().finally(() => setAbriendo(false));
-            }}
-            className={cn(BOTON_SECUNDARIO, "text-ink bg-surface gap-2.5")}
-          >
-            <LogoGoogle />
-            {abriendo ? "Abriendo Google…" : "Entrar con Google"}
-          </button>
+          <BotonGoogle />
         </div>
         <p className="text-muted text-[13px] leading-relaxed">
           Solo se usa tu correo para identificarte; nunca se muestra. Qué se guarda y cómo
