@@ -1,11 +1,222 @@
-# Cuentas y Comunidad: cómo encenderlas
+# Cuentas y Comunidad
 
 DeckForge tiene cuentas con Google —obligatorias para armar y guardar barajas
 y llevar la colección, que se sincronizan entre equipos— y una **Comunidad**
-de barajas públicas con likes. Se apagan con `url` y `key` en `null` en
-[`supabase/proyecto.json`](../supabase/proyecto.json). Están **encendidas
-desde el 22-10-2026**; esta guía es lo que se hizo, una sola vez, para
-encenderlas, por si hay que repetirlo con otro proyecto.
+de barajas públicas con likes. Están **encendidas desde el 22-10-2026**.
+
+Este documento tiene todo lo que hay que saber de ellas:
+
+- [Qué hay configurado hoy](#qué-hay-configurado-hoy): los proyectos y las
+  cuentas que las sostienen.
+- [Cómo funciona por dentro](#cómo-funciona-por-dentro): la base, la sesión,
+  la sincronización, la Comunidad, la seguridad y las pruebas.
+- [Cómo se encendieron](#cómo-se-encendieron): los pasos 1 a 5, por si hay que
+  repetirlos con otro proyecto.
+- [Cómo moderar](#cómo-moderar), [mantener](#mantener) y
+  [probar](#probar-la-sql-sin-supabase).
+
+---
+
+## Qué hay configurado hoy
+
+| Qué | Dónde | Datos |
+|---|---|---|
+| Base de datos y Auth | Supabase, organización «Miguel Loaiza Organization», plan Free | proyecto `deck-forge-db`, región **South America (São Paulo)**, `https://bqxohtbmvxgezrsthcpu.supabase.co` |
+| Inicio de sesión | Google Cloud, cuenta **`deck.forge.myl@gmail.com`** | proyecto `deck-forge`, Google Auth Platform «DeckForge», en producción, cliente web «DeckForge web» |
+| Sitio | Cloudflare Pages | `https://deckforge-myl.pages.dev` |
+| Lo que va al repo | [`supabase/proyecto.json`](../supabase/proyecto.json) | la Project URL y la **publishable key** (públicas por diseño) |
+
+Lo que **no** está en el repo, y no debe estarlo: la contraseña de la base
+(en el gestor de contraseñas del dueño del proyecto), la secret key de
+Supabase y el Client secret de Google (pegado solo en Supabase →
+Authentication → Sign In / Providers → Google).
+
+Configuración que hay que mantener alineada entre los tres:
+
+- **Google → Clientes → DeckForge web**: orígenes `https://deckforge-myl.pages.dev`
+  y `http://localhost:3000`; redirección
+  `https://bqxohtbmvxgezrsthcpu.supabase.co/auth/v1/callback`. Permisos: solo
+  `openid`, `userinfo.email` y `userinfo.profile`. **Sin logo** (con logo,
+  Google exige verificación). Dominios autorizados `deckforge-myl.pages.dev` y
+  `bqxohtbmvxgezrsthcpu.supabase.co`; página principal y política de
+  privacidad (`/privacidad/`) en «Información de la marca».
+- **Supabase → Authentication → URL Configuration**: Site URL
+  `https://deckforge-myl.pages.dev`; Redirect URLs `…/cuenta/` del sitio, de
+  sus vistas previas (`https://*.deckforge-myl.pages.dev/cuenta/`) y de
+  `localhost:3000` y `localhost:4173`. El proveedor **Email está apagado**:
+  solo se entra con Google.
+- **Al crear el proyecto de Supabase** se dejó «Automatically expose new
+  tables» apagado y el RLS automático encendido. `esquema.sql` da los permisos
+  a mano, así que no depende de esas casillas.
+
+---
+
+## Cómo funciona por dentro
+
+### La idea
+
+El sitio sigue siendo **estático**: no hay servidor nuestro. El navegador habla
+directo con Supabase —su API REST (PostgREST) y su Auth— y lo que protege los
+datos son las **reglas de la base**: RLS por fila y funciones `security
+definer` para lo público. El código que corre en el navegador es solo
+interfaz; aunque alguien lo modifique, la base no le deja leer ni escribir lo
+que no es suyo.
+
+### Qué se guarda
+
+**Solo ids y copias; el catálogo nunca entra a la base.** Las cartas viven en
+`/data/cards.json`, estático, y el navegador las resuelve por id.
+
+| Tabla | Una fila por | Qué lleva |
+|---|---|---|
+| `perfiles` | usuario | el **alias** público (3–20 letras, números o `_`; único sin distinguir mayúsculas) |
+| `barajas` | baraja | `datos` (jsonb): la baraja tal como la guarda el navegador (`deckSchema`: nombre, nota, `principal`/`side` como `{ id, n }`, oro inicial, portada, fechas); `actualizado` (ms); `borrada` (lápida); lo público: `publica`, `publicada_en`, `public_id` (uuid, va en la URL), `afinidad`, `oculta`, `likes`, `copias`; y `nombre`/`portada` calculados del jsonb |
+| `colecciones` | usuario | `datos` = `{ cartas: { id: copias }, quiero: { id: copias } }` y `actualizado` |
+| `likes`, `copias`, `reportes` | usuario × baraja pública | uno por persona; los reportes con `motivo` (`nombre`, `nota`, `spam`, `otro`) y una nota de hasta 280 |
+
+Una baraja pesa 1–2 KB y una colección unos KB: el plan gratuito (500 MB) da
+para cientos de miles. Todas las tablas cuelgan de `auth.users` con `on
+delete cascade`: borrar la cuenta borra todo lo suyo.
+
+### Las reglas de la base (`supabase/esquema.sql`)
+
+- **Permisos de tabla explícitos**: `authenticated` puede leer y escribir
+  `perfiles`, `barajas` y `colecciones`; `anon` nada; `likes`, `copias` y
+  `reportes` no los toca nadie desde la API.
+- **RLS**: cada usuario solo ve y escribe sus filas (`user_id = auth.uid()`).
+- **Trigger `barajas_proteger`**: desde el sitio el dueño no puede cambiar
+  `oculta`, los contadores ni el `public_id`; topa en **50 barajas vivas** y
+  500 filas por usuario; una baraja borrada pierde sus datos y deja de ser
+  pública; para publicar hace falta alias. Distingue «el sitio» del panel por
+  el **rol** (`authenticated`), no por la sesión, porque los contadores los
+  suben funciones que corren como dueño de la base.
+- **Funciones** (`security definer`, `search_path` vacío, permisos de
+  ejecución dados a mano): `listar_publicas` (la lista, con sus cuatro
+  órdenes, filtro y búsqueda), `leer_publica` (una baraja, con `mia` y
+  `me_gusta`), `dar_like` (no a la propia), `registrar_copia`, `reportar` y
+  `borrar_mi_cuenta`. Las dos primeras las puede llamar cualquiera; el resto,
+  solo con sesión.
+- Topes de tamaño en la base: 32 KB por baraja, 256 KB por colección.
+- Se puede volver a correr entero sin romper nada: así se aplica una versión
+  nueva.
+
+### El código
+
+| Archivo | Qué hace |
+|---|---|
+| `src/lib/supabase-config.ts` | lee `supabase/proyecto.json` (o `NEXT_PUBLIC_SUPABASE_URL`/`_KEY` en un build de pruebas); `NUBE_ACTIVA` apaga todo si falta. Rechaza una clave que no sea publishable o anon |
+| `src/lib/sync.ts` | la sincronización como lógica pura, con su test: valida las filas que llegan y decide qué escribir en cada lado |
+| `src/lib/comunidad.ts` | órdenes, afinidad (`claveAfinidad`) y validación de lo que llega de la Comunidad, con su test |
+| `src/components/nube/api.ts` | `fetch` a la API REST con `apikey` y, con sesión, el token; errores con un texto para el usuario |
+| `src/components/nube/nube.ts` | el estado de la cuenta (store de módulo), la sesión con `@supabase/auth-js`, entrar, salir, borrar, el alias y cuándo sincronizar |
+| `src/components/nube/sincronizar.ts` | una vuelta de sincronización (se carga al usarse) |
+| `src/components/nube/comunidad-api.ts` | lista, baraja pública, like, copia, reporte, publicar |
+| `RequiereCuenta.tsx`, `use-con-cuenta.ts` | el candado de lo personal y la navbar sin lo personal |
+| `AccountButton`, `CuentaView`, `AliasForm`, `BotonGoogle`, `PortadaCuenta` | la cuenta en la navbar, `/cuenta` y la portada |
+| `PublicarControl`, `PublicaAcciones`, `ReportarDialog`, `ComunidadView` | publicar, el detalle público y `/comunidad` |
+
+**Solo `@supabase/auth-js`**, no el cliente completo `supabase-js`: el
+completo trae tiempo real, archivos y funciones que el sitio no usa.
+
+### La sesión
+
+1. «Entrar con Google» (`entrar()`) carga `auth-js` y abre Google con **PKCE**.
+   Antes guarda en `sessionStorage` (`deckforge-volver`) la página desde
+   donde se pulsó.
+2. Google vuelve a Supabase, y Supabase a **`/cuenta/?code=…`**: es la única
+   vuelta que admiten las Redirect URLs. `auth-js` cambia el código por la
+   sesión, `/cuenta` limpia la URL y, si había una página guardada, vuelve a
+   ella (`tomarVuelta`, solo rutas propias).
+3. La sesión queda en `localStorage` bajo **`deckforge-sesion`** y `auth-js`
+   renueva el token solo.
+4. **Nada se descarga sin hacer falta**: `auth-js` se carga solo si existe
+   `deckforge-sesion`, al volver de Google o al pulsar «Entrar». Un visitante
+   sin cuenta no hace ninguna petición a Supabase fuera de la Comunidad.
+5. Cerrar sesión borra la sesión de este navegador y deja las barajas y la
+   colección donde estaban.
+
+### Lo que pide cuenta
+
+El constructor, Mis barajas, la colección y el detalle de una baraja propia
+(`/baraja/?m=`) pasan por **`RequiereCuenta`**: sin sesión muestran «Entra para
+…» y, si el navegador ya tenía barajas o colección, avisan que se suman a la
+cuenta al entrar. La navbar no muestra esos tres enlaces sin cuenta
+(`useConCuenta`). **No** piden cuenta el catálogo, los documentos, las
+novedades, la Comunidad, una baraja compartida (`#d=`) o pública (`?p=`) ni
+una colección compartida (`#c=`).
+
+Es un candado **de interfaz**: el sitio es estático. Con una sesión guardada,
+esas páginas se pintan de una, sin esperar a `auth-js`.
+
+### La sincronización
+
+Corre al entrar, unos 2 segundos después de cada guardado (escucha los stores
+de barajas y colección) y al volver a la pestaña si pasó más de un minuto. Son
+cuatro peticiones como mucho.
+
+- **Por baraja gana el `actualizado` más nuevo.** Lo que está en un solo lado
+  pasa al otro.
+- **Un borrado deja una lápida** (`deckforge-borradas`, con su fecha): así otro
+  equipo no revive una baraja borrada, y una edición posterior en otro equipo
+  sí gana al borrado.
+- **Nunca desplaza**: lo que llega de la nube entra solo si cabe bajo las 50;
+  lo demás se queda en la nube. Un nombre repetido entra como «X (copia)».
+- **La colección**: la primera vez que un navegador se une a una cuenta se
+  **suman** (la cantidad mayor de cada carta); después gana la más reciente.
+- `deckforge-nube` recuerda de qué cuenta es lo sincronizado, cuándo, el alias
+  y lo público de cada baraja, para pintar Mis barajas sin esperar a la red.
+- El borrador del constructor **no** viaja.
+- Lo que llega de la nube se valida con Zod como cualquier entrada de afuera
+  (`deckSchema`, `sanearColeccion`): una fila rota se ignora sin romper nada.
+
+### La Comunidad
+
+- **Publicar** está en el detalle de una baraja propia: «Privada / Pública».
+  Solo baraja que **cumple** las reglas (`validateDeck`); la primera vez pide
+  alias. Se guarda la **afinidad** (la vía más estrecha: raza, escuela o
+  atributo) para listar y filtrar. Si la baraja se edita y deja de cumplir, al
+  abrir su detalle se retira sola.
+- **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
+  últimos 7 días, más recientes, más copiadas), filtro por afinidad y buscador;
+  todo en la URL. Se ve sin cuenta.
+- **El detalle público** es `/baraja/?p=<public_id>`: el alias, el like (uno
+  por persona, no a la propia), «Guardar en mis barajas» (cuenta una copia por
+  persona con sesión) y «Reportar».
+- Lo que escribe otro jugador (alias, nombre, nota) se limpia de caracteres de
+  control y se pinta siempre como texto.
+
+### Seguridad
+
+- **CSP**: `connect-src` es `'self'` más **solo** el host de Supabase de
+  `proyecto.json`. Lo agrega `scripts/csp-hashes.mjs`; `pnpm run audit` falla
+  si lleva otro, o si una clave secreta llega a `proyecto.json` o al build.
+- La **publishable key** es pública por diseño; la seguridad es RLS. La secret
+  key, la contraseña de la base y el Client secret de Google no entran nunca
+  al repo.
+- No se muestra la foto de Google (para no abrir `img-src` a sus servidores),
+  ni el nombre ni el correo: solo el alias.
+
+### Pruebas
+
+- `src/lib/sync.test.ts` y `src/lib/comunidad.test.ts` (en `pnpm run test`):
+  gana el más reciente, lápidas, tope de 50 sin desplazar, choques de nombre,
+  primera vez de la colección, filas rotas y texto hostil.
+- `pnpm run e2e:nube`: el sitio construido contra un **Supabase simulado** en
+  memoria (`e2e/supabase-simulado.ts`), en los tres dispositivos: entrar y
+  juntar, publicar con alias, una ilegal no se publica, like, copia, reporte,
+  moderación, cerrar sesión, lo que pide cuenta y lo que no, accesibilidad, y
+  que sin cuenta no salga ninguna petición. Deja `out/` con ese build:
+  después, `pnpm run build`.
+- `pnpm run e2e` y `pnpm run a11y` entran con una cuenta de mentira
+  (`entrarSimulado`), porque el constructor, Mis barajas y la colección la
+  piden.
+- La SQL, contra un Postgres local (abajo).
+- **Desde la sesión de Claude en la nube no se llega a `supabase.co`** (el
+  proxy lo bloquea): lo que toca el proyecto real se prueba en el navegador.
+
+---
+
+## Cómo se encendieron
 
 Son unos 45–60 minutos. Hace falta una cuenta de Google y una de GitHub (o un
 correo). **No cuesta dinero**: plan gratuito de Supabase y de Google Cloud, sin
@@ -21,7 +232,7 @@ tarjeta.
 
 ---
 
-## 1. Cuenta y proyecto de Supabase (~10 min)
+### 1. Cuenta y proyecto de Supabase (~10 min)
 
 1. Entrar a **supabase.com** → «Start your project» → registrarse con
    **GitHub** (lo más simple) o con correo.
@@ -60,7 +271,7 @@ sitio sigue funcionando con lo guardado en cada navegador: solo no sincroniza
 y la Comunidad dice que no está disponible. Con jugadores entrando cada semana
 no pasa.
 
-## 2. Tablas y reglas de seguridad (~5 min)
+### 2. Tablas y reglas de seguridad (~5 min)
 
 1. Abrir [`supabase/esquema.sql`](../supabase/esquema.sql) en GitHub y
    copiarlo entero.
@@ -79,7 +290,7 @@ través de funciones que devuelven lo que se puede ver; pone topes (tamaño,
 base ni infle el ranking; y agrega `borrar_mi_cuenta()`, que borra al usuario
 y todo lo suyo cuando él lo pide.
 
-## 3. Google (~20 min)
+### 3. Google (~20 min)
 
 1. Entrar a **console.cloud.google.com** con tu cuenta de Google y aceptar los
    términos.
@@ -106,7 +317,7 @@ y todo lo suyo cuando él lo pide.
    - Create → copiar **Client ID** y **Client secret**. El secret solo se pega
      en Supabase, en el paso siguiente.
 
-## 4. Unir Google con Supabase (~5 min)
+### 4. Unir Google con Supabase (~5 min)
 
 1. Supabase → **Authentication** → **Sign In / Providers** → **Google** →
    **Enable**. Pegar Client ID y Client secret. Revisar que la **Callback URL**
@@ -122,7 +333,7 @@ y todo lo suyo cuando él lo pide.
 3. **Sign In / Providers → Email**: desactivar «Enable Email provider». Nadie
    debe crear cuentas por correo: el sitio solo ofrece Google.
 
-## 5. Encender
+### 5. Encender
 
 Escribir los dos datos públicos en
 [`supabase/proyecto.json`](../supabase/proyecto.json):
@@ -197,3 +408,33 @@ La interfaz se prueba aparte, contra un Supabase simulado:
 `https://prueba.supabase.co` y corre `e2e/nube.spec.ts`, que intercepta esas
 peticiones (`e2e/supabase-simulado.ts`). Deja `out/` con ese build: después,
 `pnpm run build` normal.
+
+---
+
+## Mantener
+
+- **La pausa del plan gratuito.** Si el proyecto pasa 7 días sin uso,
+  Supabase lo pausa: el sitio sigue funcionando con lo guardado en cada
+  navegador, pero no sincroniza y la Comunidad dice que no está disponible. Se
+  reactiva con «Restore project» en el panel.
+- **Cambiar el esquema**: editar `supabase/esquema.sql`, probarlo contra el
+  Postgres local (dos veces seguidas) y pegarlo entero en el SQL Editor. Si
+  agrega una tabla, darle sus permisos a mano en la sección «Permisos de las
+  tablas», como las demás.
+- **Apagar las cuentas**: `url` y `key` en `null` en `proyecto.json`. El sitio
+  vuelve a funcionar sin cuenta (nada pide entrar) y la auditoría vuelve a
+  exigir `connect-src 'self'`. Quitar también la sección de la cuenta de
+  `faq.ts`.
+- **Cambiar de dominio**: el dominio nuevo va en Google (orígenes, dominios
+  autorizados y la página de la marca), en Supabase (Site URL y Redirect URLs)
+  y en `SITE_URL` de `src/app/layout.tsx`.
+- **Cambiar la clave pública** (si Supabase la rota): la nueva va en
+  `proyecto.json`, y build y push.
+- **Si alguien no puede entrar**:
+  - «redirect_uri_mismatch» de Google: la URL de redirección del cliente de
+    Google no es idéntica a la Callback URL de Supabase.
+  - Vuelve al sitio pero sin sesión: falta su dirección en las Redirect URLs
+    de Supabase (cada una termina en `/cuenta/`).
+  - «Esta app no está verificada» o solo entran algunas cuentas: la app de
+    Google quedó en «Prueba» en vez de «En producción», o se le agregó un logo
+    o un permiso sensible.

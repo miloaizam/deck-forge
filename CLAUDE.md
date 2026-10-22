@@ -130,7 +130,7 @@ TODO.md        todo lo pendiente, por grupos (se borra la entrada al hacerla)
 documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
                fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
-docs/          plan, guía de marca y cómo encender las cuentas (cuentas.md)
+docs/          plan, guía de marca y todo sobre las cuentas (cuentas.md)
 supabase/      esquema.sql (tablas, RLS y funciones; se pega en Supabase) y
                proyecto.json (URL y clave PÚBLICA; null = cuentas apagadas)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
@@ -1788,7 +1788,11 @@ de **habilidad** las ofrece desde ahora.
 Cuentas con Google y una **Comunidad** de barajas públicas con
 likes (22-10-2026, decisión del proyecto: Supabase y no Cloudflare D1, porque
 D1 obligaba a escribir y mantener el inicio de sesión y un servidor propio).
-Cómo encenderlas, moderar y probar la SQL: [`docs/cuentas.md`](docs/cuentas.md).
+**Todo el detalle está en [`docs/cuentas.md`](docs/cuentas.md)**: qué hay
+configurado en Supabase, Google y Cloudflare, cómo funciona por dentro (tablas,
+reglas, sesión, sincronización, Comunidad, seguridad, pruebas), cómo se
+encendieron, cómo moderar y cómo mantenerlas. Lo de abajo es el resumen para
+quien toca el código.
 
 - **Encendidas el 22-10-2026**, con el proyecto `deck-forge-db` (São Paulo).
   `supabase/proyecto.json` lleva la Project URL y la publishable key; en

@@ -16,7 +16,7 @@ export default function ColeccionPage() {
       <p className="eyebrow mb-3">Colección</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Mi colección</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Las cartas que tienes y las que te faltan para conseguir.
+        Las cartas que tienes y las que te faltan para conseguir tu colección soñada.
       </p>
 
       <div className="mt-10">

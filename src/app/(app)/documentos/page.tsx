@@ -22,8 +22,8 @@ export default function DocumentosPage() {
       <p className="eyebrow mb-3">Reglas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Documentos</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Los documentos oficiales del formato, transcritos con el estilo de DeckForge. Se
-        pueden leer aquí mismo o descargar en PDF.
+        Los documentos oficiales del formato, puedes leerlos aquí mismo o descargarlos en
+        formato PDF.
       </p>
 
       <div className="mt-10 grid gap-5 lg:grid-cols-2">

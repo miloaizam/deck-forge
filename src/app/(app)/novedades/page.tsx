@@ -13,7 +13,7 @@ export default function NovedadesPage() {
       <p className="eyebrow mb-3">Novedades</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Lo nuevo en DeckForge</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Los cambios que se notan al usar el sitio, del más reciente al más antiguo.
+        Los cambios importantes de DeckForge para que estés siempre al día.
       </p>
 
       <NovedadesTimeline />

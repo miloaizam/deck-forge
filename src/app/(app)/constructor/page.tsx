@@ -24,8 +24,8 @@ export default async function ConstructorPage() {
       <p className="eyebrow mb-3">Barajas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Constructor</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Arma tu baraja del formato Escuelas Elementales con el + de cada carta. Al
-        guardarla queda en Mis barajas y en tu cuenta.
+        Arma tu baraja del formato Escuelas Elementales. Al guardarla queda en Mis
+        barajas.
       </p>
 
       <div className="mt-10">
