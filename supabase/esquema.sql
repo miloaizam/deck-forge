@@ -105,6 +105,23 @@ create table if not exists public.reportes (
 );
 
 -- ---------------------------------------------------------------------------
+-- Permisos de las tablas
+--
+-- Explicitos, para no depender de la casilla «Automatically expose new
+-- tables» del panel (Supabase recomienda dejarla apagada). Primero se quita
+-- todo y despues se da solo lo que el sitio usa; RLS decide ademas que filas.
+-- ---------------------------------------------------------------------------
+
+revoke all on public.perfiles, public.barajas, public.colecciones,
+  public.likes, public.copias, public.reportes from anon, authenticated;
+
+grant select, insert, update, delete on public.perfiles to authenticated;
+grant select, insert, update on public.barajas to authenticated;
+grant select, insert, update on public.colecciones to authenticated;
+-- likes, copias y reportes: nada. Solo las funciones de abajo, que corren
+-- como dueno de la base.
+
+-- ---------------------------------------------------------------------------
 -- RLS
 -- ---------------------------------------------------------------------------
 

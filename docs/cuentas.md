@@ -27,10 +27,24 @@ tarjeta.
 2. Si pide una **organización**: nombre `DeckForge`, tipo «Personal», plan
    **Free**.
 3. **New project**:
-   - *Name*: `deckforge`.
+   - *Organization*: la tuya, plan **Free**.
+   - *GitHub (optional)*: **no conectar**. Esa integración aplica migraciones
+     con el formato de la CLI de Supabase, que este repo no usa: el esquema se
+     pega a mano en el paso 2.
+   - *Project name*: el que quieras (`deckforge`, `deck-forge-db`…).
    - *Database password*: «Generate a password» y **guardarla en un gestor de
      contraseñas**. El sitio no la usa; sirve para administrar la base.
-   - *Region*: **South America (São Paulo)**, la más cercana a Chile.
+   - *Region*: «Need a specific region?» y elegir **South America (São
+     Paulo)**, la más cercana a Chile. «Americas» a secas puede caer en
+     Estados Unidos. Si sale un aviso de incidente en la región, la creación
+     puede fallar o tardar: reintentar más tarde.
+   - *Security*:
+     - **Enable Data API**: marcada (el sitio habla con la base por ahí).
+     - **Automatically expose new tables**: **desmarcada**, como recomienda
+       Supabase. `esquema.sql` da los permisos de cada tabla a mano, así que
+       funciona igual con ella marcada o no.
+     - **Enable automatic RLS**: marcada. El esquema ya activa RLS en cada
+       tabla; esto lo asegura también para cualquier tabla futura.
    - Crear y esperar 1–2 minutos a que quede «Healthy».
 4. **Los dos datos públicos**: menú lateral → **Project Settings** (el
    engranaje) → **Data API** (o «API»):
@@ -56,7 +70,8 @@ no pasa.
    `colecciones`, `likes`, `copias` y `reportes`, todas con el candado «RLS
    enabled».
 
-Qué hace ese SQL, en simple: crea las tablas; activa RLS para que **cada
+Qué hace ese SQL, en simple: crea las tablas; les da a mano solo los permisos
+que el sitio usa; activa RLS para que **cada
 usuario solo pueda leer y escribir lo suyo**, y lo público se lea solo a
 través de funciones que devuelven lo que se puede ver; pone topes (tamaño,
 50 barajas, un like y un reporte por persona y baraja) para que nadie llene la
