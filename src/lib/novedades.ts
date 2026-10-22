@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-22",
+    version: "5.2.0",
+    tipo: "Mejora",
+    titulo: "Sin archivos de respaldo",
+    texto: [
+      "Se quitaron «Exportar» e «Importar» de Mis barajas y de la colección: tus barajas y tu colección ya quedan guardadas en tu cuenta.",
+      "En la página de una baraja, «Privada / Pública» va ahora junto a los demás botones, y debajo, cuando es pública, el enlace a la Comunidad con sus likes y copias.",
+    ],
+  },
+  {
+    fecha: "2026-10-22",
     version: "5.1.0",
     tipo: "Mejora",
     titulo: "Tus barajas, siempre en tu cuenta",

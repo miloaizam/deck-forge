@@ -839,19 +839,20 @@ pero eso no se deja al azar:
    asume su forma. Al decodificar una baraja desde la URL: parsear a la
    defensiva, acotar tamaños y descartar ids desconocidos sin reventar la app.
 
-   **El archivo de respaldo es la entrada más expuesta**: te lo puede pasar
-   cualquiera. Exportar no tiene riesgo —se arma con un `Blob` y no sale del
-   navegador—, pero la auditoría de importar encontró dos fallos, y las
-   reglas que dejaron son de la validación, no de un componente:
+   **Hubo un archivo de respaldo** (exportar e importar barajas y
+   colección), que era la entrada más expuesta: te lo podía pasar
+   cualquiera. **Se quitó el 22-10-2026** (decisión del proyecto: con la
+   cuenta, barajas y colección ya viajan solas), pero su auditoría dejó
+   reglas que son de la validación, no de un componente, y siguen valiendo:
    - **Acotar también los números, no solo los textos.** `actualizado:
      2**53 - 1` pasaba `.int()` y hacía lanzar a `Intl.DateTimeFormat`; como
      la baraja quedaba guardada, `/barajas` se caía en cada carga. Las fechas
      se recortan a la mayor fecha válida (`fechaSchema`, `types.ts`).
-   - **Importar nunca desplaza.** `saveDecks` recorta a 50 quedándose con las
-     primeras, así que un archivo con 50 barajas borraba las del usuario.
-     `mergeImported()` solo suma lo que cabe, y el aviso dice cuántas no
-     cupieron. **Guardar tampoco**: con 50, crear, duplicar o guardar una
-     compartida expulsaba la más vieja. `insertDeck()` devuelve `null` si la
+   - **Nada desplaza.** `saveDecks` recorta a 50 quedándose con las
+     primeras, así que importar un archivo con 50 barajas borraba las del
+     usuario, y con 50 crear, duplicar o guardar una
+     compartida expulsaba la más vieja. Lo que llega de la cuenta tampoco
+     (`sync.ts`). `insertDeck()` devuelve `null` si la
      baraja es nueva y no cabe, y `saveDeck` distingue `lleno` de
      `sin-espacio` (el navegador no dejó escribir) para que el aviso
      (`mensajeNoGuardada`) diga el remedio correcto.
@@ -1016,8 +1017,8 @@ a fuentes oficiales cuando corresponde.
 portada, cadena de datos completa (API → `data-src` → WebP → `cards.json`),
 catálogo con grilla, modal de detalle con keywords resaltadas, buscador
 (MiniSearch), filtros por faceta con selector propio y paginación; constructor
-con las reglas del formato, lista y detalle de barajas, exportar e importar, y
-enlace para compartir. Lo que falta y lo que está mal, en
+con las reglas del formato, lista y detalle de barajas, enlace para compartir
+y cuentas con Comunidad. Lo que falta y lo que está mal, en
 [TODO.md](TODO.md).
 
 Rutas: `/` portada (sin navbar, con «Entrar a la forja», que va al catálogo, y
@@ -1111,10 +1112,10 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   guardaban, y se leen igual: una copia de cada una), con store de
   `useSyncExternalStore` y validación entrada por entrada (seguridad #4). Los
   ids viejos se traducen con `cardRefSchema`.
-- **Importar fusiona**: la cantidad mayor de cada impresión, en las dos
-  listas. Importar dos veces no duplica e importar un respaldo viejo no
-  borra nada. El archivo lleva `tipo: "coleccion"`, así que un respaldo de
-  barajas no pasa por uno de colección.
+- **No hay archivo de respaldo** (se quitó el 22-10-2026): la colección va
+  en la cuenta. Al iniciar sesión por primera vez en un equipo se juntan la
+  del navegador y la de la cuenta con `fusionar`: la cantidad mayor de cada
+  impresión, en las dos listas.
 - **Es una lista y no la grilla**, por tipo y en el orden del catálogo. En
   «Agregar cartas» son hasta 2650 filas: cada tipo pinta 150 y el resto se
   pide al pie, y cada fila lleva `content-visibility: auto`
@@ -1750,8 +1751,8 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
 - **Los ids cambiaron tres veces y los viejos se traducen al leer.**
   `src/lib/ids-anteriores.ts` guarda cada id viejo (`pb-`, `pa-`, `do-3NN`,
   `ca-15N`, `cm-`, `te-`, `ke-`, `dh-`…) con su id de hoy, y `cardRefSchema`
-  (`types.ts`) los traduce al leer una baraja guardada, un respaldo o un
-  enlace: ninguna baraja pierde cartas. La tabla **solo se agrega**, **no
+  (`types.ts`) los traduce al leer una baraja guardada (en el navegador o en
+  la cuenta) o un enlace: ninguna baraja pierde cartas. La tabla **solo se agrega**, **no
   encadena** (cada entrada apunta directo al id de hoy) y su test exige que
   ningún id viejo vuelva a usarse.
 - **`PREFIJOS` no pierde entradas**: `su`, `re`, `cm`, `te`, `as`, `mi`, `pb`,
@@ -1832,7 +1833,11 @@ quien toca el código.
   alias y lo público de cada baraja, para pintar Mis barajas sin esperar a la
   red. **Cerrar sesión deja todo en el navegador.**
 - **Publicar** (`PublicarControl.tsx`, en el detalle de una baraja propia):
-  «Privada / Pública», solo si la baraja **cumple** (`validateDeck`); la
+  «Privada / Pública» al final de la fila de botones (Editar, imagen,
+  enlace, Duplicar, Eliminar) y a su altura, `h-11`; debajo, «Ver en la
+  Comunidad», likes y copias. Son dos piezas en sitios distintos que
+  comparten estado, así que `PublicarControl` entrega las dos a un
+  render-prop (`{ control, detalle }`). Solo si la baraja **cumple** (`validateDeck`); la
   primera vez pide el alias. Se guarda la **afinidad** para filtrar
   (`claveAfinidad` de `comunidad.ts`: la vía más estrecha). Si una pública se
   edita y deja de cumplir, al abrir su detalle se retira sola, con aviso; si
@@ -1892,10 +1897,9 @@ toda la interfaz dice *baraja* y las rutas van en español: `/constructor`,
   nombre que el juego **imprime en la carta** para esa zona. Cambiarlo falsearía
   el texto del catálogo, que es justo lo que se verificó contra el arte.
 - **El nombre de los campos serializados se queda en `mazos`**: el sobre del
-  `localStorage` (`{ v: 1, mazos: [...] }`, bajo la clave `deckforge-decks`) y el
-  archivo de respaldo (`{ app: "deckforge", v: 1, mazos: [...] }`). Eso ya está
-  **escrito en el navegador de cada usuario y dentro de los `.json` que exportó**:
-  renombrarlo le dejaría la lista vacía y sus respaldos sin importar. La palabra
+  `localStorage` (`{ v: 1, mazos: [...] }`, bajo la clave `deckforge-decks`).
+  Eso ya está **escrito en el navegador de cada usuario**: renombrarlo le
+  dejaría la lista vacía. La palabra
   de la interfaz es *baraja*; la del disco se queda como nació. Es el mismo
   criterio que con `PREFIJOS` en `deck-code.ts` —formato ya publicado no se
   reordena— y por eso lleva un comentario en los dos sitios.
@@ -2106,11 +2110,9 @@ baraja que ya se pasó ("lleva 4 copias") y `canAdd` una que está en el tope
 espacios de más y en la misma forma Unicode (`nombreOcupado`,
 `deck-storage.ts`). Donde el nombre lo eligió el usuario —crear o renombrar en
 el constructor— se **rechaza**: aviso en línea bajo el campo y un `warning`
-al guardar. Donde no lo eligió —duplicar, importar, guardar una compartida— se
-**resuelve solo** con `nombreLibre`: "X (copia)", "X (copia 2)"…, quitando
-antes el sufijo que ya traiga para no apilar "(copia) (copia)". Importar
-compara cada baraja también con las del mismo archivo, y el aviso dice cuántas
-se renombraron. Por el sufijo, los topes subieron: **60 caracteres el nombre y
+al guardar. Donde no lo eligió —duplicar, guardar una compartida, lo que llega
+de la cuenta— se **resuelve solo** con `nombreLibre`: "X (copia)", "X (copia
+2)"…, quitando antes el sufijo que ya traiga para no apilar "(copia) (copia)". Por el sufijo, los topes subieron: **60 caracteres el nombre y
 280 la descripción** (eran 30 y 50). El enlace aguanta el nombre: viaja con un
 byte de largo y 60 caracteres son como mucho 240 bytes.
 
@@ -2129,7 +2131,7 @@ ancho dibujado en un `<canvas>`, con el nombre, la nota, las cartas por tipo
 con sus copias y el oro inicial marcado. Sin conteo, legalidad ni afinidad: en
 una imagen para compartir sobran. Sin servidor ni
 dependencias: las miniaturas son del propio origen, así que el canvas se puede
-exportar, y el JPEG baja por un Blob como el respaldo JSON. **Es JPEG al 92 % y
+exportar, y el JPEG baja por un Blob. **Es JPEG al 92 % y
 no PNG** (18-10-2026): el arte es casi una foto y en PNG una imagen llena pesaba
 ~26 MB, más de lo que WhatsApp manda como foto; en JPEG son ~6 MB y no se
 distingue. Usa **siempre los

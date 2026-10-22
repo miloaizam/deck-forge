@@ -120,7 +120,7 @@ export interface PlanBarajas {
  * gana el `actualizado` mayor; si en un lado esta borrada, la lapida compite
  * con su fecha igual que una edicion. Empate: no se toca nada.
  *
- * **Nunca desplaza**, con el criterio de `mergeImported`: lo que llega de la
+ * **Nunca desplaza**, con el criterio de `insertDeck`: lo que llega de la
  * nube entra solo si cabe bajo MAX_BARAJAS, empezando por lo mas reciente, y
  * lo que no cabe se queda en la nube sin borrarse. Si una que llega choca de
  * nombre con otra del navegador, entra renombrada con `nombreLibre` y sube
@@ -249,8 +249,8 @@ const misma = (a: Coleccion, b: Coleccion) =>
  * Junta la coleccion del navegador con la de la nube.
  *
  * La **primera vez** que este navegador se une a la cuenta no se elige una:
- * se suman con `fusionar` (la cantidad mayor de cada carta), igual que al
- * importar un respaldo, para que entrar no le borre nada a nadie. Despues,
+ * se suman con `fusionar` (la cantidad mayor de cada carta), para que entrar
+ * no le borre nada a nadie. Despues,
  * gana la mas reciente entera.
  */
 export function fusionarColecciones(

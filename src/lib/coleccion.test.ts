@@ -10,9 +10,7 @@ import {
   conCopias,
   conFaltantes,
   conseguiUna,
-  exportarColeccion,
   fusionar,
-  importarColeccion,
   MAX_COPIAS_COLECCION,
   parseColeccion,
   porTipo,
@@ -85,32 +83,24 @@ test("las faltantes llevan las copias que se quieran y conviven con las que tien
   assert.equal(conseguiUna(col, "bu-001"), col);
 });
 
-test("importar se queda con la mayor cantidad y no duplica", () => {
+test("fusionar se queda con la mayor cantidad y no duplica", () => {
+  // Es como se juntan la coleccion del navegador y la de la cuenta la primera
+  // vez que se inicia sesion en un equipo.
   const actual = {
     tengo: { "bu-001": 3, "bu-002": 1 },
     quiero: { "bu-009": 1, "bu-002": 2 },
   };
-  const archivo = exportarColeccion({
+  const otra = {
     tengo: { "bu-001": 1, "bu-002": 4, "bu-005": 2 },
     quiero: { "bu-009": 2, "bu-010": 1 },
-  });
-  const leido = importarColeccion(archivo);
-  assert.ok(leido);
-  assert.equal(leido.descartadas, 0);
-  const una = fusionar(actual, leido.coleccion);
+  };
+  const una = fusionar(actual, otra);
   assert.deepEqual(una, {
     tengo: { "bu-001": 3, "bu-002": 4, "bu-005": 2 },
     // La que tiene y le faltan conserva sus faltantes.
     quiero: { "bu-009": 2, "bu-002": 2, "bu-010": 1 },
   });
-  assert.deepEqual(fusionar(una, leido.coleccion), una);
-
-  // Un respaldo de barajas no es un respaldo de coleccion.
-  assert.equal(
-    importarColeccion(JSON.stringify({ app: "deckforge", v: 1, mazos: [] })),
-    null,
-  );
-  assert.equal(importarColeccion("{"), null);
+  assert.deepEqual(fusionar(una, otra), una);
 });
 
 test("la coleccion va y vuelve por el enlace, entera y corta", () => {

@@ -203,8 +203,8 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo guardo una baraja?",
         respuesta: [
-          "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**: toca su tarjeta para verla, o usa sus botones para editarla, descargarla como imagen, compartirla, exportarla, duplicarla o borrarla.",
-          "Dos barajas **no pueden llamarse igual**: si el nombre ya existe, el constructor te pide otro. Al duplicar, importar o guardar una baraja compartida con un nombre repetido, se le agrega **«(copia)»**.",
+          "Ponle un **nombre** y toca **«Guardar baraja»**. Queda en **Mis barajas**: toca su tarjeta para verla, o usa sus botones para editarla, descargarla como imagen, compartirla, duplicarla o borrarla.",
+          "Dos barajas **no pueden llamarse igual**: si el nombre ya existe, el constructor te pide otro. Al duplicar o guardar una baraja compartida con un nombre repetido, se le agrega **«(copia)»**.",
           "Si la baraja está **incompleta** o lleva una carta **baneada**, el constructor te muestra qué le falta y pregunta antes de guardar: puedes **«Guardar igual»** y terminarla después. Al guardar cambios en una baraja que ya existía, también pide confirmar, porque reemplaza la versión anterior.",
         ],
       },
@@ -243,10 +243,7 @@ export const FAQ: FaqSection[] = [
       },
       {
         pregunta: "¿Cómo paso mis barajas a otro computador?",
-        respuesta: [
-          "Solo **inicia sesión** en el otro computador y ahí estarán.",
-          "Si quieres un respaldo aparte, en Mis barajas usa **«Exportar todo»** para bajar un archivo e **«Importar»** para cargarlo. Importar **no borra** las barajas que ya tienes; se agregan hasta un máximo de **50**.",
-        ],
+        respuesta: ["Solo **inicia sesión** en el otro computador y ahí estarán."],
       },
       {
         pregunta: "¿Puedo elegir la imagen de mi baraja?",
@@ -306,7 +303,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Dónde se guarda mi colección?",
         respuesta: [
-          "En **tu cuenta**, igual que las barajas. **«Exportar»** baja un archivo con tus dos listas e **«Importar»** lo carga. Importar **no borra nada**: si una carta aparece en los dos lados, se queda la cantidad mayor.",
+          "En **tu cuenta**, igual que las barajas: la ves en cualquier equipo donde inicies sesión.",
         ],
       },
     ],

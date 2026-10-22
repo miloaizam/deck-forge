@@ -1,15 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ClipboardList, Download, ImageDown, Link2, Trash2, Upload } from "lucide-react";
+import { useState } from "react";
+import { ClipboardList, ImageDown, Link2, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
 import {
   COLECCION_VACIA,
-  exportarColeccion,
-  fusionar,
-  importarColeccion,
   estaVacia,
   saveColeccion,
   type Coleccion,
@@ -38,13 +35,9 @@ interface ColeccionAccionesProps {
 
 const BOTON = BOTON_SECUNDARIO;
 
-/** Mas que esto no es un respaldo de coleccion. */
-const MAX_ARCHIVO = 1024 * 1024;
-
 /**
- * La imagen y el texto de la lista que se ve, el enlace para compartir la coleccion,
- * llevarsela a otro navegador y vaciarla. El respaldo se arma con un Blob, como el de las barajas: no sale
- * nada del navegador.
+ * La imagen y el texto de la lista que se ve, el enlace para compartir la
+ * coleccion y vaciarla. Llevarla a otro equipo es cosa de la cuenta.
  */
 export function ColeccionAcciones({
   coleccion,
@@ -53,9 +46,7 @@ export function ColeccionAcciones({
   generandoImagen = false,
   soloLectura = false,
 }: ColeccionAccionesProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [vaciar, setVaciar] = useState(false);
-  const [ocupado, setOcupado] = useState(false);
   const vacia = estaVacia(coleccion);
 
   // El enlace lleva la coleccion entera, las dos listas: quien lo abre ve lo
@@ -89,65 +80,6 @@ export function ColeccionAcciones({
       URL.revokeObjectURL(url);
       toast("No se pudo copiar la lista: se descargó como archivo de texto.", "info");
     }
-  };
-
-  const exportar = () => {
-    const blob = new Blob([exportarColeccion(coleccion)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `deckforge-coleccion-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast("Colección exportada a un archivo.", "info");
-  };
-
-  const importar = async (file: File) => {
-    setOcupado(true);
-    try {
-      await importarArchivo(file);
-    } finally {
-      setOcupado(false);
-    }
-  };
-
-  const importarArchivo = async (file: File) => {
-    if (file.size > MAX_ARCHIVO) {
-      toast(
-        "El archivo es demasiado grande para ser un respaldo de colección.",
-        "warning",
-      );
-      return;
-    }
-    const leido = importarColeccion(await file.text());
-    if (!leido) {
-      toast("El archivo no es un respaldo de colección de DeckForge.", "warning");
-      return;
-    }
-    const nuevas =
-      Object.keys(leido.coleccion.tengo).filter((id) => !(id in coleccion.tengo)).length +
-      Object.keys(leido.coleccion.quiero).filter((id) => !(id in coleccion.quiero))
-        .length;
-    if (!saveColeccion(fusionar(coleccion, leido.coleccion))) {
-      toast(
-        "No se pudo guardar la colección: el almacenamiento del navegador está lleno.",
-        "warning",
-      );
-      return;
-    }
-    const partes = [
-      nuevas === 1
-        ? "Colección importada: 1 carta nueva."
-        : `Colección importada: ${nuevas} cartas nuevas.`,
-    ];
-    if (leido.descartadas > 0) {
-      partes.push(
-        leido.descartadas === 1
-          ? "1 entrada se descartó por estar dañada."
-          : `${leido.descartadas} entradas se descartaron por estar dañadas.`,
-      );
-    }
-    toast(partes.join(" "), "success");
   };
 
   const imagen = (
@@ -197,34 +129,6 @@ export function ColeccionAcciones({
         <Link2 size={14} aria-hidden="true" />
         Compartir
       </button>
-      <button type="button" onClick={exportar} disabled={vacia} className={BOTON}>
-        <Download size={14} aria-hidden="true" />
-        Exportar
-      </button>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={ocupado}
-        className={BOTON}
-      >
-        <Upload size={14} aria-hidden="true" />
-        Importar
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/json,.json"
-        // sr-only y no hidden, como en DeckTransfer: sigue en el arbol de
-        // accesibilidad con su nombre.
-        className="sr-only"
-        tabIndex={-1}
-        aria-label="Archivo de respaldo de la colección"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          e.target.value = "";
-          if (file) void importar(file);
-        }}
-      />
       <button
         type="button"
         onClick={() => setVaciar(true)}
@@ -239,7 +143,7 @@ export function ColeccionAcciones({
       <ConfirmDialog
         open={vaciar}
         titulo="Vaciar la colección"
-        mensaje="Se quitan todas las cartas marcadas, las que tienes y las que te faltan. Si quieres conservarlas, exporta antes un respaldo."
+        mensaje="Se quitan todas las cartas marcadas, las que tienes y las que te faltan. No se puede deshacer."
         confirmar="Vaciar"
         onCancel={() => setVaciar(false)}
         onConfirm={() => {

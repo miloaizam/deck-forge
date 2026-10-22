@@ -1,6 +1,6 @@
 /**
  * Ids de carta que existieron y se cambiaron por otros. Las barajas guardadas
- * en el navegador, los respaldos exportados y los enlaces compartidos los
+ * en el navegador o en la cuenta y los enlaces compartidos los
  * siguen trayendo, asi que se traducen al leer (`cardRefSchema` en types.ts
  * pasa cada id por `idVigente`): sin esto, la carta desaparecia de la baraja.
  *

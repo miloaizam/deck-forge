@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Copy, EyeOff, Globe, Heart, Lock } from "lucide-react";
 
 import { toast } from "../toast";
@@ -21,28 +21,38 @@ import {
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
-interface PublicarControlProps {
-  deck: Deck;
-  /** Si cumple las reglas: solo se publican las legales. */
-  legal: boolean;
-  /** `claveAfinidad` de la baraja, que se guarda para listar y filtrar. */
-  afinidad: string | null;
+interface Publicar {
+  /** «Privada / Pública», para la fila de botones de la baraja. */
+  control: ReactNode;
+  /** Lo que va debajo: el enlace a la Comunidad, likes, copias y avisos. */
+  detalle: ReactNode;
 }
 
 /**
- * «Privada / Pública» en el detalle de una baraja propia. Con la nube
- * apagada no pinta nada; sin sesion, invita a entrar.
+ * «Privada / Pública» en el detalle de una baraja propia. Son dos piezas que
+ * van en sitios distintos —el selector junto a los demas botones, y debajo
+ * su estado en la Comunidad— y comparten estado, por eso es un hook. Con la
+ * nube apagada no pinta nada; sin sesion, invita a entrar.
  *
  * Mientras es publica, se vigila que siga diciendo la verdad: si se edito y
  * cambio de afinidad, se corrige la de la lista; si dejo de cumplir, se
- * retira de la Comunidad (solo se publican legales) y se avisa.
+ * retira de la Comunidad (solo se publican legales) y se avisa. `activo` en
+ * falso (una baraja ajena) lo apaga todo.
  */
-export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps) {
+function usePublicar(
+  deck: Deck,
+  /** Si cumple las reglas: solo se publican las legales. */
+  legal: boolean,
+  /** `claveAfinidad` de la baraja, que se guarda para listar y filtrar. */
+  afinidad: string | null,
+  activo: boolean,
+): Publicar {
   const nube = useNube();
   const [ocupado, setOcupado] = useState(false);
   const [pidiendoAlias, setPidiendoAlias] = useState(false);
 
-  const publico = nube.fase === "con-sesion" ? nube.publicas[deck.id] : undefined;
+  const publico =
+    activo && nube.fase === "con-sesion" ? nube.publicas[deck.id] : undefined;
   const esPublica = publico?.publica ?? false;
 
   useEffect(() => {
@@ -61,17 +71,22 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
     }
   }, [esPublica, legal, afinidad, publico, deck]);
 
-  if (!NUBE_ACTIVA || nube.fase === "apagada" || nube.fase === "cargando") return null;
+  if (!activo || !NUBE_ACTIVA || nube.fase === "apagada" || nube.fase === "cargando") {
+    return { control: null, detalle: null };
+  }
 
   if (nube.fase === "sin-sesion") {
-    return (
-      <p className="text-muted text-[13px]">
-        <Link href="/cuenta" className={ENLACE}>
-          Inicia sesión
-        </Link>{" "}
-        para publicarla en la Comunidad.
-      </p>
-    );
+    return {
+      control: null,
+      detalle: (
+        <p className="text-muted text-[13px]">
+          <Link href="/cuenta" className={ENLACE}>
+            Inicia sesión
+          </Link>{" "}
+          para publicarla en la Comunidad.
+        </p>
+      ),
+    };
   }
 
   const cambiar = (publicar: boolean) => {
@@ -96,36 +111,48 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
       .finally(() => setOcupado(false));
   };
 
-  return (
-    <div className="flex flex-col items-start gap-2 sm:items-end">
-      <div role="group" aria-label="Visibilidad de la baraja" className={SEGMENTOS}>
-        <button
-          type="button"
-          aria-pressed={!esPublica}
-          disabled={ocupado}
-          onClick={() => cambiar(false)}
-          className={cn(SEGMENTO, !esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO)}
-        >
-          <Lock size={14} aria-hidden="true" />
-          Privada
-        </button>
-        <button
-          type="button"
-          aria-pressed={esPublica}
-          disabled={ocupado || (!esPublica && !legal)}
-          onClick={() => cambiar(true)}
-          title={!legal ? "Para publicarla, la baraja tiene que ser legal" : undefined}
-          className={cn(
-            SEGMENTO,
-            esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-            !esPublica && !legal && "cursor-not-allowed opacity-50",
-          )}
-        >
-          <Globe size={14} aria-hidden="true" />
-          Pública
-        </button>
-      </div>
+  const control = (
+    <div
+      role="group"
+      aria-label="Visibilidad de la baraja"
+      className={cn(SEGMENTOS, "h-11")}
+    >
+      <button
+        type="button"
+        aria-pressed={!esPublica}
+        disabled={ocupado}
+        onClick={() => cambiar(false)}
+        className={cn(
+          SEGMENTO,
+          "h-full",
+          !esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
+        )}
+      >
+        <Lock size={14} aria-hidden="true" />
+        Privada
+      </button>
+      <button
+        type="button"
+        aria-pressed={esPublica}
+        disabled={ocupado || (!esPublica && !legal)}
+        onClick={() => cambiar(true)}
+        title={!legal ? "Para publicarla, la baraja tiene que ser legal" : undefined}
+        className={cn(
+          SEGMENTO,
+          "h-full",
+          esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
+          !esPublica && !legal && "cursor-not-allowed opacity-50",
+        )}
+      >
+        <Globe size={14} aria-hidden="true" />
+        Pública
+      </button>
+    </div>
+  );
 
+  const hayDetalle = (!esPublica && !legal) || (esPublica && publico) || pidiendoAlias;
+  const detalle = hayDetalle ? (
+    <div className="flex flex-col items-start gap-2 sm:items-end">
       {!esPublica && !legal && (
         <p className="text-muted text-[12px]">
           Para publicarla, la baraja tiene que ser legal.
@@ -177,5 +204,28 @@ export function PublicarControl({ deck, legal, afinidad }: PublicarControlProps)
         </div>
       )}
     </div>
-  );
+  ) : null;
+
+  return { control, detalle };
+}
+
+/**
+ * `usePublicar` como componente, para usarlo donde la baraja ya esta
+ * resuelta (despues de los `return` tempranos del detalle, donde un hook no
+ * puede ir). `children` recibe las dos piezas y decide donde va cada una.
+ */
+export function PublicarControl({
+  deck,
+  legal,
+  afinidad,
+  activo,
+  children,
+}: {
+  deck: Deck;
+  legal: boolean;
+  afinidad: string | null;
+  activo: boolean;
+  children: (publicar: Publicar) => ReactNode;
+}) {
+  return children(usePublicar(deck, legal, afinidad, activo));
 }

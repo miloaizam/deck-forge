@@ -175,7 +175,7 @@ const SUFIJO_COPIA = / \(copia(?: \d+)?\)$/;
 
 /**
  * El nombre tal cual si esta libre; si no, con " (copia)", " (copia 2)"… hasta
- * dar con uno libre. Lo usan importar, duplicar y guardar una baraja
+ * dar con uno libre. Lo usan duplicar, sincronizar y guardar una baraja
  * compartida: ahi el usuario no eligio el nombre, asi que se resuelve solo en
  * vez de rechazar. Crear una en el constructor si rechaza (`nombreOcupado`).
  *
@@ -193,53 +193,13 @@ export function nombreLibre(nombre: string, barajas: Deck[]): string {
   }
 }
 
-export interface MergeResult {
-  lista: Deck[];
-  /** Cuantas de las importadas entraron. */
-  entraron: number;
-  /** Cuantas no cupieron bajo MAX_BARAJAS. */
-  sobraron: number;
-  /** Cuantas entraron con otro nombre, porque el suyo ya estaba tomado. */
-  renombradas: number;
-}
-
-/**
- * Suma barajas importadas a las que ya hay, SIN desplazar ninguna.
- *
- * `saveDecks` recorta a MAX_BARAJAS quedandose con las primeras, asi que poner
- * las importadas delante y guardar tal cual dejaba que un archivo con 50
- * barajas borrara todas las del usuario, mientras la interfaz decia
- * que se habian importado 50. Ahora entra solo lo que cabe, y quien llama dice cuantas
- * quedaron fuera.
- */
-export function mergeImported(existentes: Deck[], nuevas: Deck[]): MergeResult {
-  const hueco = Math.max(0, MAX_BARAJAS - existentes.length);
-  // Cada una se compara con las que ya habia y con las que entraron antes que
-  // ella: un archivo con dos barajas del mismo nombre tambien choca consigo.
-  const vistas = [...existentes];
-  let renombradas = 0;
-  const entran = nuevas.slice(0, hueco).map((d) => {
-    const nombre = nombreLibre(d.nombre, vistas);
-    if (nombre !== d.nombre) renombradas++;
-    const deck = nombre === d.nombre ? d : { ...d, nombre };
-    vistas.push(deck);
-    return deck;
-  });
-  return {
-    lista: [...entran, ...existentes],
-    entraron: entran.length,
-    sobraron: nuevas.length - entran.length,
-    renombradas,
-  };
-}
-
 /**
  * La lista con `deck` primera: reemplaza la que tenga su id o, si es nueva, la
  * suma. Devuelve `null` si es nueva y ya hay MAX_BARAJAS.
  *
  * **Nunca desplaza.** `saveDecks` recorta quedandose con las primeras, asi que
  * poner una nueva delante con la lista llena expulsaba en silencio la mas
- * vieja. Es el mismo criterio de `mergeImported`, por el otro camino.
+ * vieja.
  */
 export function insertDeck(lista: Deck[], deck: Deck): Deck[] | null {
   const resto = lista.filter((d) => d.id !== deck.id);

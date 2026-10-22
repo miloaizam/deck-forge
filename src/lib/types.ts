@@ -304,8 +304,8 @@ const DECK_ID = /^[a-z0-9]{10}$/;
 
 /**
  * Id de una carta dentro de una baraja. Los del catalogo tienen seis
- * caracteres; el tope es holgado, pero TIENE que haberlo: sin el, un archivo
- * de respaldo de menos de 1 MB con ids gigantes pasaba la importacion, dejaba
+ * caracteres; el tope es holgado, pero TIENE que haberlo: sin el, una baraja
+ * con ids gigantes (de un respaldo, cuando los habia) pasaba la validacion, dejaba
  * lo guardado por encima de lo que `parseDecks` acepta leer, y la lista
  * aparecia vacia —y el siguiente guardado la pisaba entera—.
  *

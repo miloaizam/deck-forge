@@ -146,9 +146,9 @@ export function Navbar() {
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
           {/* La cuenta, la ayuda y el tema quedan a la vista tambien en el
               telefono: no se pliegan en el menu. */}
-          <AccountButton />
           <HelpButton />
           <ThemeToggle />
+          <AccountButton />
 
           <button
             type="button"

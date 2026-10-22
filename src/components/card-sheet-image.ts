@@ -6,7 +6,7 @@
  * Se dibuja en un <canvas> del navegador: sin servidor, sin dependencias y sin
  * nada externo. Las miniaturas salen del propio origen, asi que el canvas no
  * queda "contaminado" y se puede exportar; y el JPEG se baja con un Blob y un
- * <a download>, igual que el respaldo JSON. Nada de esto pasa por la CSP: no se
+ * <a download>. Nada de esto pasa por la CSP: no se
  * inyecta ningun script ni se carga nada de fuera.
  *
  * En el telefono la pagina solo cargo las miniaturas que se vieron, asi que
@@ -423,7 +423,7 @@ async function dibujarPagina(
   return blob;
 }
 
-/** Baja un archivo con un <a download>, como el respaldo JSON. */
+/** Baja un archivo con un <a download>. */
 function bajar(archivo: File): void {
   const url = URL.createObjectURL(archivo);
   const a = document.createElement("a");

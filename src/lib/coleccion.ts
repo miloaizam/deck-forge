@@ -141,9 +141,9 @@ export function conseguiUna(col: Coleccion, id: string): Coleccion {
 }
 
 /**
- * Junta una coleccion importada con la que hay. Por impresion se queda la
- * MAYOR de las dos cantidades, en las dos listas: importar el mismo respaldo
- * dos veces no duplica nada, e importar uno viejo no borra nada.
+ * Junta dos colecciones (la del navegador y la de la cuenta, la primera vez
+ * que se inicia sesion). Por impresion se queda la MAYOR de las dos
+ * cantidades, en las dos listas: juntar dos veces no duplica nada.
  */
 export function fusionar(actual: Coleccion, importada: Coleccion): Coleccion {
   const mayor = (
@@ -197,49 +197,6 @@ export function coleccionComoTexto(
     }
   }
   return lineas.join("\n");
-}
-
-/* ------------------------------------------------------------------ *
- * Respaldo
- * ------------------------------------------------------------------ */
-
-const archivoSchema = z.object({
-  app: z.literal("deckforge"),
-  tipo: z.literal("coleccion"),
-  v: z.literal(1),
-  cartas: z.unknown(),
-  quiero: z.optional(z.unknown()),
-});
-
-export function exportarColeccion(col: Coleccion): string {
-  return JSON.stringify(
-    {
-      app: "deckforge",
-      tipo: "coleccion",
-      v: 1,
-      exportado: new Date().toISOString(),
-      cartas: col.tengo,
-      quiero: col.quiero,
-    },
-    null,
-    2,
-  );
-}
-
-/** Lee un respaldo de coleccion. `null` si no lo es. Nunca lanza. */
-export function importarColeccion(
-  texto: string,
-): { coleccion: Coleccion; descartadas: number } | null {
-  if (texto.length > MAX_CHARS) return null;
-  let bruto: unknown;
-  try {
-    bruto = JSON.parse(texto);
-  } catch {
-    return null;
-  }
-  const sobre = archivoSchema.safeParse(bruto);
-  if (!sobre.success) return null;
-  return sanearColeccion(sobre.data.cartas, sobre.data.quiero);
 }
 
 /* ------------------------------------------------------------------ *

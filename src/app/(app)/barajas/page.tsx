@@ -15,8 +15,8 @@ export default function BarajasPage() {
       <p className="eyebrow mb-3">Barajas</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">Mis barajas</h1>
       <p className="text-muted mt-3 leading-relaxed">
-        Tus barajas guardadas en tu cuenta. Compártelas por enlace, bájalas a un archivo
-        de respaldo o déjalas públicas desde aquí para que se vean en la Comunidad.
+        Tus barajas guardadas en tu cuenta. Compártelas por enlace o déjalas públicas para
+        que se vean en la Comunidad.
       </p>
 
       <div className="mt-10">

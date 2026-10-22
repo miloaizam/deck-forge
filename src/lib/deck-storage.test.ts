@@ -5,13 +5,11 @@ import { createDeck, setQuantity } from "./deck";
 import {
   insertDeck,
   mensajeNoGuardada,
-  mergeImported,
   nombreLibre,
   nombreOcupado,
   parseDecks,
   MAX_BARAJAS,
 } from "./deck-storage";
-import { exportFile, importFile } from "./deck-code";
 import { deckSchema, MAX_DESCRIPCION_BARAJA, MAX_NOMBRE_BARAJA } from "./types";
 
 /**
@@ -70,30 +68,6 @@ test("se acota el numero de barajas", () => {
   assert.equal(parseDecks(sobre(muchos)).length, MAX_BARAJAS);
 });
 
-test("importar nunca desplaza las barajas que ya habia", () => {
-  const mias = [createDeck("Una"), createDeck("Otra"), createDeck("Tercera")];
-  const llegan = Array.from({ length: MAX_BARAJAS }, (_, i) => createDeck(`Nueva ${i}`));
-
-  const r = mergeImported(mias, llegan);
-  assert.equal(r.lista.length, MAX_BARAJAS);
-  for (const d of mias) {
-    assert.ok(
-      r.lista.some((x) => x.id === d.id),
-      `${d.nombre} sigue en la lista`,
-    );
-  }
-  assert.equal(r.entraron, MAX_BARAJAS - mias.length);
-  assert.equal(r.sobraron, mias.length);
-});
-
-test("con la lista llena no entra ninguna importada", () => {
-  const llenas = Array.from({ length: MAX_BARAJAS }, (_, i) => createDeck(`${i}`));
-  const r = mergeImported(llenas, [createDeck("Sobra")]);
-  assert.equal(r.entraron, 0);
-  assert.equal(r.sobraron, 1);
-  assert.deepEqual(r.lista, llenas);
-});
-
 test("una fecha fuera de rango se recorta y se puede formatear", () => {
   // 2**53 - 1 pasa `.int()`, pero con un Date asi Intl lanza RangeError y la
   // lista de barajas se caia en cada carga.
@@ -149,20 +123,6 @@ test("nombreLibre agrega (copia) y cuenta, sin apilar sufijos", () => {
   assert.ok(libre.length <= MAX_NOMBRE_BARAJA && libre.endsWith(" (copia)"), libre);
 });
 
-test("importar renombra lo que choca, tambien dentro del mismo archivo", () => {
-  const mias = [createDeck("Dragón")];
-  const r = mergeImported(mias, [
-    createDeck("Dragón"),
-    createDeck("Sombra"),
-    createDeck("sombra"),
-  ]);
-  assert.deepEqual(
-    r.lista.slice(0, 3).map((d) => d.nombre),
-    ["Dragón (copia)", "Sombra", "sombra (copia)"],
-  );
-  assert.equal(r.renombradas, 2);
-});
-
 test("guardar una baraja nueva con la lista llena no desplaza a ninguna", () => {
   const llenas = Array.from({ length: MAX_BARAJAS }, (_, i) => createDeck(`L${i}`));
   assert.equal(insertDeck(llenas, createDeck("La 51")), null);
@@ -189,16 +149,14 @@ test("una baraja nueva entra primera si hay espacio", () => {
   );
 });
 
-test("un respaldo con ids gigantes no entra: dejaria la lista sin poder leerse", () => {
-  // Menos de 1 MB (lo que admite el importador) y, sin tope en el id, mas de lo
-  // que parseDecks acepta leer despues: la lista salia vacia.
+test("una baraja con ids gigantes no entra: dejaria la lista sin poder leerse", () => {
+  // Sin tope en el id, una sola baraja podia pasar de lo que parseDecks acepta
+  // leer despues, y la lista salia vacia.
   const hostil = {
     ...createDeck("Hostil"),
     principal: Array.from({ length: 60 }, (_, i) => ({ id: `a${i}`.repeat(1500), n: 1 })),
   };
-  const archivo = exportFile([hostil]);
-  assert.ok(archivo.length < 1024 * 1024);
-  assert.deepEqual(importFile(archivo)?.barajas, []);
+  assert.equal(deckSchema.safeParse(hostil).success, false);
 });
 
 test("cincuenta barajas en el peor caso valido se siguen pudiendo leer", () => {

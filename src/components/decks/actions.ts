@@ -1,11 +1,10 @@
-import { slugArchivo } from "../card-sheet-image";
 import { toast } from "../toast";
 import { deckTitle } from "@/lib/deck";
-import { exportFile, shareUrl } from "@/lib/deck-code";
+import { shareUrl } from "@/lib/deck-code";
 import type { Deck } from "@/lib/types";
 
 /**
- * Compartir y descargar una baraja.
+ * Compartir una baraja.
  *
  * Viven aparte porque las usan la lista y el detalle, y duplicarlas era la via
  * segura a que una copiara un enlace con otro formato que la otra. Cada una da
@@ -38,21 +37,4 @@ export async function copyPublicLink(deck: Deck, publicId: string): Promise<void
   } catch {
     toast("No se pudo copiar el enlace. Revisa los permisos del navegador.", "warning");
   }
-}
-
-/** Baja la baraja como archivo. Todo pasa en el navegador: nada sale del origen. */
-export function downloadDeck(deck: Deck): void {
-  const blob = new Blob([exportFile([deck])], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `baraja-${slugNombre(deck)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast(`Baraja "${deckTitle(deck)}" exportada a un archivo.`, "info");
-}
-
-/** El nombre de la baraja apto para un archivo: "Dragón Control" -> "dragon-control". */
-export function slugNombre(deck: Deck): string {
-  return slugArchivo(deckTitle(deck));
 }

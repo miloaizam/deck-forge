@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Copy,
-  Download,
   EyeOff,
   Globe,
   Hammer,
@@ -16,11 +15,10 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { copyShareLink, downloadDeck } from "./actions";
+import { copyShareLink } from "./actions";
 import { descargarImagenDeBaraja } from "./deck-image";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { toast } from "../toast";
-import { DeckTransfer } from "./DeckTransfer";
 import { ConCatalogo } from "../ConCatalogo";
 import { DeckListSkeleton } from "../Skeleton";
 import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
@@ -34,14 +32,7 @@ import {
   validateDeck,
   DECK_TOTAL,
 } from "@/lib/deck-rules";
-import {
-  deleteDeck,
-  mensajeNoGuardada,
-  mergeImported,
-  nombreLibre,
-  saveDeck,
-  saveDecks,
-} from "@/lib/deck-storage";
+import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
@@ -90,23 +81,13 @@ export function DeckListView() {
   const decks = useDecks();
   const cargado = useHydrated();
 
-  const importar = (nuevos: Deck[]) => {
-    const merge = mergeImported(decks, nuevos);
-    // Si no entro ninguna no hay nada que escribir: guardar igual solo
-    // reescribiria la misma lista.
-    const guardado = merge.entraron === 0 || saveDecks(merge.lista);
-    return { ...merge, guardado };
-  };
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div>
         <Link href="/constructor" className={BOTON_PRIMARIO}>
           <Plus size={14} aria-hidden="true" />
           Armar una baraja
         </Link>
-
-        <DeckTransfer decks={decks} onImport={importar} />
       </div>
 
       {!cargado ? (
@@ -144,7 +125,7 @@ function SinBarajas({ className }: { className?: string }) {
       <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
         {NUBE_ACTIVA
           ? "Las barajas que armes se guardan en este navegador y, si entras con tu cuenta, también en la nube, para tenerlas en cualquier equipo."
-          : "Las barajas que armes se guardan solo en este navegador. Si cambias de equipo, expórtalas a un archivo y vuelve a importarlas allá."}
+          : "Las barajas que armes se guardan en este navegador."}
       </p>
     </div>
   );
@@ -302,15 +283,6 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
                     className={ACCION_ICONO}
                   >
                     <Link2 size={14} aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => downloadDeck(deck)}
-                    aria-label={`Exportar ${deckTitle(deck)}`}
-                    title="Exportar a un archivo"
-                    className={ACCION_ICONO}
-                  >
-                    <Download size={14} aria-hidden="true" />
                   </button>
                   <button
                     type="button"

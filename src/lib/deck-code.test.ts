@@ -9,15 +9,13 @@ import {
   decodeDeck,
   encodeDeck,
   codeFromHash,
-  exportFile,
-  importFile,
   shareUrl,
   LARGO_INCOMODO,
 } from "./deck-code";
-import type { Deck } from "./types";
+import { deckSchema, type Deck } from "./types";
 
 /**
- * El codigo del enlace y el archivo de respaldo son entrada externa: los puede
+ * El codigo del enlace es entrada externa: lo puede
  * escribir cualquiera. Lo que se prueba aqui no es solo que el viaje de ida y
  * vuelta funcione, sino sobre todo que **nada de lo que llegue haga lanzar**.
  */
@@ -203,60 +201,17 @@ test("un codigo de otra version se distingue de uno ilegible", () => {
   assert.ok(decodeDeck(encodeDeck(mazoDePrueba())).ok);
 });
 
-test("el archivo de respaldo va y vuelve", () => {
-  const barajas = [mazoDePrueba(), createDeck("Otro")];
-  const resultado = importFile(exportFile(barajas));
-
-  assert.ok(resultado);
-  assert.equal(resultado.barajas.length, 2);
-  assert.equal(resultado.descartados, 0);
-  assert.equal(resultado.barajas[0].nombre, "Dragones de prueba");
-});
-
-test("importar asigna ids nuevos, para no pisar lo que ya habia", () => {
-  const original = mazoDePrueba();
-  const resultado = importFile(exportFile([original]));
-  assert.ok(resultado);
-  assert.notEqual(resultado.barajas[0].id, original.id);
-});
-
-test("importFile rescata las barajas buenas y cuenta las malas", () => {
-  const bueno = mazoDePrueba();
-  const archivo = JSON.stringify({
-    app: "deckforge",
-    v: 1,
-    mazos: [bueno, { nombre: "roto" }, null, 42],
-  });
-
-  const resultado = importFile(archivo);
-  assert.ok(resultado);
-  assert.equal(resultado.barajas.length, 1, "el bueno se rescata");
-  assert.equal(resultado.descartados, 3, "los tres malos se cuentan");
-});
-
-test("importFile no lanza con basura", () => {
-  for (const c of ["", "{", "null", "[]", '{"app":"otra","v":1,"mazos":[]}', "[1,2,3]"]) {
-    assert.doesNotThrow(() => importFile(c));
-  }
-  assert.equal(importFile("no es json"), null);
-});
-
-test("un archivo con __proto__ no contamina los objetos del sitio", () => {
-  const archivo = `{"app":"deckforge","v":1,"__proto__":{"infectado":true},"mazos":[${JSON.stringify(
-    createDeck("Normal"),
-  ).replace("{", '{"__proto__":{"infectado":true},')}]}`;
-  const resultado = importFile(archivo);
-  assert.equal(resultado?.barajas.length, 1);
+test("una baraja con __proto__ no contamina los objetos del sitio", () => {
+  // Lo que llega de afuera (localStorage, la cuenta) pasa por JSON.parse y el
+  // esquema: la clave __proto__ no puede quedar ni filtrarse a Object.
+  const texto = JSON.stringify(createDeck("Normal")).replace(
+    "{",
+    '{"__proto__":{"infectado":true},',
+  );
+  const r = deckSchema.safeParse(JSON.parse(texto));
+  assert.ok(r.success);
   assert.equal(({} as Record<string, unknown>).infectado, undefined);
-  assert.equal(Object.hasOwn(resultado!.barajas[0], "__proto__"), false);
-});
-
-test("un archivo con fechas imposibles importa sin romper el formato de fecha", () => {
-  const rota = { ...createDeck("Futuro"), actualizado: 2 ** 53 - 1 };
-  const resultado = importFile(exportFile([rota]));
-  assert.equal(resultado?.barajas.length, 1);
-  const fmt = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
-  assert.doesNotThrow(() => fmt.format(new Date(resultado!.barajas[0].actualizado)));
+  assert.equal(Object.hasOwn(r.data, "__proto__"), false);
 });
 
 test("un nombre con cambio de direccion llega limpio por el enlace", () => {
