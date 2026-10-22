@@ -12,12 +12,15 @@ import {
   LibraryBig,
   Menu,
   Sparkles,
+  Users,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { HelpButton } from "./HelpButton";
+import { AccountButton } from "./nube/AccountButton";
 import { ThemeToggle } from "./ThemeToggle";
+import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import { BOTON_ICONO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -27,10 +30,12 @@ interface NavLink {
   Icon: LucideIcon;
 }
 
+/** La Comunidad solo existe con las cuentas encendidas (`supabase-config.ts`). */
 const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
   { href: "/constructor", label: "Constructor", Icon: Hammer },
   { href: "/barajas", label: "Mis barajas", Icon: Layers },
+  ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
   { href: "/coleccion", label: "Colección", Icon: Library },
   { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
@@ -113,15 +118,22 @@ export function Navbar() {
                 isActive(pathname, href) ? "text-ink" : "text-muted hover:text-ink",
               )}
             >
-              <Icon size={15} aria-hidden="true" className="opacity-70" />
+              {/* Con siete enlaces y la cuenta no caben los iconos entre lg y
+                  xl: ahi van solo los nombres. */}
+              <Icon
+                size={15}
+                aria-hidden="true"
+                className={cn("opacity-70", NUBE_ACTIVA && "hidden xl:block")}
+              />
               {label}
             </Link>
           ))}
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* La ayuda va a la izquierda del tema y queda a la vista tambien en
-              el telefono: no se pliega en el menu. */}
+          {/* La cuenta, la ayuda y el tema quedan a la vista tambien en el
+              telefono: no se pliegan en el menu. */}
+          <AccountButton />
           <HelpButton />
           <ThemeToggle />
 

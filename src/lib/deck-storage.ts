@@ -272,5 +272,76 @@ export function mensajeNoGuardada(
 }
 
 export function deleteDeck(id: string): boolean {
-  return saveDecks(readDecks().filter((d) => d.id !== id));
+  const ok = saveDecks(readDecks().filter((d) => d.id !== id));
+  if (ok) anotarLapida(id, Date.now());
+  return ok;
+}
+
+/* ------------------------------------------------------------------ *
+ * Lapidas: las barajas borradas, para la sincronizacion con la cuenta
+ *
+ * Si borrar solo quitara la baraja de la lista, la proxima sincronizacion la
+ * veria en la nube y la traeria de vuelta. Cada borrado deja su id y cuando
+ * se hizo; `sync.ts` lo sube como borrada y la lapida se va. Sin cuenta no
+ * sirven de nada, pero son unos bytes y asi un borrado hecho antes de entrar
+ * tambien viaja.
+ * ------------------------------------------------------------------ */
+
+export const LAPIDAS_KEY = "deckforge-borradas";
+
+/** Las mas viejas se olvidan: una lapida de hace 200 borrados ya viajo. */
+export const MAX_LAPIDAS = 200;
+
+export interface Lapida {
+  id: string;
+  /** Cuando se borro, en ms. */
+  borrada: number;
+}
+
+const DECK_ID = /^[a-z0-9]{10}$/;
+
+/** Lee las lapidas descartando lo que no cuadre, como todo `localStorage`. */
+export function parseLapidas(raw: string | null): Lapida[] {
+  if (!raw || raw.length > 64 * 1024) return [];
+  try {
+    const bruto: unknown = JSON.parse(raw);
+    if (!Array.isArray(bruto)) return [];
+    return bruto
+      .filter(
+        (l): l is Lapida =>
+          typeof l === "object" &&
+          l !== null &&
+          typeof l.id === "string" &&
+          DECK_ID.test(l.id) &&
+          Number.isSafeInteger(l.borrada) &&
+          l.borrada >= 0,
+      )
+      .map((l) => ({ id: l.id, borrada: l.borrada }))
+      .slice(-MAX_LAPIDAS);
+  } catch {
+    return [];
+  }
+}
+
+export function readLapidas(): Lapida[] {
+  if (!disponible()) return [];
+  try {
+    return parseLapidas(localStorage.getItem(LAPIDAS_KEY));
+  } catch {
+    return [];
+  }
+}
+
+export function saveLapidas(lapidas: Lapida[]): void {
+  if (!disponible()) return;
+  try {
+    if (lapidas.length === 0) localStorage.removeItem(LAPIDAS_KEY);
+    else localStorage.setItem(LAPIDAS_KEY, JSON.stringify(lapidas.slice(-MAX_LAPIDAS)));
+  } catch {
+    // Sin espacio: el borrado igual se hizo; solo no viajara a la nube.
+  }
+}
+
+function anotarLapida(id: string, cuando: number): void {
+  saveLapidas([...readLapidas().filter((l) => l.id !== id), { id, borrada: cuando }]);
 }

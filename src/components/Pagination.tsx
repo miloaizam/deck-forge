@@ -11,6 +11,8 @@ interface PaginationProps {
   range: { from: number; to: number };
   results: number;
   onChange: (page: number) => void;
+  /** Lo que se cuenta en «Mostrando 1–35 de 2650 …». */
+  unidad?: string;
 }
 
 /**
@@ -94,7 +96,14 @@ function PageJump({
   );
 }
 
-export function Pagination({ page, total, range, results, onChange }: PaginationProps) {
+export function Pagination({
+  page,
+  total,
+  range,
+  results,
+  onChange,
+  unidad = "cartas",
+}: PaginationProps) {
   return (
     <div className="flex flex-col items-center gap-5">
       {total > 1 && (
@@ -151,7 +160,7 @@ export function Pagination({ page, total, range, results, onChange }: Pagination
 
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
         <p className="text-muted text-[13px] tabular-nums" aria-live="polite">
-          Mostrando {range.from}–{range.to} de {results} cartas
+          Mostrando {range.from}–{range.to} de {results} {unidad}
         </p>
         {total > 1 && <PageJump page={page} total={total} onChange={onChange} />}
       </div>

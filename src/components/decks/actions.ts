@@ -24,6 +24,22 @@ export async function copyShareLink(deck: Deck): Promise<void> {
   }
 }
 
+/**
+ * Copia la direccion de una baraja de la Comunidad (`/baraja/?p=`). No lleva
+ * las cartas, como el enlace de siempre: sigue al dia si su dueno la edita, y
+ * quien la abre puede darle like.
+ */
+export async function copyPublicLink(deck: Deck, publicId: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(
+      `${window.location.origin}/baraja/?p=${publicId}`,
+    );
+    toast(`Enlace de "${deckTitle(deck)}" copiado al portapapeles.`, "info");
+  } catch {
+    toast("No se pudo copiar el enlace. Revisa los permisos del navegador.", "warning");
+  }
+}
+
 /** Baja la baraja como archivo. Todo pasa en el navegador: nada sale del origen. */
 export function downloadDeck(deck: Deck): void {
   const blob = new Blob([exportFile([deck])], { type: "application/json" });

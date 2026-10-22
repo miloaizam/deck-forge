@@ -37,16 +37,18 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ### Base de datos y cuentas de usuario
 
-- **Qué:** conectar DeckForge a una base de datos (Supabase, por ejemplo) para
-  poder crear cuentas y guardar barajas en la nube.
-- **Ojo, cambia premisas del proyecto.** Hoy CLAUDE.md dice sin backend, sin
-  cuentas, sin datos personales y con la CSP cerrada a `connect-src 'self'`.
-  Antes de empezar hay que decidir y reescribir esas secciones (§1, §6 y §7):
-  el host de la base de datos en la CSP, qué datos personales se guardan, si
-  hace falta aviso de privacidad y cómo conviven las barajas de
-  `localStorage` con las de la cuenta.
-- **Por dónde:** el export estático se puede mantener si todo se hace desde el
-  navegador con el cliente de Supabase y reglas de acceso por fila (RLS). La
-  clave pública va en el bundle por diseño; la de servicio, nunca.
-- **Terminado cuando:** se puede crear una cuenta, iniciar sesión y guardar y
-  recuperar barajas desde otro dispositivo, con CLAUDE.md al día.
+- **Qué:** cuentas opcionales con Supabase (Google), sincronización de
+  barajas y colección, y la Comunidad (barajas públicas, likes, copias,
+  reportes). **El código ya está y está apagado**: `supabase/proyecto.json`
+  lleva `url` y `key` en `null`. Esquema en `supabase/esquema.sql` (probado
+  contra Postgres 16), cliente en `src/components/nube/`, lógica pura en
+  `src/lib/sync.ts` y `src/lib/comunidad.ts`, pruebas con Supabase simulado
+  en `e2e/nube.spec.ts` (`pnpm run e2e:nube`).
+- **Falta:** decidir si se queda Supabase o se pasa a Cloudflare D1 (en
+  conversación); crear el proyecto y Google OAuth (guía en el plan, pasarla a
+  `docs/cuentas.md`); llenar `proyecto.json`; probar de punta a punta con
+  Google; y documentar en CLAUDE.md (§1, §2, §4, §6, §7, §9), DESIGN.md,
+  `faq.ts` y `novedades.ts`.
+- **Terminado cuando:** se puede crear una cuenta, iniciar sesión, guardar y
+  recuperar barajas desde otro dispositivo y publicar en la Comunidad, con
+  CLAUDE.md al día.

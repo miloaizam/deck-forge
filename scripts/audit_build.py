@@ -17,11 +17,15 @@ Que revisa:
      y se comprueba que cubra todos sus scripts, sin fiarse del generador.
   6. Toda imagen referenciada en el HTML existe realmente en el build.
   7. Los dos esquemas (TypeScript y Pydantic) declaran los mismos valores.
+  8. Las cuentas: connect-src lleva el host de Supabase de
+     supabase/proyecto.json y ningun otro (solo 'self' si estan apagadas), y
+     ni ese archivo ni el build traen una clave secreta.
 """
 
 import base64
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -251,6 +255,57 @@ def revisar_esquemas() -> None:
             )
 
 
+URL_NUBE = re.compile(r"^https://[a-z0-9-]+\.supabase\.co$")
+CLAVE_NUBE = re.compile(r"^(sb_publishable_[A-Za-z0-9_-]+|eyJ[\w-]+\.[\w-]+\.[\w-]+)$")
+
+
+def es_clave_secreta(clave: str) -> bool:
+    """La secret key nueva, o un JWT con rol service_role (la vieja)."""
+    if clave.startswith("sb_secret_"):
+        return True
+    partes = clave.split(".")
+    if len(partes) == 3 and clave.startswith("eyJ"):
+        try:
+            carga = json.loads(base64.urlsafe_b64decode(partes[1] + "=" * (-len(partes[1]) % 4)))
+            return carga.get("role") != "anon"
+        except ValueError:
+            return True
+    return False
+
+
+def revisar_nube() -> None:
+    """El host de Supabase en connect-src, y ninguna clave secreta publicada."""
+    proyecto = json.loads((ROOT / "supabase" / "proyecto.json").read_text(encoding="utf-8"))
+    url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL") or proyecto.get("url")
+    clave = os.environ.get("NEXT_PUBLIC_SUPABASE_KEY") or proyecto.get("key")
+
+    if isinstance(clave, str) and es_clave_secreta(clave):
+        fallo("supabase/proyecto.json trae una clave SECRETA: va solo la publishable (o anon)")
+    for f in OUT.rglob("*.js"):
+        if "sb_secret_" in f.read_text(encoding="utf-8", errors="ignore"):
+            fallo(f"una clave secreta de Supabase quedo en el build: {f.relative_to(OUT)}")
+            break
+
+    activa = (
+        isinstance(url, str)
+        and URL_NUBE.match(url) is not None
+        and isinstance(clave, str)
+        and CLAVE_NUBE.match(clave) is not None
+    )
+    esperado = f"connect-src 'self' {url}" if activa else "connect-src 'self'"
+    headers = OUT / "_headers"
+    if not headers.exists():
+        return  # ya lo reporta revisar_headers
+    for linea in headers.read_text(encoding="utf-8").splitlines():
+        if "Content-Security-Policy:" not in linea:
+            continue
+        m = re.search(r"connect-src[^;]*", linea)
+        if not m or m.group(0).strip() != esperado:
+            fallo(f"connect-src deberia ser `{esperado}` y es `{m.group(0) if m else 'nada'}`")
+            return
+    print("Cuentas " + (f"encendidas: connect-src solo a {url}." if activa else "apagadas: connect-src 'self'."))
+
+
 def main() -> int:
     if not OUT.exists():
         print("No existe out/. Corre `pnpm run build` primero.")
@@ -264,6 +319,7 @@ def main() -> int:
         revisar_imagenes,
         revisar_descargables,
         revisar_esquemas,
+        revisar_nube,
     ):
         revision()
 

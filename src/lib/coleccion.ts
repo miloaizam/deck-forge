@@ -287,15 +287,41 @@ export function getColeccionSnapshot(): Coleccion {
   return cache;
 }
 
+/** Cuando cambio por ultima vez la coleccion guardada; 0 si no se sabe. */
+export function readColeccionActualizado(): number {
+  if (!disponible()) return 0;
+  try {
+    const bruto: unknown = JSON.parse(localStorage.getItem(COLECCION_KEY) ?? "null");
+    if (typeof bruto !== "object" || bruto === null || !("actualizado" in bruto))
+      return 0;
+    const n = bruto.actualizado;
+    return typeof n === "number" && Number.isSafeInteger(n) && n > 0 ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export function getServerColeccionSnapshot(): Coleccion {
   return COLECCION_VACIA;
 }
 
-/** Guarda la coleccion entera. Devuelve si pudo (cuota llena, bloqueo). */
-export function saveColeccion(col: Coleccion): boolean {
+/**
+ * Guarda la coleccion entera. Devuelve si pudo (cuota llena, bloqueo).
+ *
+ * `actualizado` es cuando cambio, para la sincronizacion con la cuenta
+ * (`sync.ts`: gana la mas reciente). Por defecto, ahora; la sincronizacion
+ * pasa el de la copia que trae de la nube. El campo es aditivo: los sobres
+ * viejos no lo traen y se leen igual.
+ */
+export function saveColeccion(col: Coleccion, actualizado = Date.now()): boolean {
   if (!disponible()) return false;
   try {
-    const sobre = JSON.stringify({ v: 1, cartas: col.tengo, quiero: col.quiero });
+    const sobre = JSON.stringify({
+      v: 1,
+      cartas: col.tengo,
+      quiero: col.quiero,
+      actualizado,
+    });
     // Nunca se escribe lo que despues no se podria leer.
     if (sobre.length > MAX_CHARS) return false;
     localStorage.setItem(COLECCION_KEY, sobre);

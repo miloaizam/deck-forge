@@ -23,11 +23,16 @@ import { descargarImagenDeBaraja } from "./deck-image";
 import { ConCatalogo } from "../ConCatalogo";
 import { DeckDetailSkeleton } from "../Skeleton";
 import { toast } from "../toast";
-import { copyShareLink, downloadDeck } from "./actions";
+import { copyPublicLink, copyShareLink, downloadDeck } from "./actions";
 import { DeckIssues } from "./DeckIssues";
+import { registrarCopia } from "../nube/comunidad-api";
+import { PublicaAcciones, usePublica } from "../nube/PublicaAcciones";
+import { PublicarControl } from "../nube/PublicarControl";
+import { useNube } from "../nube/nube";
 import { useDecks, useHydrated } from "./use-decks";
 import { useSharedCode } from "./use-shared-code";
 import { agruparImpresiones } from "@/lib/card-order";
+import { claveAfinidad, etiquetaAfinidad } from "@/lib/comunidad";
 import { deckTitle, duplicateDeck, newDeckId, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
@@ -52,8 +57,9 @@ const PANEL_ANALISIS =
   "border-line bg-panel rounded-panel flex flex-col border p-5 sm:p-6";
 
 /**
- * Muestra una baraja, sea tuya (`?m=`) o de un enlace compartido (`#d=`, o
- * `?d=` en los enlaces de antes).
+ * Muestra una baraja, sea tuya (`?m=`), de un enlace compartido (`#d=`, o
+ * `?d=` en los enlaces de antes) o publicada en la Comunidad (`?p=`, su
+ * `public_id`).
  *
  * Es la unica forma de tener un detalle por baraja con `output: "export"`: una
  * ruta dinamica `/barajas/[id]` no puede existir, porque generateStaticParams no
@@ -70,7 +76,9 @@ export function DeckDetailView() {
 function DeckDetail({ cards }: DeckDetailViewProps) {
   const params = useSearchParams();
   const m = params.get("m");
+  const p = params.get("p");
   const d = useSharedCode();
+  const publica = usePublica(d ? null : p);
 
   /** Que carta se esta mirando en el modal. */
   const [vista, setVista] = useState<Card | null>(null);
@@ -79,6 +87,7 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
 
   const router = useRouter();
   const decks = useDecks();
+  const nube = useNube();
   const cargado = useHydrated();
   const index = useMemo(() => buildCardIndex(cards), [cards]);
   const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
@@ -98,6 +107,8 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
   // cambiar de ?m=a a ?m=b no deja pegado el anterior y no hay renders en
   // cascada. El codigo compartido manda si vienen los dos parametros.
   const { deck, error } = useMemo((): { deck: Deck | null; error: string } => {
+    if (publica?.fase === "ok") return { deck: publica.baraja.datos, error: "" };
+    if (publica?.fase === "error") return { deck: null, error: publica.mensaje };
     if (compartida) {
       return compartida.ok
         ? { deck: compartida.deck, error: "" }
@@ -110,7 +121,7 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
         : { deck: null, error: "No se encontró esa baraja en este navegador." };
     }
     return { deck: null, error: "Este enlace no contiene ninguna baraja." };
-  }, [m, compartida, decks]);
+  }, [m, compartida, decks, publica]);
 
   /**
    * La portada se guarda al vuelo: la baraja sale del store, asi que escribirlo
@@ -124,13 +135,16 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
     if (r !== "ok") toast(mensajeNoGuardada(r), "warning");
   };
 
+  /** Lo que identifica a la baraja ajena que se mira: su enlace o su id publico. */
+  const codigo = d ?? (publica?.fase === "ok" ? publica.baraja.public_id : null);
+
   const guardar = () => {
-    if (!deck || !d) return;
+    if (!deck || !codigo) return;
     // Ya guardada desde aqui y todavia en la lista: no se vuelve a escribir.
     // Ni una copia nueva ni encima de la guardada, que pudo editarse despues
     // en otra pestana.
     const previa =
-      guardadaComo.current?.codigo === d
+      guardadaComo.current?.codigo === codigo
         ? decks.find((x) => x.id === guardadaComo.current?.id)
         : undefined;
     if (previa) {
@@ -138,19 +152,24 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
       return;
     }
     // Una compartida puede llamarse como una tuya: entra como "X (copia)".
+    const ahora = Date.now();
     const aGuardar = {
       ...deck,
       id: newDeckId(),
       nombre: nombreLibre(deck.nombre, decks),
+      creado: ahora,
+      actualizado: ahora,
     };
     const r = saveDeck(aGuardar);
     if (r === "ok") {
-      guardadaComo.current = { codigo: d, id: aGuardar.id };
+      guardadaComo.current = { codigo, id: aGuardar.id };
       toast(`Baraja "${deckTitle(aGuardar)}" guardada en Mis barajas.`, "success");
+      // De la Comunidad: cuenta como copiada (una vez por persona con sesion).
+      if (!d) void registrarCopia(codigo).catch(() => undefined);
     } else toast(mensajeNoGuardada(r), "warning");
   };
 
-  if (!cargado) {
+  if (!cargado || publica?.fase === "cargando") {
     // Esqueleto, no spinner: la baraja sale de la URL o de localStorage al montar.
     return <DeckDetailSkeleton />;
   }
@@ -175,7 +194,8 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
   const stats = deckStats(res);
   const issues = validateDeck(deck, index);
   const legal = isLegal(issues);
-  const compartido = Boolean(d);
+  const compartido = Boolean(d) || publica !== null;
+  const deLaComunidad = publica?.fase === "ok" ? publica.baraja : null;
   const verCarta = (cardId: string) =>
     setVista(cards.find((c) => c.id === cardId) ?? null);
 
@@ -185,8 +205,25 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
           las mismas acciones que trae su tarjeta en /barajas. */}
       <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <p className="eyebrow mb-3">Baraja</p>
+          <p className="eyebrow mb-3">
+            {deLaComunidad ? (
+              <Link href="/comunidad" className="hover:text-ink">
+                Comunidad
+              </Link>
+            ) : (
+              "Baraja"
+            )}
+          </p>
           <h1 className="text-3xl font-bold tracking-[-0.02em]">{deckTitle(deck)}</h1>
+          {deLaComunidad && (
+            <p className="mt-1.5 text-[14px]">
+              por <span className="text-accent font-medium">{deLaComunidad.alias}</span>
+              <span className="text-muted">
+                {" · "}
+                {etiquetaAfinidad(claveAfinidad(stats.afinidad))}
+              </span>
+            </p>
+          )}
           {/* El conteo va bajo el titulo, que es lo que describe; arriba a la
               derecha flotaba lejos de el, sobre los botones. */}
           <p className="text-muted mt-1.5 text-[14px] tabular-nums">
@@ -228,7 +265,11 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
             </button>
             <button
               type="button"
-              onClick={() => void copyShareLink(deck)}
+              onClick={() =>
+                void (deLaComunidad
+                  ? copyPublicLink(deck, deLaComunidad.public_id)
+                  : copyShareLink(deck))
+              }
               aria-label="Copiar enlace"
               title="Copiar enlace"
               className={BOTON_ICONO}
@@ -278,6 +319,14 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
               </>
             )}
           </div>
+          {deLaComunidad && <PublicaAcciones baraja={deLaComunidad} />}
+          {!compartido && (
+            <PublicarControl
+              deck={deck}
+              legal={legal}
+              afinidad={claveAfinidad(stats.afinidad)}
+            />
+          )}
         </div>
       </header>
 
@@ -334,7 +383,11 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
       <ConfirmDialog
         open={porBorrar}
         titulo="¿Borrar la baraja?"
-        mensaje={`"${deckTitle(deck)}" se borra de este navegador y no hay de dónde recuperarla.`}
+        mensaje={
+          nube.fase === "con-sesion"
+            ? `"${deckTitle(deck)}" se borra de este navegador y de tu cuenta${nube.publicas[deck.id]?.publica ? ", y sale de la Comunidad" : ""}. No hay de dónde recuperarla.`
+            : `"${deckTitle(deck)}" se borra de este navegador y no hay de dónde recuperarla.`
+        }
         confirmar="Borrar la baraja"
         onConfirm={() => {
           deleteDeck(deck.id);

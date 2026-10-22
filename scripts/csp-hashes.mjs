@@ -93,8 +93,29 @@ if (!base.includes(SCRIPT_SRC)) {
   abortar(`la CSP de public/_headers no trae "${SCRIPT_SRC}", no se que reemplazar`);
 }
 
+// Las cuentas: si `supabase/proyecto.json` (o NEXT_PUBLIC_SUPABASE_URL, que lo
+// pisa en un build de pruebas) trae un proyecto, su host entra en
+// connect-src y en ningun otro lado. Mismas reglas que src/lib/supabase-config.ts.
+const CONNECT_SRC = "connect-src 'self'";
+if (!base.includes(CONNECT_SRC)) {
+  abortar(`la CSP de public/_headers no trae "${CONNECT_SRC}"`);
+}
+const proyecto = JSON.parse(
+  readFileSync(path.join(ROOT, "supabase", "proyecto.json"), "utf8"),
+);
+const urlNube = process.env.NEXT_PUBLIC_SUPABASE_URL || proyecto.url;
+const claveNube = process.env.NEXT_PUBLIC_SUPABASE_KEY || proyecto.key;
+const nubeActiva =
+  typeof urlNube === "string" &&
+  /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(urlNube) &&
+  typeof claveNube === "string" &&
+  /^(sb_publishable_[A-Za-z0-9_-]+|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(claveNube);
+const conectar = nubeActiva ? `${CONNECT_SRC} ${urlNube}` : CONNECT_SRC;
+
 const politica = (lista) =>
-  base.replace(SCRIPT_SRC, `script-src 'self' ${lista.join(" ")}`);
+  base
+    .replace(SCRIPT_SRC, `script-src 'self' ${lista.join(" ")}`)
+    .replace(CONNECT_SRC, conectar);
 
 const hashes404 = hashes(readFileSync(path.join(OUT, "404.html"), "utf8"));
 let salida = plantilla.replace(base, politica(hashes404));
@@ -133,5 +154,6 @@ if (totalReglas > MAX_REGLAS) {
 writeFileSync(path.join(OUT, "_headers"), salida);
 const total = new Set(reglas.flatMap((r) => r.lista)).size;
 console.log(
-  `csp-hashes: ${reglas.length} paginas, ${total} hashes distintos, ${totalReglas} reglas en _headers`,
+  `csp-hashes: ${reglas.length} paginas, ${total} hashes distintos, ${totalReglas} reglas en _headers` +
+    (nubeActiva ? `, cuentas en ${urlNube}` : ", cuentas apagadas"),
 );

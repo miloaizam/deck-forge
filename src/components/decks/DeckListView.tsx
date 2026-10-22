@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import {
   Copy,
   Download,
+  EyeOff,
+  Globe,
   Hammer,
   ImageDown,
   Layers,
@@ -23,6 +25,7 @@ import { ConCatalogo } from "../ConCatalogo";
 import { DeckListSkeleton } from "../Skeleton";
 import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
+import { useNube } from "../nube/nube";
 import { deckTitle, duplicateDeck } from "@/lib/deck";
 import {
   buildCardIndex,
@@ -40,11 +43,13 @@ import {
   saveDecks,
 } from "@/lib/deck-storage";
 import type { Card, Deck } from "@/lib/types";
+import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
   BOTON_ICONO_COMPACTO,
   BOTON_PRIMARIO,
   BOTON_SECUNDARIO_COMPACTO,
   HOVER_PELIGRO,
+  PASTILLA,
   VACIO,
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -137,8 +142,9 @@ function SinBarajas({ className }: { className?: string }) {
       />
       <p className="text-ink text-lg">Todavía no tienes barajas.</p>
       <p className="text-muted mx-auto mt-3 max-w-[46ch] leading-relaxed">
-        Las barajas que armes se guardan solo en este navegador. Si cambias de equipo,
-        expórtalas a un archivo y vuelve a importarlas allá.
+        {NUBE_ACTIVA
+          ? "Las barajas que armes se guardan en este navegador y, si entras con tu cuenta, también en la nube, para tenerlas en cualquier equipo."
+          : "Las barajas que armes se guardan solo en este navegador. Si cambias de equipo, expórtalas a un archivo y vuelve a importarlas allá."}
       </p>
     </div>
   );
@@ -149,6 +155,9 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
   const [porBorrar, setPorBorrar] = useState<Deck | null>(null);
 
   const index = useMemo(() => buildCardIndex(cards), [cards]);
+  const nube = useNube();
+  const publicas = nube.fase === "con-sesion" ? nube.publicas : {};
+  const conCuenta = nube.fase === "con-sesion";
 
   // Ninguna de estas toca estado local: escriben en el store y la lista se
   // vuelve a leer sola.
@@ -246,7 +255,27 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
                   </div>
 
                   {/* Icono y texto: el color no puede ser el unico indicador. */}
-                  <EstadoPastilla estado={estado} />
+                  <div className="flex shrink-0 flex-wrap gap-1.5 @xs:flex-col @xs:items-end">
+                    <EstadoPastilla estado={estado} />
+                    {publicas[deck.id]?.publica &&
+                      (publicas[deck.id].oculta ? (
+                        <span className={cn(PASTILLA, "bg-warning-soft text-warning")}>
+                          <EyeOff size={12} aria-hidden="true" />
+                          Oculta por moderación
+                        </span>
+                      ) : (
+                        <span
+                          className={cn(
+                            PASTILLA,
+                            "bg-accent-soft text-accent tabular-nums",
+                          )}
+                        >
+                          <Globe size={12} aria-hidden="true" />
+                          Pública · {publicas[deck.id].likes}{" "}
+                          {publicas[deck.id].likes === 1 ? "like" : "likes"}
+                        </span>
+                      ))}
+                  </div>
                 </div>
 
                 {/* `mt-auto` los manda al fondo: la portada fija el alto de
@@ -315,7 +344,9 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
         titulo="¿Borrar la baraja?"
         mensaje={
           porBorrar
-            ? `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de dónde recuperarla.`
+            ? conCuenta
+              ? `"${deckTitle(porBorrar)}" se borra de este navegador y de tu cuenta${publicas[porBorrar.id]?.publica ? ", y sale de la Comunidad" : ""}. No hay de dónde recuperarla.`
+              : `"${deckTitle(porBorrar)}" se borra de este navegador y no hay de dónde recuperarla.`
             : ""
         }
         confirmar="Borrar la baraja"

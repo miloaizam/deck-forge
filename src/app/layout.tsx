@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import Script from "next/script";
 
 import { spaceGrotesk } from "@/lib/fonts";
 import { DECKS_KEY } from "@/lib/deck-storage";
 import { THEME_KEY } from "@/lib/theme";
+import { ENLACE } from "@/lib/ui";
 import "./globals.css";
 
 /**
@@ -63,7 +65,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-line text-muted w-full border-t text-[13px] leading-relaxed">
           <p className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6">
             Proyecto sin fines de lucro hecho por un fan y jugador de Mitos y Leyendas. El
-            arte y los nombres de las cartas son propiedad de su editor.
+            arte y los nombres de las cartas son propiedad de su editor.{" "}
+            <Link href="/privacidad" className={ENLACE}>
+              Privacidad
+            </Link>
           </p>
         </footer>
       </body>

@@ -21,9 +21,11 @@
     "data:fetch": ".venv/bin/python scripts/fetch_edition.py",
     "data:card": ".venv/bin/python scripts/fetch_card.py",
     "data:cards": ".venv/bin/python scripts/build_cards.py",
-    "data:images": ".venv/bin/python scripts/convert_images.py"
+    "data:images": ".venv/bin/python scripts/convert_images.py",
+    "e2e:nube": "NEXT_PUBLIC_SUPABASE_URL=https://prueba.supabase.co NEXT_PUBLIC_SUPABASE_KEY=sb_publishable_prueba pnpm run build && E2E_NUBE=1 playwright test e2e/nube.spec.ts"
   },
   "dependencies": {
+    "@supabase/auth-js": "2.118.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.35.0",
     "lz-string": "^1.5.0",
