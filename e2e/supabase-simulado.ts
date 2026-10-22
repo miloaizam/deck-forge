@@ -55,6 +55,8 @@ export interface Simulado {
   reportes: { user_id: string; baraja: string; motivo: string; nota: string }[];
   /** Cada peticion recibida, para comprobar que no hubo ninguna. */
   peticiones: string[];
+  /** Si Google falla al volver, el `error_description` con que vuelve. */
+  errorDeGoogle: string | null;
 }
 
 export const USUARIO_A = "00000000-0000-4000-8000-00000000000a";
@@ -72,6 +74,7 @@ export function nuevoSimulado(): Simulado {
     copias: new Set(),
     reportes: [],
     peticiones: [],
+    errorDeGoogle: null,
   };
 }
 
@@ -187,6 +190,25 @@ export async function simularSupabase(
     if (ruta === "/auth/v1/user")
       return uid ? json(route, usuario(uid)) : json(route, {}, 401);
     if (ruta === "/auth/v1/logout") return route.fulfill({ status: 204 });
+    // El viaje a Google: Supabase vuelve directo al `redirect_to` con un
+    // `?code=` (o con el error), como hace el de verdad tras pasar por Google.
+    if (ruta === "/auth/v1/authorize") {
+      const vuelta = new URL(url.searchParams.get("redirect_to") ?? "");
+      if (s.errorDeGoogle) {
+        vuelta.searchParams.set("error", "server_error");
+        vuelta.searchParams.set("error_description", s.errorDeGoogle);
+      } else {
+        vuelta.searchParams.set("code", "codigo-de-google");
+      }
+      return route.fulfill({ status: 302, headers: { location: vuelta.href } });
+    }
+    // Canjear el codigo: tiene que llegar con el verificador PKCE guardado.
+    if (ruta === "/auth/v1/token" && url.searchParams.get("grant_type") === "pkce") {
+      const { auth_code, code_verifier } = cuerpo as Record<string, string>;
+      if (auth_code !== "codigo-de-google" || !code_verifier)
+        return json(route, { error_code: "bad_code_verifier" }, 400);
+      return json(route, JSON.parse(sesion(USUARIO_A)));
+    }
     if (ruta.startsWith("/auth/v1/")) return json(route, {}, 400);
 
     // --- tablas ---

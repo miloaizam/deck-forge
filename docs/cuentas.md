@@ -126,7 +126,17 @@ completo trae tiempo real, archivos y funciones que el sitio no usa.
 2. Google vuelve a Supabase, y Supabase a **`/cuenta/?code=…`**: es la única
    vuelta que admiten las Redirect URLs. `auth-js` cambia el código por la
    sesión, `/cuenta` limpia la URL y, si había una página guardada, vuelve a
-   ella (`tomarVuelta`, solo rutas propias).
+   ella (`tomarVuelta`, solo rutas propias). Si algo falla, `/cuenta` dice
+   «No se pudo iniciar sesión con Google. Detalle: …» con el motivo que trajo
+   la vuelta, y lo repite en la consola.
+
+   **Ojo con `detectSessionInUrl`** (`nube.ts`). Que sea una función no
+   significa «leer la URL en estas páginas»: `auth-js` la usa para reconocer
+   una vuelta **implícita**. La primera versión decía que sí en todo `/cuenta`,
+   así que el `?code=` se tomaba por implícito y, con PKCE, `auth-js` lo
+   descartaba («Not a valid PKCE flow url»): Google volvía a `/cuenta` y no
+   había sesión. Ahora solo reconoce los errores de la vuelta. El canje PKCE no
+   pasa por esa función: lo decide `auth-js` al encontrar el verificador.
 3. La sesión queda en `localStorage` bajo **`deckforge-sesion`** y `auth-js`
    renueva el token solo.
 4. **Nada se descarga sin hacer falta**: `auth-js` se carga solo si existe
@@ -202,8 +212,9 @@ cuatro peticiones como mucho.
   gana el más reciente, lápidas, tope de 50 sin desplazar, choques de nombre,
   primera vez de la colección, filas rotas y texto hostil.
 - `pnpm run e2e:nube`: el sitio construido contra un **Supabase simulado** en
-  memoria (`e2e/supabase-simulado.ts`), en los tres dispositivos: entrar y
-  juntar, publicar con alias, una ilegal no se publica, like, copia, reporte,
+  memoria (`e2e/supabase-simulado.ts`), en los tres dispositivos: la vuelta
+  de Google de punta a punta (`/authorize` → `?code=` → canje PKCE, y la
+  vuelta con error), entrar y juntar, publicar con alias, una ilegal no se publica, like, copia, reporte,
   moderación, cerrar sesión, lo que pide cuenta y lo que no, accesibilidad, y
   que sin cuenta no salga ninguna petición. Deja `out/` con ese build:
   después, `pnpm run build`.
@@ -433,8 +444,11 @@ peticiones (`e2e/supabase-simulado.ts`). Deja `out/` con ese build: después,
 - **Si alguien no puede entrar**:
   - «redirect_uri_mismatch» de Google: la URL de redirección del cliente de
     Google no es idéntica a la Callback URL de Supabase.
-  - Vuelve al sitio pero sin sesión: falta su dirección en las Redirect URLs
-    de Supabase (cada una termina en `/cuenta/`).
+  - Vuelve al sitio pero sin sesión: leer el «Detalle» que muestra `/cuenta`
+    (o la consola) y el registro de Supabase (Logs → Auth). «Unable to
+    exchange external code» es el Client ID o el Client secret de Google mal
+    copiados en Supabase. Si vuelve a la portada y no a `/cuenta`, falta su
+    dirección en las Redirect URLs (cada una termina en `/cuenta/`).
   - «Esta app no está verificada» o solo entran algunas cuentas: la app de
     Google quedó en «Prueba» en vez de «En producción», o se le agregó un logo
     o un permiso sensible.

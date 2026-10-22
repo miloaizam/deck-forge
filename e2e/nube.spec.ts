@@ -136,6 +136,27 @@ test.describe("con la nube encendida", () => {
     ).toBeVisible();
   });
 
+  test("volver de Google deja la sesion iniciada", async ({ page }) => {
+    const s = await simularSupabase(page);
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Iniciar sesión con Google" }).click();
+    await expect(page.getByLabel("Alias")).toBeVisible();
+    // El codigo se canjeo y salio de la barra de direcciones.
+    expect(s.peticiones).toContain("POST /auth/v1/token");
+    expect(new URL(page.url()).search).toBe("");
+  });
+
+  test("si Google falla al volver, se dice por que", async ({ page }) => {
+    const s = await simularSupabase(page);
+    s.errorDeGoogle = "Unable to exchange external code";
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Iniciar sesión con Google" }).click();
+    await expect(
+      page.getByText("Detalle: Unable to exchange external code"),
+    ).toBeVisible();
+    expect(new URL(page.url()).search).toBe("");
+  });
+
   test("al entrar se juntan las barajas de aqui y las de la cuenta", async ({ page }) => {
     const s = await simularSupabase(page);
     const aqui = barajaLegal("Baraja de aqui");

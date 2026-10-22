@@ -154,9 +154,15 @@ function cliente(): Promise<GoTrueClient> {
         persistSession: true,
         autoRefreshToken: true,
         // PKCE: Google devuelve un `?code=` que el cliente cambia por la
-        // sesion. Solo en /cuenta, que es la unica vuelta que se pide.
+        // sesion; eso lo decide el cliente solo (pide el verificador que
+        // guardo al salir). Esta funcion NO es "leer la URL si": auth-js la
+        // usa para reconocer una vuelta IMPLICITA, y si dice que si con un
+        // `?code=` descarta el codigo ("Not a valid PKCE flow url"). Asi que
+        // solo reconoce los errores con que vuelve Google, y solo en /cuenta.
         flowType: "pkce",
-        detectSessionInUrl: () => window.location.pathname.startsWith("/cuenta"),
+        detectSessionInUrl: (url, params) =>
+          url.pathname.startsWith("/cuenta") &&
+          Boolean(params.error || params.error_description || params.error_code),
       }),
   );
   return auth;
@@ -187,11 +193,28 @@ function haySesionGuardada(): boolean {
   }
 }
 
-/** La URL trae la vuelta de Google: `?code=` (o `?error=` si se cancelo). */
+/**
+ * El error con que volvio Google o Supabase, si volvio con uno. Llega en la
+ * query (`?error=…&error_description=…`) o, segun el caso, en el fragmento.
+ * Es texto de afuera: se acota y se pinta como texto.
+ */
+function errorDeLaVuelta(): string | null {
+  const q = new URLSearchParams(window.location.search);
+  const h = new URLSearchParams(window.location.hash.slice(1));
+  const d =
+    q.get("error_description") ??
+    h.get("error_description") ??
+    q.get("error") ??
+    h.get("error");
+  return d ? d.replace(/\+/g, " ").slice(0, 200) : null;
+}
+
+/** La URL trae la vuelta de Google: `?code=`, o un error si algo fallo. */
 function esVueltaDeGoogle(): boolean {
-  const p = new URLSearchParams(window.location.search);
   return (
-    window.location.pathname.startsWith("/cuenta") && (p.has("code") || p.has("error"))
+    window.location.pathname.startsWith("/cuenta") &&
+    (new URLSearchParams(window.location.search).has("code") ||
+      errorDeLaVuelta() !== null)
   );
 }
 
@@ -204,6 +227,10 @@ function limpiarUrl(): void {
       url.searchParams.delete(p);
       cambio = true;
     }
+  }
+  if (/(^#|&)error/.test(url.hash)) {
+    url.hash = "";
+    cambio = true;
   }
   if (cambio) window.history.replaceState(window.history.state, "", url);
 }
@@ -219,7 +246,7 @@ export function iniciarNube(): void {
   if (iniciada || !NUBE_ACTIVA || typeof window === "undefined") return;
   iniciada = true;
 
-  const errorDeVuelta = new URLSearchParams(window.location.search).has("error");
+  let errorDeVuelta = errorDeLaVuelta();
   if (!haySesionGuardada() && !esVueltaDeGoogle()) {
     setEstado({ fase: "sin-sesion", error: null });
     return;
@@ -233,13 +260,17 @@ export function iniciarNube(): void {
         // (se trabaria esperandose a si mismo). Se difiere un turno.
         setTimeout(() => void alCambiarSesion(session), 0);
       });
+      // Canjear el `?code=` por la sesion pasa aqui; si falla, se sabe por que.
+      const inicio = await c.initialize();
+      if (inicio.error) errorDeVuelta ??= inicio.error.message.slice(0, 200);
       const { data } = await c.getSession();
       limpiarUrl();
       if (!data.session) {
+        if (errorDeVuelta) console.error("Inicio de sesión con Google:", errorDeVuelta);
         setEstado({
           fase: "sin-sesion",
           error: errorDeVuelta
-            ? "No se pudo iniciar sesión con Google. Inténtalo de nuevo."
+            ? `No se pudo iniciar sesión con Google. Detalle: ${errorDeVuelta}`
             : null,
         });
       }
