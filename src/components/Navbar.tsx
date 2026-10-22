@@ -35,8 +35,8 @@ const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
   { href: "/constructor", label: "Constructor", Icon: Hammer },
   { href: "/barajas", label: "Mis barajas", Icon: Layers },
-  ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
   { href: "/coleccion", label: "Colección", Icon: Library },
+  ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
   { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];

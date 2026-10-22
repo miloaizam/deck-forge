@@ -1067,11 +1067,11 @@ regenerarla. Dos límites a saber:
   caduque.
 
 La navbar es una fila plana de siete enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Comunidad, Colección, Documentos y Novedades. Bajo `lg` se pliegan detrás de
+Constructor, Mis barajas, Colección, Comunidad, Documentos y Novedades. Bajo `lg` se pliegan detrás de
 un botón de menú: no caben junto al logotipo en un teléfono. A la derecha van,
 siempre a la vista y también en el teléfono, la **cuenta** (solo con las
 cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.
-Encendidas, se suma **Comunidad** tras Mis barajas, y entre `lg` y `xl` los
+Encendidas, se suma **Comunidad** tras Colección, y entre `lg` y `xl` los
 enlaces van sin icono para que quepan los siete. La portada no tiene navbar, así que tampoco
 ayuda.
 
