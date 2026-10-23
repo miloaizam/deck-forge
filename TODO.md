@@ -16,17 +16,59 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Revisiones
 
-### Revisión de código de los últimos cambios
+### Hallazgos de la revisión de código (23-10-2026)
 
-- **Qué:** correr la skill `code-review` sobre lo hecho desde que se
-  encendieron las cuentas (22-10-2026): sesión y sincronización, Comunidad,
-  likes, copias y reportes, foto de perfil y los cambios de la barra de
-  búsqueda. Busca errores de lógica, no estilo.
-- **Por dónde:** `/code-review` sobre el rango de commits desde el que
-  encendió `supabase/proyecto.json`. Lo que encuentre y no se arregle en el
-  momento se anota aquí.
-- **Terminado cuando:** cada hallazgo está arreglado o descartado con su
-  motivo.
+Salieron de `/code-review` sobre `a620db7..HEAD` (cuentas, Comunidad, foto de
+perfil). Del más grave al menos grave:
+
+- **Una edición hecha durante la sincronización se pierde.**
+  `sincronizarAhora()` (`nube/sincronizar.ts`) lee barajas y lápidas antes
+  de los `await` y al final escribe `saveDecks(plan.locales)` y
+  `saveLapidas([])`. Lo guardado o borrado mientras viaja la petición se pisa,
+  y una baraja borrada en ese momento revive en todos los equipos.
+  Arreglo: volver a leer y fusionar justo antes de escribir, y borrar solo las
+  lápidas que viajaron.
+- **Otra persona en el mismo navegador hereda todo.** «Cerrar sesión» deja las
+  barajas y la colección en el navegador y borra el recuerdo de la cuenta;
+  quien entra después con otra cuenta las sube a la suya (`primeraVez`).
+  **Hay que decidir:** preguntar al entrar si se suman, o borrar lo local al
+  cerrar sesión, o sumarlo solo si el navegador no estaba unido a otra cuenta.
+- **Pasar de 50 barajas vivas traba la sincronización para siempre.**
+  `fusionarBarajas` (`lib/sync.ts`) sube toda baraja local sin mirar cuántas
+  vivas tiene la nube; el trigger rechaza la fila 51 y con ella el lote
+  entero, en cada vuelta. Arreglo: subir solo las que caben y avisar.
+- **El tope de 500 filas cuenta las borradas.** Las lápidas de `barajas` no se
+  purgan nunca, y el trigger de `INSERT` (`esquema.sql`) cuenta todas: tras
+  500 barajas creadas y borradas no se puede guardar ninguna nueva. Arreglo:
+  contar solo vivas, o purgar lápidas viejas.
+- **El dueño puede falsear `publicada_en`.** El trigger solo la fija al
+  publicar; con la baraja ya pública, un `PATCH` a mano la deja en 2099 y
+  encabeza «Más recientes» para siempre. Arreglo: en el trigger, conservar
+  `old.publicada_en` si ya era pública.
+- **Una pública editada no se revisa hasta abrir su detalle.** Ni la
+  afinidad ni la legalidad se recalculan al guardar o sincronizar: una baraja
+  que dejó de cumplir sigue listada, y con la afinidad vieja. Arreglo:
+  recalcular en la sincronización, no en el efecto de `PublicarControl`.
+- **`PublicarControl` repite el retiro.** El efecto depende de `publico`, que
+  es otro objeto tras cada sincronización: el retiro de una que dejó de
+  cumplir corre dos veces (dos `PATCH`, dos avisos), y la corrección de
+  afinidad se repite tras cada vuelta.
+- **Una baraja que llega de la nube no pasa por `nombreLibre`.** En
+  `fusionarBarajas`, cuando gana la copia remota no se mira si su nombre ya
+  lo usa otra baraja local: quedan dos con el mismo nombre.
+- **Cada pestaña abierta sincroniza de nuevo.** `programar` (`nube.ts`)
+  escucha los stores, que también avisan por el evento `storage` de otra
+  pestaña: con tres pestañas, cada sincronización dispara dos más. Arreglo:
+  ignorar los avisos que llegan de otra pestaña.
+- **Una foto subida a medias.** `subirAvatar` sube el archivo y después hace
+  el `PATCH` de `perfiles.avatar`; si el segundo falla, el archivo nuevo
+  queda bajo la versión vieja de la URL, con caché de un año: unos ven la
+  foto vieja y otros la nueva. Arreglo: subir con la versión nueva en la
+  ruta, o reintentar el `PATCH`.
+
+Terminado cuando cada punto está arreglado (con su test en `sync.test.ts` o
+`nube.spec.ts` donde se pueda) o descartado con su motivo. Lo que toque el
+esquema se prueba contra el Postgres local y se vuelve a pegar en Supabase.
 
 ### Revisión de seguridad
 
