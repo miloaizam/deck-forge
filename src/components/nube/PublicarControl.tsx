@@ -7,7 +7,7 @@ import { Copy, EyeOff, Globe, Heart, Lock } from "lucide-react";
 import { toast } from "../toast";
 import { mensajeDeError } from "./api";
 import { AliasForm } from "./AliasForm";
-import { actualizarAfinidad, cambiarPublica } from "./comunidad-api";
+import { cambiarPublica, revisarPublica } from "./comunidad-api";
 import { useNube } from "./nube";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import type { Deck } from "@/lib/types";
@@ -54,22 +54,16 @@ function usePublicar(
   const publico =
     activo && nube.fase === "con-sesion" ? nube.publicas[deck.id] : undefined;
   const esPublica = publico?.publica ?? false;
+  const afinidadListada = publico?.afinidad ?? null;
 
+  // El constructor ya la revisa al guardar; esto cubre lo que llega de otro
+  // equipo. Depende de valores y no del objeto `publico`, que es otro tras
+  // cada sincronizacion; `revisarPublica` no repite una en curso.
   useEffect(() => {
     if (!esPublica) return;
-    if (!legal) {
-      cambiarPublica(deck, false, null).then(
-        () =>
-          toast(
-            `"${deck.nombre}" dejó de ser legal y se quitó de la Comunidad.`,
-            "warning",
-          ),
-        () => undefined,
-      );
-    } else if (publico && publico.afinidad !== afinidad) {
-      void actualizarAfinidad(deck.id, afinidad).catch(() => undefined);
-    }
-  }, [esPublica, legal, afinidad, publico, deck]);
+    if (legal && afinidadListada === afinidad) return;
+    void revisarPublica(deck, legal, afinidad);
+  }, [esPublica, afinidadListada, legal, afinidad, deck]);
 
   if (!activo || !NUBE_ACTIVA || nube.fase === "apagada" || nube.fase === "cargando") {
     return { control: null, detalle: null };

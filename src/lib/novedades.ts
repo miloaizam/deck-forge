@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-23",
+    version: "5.4.2",
+    tipo: "Arreglo",
+    titulo: "Una baraja pública que deja de ser legal sale sola de la Comunidad",
+    texto: [
+      "Si editas una baraja pública y deja de cumplir las reglas, sale de la Comunidad apenas la guardas, con un aviso. Antes recién salía al abrir su detalle, y a veces avisaba dos veces.",
+      "Si cambiar la foto de perfil falla a mitad de camino, vuelve la foto de antes en vez de quedar una mezcla de las dos.",
+    ],
+  },
+  {
+    fecha: "2026-10-23",
     version: "5.4.1",
     tipo: "Arreglo",
     titulo: "Cerrar sesión borra tus barajas de este navegador",

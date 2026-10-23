@@ -19,6 +19,7 @@ import { CardGridSkeleton, Skeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { useCatalogo } from "../use-catalogo";
 import { useDecks } from "../decks/use-decks";
+import { revisarPublica } from "../nube/comunidad-api";
 import {
   applyFilters,
   buildFacets,
@@ -61,6 +62,7 @@ import {
   type DeckIssue,
 } from "@/lib/deck-rules";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
+import { claveAfinidad } from "@/lib/comunidad";
 import { clearDraft, hayCambios, writeDraft } from "@/lib/deck-draft";
 import {
   mensajeNoGuardada,
@@ -402,6 +404,9 @@ export function BuilderView({
     setGuardado(true);
     clearDraft();
     setBorrador(null);
+    // Si es publica y dejo de cumplir o cambio de afinidad, la Comunidad se
+    // corrige ya, sin esperar a que alguien abra su detalle.
+    void revisarPublica(deck, isLegal(issues), claveAfinidad(stats.afinidad));
     // El aviso se pide antes de navegar y se lee ya en la pagina de la baraja.
     toast(
       yaExistia

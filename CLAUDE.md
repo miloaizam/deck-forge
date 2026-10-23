@@ -1873,8 +1873,12 @@ quien toca el código.
   render-prop (`{ control, detalle }`). Solo si la baraja **cumple** (`validateDeck`); la
   primera vez pide el alias. Se guarda la **afinidad** para filtrar
   (`claveAfinidad` de `comunidad.ts`: la vía más estrecha). Si una pública se
-  edita y deja de cumplir, al abrir su detalle se retira sola, con aviso; si
-  cambia de afinidad, se corrige.
+  edita y deja de cumplir, se retira sola al guardarla en el constructor, con
+  aviso; si cambia de afinidad, se corrige. El detalle lo repite por si la
+  edición llegó de otro equipo. Las dos pasan por `revisarPublica`
+  (`comunidad-api.ts`), que no lanza otra mientras hay una en curso: el
+  efecto del detalle dependía del objeto `publico`, que cambia tras cada
+  sincronización, y retiraba dos veces.
 - **La Comunidad** (`/comunidad`, `ComunidadView.tsx`): tarjetas como las de
   Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
   copiadas) en segmentos bajo el buscador; dentro del buscador, el mismo botón
@@ -1900,7 +1904,10 @@ quien toca el código.
   archivo por usuario (`avatares/<user_id>`), achicado a 128×128 en el
   navegador (`achicar-avatar.ts`, ~5–10 KB; el bucket acepta WebP/JPEG de
   hasta 50 KB). `perfiles.avatar` guarda cuándo se subió y va en la URL como
-  `?v=`; `avatar_oculto` es la moderación. La ruta se valida con regex
+  `?v=`; `avatar_oculto` es la moderación. Subir pisa el archivo en la misma
+  ruta, así que si el cambio de versión no entra tras tres intentos se vuelve
+  a subir la foto anterior, y el archivo lleva caché de una hora y no de un
+  año. La ruta se valida con regex
   (`src/lib/avatar.ts`) antes de llegar a un `<img>` (`Avatar.tsx`). Se ve en
   la navbar, en «Tu cuenta» (`FotoControles.tsx`: poner, cambiar, quitar) y
   junto al alias en la Comunidad. Pide alias. Todo el detalle en

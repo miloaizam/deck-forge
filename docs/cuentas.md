@@ -88,6 +88,14 @@ suyo (`name = auth.uid()::text`); la lectura pública la da el bucket. En
 saltar la caché al cambiarla: `<url>/storage/v1/object/public/avatares/<user_id>?v=<ms>`.
 Hace falta un alias para ponerla: los dos viven en la misma fila.
 
+Subir una foto pisa el archivo en la **misma ruta** y después cambia la
+versión, así que entre los dos pasos la URL vieja sirve la foto nueva. Por eso
+`subirAvatar` baja antes la foto de ahora, reintenta el cambio de versión hasta
+tres veces y, si no entra, **vuelve a subir la anterior** (o borra el archivo
+si no había): perfil y archivo siempre coinciden. Y el archivo se sube con una
+caché de **una hora**, no de un año, para que una mezcla que se cuele en esos
+segundos no dure.
+
 Una baraja pesa 1–2 KB y una colección unos KB: el plan gratuito (500 MB) da
 para cientos de miles. Todas las tablas cuelgan de `auth.users` con `on
 delete cascade`: borrar la cuenta borra todo lo suyo.
@@ -222,8 +230,12 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
 - **Publicar** está en el detalle de una baraja propia: «Privada / Pública».
   Solo baraja que **cumple** las reglas (`validateDeck`); la primera vez pide
   alias. Se guarda la **afinidad** (la vía más estrecha: raza, escuela o
-  atributo) para listar y filtrar. Si la baraja se edita y deja de cumplir, al
-  abrir su detalle se retira sola.
+  atributo) para listar y filtrar. Si la baraja se edita y deja de cumplir, se
+  retira sola **al guardarla en el constructor**, con un aviso; si cambia de
+  afinidad, se corrige. El detalle de la baraja repite la revisión por si la
+  edición llegó de otro equipo (`revisarPublica` de `comunidad-api.ts`, una
+  sola en curso por baraja). La sincronización no puede hacerla: no tiene el
+  catálogo.
 - **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
   últimos 7 días, más recientes, más copiadas), filtro por afinidad y buscador;
   todo en la URL. Se ve sin cuenta.

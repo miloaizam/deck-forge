@@ -13,6 +13,7 @@ import {
   SUPABASE_KEY,
   SUPABASE_URL,
 } from "@/lib/supabase-config";
+import { rutaAvatar, urlAvatar } from "@/lib/avatar";
 import type { EstadoPublico } from "@/lib/sync";
 import { toast } from "../toast";
 import { api, ErrorNube, mensajeDeError, storage } from "./api";
@@ -481,21 +482,53 @@ export async function subirAvatar(foto: Blob): Promise<void> {
   if (estado.fase !== "con-sesion" || !estado.alias) {
     throw new ErrorNube(0, null, "Elige un alias antes de poner una foto.");
   }
+  const uid = estado.usuario.id;
+  const ruta = `avatares/${uid}`;
   const t = await token();
-  await storage(`avatares/${estado.usuario.id}`, {
-    metodo: "POST",
-    archivo: foto,
-    token: t,
-  });
+  // La foto de ahora, para volver a ella si el cambio de version no entra:
+  // el archivo se sobrescribe en la misma ruta y, sin eso, quedaria la nueva
+  // bajo la URL de la vieja.
+  const urlAnterior = urlAvatar(SUPABASE_URL, rutaAvatar(uid, estado.avatar));
+  const anterior = urlAnterior
+    ? await fetch(urlAnterior, { cache: "no-store", credentials: "omit" })
+        .then((r) => (r.ok ? r.blob() : null))
+        .catch(() => null)
+    : null;
+
+  await storage(ruta, { metodo: "POST", archivo: foto, token: t });
   const version = Date.now();
-  await api(`perfiles?user_id=eq.${estado.usuario.id}`, {
-    metodo: "PATCH",
-    cuerpo: { avatar: version },
-    prefer: "return=minimal",
-    token: t,
-  });
+  try {
+    await conReintentos(() =>
+      api(`perfiles?user_id=eq.${uid}`, {
+        metodo: "PATCH",
+        cuerpo: { avatar: version },
+        prefer: "return=minimal",
+        token: t,
+      }),
+    );
+  } catch (e) {
+    // Perfil y archivo vuelven a coincidir: la foto de antes, o ninguna.
+    await (
+      anterior
+        ? storage(ruta, { metodo: "POST", archivo: anterior, token: t })
+        : storage(ruta, { metodo: "DELETE", token: t })
+    ).catch(() => undefined);
+    throw e;
+  }
   conSesion({ avatar: version });
   recordarPerfil();
+}
+
+/** Hasta tres intentos, con 0,5 s y 1,5 s entre ellos. */
+async function conReintentos<T>(fn: () => Promise<T>): Promise<T> {
+  for (const espera of [500, 1500]) {
+    try {
+      return await fn();
+    } catch {
+      await new Promise((ok) => setTimeout(ok, espera));
+    }
+  }
+  return fn();
 }
 
 /** Quita la foto: borra el archivo y la version del perfil. */

@@ -102,8 +102,10 @@ export async function storage(
   if (opciones.archivo) {
     cabeceras["Content-Type"] = opciones.archivo.type;
     cabeceras["x-upsert"] = "true";
-    // Una foto nueva lleva otro `?v=` en su URL: el archivo puede cachearse.
-    cabeceras["Cache-Control"] = "max-age=31536000";
+    // Una foto nueva lleva otro `?v=` en su URL, que salta la cache. Una hora
+    // y no un año: el archivo se sobrescribe en la misma ruta, y si alguien lo
+    // pide justo entre la subida y el cambio de version, la mezcla dura poco.
+    cabeceras["Cache-Control"] = "max-age=3600";
   }
   let res: Response;
   try {

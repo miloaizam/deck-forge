@@ -262,6 +262,114 @@ test.describe("con la nube encendida", () => {
     ]);
   });
 
+  test("una publica que deja de cumplir sale de la Comunidad al guardarla", async ({
+    page,
+  }) => {
+    const s = await simularSupabase(page);
+    const legal = barajaLegal("Publica que se rompe");
+    publicarDe(s, USUARIO_A, "Milo", legal);
+    // Aqui, editada despues: con una baneada en el side.
+    const baneada = cartas.find((c) => c.nombre === "Ankou")!;
+    const rota = {
+      ...setQuantity(legal, baneada.id, "side", 1),
+      actualizado: Date.now(),
+    };
+    await conBarajas(page, [rota]);
+    await conSesion(page, USUARIO_A);
+
+    await page.goto(`/constructor/?m=${rota.id}`);
+    // Hasta que la cuenta dijo que es publica.
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("deckforge-nube") ?? ""))
+      .toContain('"publica":true');
+    const panel =
+      page.viewportSize()!.width >= 1024
+        ? page.locator("aside")
+        : (await page
+            .getByRole("button", { name: /^Abrir el panel de la baraja/ })
+            .click(),
+          page.getByRole("dialog"));
+    await panel.getByRole("button", { name: "Guardar baraja" }).click();
+    await page.getByRole("button", { name: "Guardar igual" }).click();
+    await expect(page).toHaveURL(/\/baraja\/\?m=/);
+
+    await expect.poll(() => s.barajas.find((f) => f.id === rota.id)?.publica).toBe(false);
+    await expect(page.getByText(/dejó de ser legal/).first()).toBeVisible();
+    // El detalle tambien la revisa, y las vueltas siguientes cambian el
+    // estado: el retiro se hace una sola vez.
+    await page.waitForTimeout(3000);
+    expect(s.peticiones.filter((p) => p === "PATCH /rest/v1/barajas")).toHaveLength(1);
+  });
+
+  test("abrir el detalle de una publica que dejo de cumplir la retira una vez", async ({
+    page,
+  }) => {
+    // Editada en otro equipo: llega rota y el detalle es quien la ve. Antes,
+    // cada vuelta de sincronizacion relanzaba el retiro (dos PATCH).
+    const s = await simularSupabase(page);
+    const legal = barajaLegal("Rota en otro equipo");
+    publicarDe(s, USUARIO_A, "Milo", legal);
+    const baneada = cartas.find((c) => c.nombre === "Ankou")!;
+    const rota = {
+      ...setQuantity(legal, baneada.id, "side", 1),
+      actualizado: Date.now(),
+    };
+    await conBarajas(page, [rota]);
+    await conSesion(page, USUARIO_A);
+
+    await page.goto(`/baraja/?m=${rota.id}`);
+    await expect.poll(() => s.barajas.find((f) => f.id === rota.id)?.publica).toBe(false);
+    await page.waitForTimeout(3000);
+    expect(s.peticiones.filter((p) => p === "PATCH /rest/v1/barajas")).toHaveLength(1);
+  });
+
+  test("una publica que cambio de afinidad la corrige una sola vez", async ({ page }) => {
+    const s = await simularSupabase(page);
+    const deck = barajaLegal("Afinidad vieja");
+    publicarDe(s, USUARIO_A, "Milo", deck);
+    s.barajas.find((f) => f.id === deck.id)!.afinidad = "raza:Ninguna";
+    await conBarajas(page, [deck]);
+    await conSesion(page, USUARIO_A);
+
+    await page.goto(`/baraja/?m=${deck.id}`);
+    await expect
+      .poll(() => s.barajas.find((f) => f.id === deck.id)?.afinidad)
+      .not.toBe("raza:Ninguna");
+    // Las vueltas siguientes ya no la ven distinta.
+    await page.waitForTimeout(3000);
+    expect(s.peticiones.filter((p) => p === "PATCH /rest/v1/barajas")).toHaveLength(1);
+  });
+
+  test("si el cambio de version de la foto no entra, vuelve la anterior", async ({
+    page,
+  }) => {
+    const s = await simularSupabase(page);
+    s.perfiles.set(USUARIO_A, "Milo");
+    const vieja = { tipo: "image/webp", bytes: Buffer.from("foto vieja") };
+    s.archivos.set(USUARIO_A, vieja);
+    s.avatares.set(USUARIO_A, 1700000000000);
+    await conSesion(page, USUARIO_A);
+    let intentos = 0;
+    await page.route("https://*.supabase.co/rest/v1/perfiles**", (r) => {
+      if (r.request().method() !== "PATCH") return r.fallback();
+      intentos++;
+      return r.fulfill({ status: 503, body: "{}" });
+    });
+
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Cambiar foto" }).click();
+    await page
+      .getByLabel("Elegir una foto de perfil")
+      .setInputFiles(path.join(__dirname, "..", "public", "cards", "bu-001.webp"));
+    await expect(page.getByText(/No se pudo guardar la foto/).last()).toBeVisible({
+      timeout: 10_000,
+    });
+    // Perfil y archivo coinciden: los dos siguen en la foto de antes.
+    expect(s.avatares.get(USUARIO_A)).toBe(1700000000000);
+    expect(s.archivos.get(USUARIO_A)?.bytes.toString()).toBe("foto vieja");
+    expect(intentos).toBe(3);
+  });
+
   test("la foto de perfil se achica, se sube, se ve y se quita", async ({ page }) => {
     const s = await simularSupabase(page);
     const deck = barajaLegal("Con foto");

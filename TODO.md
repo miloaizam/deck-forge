@@ -21,54 +21,11 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Comunidad**: que una baraja pública que deja de cumplir salga de la
-   lista sola, y los dos detalles de `PublicarControl` y la foto.
-2. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
+1. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
    teléfono, órdenes de la Comunidad, portada por defecto, lazo de 11 px) en
    una tanda; después «Tu cuenta» y las tarjetas de análisis.
-3. **Cartas destacadas en la portada**, con la maqueta primero.
-4. **Por decidir**, cuando haya ganas: no bloquea nada.
-
-## Comunidad
-
-### Una baraja pública editada no se revisa al guardar
-
-- **Qué:** la afinidad de una pública y el retiro de una que dejó de cumplir
-  solo corren al abrir su detalle (`PublicarControl`). Si el dueño la edita en
-  el constructor y guarda, la sincronización sube los datos nuevos y la baraja
-  sigue listada: con una carta baneada, o bajo la afinidad vieja en el filtro.
-- **Por dónde:** recalcular legalidad y afinidad en la sincronización (o al
-  guardar una pública): si dejó de cumplir, se sube como privada y se avisa;
-  si cambió de afinidad, se sube la nueva.
-- **Terminado cuando:** una prueba en `nube.spec.ts` edita una pública hasta
-  dejarla ilegal desde el constructor y deja de salir en la Comunidad sin
-  abrir su detalle.
-
-### `PublicarControl` repite el retiro y la corrección de afinidad
-
-- **Qué:** el efecto depende de `publico`, que es un objeto nuevo tras cada
-  sincronización. Mientras el retiro de una que dejó de cumplir está en
-  curso, el efecto corre otra vez: dos `PATCH`, dos sincronizaciones y dos
-  avisos «dejó de cumplir». La corrección de afinidad no actualiza lo local
-  tras el `PATCH`, así que se repite después de cada vuelta.
-- **Por dónde:** depender de valores (`publica`, `afinidad`) y no del objeto,
-  y no relanzar mientras hay una en curso. Si la entrada anterior mueve esto a
-  la sincronización, este efecto puede desaparecer.
-- **Terminado cuando:** abrir el detalle de una pública ilegal produce un solo
-  `PATCH` y un solo aviso.
-
-### Una foto subida a medias se ve distinta según quién la mire
-
-- **Qué:** `subirAvatar` reemplaza el archivo y después hace el `PATCH` de
-  `perfiles.avatar`. Si el segundo falla, el archivo nuevo queda bajo la URL
-  de la versión vieja (`?v=` sin cambiar), que el CDN guarda un año: quien la
-  tenía en caché ve la foto vieja y quien no, la nueva, y la app dice que no
-  se guardó.
-- **Por dónde:** reintentar el `PATCH`, o si falla, volver a subir la foto
-  anterior; o guardar el archivo con la versión en el nombre
-  (`avatares/<uid>-<v>`), que cambia también las políticas del bucket.
-- **Terminado cuando:** con el `PATCH` fallando en el simulado, la foto que se
-  ve y la que dice el perfil son la misma.
+2. **Cartas destacadas en la portada**, con la maqueta primero.
+3. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Interfaz
 
