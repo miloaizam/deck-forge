@@ -32,28 +32,3 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
   casos dudosos.
 - **Terminado cuando:** cada kit está revisado y sus reimpresiones cargadas
   en `data-src/arte-alternativo.json`.
-
-## Grande y con decisiones previas
-
-### Pegar el esquema nuevo en Supabase
-
-- **Qué:** el esquema ganó dos cosas el 23-10-2026: `por_nombre` en
-  `listar_publicas` (el orden A-Z de la Comunidad) y la **foto de perfil**
-  (bucket `avatares`, sus políticas, las columnas `avatar` y `avatar_oculto` y
-  el motivo de reporte `foto`). Hasta que se pegue, el botón A-Z y subir una
-  foto dan error; el resto funciona igual.
-- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
-  → Run. Se puede correr las veces que haga falta.
-- **Terminado cuando:** en `/comunidad` el botón de las flechas ordena por
-  nombre sin error, y en «Tu cuenta» «Poner foto» sube una que se ve en la
-  navbar y en la Comunidad (Storage → `avatares` muestra el archivo).
-
-### Probar las cuentas de punta a punta
-
-- **Qué:** las cuentas y la Comunidad están encendidas (22-10-2026), pero
-  falta la prueba con Google de verdad, que solo puede hacer una persona: la
-  sesión en la nube no llega a `supabase.co`.
-- **Por dónde:** la lista «Antes de anunciarlo» de
-  [`docs/cuentas.md`](docs/cuentas.md), paso 5, en `deckforge-myl.pages.dev`
-  y con dos cuentas de Google. Lo que falle se anota aquí.
-- **Terminado cuando:** los seis puntos de esa lista pasan.
