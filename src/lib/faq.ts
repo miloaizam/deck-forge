@@ -314,8 +314,15 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo inicio sesión?",
         respuesta: [
-          "Toca el **icono de persona**, arriba a la derecha, y luego **«Iniciar sesión con Google»**. Si es la primera vez, tu cuenta se crea en ese momento.",
+          "Toca la **flecha de entrar**, arriba a la derecha, y luego **«Iniciar sesión con Google»**. Si es la primera vez, tu cuenta se crea en ese momento.",
           "Tu **nombre y tu correo** no se muestran a nadie. En la Comunidad apareces con el **alias** que elijas.",
+        ],
+      },
+      {
+        pregunta: "¿Cómo pongo una foto de perfil?",
+        respuesta: [
+          "En **«Tu cuenta»**, con **«Poner foto»**. Elige cualquier imagen: se recorta al cuadrado del centro y se achica antes de subirla. Primero tienes que elegir un **alias**.",
+          "La foto se ve arriba a la derecha y junto a tu alias en la **Comunidad**. Para cambiarla usa **«Cambiar foto»**, y para borrarla, **«Quitar foto»**.",
         ],
       },
       {
@@ -342,7 +349,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Cómo funciona la Comunidad?",
         respuesta: [
           "Ahí están las barajas que publicaron otros jugadores. Puedes ordenarlas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, o por **nombre** con el botón de las flechas dentro del buscador, y filtrarlas por raza, escuela o atributo.",
-          "Con tu cuenta puedes darles **like**, **guardarlas en tus barajas** o **reportarlas** con la bandera si tienen algo ofensivo o son spam.",
+          "Con tu cuenta puedes darles **like**, **guardarlas en tus barajas** o **reportarlas** con la bandera si tienen algo ofensivo (también la foto de quien la publicó) o son spam.",
         ],
       },
       {
@@ -354,7 +361,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo borro mi cuenta?",
         respuesta: [
-          "En **«Tu cuenta»**, con **«Borrar mi cuenta»**. Se borran al instante tu cuenta, tus barajas, tu colección y tus likes. Más detalles en **Políticas de privacidad**, al pie de cada página.",
+          "En **«Tu cuenta»**, con **«Borrar mi cuenta»**. Se borran al instante tu cuenta, tu foto, tus barajas, tu colección y tus likes. Más detalles en **Políticas de privacidad**, al pie de cada página.",
         ],
       },
     ],

@@ -86,6 +86,40 @@ export async function api(ruta: string, opciones: Opciones = {}): Promise<unknow
   return json;
 }
 
+/**
+ * Subir o borrar un archivo de Storage (la foto de perfil). `ruta` es lo que va
+ * tras `/storage/v1/object/`: `avatares/<user_id>`. Subir pisa el que haya
+ * (`x-upsert`). Lanza `ErrorNube` como `api()`.
+ */
+export async function storage(
+  ruta: string,
+  opciones: { metodo: "POST" | "DELETE"; archivo?: Blob; token: string | null },
+): Promise<void> {
+  if (!SUPABASE_URL || !SUPABASE_KEY)
+    throw new ErrorNube(0, null, "La nube está apagada.");
+  const cabeceras: Record<string, string> = { apikey: SUPABASE_KEY };
+  if (opciones.token) cabeceras.Authorization = `Bearer ${opciones.token}`;
+  if (opciones.archivo) {
+    cabeceras["Content-Type"] = opciones.archivo.type;
+    cabeceras["x-upsert"] = "true";
+    // Una foto nueva lleva otro `?v=` en su URL: el archivo puede cachearse.
+    cabeceras["Cache-Control"] = "max-age=31536000";
+  }
+  let res: Response;
+  try {
+    res = await fetch(`${SUPABASE_URL}/storage/v1/object/${ruta}`, {
+      method: opciones.metodo,
+      headers: cabeceras,
+      body: opciones.archivo,
+      signal: AbortSignal.timeout(ESPERA_MS),
+      credentials: "omit",
+    });
+  } catch {
+    throw new ErrorNube(0, null, "Sin conexión con la nube.");
+  }
+  if (!res.ok) throw new ErrorNube(res.status, null, `La nube respondió ${res.status}.`);
+}
+
 /** El texto para el usuario de un error de la nube, impersonal y con remedio. */
 export function mensajeDeError(e: unknown): string {
   if (!(e instanceof ErrorNube)) return "Algo salió mal. Inténtalo de nuevo.";

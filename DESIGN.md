@@ -394,12 +394,18 @@ un campo subrayado.
 ### Cuenta y Comunidad
 
 - **El botón de la cuenta** va con la ayuda y el tema, `BOTON_ICONO_LIBRE`
-  redondo: sin sesión, la flecha de entrar (`LogIn`); con ella, una persona
-  (`UserRound`) sobre violeta. Iconos distintos para que se note de un
-  vistazo si hay sesión. Sin iniciales: el alias puede empezar por cualquier
-  cosa.
-- **`/cuenta` con sesión**: arriba una cabecera de perfil (la misma persona
-  en un círculo `bg-accent-soft`, nombre, correo y «Cerrar sesión»); debajo,
+  redondo: sin sesión, la flecha de entrar (`LogIn`); con ella, la **foto de
+  perfil** o, si no hay, una persona (`UserRound`) sobre violeta. Iconos
+  distintos para que se note de un vistazo si hay sesión. Sin iniciales: el
+  alias puede empezar por cualquier cosa.
+- **La foto de perfil** (`Avatar.tsx`) es siempre un círculo con la imagen a
+  todo su tamaño (`object-cover`), y la persona sobre `bg-accent-soft` cuando no
+  hay foto o no carga: 28 px en la navbar, 56 en «Tu cuenta», 20 en la tarjeta
+  de la Comunidad y 22 junto a «por alias» en el detalle. Decorativa
+  (`alt=""`): siempre va al lado del alias o del nombre.
+- **`/cuenta` con sesión**: arriba una cabecera de perfil (la foto o la
+  persona, nombre, correo, «Poner / Cambiar foto» y «Quitar foto» compactos, y
+  «Cerrar sesión»); debajo,
   «Alias» y «Sincronización» lado a lado; al pie, en un recuadro punteado y
   sin protagonismo, «Borrar mi cuenta». La hora va en 24 h y relativa («hoy
   a las 17:08»): «p. m.» se partía entre líneas y se juntaba con el punto

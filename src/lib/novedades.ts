@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-23",
+    version: "5.4.0",
+    tipo: "Novedad",
+    titulo: "Foto de perfil",
+    texto: [
+      "Ahora puedes poner una foto en tu cuenta, desde «Tu cuenta» con «Poner foto». Se recorta y se achica sola antes de subirla.",
+      "Se ve arriba a la derecha y junto a tu alias en la Comunidad. Si una foto es ofensiva, se puede reportar desde la baraja.",
+    ],
+  },
+  {
+    fecha: "2026-10-23",
     version: "5.3.0",
     tipo: "Mejora",
     titulo: "Todo a mano en la barra de búsqueda",

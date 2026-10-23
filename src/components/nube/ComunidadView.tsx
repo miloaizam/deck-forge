@@ -19,6 +19,7 @@ import { Select } from "../Select";
 import { DeckListSkeleton } from "../Skeleton";
 import { useCatalogo } from "../use-catalogo";
 import { mensajeDeError } from "./api";
+import { Avatar } from "./Avatar";
 import { listarPublicas } from "./comunidad-api";
 import { useNube } from "./nube";
 import {
@@ -336,8 +337,11 @@ export function ComunidadView() {
                     >
                       {f.nombre || "Sin nombre"}
                     </Link>
-                    <p className="truncate text-[13px]">
-                      por <span className="text-accent">{f.alias}</span>
+                    <p className="flex min-w-0 items-center gap-1.5 text-[13px]">
+                      <Avatar ruta={f.avatar} lado={20} />
+                      <span className="truncate">
+                        por <span className="text-accent">{f.alias}</span>
+                      </span>
                     </p>
                     <p className="text-muted truncate text-[13px]">
                       {etiquetaAfinidad(f.afinidad)} · {FECHA.format(f.publicada_en)}

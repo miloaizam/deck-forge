@@ -262,6 +262,84 @@ test.describe("con la nube encendida", () => {
     ]);
   });
 
+  test("la foto de perfil se achica, se sube, se ve y se quita", async ({ page }) => {
+    const s = await simularSupabase(page);
+    const deck = barajaLegal("Con foto");
+    await conBarajas(page, [deck]);
+    await conSesion(page, USUARIO_A);
+    s.perfiles.set(USUARIO_A, "Milo");
+
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Poner foto" }).click();
+    // Un arte de carta de 420 px de ancho, mas alto que ancho: hay que
+    // recortarlo y achicarlo.
+    await page
+      .getByLabel("Elegir una foto de perfil")
+      .setInputFiles(path.join(__dirname, "..", "public", "cards", "bu-001.webp"));
+    await expect(page.getByText("Foto de perfil guardada.").last()).toBeVisible();
+
+    const subida = s.archivos.get(USUARIO_A);
+    expect(subida).toBeDefined();
+    expect(["image/webp", "image/jpeg"]).toContain(subida!.tipo);
+    expect(subida!.bytes.length).toBeLessThanOrEqual(50 * 1024);
+    expect(s.avatares.get(USUARIO_A)).toBeGreaterThan(0);
+
+    // En la navbar y en la cabecera de la cuenta, de 128x128.
+    const enNavbar = page.getByRole("link", { name: "Tu cuenta" }).locator("img");
+    await expect(enNavbar).toBeVisible();
+    expect(await enNavbar.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBe(128);
+    expect(await enNavbar.evaluate((i: HTMLImageElement) => i.naturalHeight)).toBe(128);
+    await expect(page.getByRole("button", { name: "Cambiar foto" })).toBeVisible();
+
+    // En la Comunidad, junto al alias; oculta por moderacion, ya no.
+    publicarDe(s, USUARIO_A, "Milo", deck);
+    await page.goto("/comunidad/");
+    const tarjeta = page.getByRole("listitem").filter({ hasText: "Con foto" });
+    await expect(tarjeta.locator("img[src*='/avatares/']")).toBeVisible();
+    s.avatarOculto.add(USUARIO_A);
+    await page.reload();
+    await expect(tarjeta.getByText("Milo")).toBeVisible();
+    await expect(tarjeta.locator("img[src*='/avatares/']")).toHaveCount(0);
+
+    // Quitarla borra el archivo y la version.
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Quitar foto" }).click();
+    await expect(page.getByText("Foto de perfil quitada.").last()).toBeVisible();
+    expect(s.archivos.has(USUARIO_A)).toBe(false);
+    expect(s.avatares.has(USUARIO_A)).toBe(false);
+    await expect(page.getByRole("button", { name: "Poner foto" })).toBeVisible();
+  });
+
+  test("sin alias no se puede poner foto", async ({ page }) => {
+    await simularSupabase(page);
+    await conSesion(page, USUARIO_A);
+    await page.goto("/cuenta/");
+    await expect(page.getByText("Elige un alias para poner una foto.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Poner foto" })).toHaveCount(0);
+  });
+
+  test("borrar la cuenta borra tambien la foto", async ({ page }) => {
+    const s = await simularSupabase(page);
+    await conSesion(page, USUARIO_A);
+    s.perfiles.set(USUARIO_A, "Milo");
+    s.avatares.set(USUARIO_A, 1700000000000);
+    s.archivos.set(USUARIO_A, { tipo: "image/webp", bytes: Buffer.from("x") });
+    await page.goto("/cuenta/");
+    await page.getByRole("button", { name: "Borrar mi cuenta" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Borrar mi cuenta" })
+      .click();
+    await expect(page.getByText("Cuenta borrada.").last()).toBeVisible();
+    expect(s.archivos.has(USUARIO_A)).toBe(false);
+    const borrarFoto = s.peticiones.indexOf(
+      `DELETE /storage/v1/object/avatares/${USUARIO_A}`,
+    );
+    const borrarCuenta = s.peticiones.indexOf("POST /rest/v1/rpc/borrar_mi_cuenta");
+    expect(borrarFoto).toBeGreaterThan(-1);
+    expect(borrarFoto).toBeLessThan(borrarCuenta);
+  });
+
   test("la Comunidad se ordena por nombre desde el buscador", async ({ page }) => {
     const s = await simularSupabase(page);
     publicarDe(s, USUARIO_B, "Otra_persona", {

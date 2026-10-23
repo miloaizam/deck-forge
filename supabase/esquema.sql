@@ -29,6 +29,15 @@ create table if not exists public.perfiles (
 -- Sin distinguir mayusculas: "Milo" y "milo" son el mismo alias.
 create unique index if not exists perfiles_alias_unico on public.perfiles (lower(alias));
 
+-- La foto de perfil (22-10-2026). El archivo vive en Storage, en
+-- `avatares/<user_id>`; aqui va solo cuando se subio (ms), que el sitio pone
+-- en la URL como `?v=` para saltar la cache al cambiarla. null: sin foto.
+alter table public.perfiles add column if not exists avatar bigint
+  check (avatar is null or avatar > 0);
+-- Moderacion: oculta la foto en la Comunidad. Solo se cambia desde el panel.
+alter table public.perfiles add column if not exists avatar_oculto boolean
+  not null default false;
+
 -- ---------------------------------------------------------------------------
 -- Barajas
 -- ---------------------------------------------------------------------------
@@ -98,11 +107,17 @@ create table if not exists public.copias (
 create table if not exists public.reportes (
   user_id uuid not null references auth.users (id) on delete cascade,
   baraja uuid not null references public.barajas (public_id) on delete cascade,
-  motivo text not null check (motivo in ('nombre', 'nota', 'spam', 'otro')),
+  motivo text not null,
   nota text not null default '' check (length(nota) <= 280),
   creado timestamptz not null default now(),
   primary key (user_id, baraja)
 );
+
+-- Los motivos, aparte de la tabla para poder sumar uno sin recrearla: 'foto'
+-- (la foto de perfil del dueno) llego con las fotos.
+alter table public.reportes drop constraint if exists reportes_motivo_check;
+alter table public.reportes add constraint reportes_motivo_check
+  check (motivo in ('nombre', 'nota', 'foto', 'spam', 'otro'));
 
 -- ---------------------------------------------------------------------------
 -- Permisos de las tablas
@@ -225,6 +240,28 @@ drop trigger if exists barajas_proteger on public.barajas;
 create trigger barajas_proteger before insert or update on public.barajas
   for each row execute function public.barajas_proteger();
 
+-- Lo mismo para el perfil: el dueno no se quita la moderacion de su foto.
+create or replace function public.perfiles_proteger()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if current_user in ('authenticated', 'anon') then
+    if tg_op = 'INSERT' then
+      new.avatar_oculto := false;
+    else
+      new.avatar_oculto := old.avatar_oculto;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists perfiles_proteger on public.perfiles;
+create trigger perfiles_proteger before insert or update on public.perfiles
+  for each row execute function public.perfiles_proteger();
+
 -- Contadores de likes y copias. `security definer`: el usuario que da like no
 -- puede escribir en la baraja de otro, pero el contador si tiene que subir.
 create or replace function public.contar()
@@ -272,11 +309,25 @@ as $$
   );
 $$;
 
+-- La ruta de la foto de un perfil dentro del bucket `avatares`, con la version
+-- para la cache; null si no tiene o esta oculta. La usan las dos de abajo.
+create or replace function public.ruta_avatar(uid uuid, avatar bigint, oculta boolean)
+returns text
+language sql
+immutable
+set search_path = ''
+as $$
+  select case when avatar is not null and not oculta
+    then uid::text || '?v=' || avatar::text end;
+$$;
+
 -- La lista de la Comunidad. `orden`: likes, tendencia, recientes o copias.
 -- `afinidad` exacta ('raza:Dragón') o null; `q` busca en el nombre.
--- La version anterior no tenia `por_nombre`: se borra, porque con los dos
--- parametros nuevos convivirian dos funciones y la API no sabria cual llamar.
+-- Las versiones anteriores se borran antes de crear la de hoy: sin
+-- `por_nombre` convivirian dos funciones y la API no sabria cual llamar, y sin
+-- `avatar` cambia el tipo que devuelve, que `create or replace` no acepta.
 drop function if exists public.listar_publicas(text, text, text, integer, integer);
+drop function if exists public.listar_publicas(text, text, text, integer, integer, text);
 
 create or replace function public.listar_publicas(
   orden text default 'likes',
@@ -294,6 +345,9 @@ returns table (
   afinidad text,
   portada text,
   alias text,
+  -- `<user_id>?v=<avatar>`, la ruta de la foto en el bucket `avatares`; null
+  -- sin foto o con la foto oculta por moderacion.
+  avatar text,
   likes integer,
   copias integer,
   likes_semana integer,
@@ -306,7 +360,9 @@ security definer
 set search_path = ''
 as $$
   with visibles as (
-    select b.public_id, b.nombre, b.afinidad, b.portada, p.alias, b.likes, b.copias,
+    select b.public_id, b.nombre, b.afinidad, b.portada, p.alias,
+      public.ruta_avatar(p.user_id, p.avatar, p.avatar_oculto) as avatar,
+      b.likes, b.copias,
       (select count(*)::integer from public.likes l
         where l.baraja = b.public_id and l.creado > now() - interval '7 days') as likes_semana,
       b.publicada_en
@@ -338,12 +394,14 @@ $$;
 
 -- Una baraja publica, con su contenido. `mia` y `me_gusta` dicen si es del
 -- que pregunta y si ya le dio like (falso sin sesion).
+drop function if exists public.leer_publica(uuid);
 create or replace function public.leer_publica(pid uuid)
 returns table (
   public_id uuid,
   datos jsonb,
   afinidad text,
   alias text,
+  avatar text,
   likes integer,
   copias integer,
   publicada_en timestamptz,
@@ -355,7 +413,9 @@ stable
 security definer
 set search_path = ''
 as $$
-  select b.public_id, b.datos, b.afinidad, p.alias, b.likes, b.copias, b.publicada_en,
+  select b.public_id, b.datos, b.afinidad, p.alias,
+    public.ruta_avatar(p.user_id, p.avatar, p.avatar_oculto),
+    b.likes, b.copias, b.publicada_en,
     coalesce(b.user_id = (select auth.uid()), false),
     exists (select 1 from public.likes l
       where l.baraja = b.public_id and l.user_id = (select auth.uid()))
@@ -465,3 +525,36 @@ grant execute on function public.dar_like(uuid, boolean) to authenticated;
 grant execute on function public.registrar_copia(uuid) to authenticated;
 grant execute on function public.reportar(uuid, text, text) to authenticated;
 grant execute on function public.borrar_mi_cuenta() to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Fotos de perfil (Storage)
+-- ---------------------------------------------------------------------------
+
+-- Un bucket publico: cualquiera ve las fotos, que es lo que pide la
+-- Comunidad. El tope de 50 KB y los dos tipos los hace cumplir Storage aunque
+-- alguien llame a la API a mano; el sitio las sube de 128x128, en ~5-10 KB.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatares', 'avatares', true, 51200, array['image/webp', 'image/jpeg'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- Cada usuario sube, cambia y borra SOLO `avatares/<su user_id>`. La lectura
+-- publica la da el bucket; esta de `select` hace falta para el upsert.
+drop policy if exists "avatar propio: ver" on storage.objects;
+create policy "avatar propio: ver" on storage.objects for select to authenticated
+  using (bucket_id = 'avatares' and name = (select auth.uid())::text);
+
+drop policy if exists "avatar propio: subir" on storage.objects;
+create policy "avatar propio: subir" on storage.objects for insert to authenticated
+  with check (bucket_id = 'avatares' and name = (select auth.uid())::text);
+
+drop policy if exists "avatar propio: cambiar" on storage.objects;
+create policy "avatar propio: cambiar" on storage.objects for update to authenticated
+  using (bucket_id = 'avatares' and name = (select auth.uid())::text)
+  with check (bucket_id = 'avatares' and name = (select auth.uid())::text);
+
+drop policy if exists "avatar propio: borrar" on storage.objects;
+create policy "avatar propio: borrar" on storage.objects for delete to authenticated
+  using (bucket_id = 'avatares' and name = (select auth.uid())::text);

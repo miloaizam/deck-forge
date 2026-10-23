@@ -815,10 +815,11 @@ pero eso no se deja al azar:
    build con los hashes de cada página (ver "La CSP por hashes").
 
 2. **CSP**: `default-src 'self'`, `object-src 'none'`, `base-uri 'none'`,
-   `form-action 'none'`, `frame-ancestors 'none'`, imágenes y fuentes solo del
-   propio origen. `connect-src` es `'self'` y, con las cuentas encendidas,
-   **solo** el host de Supabase de `supabase/proyecto.json`: lo agrega
-   `csp-hashes.mjs` y la auditoría falla si lleva otro.
+   `form-action 'none'`, `frame-ancestors 'none'`, fuentes solo del propio
+   origen. `connect-src` es `'self'` e `img-src` `'self' data:` y, con las
+   cuentas encendidas, los dos suman **solo** el host de Supabase de
+   `supabase/proyecto.json` (la API y las fotos de perfil de su Storage): lo
+   agrega `csp-hashes.mjs` y la auditoría falla si lleva otro.
    **`script-src` no lleva `'unsafe-inline'`: autoriza por hash**, página por
    página. Ver "La CSP por hashes", más abajo.
    `style-src` sí lo conserva: React escribe atributos `style="…"` y esos no
@@ -861,7 +862,8 @@ pero eso no se deja al azar:
 
 5. **Cero terceros, salvo Supabase para quien usa la cuenta.** Sin
    analytics, sin CDNs, sin fuentes remotas, sin hotlinking de imágenes, sin
-   píxeles de seguimiento. Todo se sirve desde nuestro origen. La telemetría
+   píxeles de seguimiento. Todo se sirve desde nuestro origen, salvo las fotos
+   de perfil, que vienen del Storage del mismo Supabase. La telemetría
    de Next.js está desactivada. **Un visitante sin cuenta no hace ninguna
    petición a Supabase** fuera de la Comunidad: `@supabase/auth-js` se
    carga solo si hay una sesión guardada, al volver de Google o al pulsar
@@ -889,9 +891,9 @@ pero eso no se deja al azar:
 
 7. **Privacidad.** Sin cuenta, las barajas no se guardan en ningún servidor:
    viven en el `localStorage` del usuario. Con cuenta, Supabase guarda el
-   correo y el nombre de Google (que no se muestran), el alias (que sí), las
-   barajas y la colección (ids y copias), los likes, las copias y los
-   reportes. `/privacidad` lo cuenta para quien juega y **se cambia en el
+   correo y el nombre de Google (que no se muestran), el alias y la foto de
+   perfil (que sí; la foto, achicada a 128×128, en Storage), las barajas y la
+   colección (ids y copias), los likes, las copias y los reportes. `/privacidad` lo cuenta para quien juega y **se cambia en el
    mismo commit** que cambie lo que se guarda. «Borrar mi cuenta» lo borra
    todo en el acto. Sin cookies, sin banner de consentimiento.
 
@@ -933,8 +935,9 @@ pero eso no se deja al azar:
 12. **`pnpm run audit`** revisa el sitio ya construido y falla si aparece un
     source map, una ruta absoluta de la máquina de build, un recurso externo,
     una imagen rota, una cabecera de seguridad ausente, un script inline sin
-    su hash en la CSP, los dos esquemas desincronizados, un `connect-src`
-    que no sea el de Supabase o una clave secreta de Supabase. Correr siempre
+    su hash en la CSP, los dos esquemas desincronizados, un `connect-src` o
+    un `img-src` con otro host que el de Supabase, o una clave secreta de
+    Supabase. Correr siempre
     antes de publicar.
 
 ### La CSP por hashes
@@ -1861,9 +1864,20 @@ quien toca el código.
 - **Pruebas**: `sync.test.ts` y `comunidad.test.ts` (texto hostil, filas
   rotas); `pnpm run e2e:nube` con un Supabase simulado en memoria
   (`e2e/supabase-simulado.ts`): fusión al entrar, publicar con alias, una
-  ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, y
-  que sin cuenta no salga ninguna petición. La SQL, contra Postgres local
-  (`docs/cuentas.md`).
+  ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, la
+  foto de perfil (achicar, subir, verla, ocultarla, quitarla y borrarla con la
+  cuenta), y que sin cuenta no salga ninguna petición. La SQL, contra
+  Postgres local con un `storage` de imitación (`docs/cuentas.md`).
+- **Foto de perfil** (23-10-2026, decisión del proyecto: subida por el
+  usuario y no un arte de carta). Bucket público `avatares` de Storage, un
+  archivo por usuario (`avatares/<user_id>`), achicado a 128×128 en el
+  navegador (`achicar-avatar.ts`, ~5–10 KB; el bucket acepta WebP/JPEG de
+  hasta 50 KB). `perfiles.avatar` guarda cuándo se subió y va en la URL como
+  `?v=`; `avatar_oculto` es la moderación. La ruta se valida con regex
+  (`src/lib/avatar.ts`) antes de llegar a un `<img>` (`Avatar.tsx`). Se ve en
+  la navbar, en «Tu cuenta» (`FotoControles.tsx`: poner, cambiar, quitar) y
+  junto al alias en la Comunidad. Pide alias. Todo el detalle en
+  `docs/cuentas.md`.
 - **Lo personal pide cuenta** (22-10-2026, decisión del proyecto; antes era
   opcional). `RequiereCuenta.tsx` envuelve el constructor, Mis barajas, la
   colección y el detalle de una baraja propia (`?m=`): sin sesión muestra

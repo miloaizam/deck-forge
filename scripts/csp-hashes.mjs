@@ -95,10 +95,14 @@ if (!base.includes(SCRIPT_SRC)) {
 
 // Las cuentas: si `supabase/proyecto.json` (o NEXT_PUBLIC_SUPABASE_URL, que lo
 // pisa en un build de pruebas) trae un proyecto, su host entra en
-// connect-src y en ningun otro lado. Mismas reglas que src/lib/supabase-config.ts.
+// connect-src (la API) y en img-src (las fotos de perfil, en su Storage), y
+// en ningun otro lado. Mismas reglas que src/lib/supabase-config.ts.
 const CONNECT_SRC = "connect-src 'self'";
-if (!base.includes(CONNECT_SRC)) {
-  abortar(`la CSP de public/_headers no trae "${CONNECT_SRC}"`);
+const IMG_SRC = "img-src 'self' data:";
+for (const directiva of [CONNECT_SRC, IMG_SRC]) {
+  if (!base.includes(directiva)) {
+    abortar(`la CSP de public/_headers no trae "${directiva}"`);
+  }
 }
 const proyecto = JSON.parse(
   readFileSync(path.join(ROOT, "supabase", "proyecto.json"), "utf8"),
@@ -111,11 +115,13 @@ const nubeActiva =
   typeof claveNube === "string" &&
   /^(sb_publishable_[A-Za-z0-9_-]+|eyJ[\w-]+\.[\w-]+\.[\w-]+)$/.test(claveNube);
 const conectar = nubeActiva ? `${CONNECT_SRC} ${urlNube}` : CONNECT_SRC;
+const imagenes = nubeActiva ? `${IMG_SRC} ${urlNube}` : IMG_SRC;
 
 const politica = (lista) =>
   base
     .replace(SCRIPT_SRC, `script-src 'self' ${lista.join(" ")}`)
-    .replace(CONNECT_SRC, conectar);
+    .replace(CONNECT_SRC, conectar)
+    .replace(IMG_SRC, imagenes);
 
 const hashes404 = hashes(readFileSync(path.join(OUT, "404.html"), "utf8"));
 let salida = plantilla.replace(base, politica(hashes404));

@@ -19,6 +19,7 @@ import { DeckIssues } from "./DeckIssues";
 import { registrarCopia } from "../nube/comunidad-api";
 import { PublicaAcciones, usePublica } from "../nube/PublicaAcciones";
 import { PublicarControl } from "../nube/PublicarControl";
+import { Avatar } from "../nube/Avatar";
 import { useNube } from "../nube/nube";
 import { RequiereCuenta } from "../nube/RequiereCuenta";
 import { useDecks, useHydrated } from "./use-decks";
@@ -232,7 +233,8 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
 
             <div className="min-w-0 sm:col-start-1 sm:row-start-3">
               {deLaComunidad && (
-                <p className="mt-1.5 text-[14px]">
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-1.5 text-[14px]">
+                  <Avatar ruta={deLaComunidad.avatar} lado={22} />
                   por{" "}
                   <span className="text-accent font-medium">{deLaComunidad.alias}</span>
                   <span className="text-muted">

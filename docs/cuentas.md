@@ -69,10 +69,24 @@ que no es suyo.
 
 | Tabla | Una fila por | Qué lleva |
 |---|---|---|
-| `perfiles` | usuario | el **alias** público (3–20 letras, números o `_`; único sin distinguir mayúsculas) |
+| `perfiles` | usuario | el **alias** público (3–20 letras, números o `_`; único sin distinguir mayúsculas); `avatar` (bigint, ms en que se subió la foto, o null) y `avatar_oculto` (moderación) |
 | `barajas` | baraja | `datos` (jsonb): la baraja tal como la guarda el navegador (`deckSchema`: nombre, nota, `principal`/`side` como `{ id, n }`, oro inicial, portada, fechas); `actualizado` (ms); `borrada` (lápida); lo público: `publica`, `publicada_en`, `public_id` (uuid, va en la URL), `afinidad`, `oculta`, `likes`, `copias`; y `nombre`/`portada` calculados del jsonb |
 | `colecciones` | usuario | `datos` = `{ cartas: { id: copias }, quiero: { id: copias } }` y `actualizado` |
-| `likes`, `copias`, `reportes` | usuario × baraja pública | uno por persona; los reportes con `motivo` (`nombre`, `nota`, `spam`, `otro`) y una nota de hasta 280 |
+| `likes`, `copias`, `reportes` | usuario × baraja pública | uno por persona; los reportes con `motivo` (`nombre`, `nota`, `foto`, `spam`, `otro`) y una nota de hasta 280 |
+
+**La foto de perfil no va en la base sino en Storage** (23-10-2026): un bucket
+**público**, `avatares`, con un archivo por usuario, `avatares/<user_id>`, sin
+extensión (el tipo va en el `Content-Type`). El navegador la recorta al
+cuadrado del centro y la achica a **128×128** antes de subirla
+(`src/components/nube/achicar-avatar.ts`): WebP, o JPEG si el navegador no sabe
+codificar WebP; queda en ~5–10 KB, así que el GB gratuito de Storage da para
+unas 100.000. El bucket acepta solo `image/webp` e `image/jpeg` de hasta **50
+KB**, aunque alguien llame a la API a mano. Las políticas de
+`storage.objects` dejan a cada usuario ver, subir, cambiar y borrar solo el
+suyo (`name = auth.uid()::text`); la lectura pública la da el bucket. En
+`perfiles.avatar` va cuándo se subió (ms), que la URL lleva como `?v=` para
+saltar la caché al cambiarla: `<url>/storage/v1/object/public/avatares/<user_id>?v=<ms>`.
+Hace falta un alias para ponerla: los dos viven en la misma fila.
 
 Una baraja pesa 1–2 KB y una colección unos KB: el plan gratuito (500 MB) da
 para cientos de miles. Todas las tablas cuelgan de `auth.users` con `on
@@ -196,17 +210,29 @@ cuatro peticiones como mucho.
   persona con sesión) y «Reportar».
 - Lo que escribe otro jugador (alias, nombre, nota) se limpia de caracteres de
   control y se pinta siempre como texto.
+- **La foto del dueño** sale junto al alias, en las tarjetas y en el detalle.
+  `listar_publicas` y `leer_publica` la devuelven como ruta,
+  `<user_id>?v=<ms>` (`ruta_avatar()`), o `null` si no hay o está oculta; el
+  navegador la valida con una regex antes de armar la URL
+  (`src/lib/avatar.ts`).
 
 ### Seguridad
 
-- **CSP**: `connect-src` es `'self'` más **solo** el host de Supabase de
-  `proyecto.json`. Lo agrega `scripts/csp-hashes.mjs`; `pnpm run audit` falla
-  si lleva otro, o si una clave secreta llega a `proyecto.json` o al build.
+- **CSP**: `connect-src` (la API) e `img-src` (las fotos de perfil) son los de
+  siempre más **solo** el host de Supabase de `proyecto.json`. Lo agrega
+  `scripts/csp-hashes.mjs`; `pnpm run audit` falla si cualquiera de los dos
+  lleva otro, o si una clave secreta llega a `proyecto.json` o al build.
 - La **publishable key** es pública por diseño; la seguridad es RLS. La secret
   key, la contraseña de la base y el Client secret de Google no entran nunca
   al repo.
 - No se muestra la foto de Google (para no abrir `img-src` a sus servidores),
-  ni el nombre ni el correo: solo el alias.
+  ni el nombre ni el correo: solo el alias y la foto que el usuario sube.
+- **Borrar la cuenta borra la foto antes**: Supabase no deja borrar archivos
+  de Storage desde SQL, así que `borrarCuenta()` hace el `DELETE` del archivo
+  por la API y después llama a `borrar_mi_cuenta`. Si ese `DELETE` falla, la
+  cuenta se borra igual y el archivo queda **huérfano**: sin dueño, sin la
+  versión en ningún perfil y sin ningún enlace que lo muestre. Se borra a mano
+  desde **Storage → `avatares`** si aparece alguno.
 
 ### Pruebas
 
@@ -393,6 +419,11 @@ Sin programar, desde el panel de Supabase:
   desmarcarla (un trigger lo impide desde el sitio). Para devolverla,
   desmarcar.
 - Si un alias es ofensivo: **Table Editor → `perfiles`** y cambiarlo.
+- **Si una foto es ofensiva** (llega como reporte con motivo `foto`): **Table
+  Editor → `perfiles`**, la fila del dueño de la baraja (`barajas.user_id`), y
+  marcar **`avatar_oculto`**. Deja de verse en la Comunidad en el acto y el
+  dueño no puede desmarcarla; si sube otra, tampoco se ve. Para borrar además
+  el archivo: **Storage → `avatares`**, el que se llama como su `user_id`.
 
 ## Probar la SQL sin Supabase
 
@@ -410,6 +441,21 @@ create function auth.uid() returns uuid language sql stable as
 grant usage on schema auth to anon, authenticated;
 grant usage on schema public to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated;
+```
+
+Para las fotos hace falta además un `storage` de imitación (en Supabase ya
+existe):
+
+```sql
+create schema storage;
+create table storage.buckets (id text primary key, name text not null,
+  public boolean default false, file_size_limit bigint, allowed_mime_types text[]);
+create table storage.objects (id uuid primary key default gen_random_uuid(),
+  bucket_id text references storage.buckets (id), name text, owner uuid,
+  unique (bucket_id, name));
+alter table storage.objects enable row level security;
+grant usage on schema storage to anon, authenticated;
+grant select, insert, update, delete on storage.objects to authenticated;
 ```
 
 Luego se corre el esquema (dos veces: tiene que aguantar volver a correrse) y

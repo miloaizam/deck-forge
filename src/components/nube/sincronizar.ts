@@ -114,7 +114,7 @@ export async function sincronizarAhora(): Promise<void> {
   const fin = getEstado();
   if (fin.fase !== "con-sesion" || fin.usuario.id !== uid) return; // salio a medias
   const ultima = Date.now();
-  guardarRecuerdo({ uid, ultima, alias: fin.alias, publicas });
+  guardarRecuerdo({ uid, ultima, alias: fin.alias, avatar: fin.avatar, publicas });
   conSesion({ ultima, publicas, error: null });
 
   if (primeraVez && plan.traidas > 0) {

@@ -13,7 +13,7 @@ import {
   SUPABASE_URL,
 } from "@/lib/supabase-config";
 import type { EstadoPublico } from "@/lib/sync";
-import { api, ErrorNube, mensajeDeError } from "./api";
+import { api, ErrorNube, mensajeDeError, storage } from "./api";
 
 /**
  * La cuenta: la sesion con Google y el estado de la sincronizacion.
@@ -47,6 +47,8 @@ export type EstadoNube =
       usuario: Usuario;
       /** El alias publico; null mientras no elija uno. */
       alias: string | null;
+      /** Cuando se subio la foto de perfil (ms), su version; null sin foto. */
+      avatar: number | null;
       sincronizando: boolean;
       /** Cuando termino la ultima sincronizacion, en ms. */
       ultima: number | null;
@@ -112,6 +114,8 @@ const recuerdoSchema = z.object({
   uid: z.string().check(z.maxLength(40)),
   ultima: z.nullable(z.int()),
   alias: z.nullable(z.string().check(z.maxLength(20))),
+  // Llego despues: un recuerdo viejo no la trae.
+  avatar: z._default(z.nullable(z.int().check(z.positive())), null),
   publicas: z.record(z.string().check(z.maxLength(10)), publicoSchema),
 });
 export type Recuerdo = z.infer<typeof recuerdoSchema>;
@@ -298,13 +302,14 @@ async function alCambiarSesion(session: Session | null): Promise<void> {
     fase: "con-sesion",
     usuario,
     alias: mio?.alias ?? null,
+    avatar: mio?.avatar ?? null,
     sincronizando: false,
     ultima: mio?.ultima ?? null,
     error: null,
     publicas: mio?.publicas ?? {},
   });
   vigilarCambios();
-  await leerAlias();
+  await leerPerfil();
   void sincronizar();
 }
 
@@ -374,31 +379,100 @@ export async function salir(): Promise<void> {
  * `supabase/esquema.sql`). Lo del navegador se queda. Lanza si no pudo.
  */
 export async function borrarCuenta(): Promise<void> {
+  // La foto primero: Supabase no deja borrar archivos de Storage desde SQL.
+  // Si falla, la cuenta se borra igual y el archivo queda huerfano (sin dueno
+  // ni enlace; docs/cuentas.md).
+  if (estado.fase === "con-sesion" && estado.avatar !== null) {
+    await storage(`avatares/${estado.usuario.id}`, {
+      metodo: "DELETE",
+      token: await token(),
+    }).catch(() => undefined);
+  }
   await api("rpc/borrar_mi_cuenta", { metodo: "POST", cuerpo: {}, token: await token() });
   await salir();
 }
 
 /* ------------------------------------------------------------------ *
- * El alias
+ * El perfil: el alias y la foto
  * ------------------------------------------------------------------ */
 
 /** Letras (con tildes y enie), numeros y guion bajo, de 3 a 20. */
 export const ALIAS_VALIDO = /^[A-Za-z0-9_ÁÉÍÓÚÜÑáéíóúüñ]{3,20}$/;
 
-const aliasSchema = z.array(z.object({ alias: z.string().check(z.regex(ALIAS_VALIDO)) }));
+// `select=*` y `avatar` opcional: asi se lee igual en una base que todavia no
+// tiene la columna (el esquema se pega a mano en Supabase).
+const perfilSchema = z.array(
+  z.object({
+    alias: z.string().check(z.regex(ALIAS_VALIDO)),
+    avatar: z._default(z.nullable(z.int().check(z.positive())), null),
+  }),
+);
 
-async function leerAlias(): Promise<void> {
+async function leerPerfil(): Promise<void> {
   if (estado.fase !== "con-sesion") return;
   try {
-    const filas = aliasSchema.parse(
-      await api(`perfiles?select=alias&user_id=eq.${estado.usuario.id}`, {
+    const filas = perfilSchema.parse(
+      await api(`perfiles?select=*&user_id=eq.${estado.usuario.id}`, {
         token: await token(),
       }),
     );
-    conSesion({ alias: filas[0]?.alias ?? null });
+    conSesion({ alias: filas[0]?.alias ?? null, avatar: filas[0]?.avatar ?? null });
+    recordarPerfil();
   } catch {
     // Se queda el recordado; la sincronizacion dira si no hay red.
   }
+}
+
+/** Guarda el alias y la foto en `deckforge-nube`, para pintarlos sin esperar. */
+function recordarPerfil(): void {
+  const r = leerRecuerdo();
+  if (r && estado.fase === "con-sesion" && r.uid === estado.usuario.id) {
+    guardarRecuerdo({ ...r, alias: estado.alias, avatar: estado.avatar });
+  }
+}
+
+/**
+ * Sube la foto ya achicada (`achicar-avatar.ts`) y apunta su version en el
+ * perfil. Hace falta un alias: la foto vive en la misma fila.
+ */
+export async function subirAvatar(foto: Blob): Promise<void> {
+  if (estado.fase !== "con-sesion" || !estado.alias) {
+    throw new ErrorNube(0, null, "Elige un alias antes de poner una foto.");
+  }
+  const t = await token();
+  await storage(`avatares/${estado.usuario.id}`, {
+    metodo: "POST",
+    archivo: foto,
+    token: t,
+  });
+  const version = Date.now();
+  await api(`perfiles?user_id=eq.${estado.usuario.id}`, {
+    metodo: "PATCH",
+    cuerpo: { avatar: version },
+    prefer: "return=minimal",
+    token: t,
+  });
+  conSesion({ avatar: version });
+  recordarPerfil();
+}
+
+/** Quita la foto: borra el archivo y la version del perfil. */
+export async function quitarAvatar(): Promise<void> {
+  if (estado.fase !== "con-sesion") return;
+  const t = await token();
+  await api(`perfiles?user_id=eq.${estado.usuario.id}`, {
+    metodo: "PATCH",
+    cuerpo: { avatar: null },
+    prefer: "return=minimal",
+    token: t,
+  });
+  conSesion({ avatar: null });
+  recordarPerfil();
+  // El archivo despues: sin la version en el perfil ya no se muestra en
+  // ningun lado, aunque borrarlo fallara.
+  await storage(`avatares/${estado.usuario.id}`, { metodo: "DELETE", token: t }).catch(
+    () => undefined,
+  );
 }
 
 export type ResultadoAlias = "ok" | "invalido" | "ocupado" | "error";
@@ -418,10 +492,7 @@ export async function guardarAlias(alias: string): Promise<ResultadoAlias> {
     return e instanceof ErrorNube && e.codigo === "23505" ? "ocupado" : "error";
   }
   conSesion({ alias: limpio });
-  const r = leerRecuerdo();
-  if (r && estado.fase === "con-sesion" && r.uid === estado.usuario.id) {
-    guardarRecuerdo({ ...r, alias: limpio });
-  }
+  recordarPerfil();
   return "ok";
 }
 

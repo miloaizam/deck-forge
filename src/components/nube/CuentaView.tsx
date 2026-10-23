@@ -3,22 +3,18 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  CloudAlert,
-  CloudCheck,
-  LogOut,
-  RefreshCw,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { CloudAlert, CloudCheck, LogOut, RefreshCw, Trash2 } from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { Skeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { mensajeDeError } from "./api";
 import { AliasForm } from "./AliasForm";
+import { Avatar } from "./Avatar";
 import { BotonGoogle, CrearCuenta } from "./BotonGoogle";
+import { FotoControles } from "./FotoControles";
 import { borrarCuenta, salir, sincronizar, tomarVuelta, useNube } from "./nube";
+import { rutaAvatar } from "@/lib/avatar";
 import { BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -107,7 +103,7 @@ export function CuentaView() {
     );
   }
 
-  const { usuario, alias, sincronizando, ultima, error } = nube;
+  const { usuario, alias, avatar, sincronizando, ultima, error } = nube;
 
   return (
     <div className="mt-8 grid max-w-4xl gap-4 md:grid-cols-2">
@@ -116,12 +112,7 @@ export function CuentaView() {
         className={cn(TARJETA, "sm:flex-row sm:items-center md:col-span-2")}
       >
         <div className="flex min-w-0 flex-1 items-center gap-4">
-          <span
-            aria-hidden="true"
-            className="bg-accent-soft text-accent grid size-14 shrink-0 place-items-center rounded-full"
-          >
-            <UserRound size={28} />
-          </span>
+          <Avatar ruta={rutaAvatar(usuario.id, avatar)} lado={56} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold">
               {usuario.nombre ?? usuario.email ?? "Tu cuenta"}
@@ -132,6 +123,9 @@ export function CuentaView() {
             <p className="text-muted mt-1 text-[13px]">
               Nadie más ve tu nombre ni tu correo.
             </p>
+            <div className="mt-3">
+              <FotoControles conAlias={alias !== null} conFoto={avatar !== null} />
+            </div>
           </div>
         </div>
         <button
@@ -204,8 +198,8 @@ export function CuentaView() {
         <div className="flex-1">
           <h2 className="font-semibold">Borrar la cuenta</h2>
           <p className="text-muted mt-1 text-[13px] leading-relaxed">
-            Se borran tu cuenta, tus barajas (también las públicas), tu colección y tus
-            likes. No se puede deshacer.{" "}
+            Se borran tu cuenta, tu foto, tus barajas (también las públicas), tu colección
+            y tus likes. No se puede deshacer.{" "}
             <Link href="/privacidad" className={ENLACE}>
               Ver políticas de privacidad
             </Link>
@@ -224,7 +218,7 @@ export function CuentaView() {
       <ConfirmDialog
         open={borrando}
         titulo="¿Borrar tu cuenta?"
-        mensaje="Se borrarán tu cuenta, tus barajas, tu colección y tus likes. No se puede deshacer."
+        mensaje="Se borrarán tu cuenta, tu foto, tus barajas, tu colección y tus likes. No se puede deshacer."
         confirmar="Borrar mi cuenta"
         onCancel={() => setBorrando(false)}
         onConfirm={() => {

@@ -17,9 +17,10 @@ Que revisa:
      y se comprueba que cubra todos sus scripts, sin fiarse del generador.
   6. Toda imagen referenciada en el HTML existe realmente en el build.
   7. Los dos esquemas (TypeScript y Pydantic) declaran los mismos valores.
-  8. Las cuentas: connect-src lleva el host de Supabase de
-     supabase/proyecto.json y ningun otro (solo 'self' si estan apagadas), y
-     ni ese archivo ni el build traen una clave secreta.
+  8. Las cuentas: connect-src (la API) e img-src (las fotos de perfil) llevan
+     el host de Supabase de supabase/proyecto.json y ningun otro (nada de
+     afuera si estan apagadas), y ni ese archivo ni el build traen una clave
+     secreta.
 """
 
 import base64
@@ -274,7 +275,7 @@ def es_clave_secreta(clave: str) -> bool:
 
 
 def revisar_nube() -> None:
-    """El host de Supabase en connect-src, y ninguna clave secreta publicada."""
+    """El host de Supabase en connect-src e img-src, y ninguna clave secreta publicada."""
     proyecto = json.loads((ROOT / "supabase" / "proyecto.json").read_text(encoding="utf-8"))
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL") or proyecto.get("url")
     clave = os.environ.get("NEXT_PUBLIC_SUPABASE_KEY") or proyecto.get("key")
@@ -292,18 +293,32 @@ def revisar_nube() -> None:
         and isinstance(clave, str)
         and CLAVE_NUBE.match(clave) is not None
     )
-    esperado = f"connect-src 'self' {url}" if activa else "connect-src 'self'"
+    # La API va por connect-src y las fotos de perfil (Storage) por img-src:
+    # el mismo host, y ningun otro.
+    extra = f" {url}" if activa else ""
+    esperados = {
+        "connect-src": f"connect-src 'self'{extra}",
+        "img-src": f"img-src 'self' data:{extra}",
+    }
     headers = OUT / "_headers"
     if not headers.exists():
         return  # ya lo reporta revisar_headers
     for linea in headers.read_text(encoding="utf-8").splitlines():
         if "Content-Security-Policy:" not in linea:
             continue
-        m = re.search(r"connect-src[^;]*", linea)
-        if not m or m.group(0).strip() != esperado:
-            fallo(f"connect-src deberia ser `{esperado}` y es `{m.group(0) if m else 'nada'}`")
-            return
-    print("Cuentas " + (f"encendidas: connect-src solo a {url}." if activa else "apagadas: connect-src 'self'."))
+        for directiva, esperado in esperados.items():
+            m = re.search(rf"{directiva}[^;]*", linea)
+            if not m or m.group(0).strip() != esperado:
+                fallo(f"{directiva} deberia ser `{esperado}` y es `{m.group(0) if m else 'nada'}`")
+                return
+    print(
+        "Cuentas "
+        + (
+            f"encendidas: connect-src e img-src solo a {url}."
+            if activa
+            else "apagadas: connect-src e img-src sin hosts de afuera."
+        )
+    )
 
 
 def main() -> int:

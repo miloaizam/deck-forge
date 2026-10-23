@@ -37,13 +37,16 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ### Pegar el esquema nuevo en Supabase
 
-- **Qué:** `listar_publicas` ganó `por_nombre` (el orden A-Z de la
-  Comunidad, 23-10-2026). Hasta que se pegue el esquema, ese botón da error;
-  el resto de la Comunidad funciona igual.
+- **Qué:** el esquema ganó dos cosas el 23-10-2026: `por_nombre` en
+  `listar_publicas` (el orden A-Z de la Comunidad) y la **foto de perfil**
+  (bucket `avatares`, sus políticas, las columnas `avatar` y `avatar_oculto` y
+  el motivo de reporte `foto`). Hasta que se pegue, el botón A-Z y subir una
+  foto dan error; el resto funciona igual.
 - **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
   → Run. Se puede correr las veces que haga falta.
 - **Terminado cuando:** en `/comunidad` el botón de las flechas ordena por
-  nombre sin error.
+  nombre sin error, y en «Tu cuenta» «Poner foto» sube una que se ve en la
+  navbar y en la Comunidad (Storage → `avatares` muestra el archivo).
 
 ### Probar las cuentas de punta a punta
 

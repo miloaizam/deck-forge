@@ -1,5 +1,6 @@
 import * as z from "zod/mini";
 
+import { esRutaAvatar } from "./avatar";
 import type { Afinidad } from "./deck-rules";
 import { ATRIBUTOS, deckSchema, ESCUELAS, RAZAS } from "./types";
 
@@ -90,6 +91,16 @@ const afinidadRemota = z.pipe(
 );
 
 const contador = z.int().check(z.nonnegative());
+
+/**
+ * La ruta de la foto del dueno (`<user_id>?v=<ms>`). Una que no valide se
+ * queda sin foto en vez de tirar la fila; una base con el esquema anterior no
+ * la manda.
+ */
+const avatarRemoto = z.pipe(
+  z.optional(z.unknown()),
+  z.transform((v: unknown) => (esRutaAvatar(v) ? v : null)),
+);
 const fecha = z.pipe(
   z.string().check(z.maxLength(40)),
   z.transform((t: string) => {
@@ -105,6 +116,7 @@ export const filaPublicaSchema = z.object({
   afinidad: afinidadRemota,
   portada: z.nullable(z.string().check(z.maxLength(40), z.regex(/^[a-z0-9-]+$/))),
   alias: texto(20),
+  avatar: avatarRemoto,
   likes: contador,
   copias: contador,
   likes_semana: contador,
@@ -136,6 +148,7 @@ export const barajaPublicaSchema = z.object({
   datos: deckSchema,
   afinidad: afinidadRemota,
   alias: texto(20),
+  avatar: avatarRemoto,
   likes: contador,
   copias: contador,
   publicada_en: fecha,
@@ -162,6 +175,7 @@ export const ID_PUBLICO =
 export const MOTIVOS_REPORTE = [
   { valor: "nombre", texto: "El nombre es ofensivo" },
   { valor: "nota", texto: "La nota es ofensiva" },
+  { valor: "foto", texto: "La foto de perfil es ofensiva" },
   { valor: "spam", texto: "Es spam o publicidad" },
   { valor: "otro", texto: "Otro motivo" },
 ] as const;

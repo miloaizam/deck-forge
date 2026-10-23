@@ -60,6 +60,10 @@ export default function PrivacidadPage() {
                 en tus barajas públicas.
               </li>
               <li>
+                Tu <strong className="text-ink">foto de perfil</strong>, si pones una. Se
+                guarda achicada, de 128 × 128 píxeles.
+              </li>
+              <li>
                 Tus <strong className="text-ink">barajas y tu colección</strong>: qué
                 cartas tienen, cuántas copias, y el nombre y la nota de cada baraja.
               </li>
@@ -80,8 +84,8 @@ export default function PrivacidadPage() {
           <div className={TEXTO}>
             <p>
               Tus barajas son <strong className="text-ink">privadas</strong>, salvo las
-              que publiques. Cualquiera puede ver una baraja pública, con tu alias, su
-              nombre, su nota y sus cartas.
+              que publiques. Cualquiera puede ver una baraja pública, con tu alias, tu
+              foto de perfil, su nombre, su nota y sus cartas.
             </p>
             <p>
               De los likes y las copias solo se muestra el total. Los reportes solo los ve
@@ -99,9 +103,9 @@ export default function PrivacidadPage() {
               <Link href="/cuenta" className={ENLACE}>
                 tu cuenta
               </Link>
-              , con «Borrar mi cuenta», se borran al instante tu cuenta y todos sus datos.
-              Lo que quede en el navegador se borra desde su configuración, eliminando los
-              datos del sitio.
+              , con «Borrar mi cuenta», se borran al instante tu cuenta y todos sus datos,
+              foto incluida. «Quitar foto» borra solo la foto. Lo que quede en el
+              navegador se borra desde su configuración, eliminando los datos del sitio.
             </p>
           </div>
         </section>

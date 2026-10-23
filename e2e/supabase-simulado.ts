@@ -50,6 +50,12 @@ export interface Simulado {
   barajas: Fila[];
   colecciones: Map<string, { datos: unknown; actualizado: number }>;
   perfiles: Map<string, string>;
+  /** La version de la foto de cada perfil (`perfiles.avatar`). */
+  avatares: Map<string, number>;
+  /** Los perfiles con la foto oculta por moderacion. */
+  avatarOculto: Set<string>;
+  /** Lo subido al bucket `avatares`, por user_id. */
+  archivos: Map<string, { tipo: string; bytes: Buffer }>;
   likes: Set<string>;
   copias: Set<string>;
   reportes: { user_id: string; baraja: string; motivo: string; nota: string }[];
@@ -70,6 +76,9 @@ export function nuevoSimulado(): Simulado {
     barajas: [],
     colecciones: new Map(),
     perfiles: new Map(),
+    avatares: new Map(),
+    avatarOculto: new Set(),
+    archivos: new Map(),
     likes: new Set(),
     copias: new Set(),
     reportes: [],
@@ -144,6 +153,12 @@ const json = (route: Route, cuerpo: unknown, status = 200) =>
 
 const visible = (f: Fila) => f.publica && !f.oculta && !f.borrada;
 
+/** Lo que devuelve `ruta_avatar` de esquema.sql. */
+function rutaDe(s: Simulado, uid: string): string | null {
+  const v = s.avatares.get(uid);
+  return v && !s.avatarOculto.has(uid) ? `${uid}?v=${v}` : null;
+}
+
 function filaPublica(s: Simulado, f: Fila) {
   const semana = [...s.likes].filter((l) => l.endsWith(`|${f.public_id}`)).length;
   return {
@@ -152,6 +167,7 @@ function filaPublica(s: Simulado, f: Fila) {
     afinidad: f.afinidad,
     portada: (f.datos as { portada?: string | null } | null)?.portada ?? null,
     alias: s.perfiles.get(f.user_id) ?? "",
+    avatar: rutaDe(s, f.user_id),
     likes: f.likes,
     copias: f.copias,
     likes_semana: semana,
@@ -183,6 +199,36 @@ export async function simularSupabase(
       });
     }
     const uid = quienEs(route);
+
+    // --- storage: las fotos de perfil, con las reglas del bucket ---
+    const archivo = ruta.match(/^\/storage\/v1\/object\/(public\/)?avatares\/([^/]+)$/);
+    if (archivo) {
+      const [, publico, nombre] = archivo;
+      const cors = { "access-control-allow-origin": "*" };
+      if (publico) {
+        const a = s.archivos.get(nombre);
+        return a
+          ? route.fulfill({
+              status: 200,
+              contentType: a.tipo,
+              body: a.bytes,
+              headers: cors,
+            })
+          : route.fulfill({ status: 400, headers: cors });
+      }
+      if (!uid || nombre !== uid) return json(route, { error: "Unauthorized" }, 403);
+      if (metodo === "DELETE") {
+        s.archivos.delete(nombre);
+        return json(route, {});
+      }
+      const tipo = req.headers()["content-type"] ?? "";
+      const bytes = req.postDataBuffer() ?? Buffer.alloc(0);
+      if (!["image/webp", "image/jpeg"].includes(tipo)) return json(route, {}, 415);
+      if (bytes.length > 51200) return json(route, {}, 413);
+      s.archivos.set(nombre, { tipo, bytes });
+      return json(route, { Key: `avatares/${nombre}` });
+    }
+
     const cuerpo: unknown = req.postData() ? JSON.parse(req.postData()!) : null;
     const eq = (k: string) => url.searchParams.get(k)?.replace(/^eq\./, "") ?? null;
 
@@ -270,7 +316,14 @@ export async function simularSupabase(
       if (!uid) return json(route, []);
       if (metodo === "GET") {
         const alias = s.perfiles.get(uid);
-        return json(route, alias ? [{ alias }] : []);
+        return json(route, alias ? [{ alias, avatar: s.avatares.get(uid) ?? null }] : []);
+      }
+      if (metodo === "PATCH") {
+        if (eq("user_id") !== uid || !s.perfiles.has(uid)) return json(route, [], 200);
+        const { avatar } = cuerpo as { avatar: number | null };
+        if (avatar === null) s.avatares.delete(uid);
+        else s.avatares.set(uid, avatar);
+        return route.fulfill({ status: 204 });
       }
       const { alias } = cuerpo as { alias: string };
       const ocupado = [...s.perfiles].some(
@@ -365,6 +418,7 @@ export async function simularSupabase(
         s.barajas = s.barajas.filter((f) => f.user_id !== uid);
         s.colecciones.delete(uid);
         s.perfiles.delete(uid);
+        s.avatares.delete(uid);
         return json(route, null);
       }
     }

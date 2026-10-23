@@ -50,6 +50,21 @@ test("el texto de otro jugador pierde los caracteres de control y se acota", () 
   assert.ok(!filas[0].alias.includes("\u0000"));
 });
 
+test("la foto del dueno llega solo si es una ruta del bucket", () => {
+  const uid = "0c9b7c1e-1a2b-4c3d-8e9f-0a1b2c3d4e5f";
+  const { filas } = leerListaPublica([
+    { ...fila, avatar: `${uid}?v=1700000000000` },
+    { ...fila, avatar: "https://malo.com/x.png" },
+    { ...fila, avatar: 42 },
+    fila, // una base con el esquema anterior no la manda
+  ]);
+  assert.equal(filas.length, 4, "una foto mala no tira la fila");
+  assert.deepEqual(
+    filas.map((f) => f.avatar),
+    [`${uid}?v=1700000000000`, null, null, null],
+  );
+});
+
 test("una afinidad desconocida llega como null", () => {
   const { filas } = leerListaPublica([{ ...fila, afinidad: "raza:Inventada" }]);
   assert.equal(filas[0].afinidad, null);
