@@ -1700,6 +1700,17 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
     2021, después de Conjuros. Ojo al convertir imágenes: `data:images`
     regenera toda WebP que falte, así que los originales de las cartas
     retiradas no pueden quedar en `images-src/`.
+  - **Los kits de Colecciones Raciales están revisados enteros**
+    (23-10-2026), con la lista de cartas del fandom cruzada por nombre con
+    el catálogo. **2021** (`CR2-`, 60 cartas): Mariamman es la única
+    reimpresión del formato. Ra, Quetzalcoatl y Viracocha se llaman igual
+    que cartas del catálogo pero son **cartas nuevas** (otro coste, otra
+    Fuerza, otro texto: el fandom las marca «Nueva»), y las demás
+    reimpresiones vienen de ediciones fuera del formato (Keltoi, Tierra
+    Austral, Hermanos Grimm…). **2020** (`CR-`, 154): sus 17 reimpresiones
+    del formato son las de la línea siguiente (`aa-033`…`aa-049`; el fandom
+    escribe «Spada de Lato»); el resto sale de ediciones fuera del formato,
+    y los *remakes* y oros son otras cartas.
   - **Las 17 de los mazos raciales de Dinastía del Dragón** (código
     `CR-0NN`, como Alfa) no traen frecuencia en la API ni en el arte —el
     escudo lleva el emblema de la raza—: quedan **Promocional**.
