@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Funnel, Search, X } from "lucide-react";
 
 import { Select } from "./Select";
@@ -22,6 +22,11 @@ interface FiltersProps {
   facets: Facets;
   onChange: (next: CatalogFilters) => void;
   onReset: () => void;
+  /**
+   * Botones de la vista que van a la derecha de «Filtros», en la misma fila:
+   * la zona del constructor, las acciones de la coleccion.
+   */
+  acciones?: ReactNode;
 }
 
 /**
@@ -31,7 +36,7 @@ interface FiltersProps {
  * pantalla, sobre todo en el telefono; plegados, la primera cosa que se ve al
  * entrar al catalogo son las cartas.
  */
-export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
+export function Filters({ filters, facets, onChange, onReset, acciones }: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const buscador = useRef<HTMLInputElement>(null);
@@ -71,8 +76,10 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
           contenedor es la fila y no la seccion: un contenedor crea un
           contexto de apilamiento, y los desplegables del panel quedarian
           debajo de la grilla. */}
-      <div className="@container flex items-center gap-2 sm:gap-3">
-        <div className="relative min-w-0 flex-1 @2xl:flex-none @2xl:basis-1/2">
+      <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
+        {/* Con `acciones` la fila puede no caber: bajo 12rem de buscador, los
+            botones pasan a una segunda linea, a la derecha. */}
+        <div className="relative min-w-48 flex-1 @2xl:flex-none @2xl:basis-1/2">
           <Search
             size={17}
             aria-hidden="true"
@@ -145,6 +152,7 @@ export function Filters({ filters, facets, onChange, onReset }: FiltersProps) {
               </span>
             )}
           </button>
+          {acciones}
         </div>
       </div>
 

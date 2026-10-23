@@ -18,6 +18,8 @@ interface SelectProps {
    * edicion, que guarda el slug pero muestra el titulo.
    */
   format?: (value: string) => string;
+  /** La etiqueta solo para lectores, cuando el selector va en una fila sin titulos. */
+  etiquetaOculta?: boolean;
 }
 
 /**
@@ -58,6 +60,7 @@ export function Select({
   onChange,
   placeholder = "Todos",
   format = (v) => v,
+  etiquetaOculta = false,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -179,7 +182,10 @@ export function Select({
     <div ref={rootRef} className="relative flex min-w-0 flex-col gap-1.5">
       <span
         id={`${id}-label`}
-        className="text-muted text-[11px] tracking-[0.18em] uppercase"
+        className={cn(
+          "text-muted text-[11px] tracking-[0.18em] uppercase",
+          etiquetaOculta && "sr-only",
+        )}
       >
         {label}
       </span>

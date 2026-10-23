@@ -273,6 +273,17 @@ function Coleccion({ cards }: { cards: Card[] }) {
         facets={facets}
         onChange={setFilters}
         onReset={() => setFilters(EMPTY_FILTERS)}
+        acciones={
+          <ColeccionAcciones
+            coleccion={coleccion}
+            onImagen={
+              vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
+            }
+            onLista={vistaReal === "agregar" || lista.length === 0 ? null : listaTexto}
+            generandoImagen={generando}
+            soloLectura={compartida !== null}
+          />
+        }
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -302,15 +313,6 @@ function Coleccion({ cards }: { cards: Card[] }) {
             </button>
           ))}
         </div>
-        <ColeccionAcciones
-          coleccion={coleccion}
-          onImagen={
-            vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
-          }
-          onLista={vistaReal === "agregar" || lista.length === 0 ? null : listaTexto}
-          generandoImagen={generando}
-          soloLectura={compartida !== null}
-        />
       </div>
 
       {lista.length > 0 ? (

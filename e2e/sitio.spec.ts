@@ -146,7 +146,7 @@ test("«Lista» copia la colección como texto para un chat", async ({ page, con
     );
   });
   await page.goto("/coleccion/");
-  await page.getByRole("button", { name: "Lista", exact: true }).click();
+  await page.getByRole("button", { name: "Copiar la lista como texto" }).click();
   await expect(page.getByText(/^Lista copiada/).first()).toBeAttached();
   const texto = await page.evaluate(() => navigator.clipboard.readText());
   expect(texto).toBe(

@@ -1121,6 +1121,8 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
+  Sus acciones (imagen, lista, enlace y vaciar) son iconos sin texto en la
+  fila del buscador, a la derecha de «Filtros» (`acciones` de `Filters`).
 - **«Imagen»** baja un JPEG de la pestaña que se ve, con sus filtros y su
   orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
   Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
@@ -1844,7 +1846,8 @@ quien toca el código.
   cambia de afinidad, se corrige.
 - **La Comunidad** (`/comunidad`, `ComunidadView.tsx`): tarjetas como las de
   Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
-  copiadas), filtro por afinidad y buscador, todo en la URL. Se ve sin
+  copiadas) en un botón dentro del buscador que pasa al siguiente con cada
+  pulsación, como el del catálogo, filtro por afinidad, todo en la URL. Se ve sin
   cuenta. El detalle es **`/baraja/?p=<public_id>`** (`usePublica`), con el
   alias, el **like**, «Guardar en mis barajas» (cuenta una **copia**, una vez
   por persona con sesión) y **Reportar**. «Copiar enlace» copia esa
@@ -2233,7 +2236,7 @@ descarga en iOS. Se reprodujo en Chromium con un teléfono emulado, red lenta
 y fallos inyectados: 12 huecos antes, cero después.
 
 El modal de una carta, abierto desde el constructor, suma y **quita** copias.
-Quitar sale de la zona elegida en "Agregar a" si la carta está ahí y, si no,
+Quitar sale de la zona elegida («Baraja / Side deck», junto a «Filtros») si la carta está ahí y, si no,
 de la otra: el modal cuenta las dos juntas.
 
 **El constructor guarda solo un borrador** (`src/lib/deck-draft.ts`) para

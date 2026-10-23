@@ -355,8 +355,14 @@ una carta.
 `SEGMENTO_ACTIVO` / `SEGMENTO_INACTIVO` (cada opción, `aria-pressed`). La
 activa va en violeta lleno con su contador al 90 % de blanco. El anillo va
 **hacia adentro**, porque la cinta puede scrollear y su `overflow` cortaría uno
-hacia afuera. Son dos: «Agregar a: Baraja / Side deck» y «Tengo / Me faltan /
-Agregar cartas».
+hacia afuera. Son tres: «Baraja / Side deck» del constructor, «Tengo / Me
+faltan / Agregar cartas» y «Privada / Pública».
+
+**La fila del buscador** (`Filters.tsx`) es la misma en el catálogo, el
+constructor, la colección y la Comunidad: el campo con el orden dentro y, a la
+derecha, «Filtros» y lo que la vista sume en `acciones` —«Baraja / Side deck»
+sin rótulo en el constructor, los iconos de imagen, lista, enlace y vaciar en la
+colección—. Si el campo bajara de 12rem, los botones pasan a otra línea.
 
 ### Campos
 

@@ -12,7 +12,7 @@ import {
   type Coleccion,
 } from "@/lib/coleccion";
 import { coleccionUrl } from "@/lib/coleccion-code";
-import { BOTON_ICONO, BOTON_SECUNDARIO, HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_ICONO, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface ColeccionAccionesProps {
@@ -32,8 +32,6 @@ interface ColeccionAccionesProps {
   /** Una coleccion compartida: solo se puede bajar su imagen. */
   soloLectura?: boolean;
 }
-
-const BOTON = BOTON_SECUNDARIO;
 
 /**
  * La imagen y el texto de la lista que se ve, el enlace para compartir la
@@ -82,17 +80,25 @@ export function ColeccionAcciones({
     }
   };
 
+  // Iconos sin texto, con su nombre en el title y en aria-label: van en la
+  // fila del buscador, a la derecha de «Filtros» (`acciones` de Filters).
   const imagen = (
     <button
       type="button"
       onClick={() => onImagen?.()}
       disabled={!onImagen || generandoImagen}
       aria-busy={generandoImagen}
+      aria-label={
+        generandoImagen ? "Generando la imagen…" : "Descargar la lista como imagen"
+      }
       title="Descargar la lista que se ve como imagen"
-      className={BOTON}
+      className={BOTON_ICONO}
     >
-      <ImageDown size={14} aria-hidden="true" />
-      {generandoImagen ? "Generando…" : "Imagen"}
+      <ImageDown
+        size={16}
+        aria-hidden="true"
+        className={cn(generandoImagen && "animate-pulse motion-reduce:animate-none")}
+      />
     </button>
   );
   const lista = (
@@ -100,16 +106,16 @@ export function ColeccionAcciones({
       type="button"
       onClick={() => void copiarLista()}
       disabled={!onLista}
+      aria-label="Copiar la lista como texto"
       title="Copiar la lista que se ve como texto, para pegarla en un chat"
-      className={BOTON}
+      className={BOTON_ICONO}
     >
-      <ClipboardList size={14} aria-hidden="true" />
-      Lista
+      <ClipboardList size={16} aria-hidden="true" />
     </button>
   );
   if (soloLectura) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex shrink-0 gap-2">
         {imagen}
         {lista}
       </div>
@@ -117,17 +123,18 @@ export function ColeccionAcciones({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex shrink-0 gap-2">
       {imagen}
       {lista}
       <button
         type="button"
         onClick={() => void compartir()}
         disabled={vacia}
-        className={BOTON}
+        aria-label="Copiar enlace de la colección"
+        title="Copiar enlace de la colección"
+        className={BOTON_ICONO}
       >
-        <Link2 size={14} aria-hidden="true" />
-        Compartir
+        <Link2 size={16} aria-hidden="true" />
       </button>
       <button
         type="button"

@@ -33,6 +33,16 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-23",
+    version: "5.3.0",
+    tipo: "Mejora",
+    titulo: "Todo a mano en la barra de búsqueda",
+    texto: [
+      "En el constructor, «Baraja» y «Side deck» van junto al botón de filtros, y en la colección sus botones de imagen, lista, enlace y vaciar también, ahora como iconos.",
+      "La Comunidad tiene la misma barra de búsqueda que el catálogo, con el orden dentro: cada pulsación pasa a más likes, tendencia, más recientes o más copiadas.",
+    ],
+  },
+  {
     fecha: "2026-10-22",
     version: "5.2.0",
     tipo: "Mejora",

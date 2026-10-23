@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Heart, Search, Users } from "lucide-react";
+import { Clock, Copy, Heart, Search, TrendingUp, Users } from "lucide-react";
 
 import { marcarCargada } from "../CardTile";
 import { Pagination } from "../Pagination";
@@ -27,15 +27,7 @@ import {
 import { pageRange } from "@/lib/catalog";
 import { irArriba } from "@/lib/scroll";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
-import {
-  ENLACE,
-  SEGMENTO,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
-  SEGMENTOS,
-  TEXT_FIELD,
-  VACIO,
-} from "@/lib/ui";
+import { BOTON_ICONO_LIBRE_COMPACTO, ENLACE, TEXT_FIELD, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const FECHA = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
@@ -167,14 +159,16 @@ export function ComunidadView() {
   const totalPaginas = r.fase === "ok" ? Math.max(1, Math.ceil(r.total / POR_PAGINA)) : 1;
 
   return (
-    <div className="mt-8 flex flex-col gap-5">
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="relative min-w-60 flex-1">
-          <span className="sr-only">Buscar por nombre</span>
+    <div className="mt-10 flex flex-col gap-5">
+      {/* La misma fila que el buscador del catalogo (Filters.tsx): el campo
+          ocupa lo que dejan los botones y, desde 42rem de fila, la mitad; el
+          orden va dentro del campo y cada pulsacion pasa al siguiente. */}
+      <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="relative min-w-48 flex-1 @2xl:flex-none @2xl:basis-1/2">
           <Search
-            size={16}
+            size={17}
             aria-hidden="true"
-            className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+            className="text-muted pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2"
           />
           <input
             type="search"
@@ -182,37 +176,39 @@ export function ComunidadView() {
             onChange={(e) => setTexto(e.target.value)}
             maxLength={60}
             placeholder="Nombre de la baraja…"
-            className={cn(TEXT_FIELD, "pl-9")}
+            aria-label="Buscar por nombre"
+            className={cn(TEXT_FIELD, "pr-12 pl-10")}
           />
-        </label>
-        <div className="w-full sm:w-64">
+          <button
+            type="button"
+            onClick={() => cambiar({ orden: siguienteOrdenComunidad(consulta.orden) })}
+            aria-label={`Ordenar: ${ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}. Pulsa para cambiar.`}
+            title={ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}
+            className={cn(
+              BOTON_ICONO_LIBRE_COMPACTO,
+              "absolute top-1/2 right-1 -translate-y-1/2",
+              consulta.orden !== "likes" &&
+                "bg-accent-soft text-accent hover:text-accent",
+            )}
+          >
+            <IconoOrden orden={consulta.orden} />
+          </button>
+        </div>
+        <div className="ml-auto w-full @md:w-60">
           <Select
             label="Afinidad"
+            etiquetaOculta
             value={consulta.afinidad}
             options={[...AFINIDADES]}
             onChange={(v) => cambiar({ afinidad: v })}
-            placeholder="Todas"
+            placeholder="Todas las afinidades"
             format={etiquetaAfinidad}
           />
         </div>
       </div>
-
-      <div role="group" aria-label="Ordenar" className={cn(SEGMENTOS, "self-start")}>
-        {ORDENES_COMUNIDAD.map((o) => (
-          <button
-            key={o}
-            type="button"
-            aria-pressed={consulta.orden === o}
-            onClick={() => cambiar({ orden: o })}
-            className={cn(
-              SEGMENTO,
-              consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-            )}
-          >
-            {ETIQUETA_ORDEN_COMUNIDAD[o]}
-          </button>
-        ))}
-      </div>
+      <p className="text-muted -mt-2 text-[13px]">
+        Orden: {ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}
+      </p>
 
       {r.fase === "cargando" && (
         <div aria-busy="true">
@@ -324,4 +320,25 @@ export function ComunidadView() {
       )}
     </div>
   );
+}
+
+/** El siguiente orden de la lista, y tras el ultimo, el primero. */
+function siguienteOrdenComunidad(orden: OrdenComunidad): OrdenComunidad {
+  const i = ORDENES_COMUNIDAD.indexOf(orden);
+  return ORDENES_COMUNIDAD[(i + 1) % ORDENES_COMUNIDAD.length];
+}
+
+/** El icono del orden puesto: lo que se ve dentro del buscador. */
+function IconoOrden({ orden }: { orden: OrdenComunidad }) {
+  const props = { size: 16, "aria-hidden": true } as const;
+  switch (orden) {
+    case "likes":
+      return <Heart {...props} />;
+    case "tendencia":
+      return <TrendingUp {...props} />;
+    case "recientes":
+      return <Clock {...props} />;
+    case "copias":
+      return <Copy {...props} />;
+  }
 }

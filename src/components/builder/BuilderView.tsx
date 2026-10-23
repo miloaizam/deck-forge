@@ -145,35 +145,47 @@ function ZonaSwitch({
   enPrincipal: number;
   enElSide: number;
 }) {
-  const opciones: { z: DeckZone; texto: string; cuenta: string }[] = [
-    { z: "principal", texto: "Baraja", cuenta: `${enPrincipal}/${DECK_TOTAL}` },
-    { z: "side", texto: "Side deck", cuenta: `${enElSide}/${SIDE_TOTAL}` },
+  const opciones: { z: DeckZone; texto: string; resto: string; cuenta: string }[] = [
+    {
+      z: "principal",
+      texto: "Baraja",
+      resto: "",
+      cuenta: `${enPrincipal}/${DECK_TOTAL}`,
+    },
+    { z: "side", texto: "Side", resto: " deck", cuenta: `${enElSide}/${SIDE_TOTAL}` },
   ];
 
+  // Va en la fila del buscador, a la derecha de «Filtros» (`acciones` de
+  // Filters). Las medidas miran esa fila (`@container`): angosta, solo
+  // «Baraja» / «Side»; con sitio, «Side deck» y la cuenta de cada una.
   return (
-    <div className="flex flex-wrap items-center gap-2 text-[13px]">
-      <span className="text-muted">Agregar a:</span>
-      <div role="group" aria-label="Agregar a" className={SEGMENTOS}>
-        {opciones.map(({ z, texto, cuenta }) => (
-          <button
-            key={z}
-            type="button"
-            onClick={() => onZona(z)}
-            aria-pressed={zona === z}
-            className={cn(SEGMENTO, zona === z ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO)}
+    <div role="group" aria-label="Agregar a" className={cn(SEGMENTOS, "h-11 shrink-0")}>
+      {opciones.map(({ z, texto, resto, cuenta }) => (
+        <button
+          key={z}
+          type="button"
+          onClick={() => onZona(z)}
+          aria-pressed={zona === z}
+          className={cn(
+            SEGMENTO,
+            "h-full px-3",
+            zona === z ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
+          )}
+        >
+          <span>
+            {texto}
+            {resto && <span className="hidden @xl:inline">{resto}</span>}
+          </span>
+          <span
+            className={cn(
+              "hidden text-[12px] tabular-nums @lg:inline",
+              zona === z ? "text-white/90" : "text-muted",
+            )}
           >
-            {texto}{" "}
-            <span
-              className={cn(
-                "text-[12px] tabular-nums",
-                zona === z ? "text-white/90" : "text-muted",
-              )}
-            >
-              {cuenta}
-            </span>
-          </button>
-        ))}
-      </div>
+            {cuenta}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -431,7 +443,7 @@ export function BuilderView({
   };
 
   /**
-   * Quita una copia desde el modal. Sale de la zona elegida en "Agregar a" si
+   * Quita una copia desde el modal. Sale de la zona elegida (Baraja / Side) si
    * la carta esta ahi, y si no de la otra: el modal cuenta las dos juntas, asi
    * que tiene que poder quitar de las dos.
    */
@@ -537,13 +549,14 @@ export function BuilderView({
               setFilters(EMPTY_FILTERS);
               setPage(1);
             }}
-          />
-
-          <ZonaSwitch
-            zona={zona}
-            onZona={setZona}
-            enElSide={stats.totalSide}
-            enPrincipal={stats.totalPrincipal}
+            acciones={
+              <ZonaSwitch
+                zona={zona}
+                onZona={setZona}
+                enElSide={stats.totalSide}
+                enPrincipal={stats.totalPrincipal}
+              />
+            }
           />
 
           {/* Que el catalogo este acotado tiene que verse, o parece que faltan
