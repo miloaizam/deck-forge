@@ -213,7 +213,9 @@ superficies, no de la sombra.
   con `px-4 sm:px-6` (y el esqueleto de carga, igual). La guía de marca
   hablaba de 1040, pero la grilla de cartas y el constructor con su panel
   necesitan el ancho; el texto corrido se acota por su cuenta (`max-w-[54ch]`,
-  la línea de tiempo a 760 px).
+  la línea de tiempo a 760 px). Los documentos (DAR, Fe de Erratas, Banlist)
+  llevan el índice al costado desde `lg`, y el DAR acota su texto a 46rem: es
+  lectura de consulta, con reglas sangradas bajo su letra, no prosa corrida.
 - Espaciado en múltiplos de 4; los saltos entre secciones son grandes (48–64 px).
 - Mobile-first: la grilla arranca en 2 columnas y crece; el panel de baraja pasa
   a hoja inferior bajo `lg`, con sus botones (guardar, vaciar) en un pie fijo

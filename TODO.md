@@ -44,7 +44,7 @@ como defecto y que hoy son decisiones de la marca; no se tocan sin decidirlo.
 
 ### Documentos con media pantalla vacía
 
-- **Qué:** bajo las tarjetas de la Fe de Erratas y la Banlist no hay nada.
+- **Qué:** bajo las tres tarjetas (DAR, Fe de Erratas y Banlist) no hay nada.
 - **Opciones:** dejarla así (es una página de paso) o agregar debajo lo último
   que cambió en cada documento.
 

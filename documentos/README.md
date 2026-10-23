@@ -3,14 +3,20 @@
 Transcripciones de DeckForge de los documentos oficiales del formato Escuelas
 Elementales, con el estilo del sitio. Esta carpeta es la **fuente**: los datos y
 el generador. Los PDF viven en **`public/reglas/`** y se publican; la página
-`/documentos` los enlaza para abrir y descargar, y `/documentos/fe-de-erratas` y
-`/documentos/banlist` los dibujan en HTML con estos mismos datos. El catálogo
-y el validador de barajas los aplican (`src/lib/erratas.ts`).
+`/documentos` los enlaza para abrir y descargar, y `/documentos/dar`,
+`/documentos/fe-de-erratas` y `/documentos/banlist` los dibujan en HTML con
+estos mismos datos. El catálogo y el validador de barajas aplican la Fe de
+Erratas y la Banlist (`src/lib/erratas.ts`).
+
+Los tres siguen **el mismo molde**, en el sitio y en PDF: portada (en el PDF),
+índice enlazado, secciones con el mismo título y "Notas de la transcripción"
+al final, con lo que se corrigió del original.
 
 | Archivo | Qué es | Original |
 |---|---|---|
-| `public/reglas/FeDeErratas-260926.pdf` | 63 cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado. | *Fe de Erratas: Escuelas Elementales*, junio de 2022 (20 páginas) |
-| `public/reglas/BanlistEstandar-260926.pdf` | 9 prohibidas, 31 Únicas, y 37 erratas y ajustes. Las cartas en observación siguen en el JSON (se aplican) pero no se publican. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
+| `public/reglas/DAR-261023.pdf` | Cómo se juega: 10 secciones y un anexo, 90 reglas con letra, 48 conceptos de juego y las cartas de ejemplo del catálogo. | *Documento Actualizado de Reglas*, revisión de julio de 2021 (62 páginas) |
+| `public/reglas/FeDeErratas-261023.pdf` | 63 cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado. | *Fe de Erratas: Escuelas Elementales*, junio de 2022 (20 páginas) |
+| `public/reglas/BanlistEstandar-261023.pdf` | 9 prohibidas, 31 Únicas, y 37 erratas y ajustes. Las cartas en observación siguen en el JSON (se aplican) pero no se publican. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
 
 El sufijo es la fecha de la transcripción (AAMMDD). Una versión nueva del
 documento oficial es un archivo nuevo, no se pisa el anterior: al cambiarlo,
@@ -29,23 +35,43 @@ actualizar `VERSION` en `generar.mjs` y `DOCUMENTOS` en `src/lib/documentos.ts`
   carta sino una regla de construcción).
 - **`fuente/generar.mjs`** arma el HTML de cada documento y lo imprime a PDF con
   Chromium. Colores del tema oscuro de `src/app/globals.css`, Space Grotesk y
-  el logotipo de `public/brand/`.
+  el logotipo de `public/brand/`. Las cartas de ejemplo del DAR salen de
+  `public/data/cards.json` y `public/cards/`.
 
 ```bash
-pnpm run build                    # la tipografía sale del build, como en docs/og-image.html
 node documentos/fuente/generar.mjs
 ```
 
 Playwright **no** es dependencia del repo: el script lo busca en
 `PLAYWRIGHT_PATH` o en la instalación global de Node.
 
-Los PDF van **sin etiquetar** (`tagged: false`). Con la tipografía variable,
-Chromium la incrusta como Type3, y las etiquetas subían la Fe de Erratas a unos
-990 KB, pegada al límite de 1 MB del pre-commit. Sin ellas pesa unos 750 KB.
-El texto se sigue pudiendo seleccionar y buscar, y los PDF llevan marcadores.
+**La tipografía va en cuatro pesos estáticos** (`fuente/fuentes/sg-400…700.woff2`,
+~13 KB cada uno), no la variable del sitio. Con la variable, Chromium la
+incrusta como Type3 **una vez por hoja**: el DAR pesaba 2 MB y la Fe de Erratas
+830 KB. Estática, va como TrueType una sola vez (DAR ~890 KB, Fe de Erratas
+~480 KB, Banlist ~165 KB). El pie lleva la de 400 incrustada, porque Chromium
+lo dibuja aparte y no ve los `@font-face` de la página. Se sacaron de la
+variable que baja `next/font` (subconjunto latino) con fontTools, que no es
+dependencia del repo:
 
-Los originales **no se suben**: el de la banlist pesa 6 MB y el pre-commit
-corta en 1 MB.
+```bash
+pip install fonttools brotli          # en un venv aparte
+fonttools varLib.instancer <space-grotesk>.woff2 wght=400 --static -o sg-400.woff2
+```
+
+Space Grotesk es SIL OFL: se puede redistribuir, y el copyright y el enlace a
+la licencia van en los metadatos de cada archivo.
+
+Las **cartas del DAR van en JPEG** y achicadas al ancho al que se imprimen:
+Chromium guarda tal cual una imagen JPEG, pero descomprime una WebP y la
+guarda sin pérdida.
+
+Los PDF van **sin etiquetar** (`tagged: false`): las etiquetas suben el peso
+y el límite es 1 MB. El texto se sigue pudiendo seleccionar y buscar, y los
+PDF llevan marcadores y un índice enlazado.
+
+Los originales **no se suben**: el de la banlist pesa 6 MB, el del DAR 4,3 MB,
+y el pre-commit corta en 1 MB.
 
 ## Criterio de la transcripción
 
@@ -88,3 +114,29 @@ Se hizo contra los dos originales:
     carta es **Traer el Horror** (BU-081), que sí está en el catálogo. Se
     corrigió en `fuente/banlist-estandar.json` y en el PDF, y quedó en las
     notas de la transcripción.
+
+## El DAR (23-10-2026)
+
+*Documento Actualizado de Reglas*, revisión de julio de 2021: 62 páginas de
+Word con las cartas escaneadas y la marca de MyL en cada hoja. Se transcribió
+a `fuente/dar.json` sección por sección desde el texto extraído
+(`pdftotext`), cotejando cada página con su imagen.
+
+- **Criterio**: el de los otros dos. El texto de las reglas se copia del
+  original y solo se corrige lo que es error del documento (palabras pegadas o
+  partidas, ortografía, una frase duplicada); cada corrección está en
+  `correcciones`, que la página y el PDF publican como "Notas de la
+  transcripción".
+- **Numeración**: el original no numera los apartados en el texto pero sí los
+  cita ("Ver 10.2 Alimentar", "sección 6.6"). Se numeraron en orden y con eso
+  las citas del original aciertan, salvo la de Alimentar (es el 10.3). Las
+  letras de las reglas se conservan aunque salten (Tótems pasa de la E a la
+  G), porque así se citan.
+- **Cartas de ejemplo**: las del catálogo, no los escaneos. Seis no son del
+  formato (Ningirsu, Soma, Sir Héctor, Aphofis, Kay, Walkirias) y van con su
+  nombre y sin imagen. El pie de un ejemplo nombraba a Zeus Olimpios y la
+  imagen era Shingas: se dejó la de la imagen.
+- **Diagramas**: los tres del original, redibujados (anatomía de la carta,
+  arena de juego y árbol de resolución).
+- **Cotejo**: 11 secciones, 90 reglas con letra y los 48 conceptos de la
+  sección 10, en el orden del original; `documentos.test.ts` lo fija.

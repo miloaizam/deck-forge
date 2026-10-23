@@ -48,6 +48,7 @@ const PAGINAS = [
   "/coleccion/?ver=faltan",
   "/coleccion/?ver=agregar",
   "/documentos/",
+  "/documentos/dar/",
   "/documentos/fe-de-erratas/",
   "/documentos/banlist/",
   "/novedades/",

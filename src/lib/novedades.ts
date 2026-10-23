@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-23",
+    version: "5.7.0",
+    tipo: "Novedad",
+    titulo: "Las reglas del juego, en Documentos",
+    texto: [
+      "Documentos suma el Documento Actualizado de Reglas (DAR) del formato: cómo se juega, regla por regla. Las cartas de ejemplo son las del catálogo y llevan a ellas, las referencias entre reglas son enlaces, y las partes de una carta, la arena de juego y el árbol de habilidades están redibujados.",
+      "Los tres documentos se leen igual: un índice al costado que marca dónde vas, un enlace para citar cada sección o regla, y las notas de lo que se corrigió al transcribirlos. Sus PDF también tienen el mismo formato y pesan menos.",
+    ],
+  },
+  {
+    fecha: "2026-10-23",
     version: "5.6.0",
     tipo: "Novedad",
     titulo: "Las cartas más usadas, en la portada",

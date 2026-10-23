@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 
 import { DiffText, MARCA_ENTRA, MARCA_SALE } from "@/components/documentos/DiffText";
 import { DocumentHeader } from "@/components/documentos/DocumentHeader";
+import { DocumentLayout } from "@/components/documentos/DocumentLayout";
+import { DocumentSection } from "@/components/documentos/DocumentSection";
+import { ID_NOTAS, NotasTranscripcion } from "@/components/documentos/NotasTranscripcion";
 import {
   DOCUMENTOS,
   EDICIONES_FE_DE_ERRATAS,
@@ -11,8 +14,6 @@ import {
 } from "@/lib/documentos";
 import { FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
 import { wordDiff } from "@/lib/word-diff";
-import { BOTON_SECUNDARIO_COMPACTO, CONTADOR } from "@/lib/ui";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Fe de Erratas",
@@ -34,7 +35,7 @@ const ROTULO = "text-muted text-[11px] font-semibold tracking-[0.18em] uppercase
 /**
  * La Fe de Erratas en HTML, dibujada con los mismos datos que su PDF
  * (`documentos/fuente/fe-de-erratas.json`). Server Component: no manda
- * JavaScript propio, y el indice son anclas.
+ * JavaScript propio salvo el indice, que es el de los tres documentos.
  */
 export default function FeDeErratasPage() {
   const doc = FE_DE_ERRATAS;
@@ -48,51 +49,40 @@ export default function FeDeErratasPage() {
         doc={DOCUMENTOS.feDeErratas}
         titulo="Fe de Erratas"
         bajada={`${doc.entradas.length} cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado.`}
-        origen={`Transcripción de DeckForge del documento oficial «${doc.original.titulo}», última actualización ${doc.original.actualizacion}. Versión del ${fechaLarga(doc.version)}. El texto de las cartas se copia tal cual del original; solo se corrigieron erratas del propio documento, anotadas en cada carta.`}
+        origen={`Transcripción de DeckForge del documento oficial «${doc.original.titulo}», última actualización ${doc.original.actualizacion}. Versión del ${fechaLarga(doc.version)}. El texto de las cartas se copia tal cual del original; solo se corrigieron erratas del propio documento, anotadas en cada carta y reunidas al final.`}
         peso={pesoDelPdf(DOCUMENTOS.feDeErratas)}
       />
 
-      <nav aria-label="Ediciones" className="mt-8">
-        <ul className="flex flex-wrap gap-2">
-          {grupos.map(([ed, l]) => (
-            <li key={ed}>
-              <a
-                href={`#${ancla(ed)}`}
-                className={cn(BOTON_SECUNDARIO_COMPACTO, "gap-2")}
-              >
-                {ed}
-                <span className="bg-accent-soft text-accent rounded-chip px-1.5 text-[11px] font-semibold tabular-nums">
-                  {l.length}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {grupos.map(([ed, l]) => (
-        <section
-          key={ed}
-          id={ancla(ed)}
-          aria-labelledby={`t-${ancla(ed)}`}
-          className="mt-12 scroll-mt-24"
-        >
-          <h2
-            id={`t-${ancla(ed)}`}
-            className="text-ink flex items-center gap-2 text-xl font-bold"
-          >
-            {ed}
-            <span className={CONTADOR}>{l.length}</span>
-          </h2>
-          <ul className="mt-5 flex flex-col gap-4">
-            {l.map((e) => (
-              <li key={`${e.nombre}-${e.codigo}`}>
-                <Ficha e={e} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <DocumentLayout
+        indice={[
+          ...grupos.map(([ed, l]) => ({ id: ancla(ed), etiqueta: ed, cuenta: l.length })),
+          { id: ID_NOTAS, etiqueta: "Notas de la transcripción" },
+        ]}
+      >
+        {grupos.map(([ed, l]) => (
+          <DocumentSection key={ed} id={ancla(ed)} titulo={ed} cuenta={l.length}>
+            <ul className="flex flex-col gap-4">
+              {l.map((e) => (
+                <li key={`${e.nombre}-${e.codigo}`}>
+                  <Ficha e={e} />
+                </li>
+              ))}
+            </ul>
+          </DocumentSection>
+        ))}
+        <NotasTranscripcion
+          notas={doc.entradas.flatMap((e) =>
+            e.correccion
+              ? [
+                  {
+                    texto: e.correccion,
+                    sobre: { id: ancla(e.nombre), etiqueta: e.nombre },
+                  },
+                ]
+              : [],
+          )}
+        />
+      </DocumentLayout>
     </main>
   );
 }

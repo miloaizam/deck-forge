@@ -381,8 +381,14 @@ export const FAQ: FaqSection[] = [
           "**Mis barajas:** las barajas que guardaste.",
           "**Colección:** las cartas que tienes y las que te faltan.",
           "**Comunidad:** las barajas que otros jugadores publicaron.",
-          "**Documentos:** la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya las aplican.",
+          "**Documentos:** el **Documento Actualizado de Reglas**, la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya aplican las dos últimas.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
+        ],
+      },
+      {
+        pregunta: "¿Dónde están las reglas del juego?",
+        respuesta: [
+          "En **Documentos**, el **Documento Actualizado de Reglas** (DAR): cómo se juega, regla por regla, con las cartas de ejemplo del catálogo. El **índice** lleva a cada sección, y el **#** que aparece junto a un título copia el enlace exacto a esa regla, para citarla.",
         ],
       },
       {

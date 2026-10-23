@@ -127,8 +127,8 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 
 ```
 TODO.md        todo lo pendiente, por grupos (se borra la entrada al hacerla)
-documentos/    FUENTE de la Fe de Erratas y la Banlist: sus datos en
-               fuente/*.json y el generador de los PDF (que quedan en
+documentos/    FUENTE del DAR, la Fe de Erratas y la Banlist: sus datos
+               en fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
 docs/          plan, guía de marca y todo sobre las cuentas (cuentas.md)
 supabase/      esquema.sql (tablas, RLS y funciones; se pega en Supabase) y
@@ -1030,8 +1030,8 @@ debajo «Iniciar sesión con Google» y «¿No tienes cuenta? Crea una aquí», 
 `PortadaCuenta.tsx`) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
-`/documentos` la Fe de Erratas y la Banlist, con `/documentos/fe-de-erratas` y
-`/documentos/banlist` para leerlas · `/novedades` la línea de tiempo de cambios ·
+`/documentos` el DAR, la Fe de Erratas y la Banlist, con `/documentos/dar`,
+`/documentos/fe-de-erratas` y `/documentos/banlist` para leerlos · `/novedades` la línea de tiempo de cambios ·
 `/cuenta` entrar y la cuenta · `/comunidad` las barajas públicas · `/privacidad`
 qué se guarda.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
@@ -2444,6 +2444,38 @@ del constructor corren en los tres: bajo `lg` usan la hoja de la baraja
   en la ayuda; se filtra por lo visible (`filter({ visible: true })`). Y en
   Mis barajas el clic va a la tarjeta (`listitem`), no a un texto: el enlace
   estirado del título lo tapa, que es justo lo que se quiere.
+
+**Los tres documentos comparten molde** (23-10-2026): el **DAR**
+(*Documento Actualizado de Reglas*, cómo se juega), la Fe de Erratas y la
+Banlist se leen igual en el sitio y en PDF.
+
+- **El DAR** es `documentos/fuente/dar.json`: secciones hechas de bloques
+  (párrafo, nota, lista, lista con etiquetas, regla con su letra, apartado,
+  caso de ejemplo, cartas de ejemplo y diagrama), con un esquema recursivo en
+  `documentos.ts` (`bloqueDarSchema`). El texto lleva un marcado mínimo que
+  lee `marcado.ts` y pinta `Marcado.tsx` sin HTML: `**negrita**`,
+  `*cursiva*`, `[[8.1|8.1 Jugar una carta]]` (otra regla del documento) y
+  `{{Venus}}` (una carta, que lleva al catálogo). `documentos.test.ts` exige
+  que cada `[[…]]` tenga destino, que el marcado esté cerrado y que cada carta
+  exista o esté en `DAR_SIN_IMAGEN` (las seis de fuera del formato).
+- **Las anclas son las de citar**: secciones `1`…`10` y `anexo-1`,
+  apartados `8.1`, reglas `8.1-D` (y `4.1.1`, que el original numera así).
+  `/documentos/dar#8.1-D` lleva a la regla; su letra es ese enlace. La
+  numeración de los apartados es de DeckForge y está explicada en las notas.
+- **Las cartas de ejemplo salen del catálogo**, resueltas en el build
+  (`resolverCartas` de `dar.ts`: la impresión de la edición más nueva), y los
+  tres diagramas del original están redibujados: la anatomía sobre Wyrm de la
+  Plaga de EE (`AnatomiaCarta`), la arena en HTML (`DiagramaArena`) y el árbol
+  de habilidades en SVG con los colores del tema (`DiagramaArbol`).
+- **El molde** (`src/components/documentos/`): `DocumentHeader` arriba,
+  `DocumentLayout` con el índice al costado desde `lg` (`DocumentIndex`, la
+  única isla de cliente: marca la sección que se lee y despliega sus
+  apartados; bajo `lg`, plegable sobre el texto), `DocumentSection` para cada
+  sección (número o cuenta y el `#` para copiar el enlace) y
+  `NotasTranscripcion` al final de los tres.
+- **El PDF del DAR es un espejo de la página** en `generar.mjs`: el marcado,
+  la elección de impresión y los tres diagramas están duplicados allí, con un
+  comentario en cada lado. Si cambia uno, se cambia el otro.
 
 **La Fe de Erratas y la Banlist se aplican** (decisión del proyecto,
 04-10-2026). Los datos están en `documentos/fuente/*.json`, se validan con los

@@ -1,15 +1,16 @@
-import { Ban, FileText } from "lucide-react";
+import { Ban, BookOpenText, FileText } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { DocumentActions } from "@/components/documentos/DocumentActions";
 import { DOCUMENTOS, type Documento } from "@/lib/documentos";
-import { BANLIST, FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
+import { cartasDelDar, conceptosDelDar, reglasDelDar } from "@/lib/dar";
+import { BANLIST, DAR, FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
 
 export const metadata: Metadata = {
   title: "Documentos",
   description:
-    "La Fe de Erratas y la Banlist del formato Escuelas Elementales de Mitos y Leyendas, para leer en el sitio y descargar.",
+    "El Documento Actualizado de Reglas, la Fe de Erratas y la Banlist del formato Escuelas Elementales de Mitos y Leyendas, para leer en el sitio y descargar.",
 };
 
 export default function DocumentosPage() {
@@ -26,7 +27,19 @@ export default function DocumentosPage() {
         formato PDF.
       </p>
 
-      <div className="mt-10 grid gap-5 lg:grid-cols-2">
+      {/* Una sobre otra hasta xl: de a dos, la tercera quedaba sola. */}
+      <div className="mt-10 grid gap-5 xl:grid-cols-3">
+        <Tarjeta
+          doc={DOCUMENTOS.dar}
+          icono={<BookOpenText size={20} aria-hidden="true" />}
+          titulo="Documento Actualizado de Reglas"
+          descripcion="Cómo se juega, regla por regla: las partes de una carta, las zonas, las habilidades, las fases del turno y los conceptos del juego."
+          cifras={[
+            [reglasDelDar(DAR), "reglas con letra"],
+            [conceptosDelDar(DAR), "conceptos de juego"],
+            [cartasDelDar(DAR).length, "cartas de ejemplo"],
+          ]}
+        />
         <Tarjeta
           doc={DOCUMENTOS.feDeErratas}
           icono={<FileText size={20} aria-hidden="true" />}
@@ -106,7 +119,7 @@ function Tarjeta({
         nombre={titulo}
         peso={peso}
         verEnElSitio
-        className="mt-5 pt-1 lg:mt-auto lg:pt-5"
+        className="mt-5 pt-1 xl:mt-auto xl:pt-5"
       />
     </section>
   );

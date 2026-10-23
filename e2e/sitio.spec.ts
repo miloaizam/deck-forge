@@ -212,6 +212,7 @@ const RUTAS = [
   "/coleccion/",
   "/coleccion/?ver=agregar",
   "/documentos/",
+  "/documentos/dar/",
   "/documentos/fe-de-erratas/",
   "/documentos/banlist/",
   "/novedades/",
@@ -312,5 +313,45 @@ test.describe("la carta del detalle se inclina", () => {
     });
     await page.waitForTimeout(300);
     expect(await rotada(page)).toBe(false);
+  });
+});
+
+test.describe("el DAR", () => {
+  test("el indice lleva a la seccion y la marca", async ({ page, isMobile }) => {
+    await page.goto("/documentos/dar/");
+    if (isMobile) {
+      // Bajo lg el indice va plegado sobre el texto.
+      await page.getByText("Índice", { exact: true }).filter({ visible: true }).click();
+    }
+    const indice = page
+      .getByRole("navigation", { name: "Índice" })
+      .filter({ visible: true });
+    await indice.getByRole("link", { name: /Fases de juego/ }).click();
+    await expect(page).toHaveURL(/#9$/);
+    await expect(
+      page.getByRole("heading", { name: /^9\s*Fases de juego/ }),
+    ).toBeInViewport();
+    if (!isMobile) {
+      await expect(indice.getByRole("link", { name: /Fases de juego/ })).toHaveAttribute(
+        "aria-current",
+        "location",
+      );
+    }
+  });
+
+  test("una referencia lleva a su regla y una carta, al catalogo", async ({ page }) => {
+    await page.goto("/documentos/dar/#2.4");
+    const ref = page
+      .locator(`[id="2.4"]`)
+      .getByRole("link", { name: "8.1 Jugar una carta" })
+      .first();
+    await ref.click();
+    await expect(page).toHaveURL(/#8\.1$/);
+    await expect(page.locator(`[id="8.1"] h3`)).toBeInViewport();
+    const carta = page
+      .locator(`[id="4.3"]`)
+      .getByRole("link", { name: "Trance Yoruba" })
+      .first();
+    await expect(carta).toHaveAttribute("href", /^\/catalogo\/?\?q=Trance%20Yoruba$/);
   });
 });

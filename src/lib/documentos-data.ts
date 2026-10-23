@@ -1,12 +1,18 @@
 import { statSync } from "node:fs";
 import path from "node:path";
 
+import darJson from "../../documentos/fuente/dar.json";
 import banlistJson from "../../documentos/fuente/banlist-estandar.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
-import { banlistSchema, feDeErratasSchema, type Documento } from "./documentos";
+import {
+  banlistSchema,
+  darSchema,
+  feDeErratasSchema,
+  type Documento,
+} from "./documentos";
 
 /**
- * Los datos de la Fe de Erratas y la Banlist, ya validados. Solo para Server
+ * Los datos del DAR, la Fe de Erratas y la Banlist, ya validados. Solo para Server
  * Components: se leen en el build, que es cuando se exporta la pagina, y un
  * JSON que no cumpla el esquema tumba el build en vez de publicarse roto.
  *
@@ -16,6 +22,7 @@ import { banlistSchema, feDeErratasSchema, type Documento } from "./documentos";
 
 export const FE_DE_ERRATAS = feDeErratasSchema.parse(feDeErratasJson);
 export const BANLIST = banlistSchema.parse(banlistJson);
+export const DAR = darSchema.parse(darJson);
 
 /** El peso del PDF publicado, para decirlo junto al enlace ("733 KB"). */
 export function pesoDelPdf(doc: Documento): string {

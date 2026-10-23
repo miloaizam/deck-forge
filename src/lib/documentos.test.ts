@@ -5,12 +5,16 @@ import path from "node:path";
 
 import {
   banlistSchema,
+  bloquesDelDar,
   cartasDeLaBanlist,
+  darSchema,
   DOCUMENTOS,
   EDICIONES_FE_DE_ERRATAS,
   claveDeNombre,
   feDeErratasSchema,
+  type BloqueDar,
 } from "./documentos";
+import { cartasDe, leerMarcado, refsDe, textoPlano } from "./marcado";
 import { catalogSchema, type Card } from "./types";
 
 /**
@@ -25,6 +29,7 @@ const leer = (archivo: string): unknown =>
 const CATALOGO: Card[] = catalogSchema.parse(leer("public/data/cards.json"));
 const FE = feDeErratasSchema.parse(leer("documentos/fuente/fe-de-erratas.json"));
 const BAN = banlistSchema.parse(leer("documentos/fuente/banlist-estandar.json"));
+const DAR = darSchema.parse(leer("documentos/fuente/dar.json"));
 
 const porNombre = new Map<string, Card[]>();
 for (const c of CATALOGO) {
@@ -127,5 +132,98 @@ test("los PDF publicados existen y tienen las paginas que dice la ficha", () => 
     // cuenta mas.
     const cuentas = [...pdf.matchAll(/\/Type\s*\/Pages\b[^>]*?\/Count\s+(\d+)/g)];
     assert.equal(Math.max(...cuentas.map((c) => Number(c[1]))), doc.paginas, doc.pdf);
+  }
+});
+
+// --- El DAR ---
+
+const BLOQUES_DAR: BloqueDar[] = DAR.secciones.flatMap((s) => [
+  ...bloquesDelDar(s.bloques),
+]);
+
+/** Cada texto del DAR que lleva marcado. */
+function textosDelDar(): string[] {
+  return BLOQUES_DAR.flatMap((b) => {
+    switch (b.tipo) {
+      case "parrafo":
+      case "nota":
+        return [b.texto];
+      case "lista":
+        return b.items;
+      case "etiquetada":
+        return b.items.map((i) => i.texto);
+      case "cartas":
+        return b.pie ? [b.pie] : [];
+      case "caso":
+        return b.cita ?? [];
+      default:
+        return [];
+    }
+  });
+}
+
+/**
+ * Cartas de ejemplo del DAR que no son del formato y no estan en el catalogo:
+ * se nombran sin imagen. Si una llega al catalogo, sale de aqui.
+ */
+const DAR_SIN_IMAGEN = ["Ningirsu", "Soma", "Sir Héctor", "Aphofis", "Kay", "Walkirias"];
+
+test("validar el DAR no lo cambia", () => {
+  assert.deepStrictEqual(DAR, leer("documentos/fuente/dar.json"));
+});
+
+test("el DAR tiene las secciones y reglas de la revision contra el original", () => {
+  assert.deepEqual(
+    DAR.secciones.map((s) => s.id),
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "anexo-1"],
+  );
+  assert.equal(BLOQUES_DAR.filter((b) => b.tipo === "regla").length, 90);
+  // Los 48 conceptos de juego, numerados en orden: 10.1 Agrupar … 10.48 Traicion.
+  const conceptos = DAR.secciones[9].bloques.filter((b) => b.tipo === "apartado");
+  assert.equal(conceptos.length, 48);
+  conceptos.forEach((c, i) =>
+    assert.equal(c.tipo === "apartado" && c.numero, `10.${i + 1}`),
+  );
+});
+
+test("las anclas del DAR no se repiten y toda referencia tiene destino", () => {
+  const ids = [
+    ...DAR.secciones.map((s) => s.id),
+    ...BLOQUES_DAR.flatMap((b) => ("id" in b ? [b.id] : [])),
+  ];
+  assert.equal(new Set(ids).size, ids.length);
+  const destinos = new Set(ids);
+  for (const t of textosDelDar()) {
+    for (const r of refsDe(t))
+      assert.ok(destinos.has(r), `[[${r}]] no lleva a ningún sitio`);
+  }
+});
+
+test("el marcado del DAR esta cerrado", () => {
+  for (const t of [
+    ...textosDelDar(),
+    ...BLOQUES_DAR.flatMap((b) => ("titulo" in b && b.titulo ? [b.titulo] : [])),
+  ]) {
+    const plano = textoPlano(t);
+    assert.ok(!/\*|\[\[|\]\]|\{\{|\}\}/.test(plano), `marca suelta en: ${t}`);
+    assert.ok(leerMarcado(t).length > 0, t);
+  }
+});
+
+test("las cartas del DAR estan en el catalogo, o se sabe por que no", () => {
+  const sinImagen = new Set(DAR_SIN_IMAGEN.map(claveDeNombre));
+  const enLinea = textosDelDar().flatMap(cartasDe);
+  for (const n of enLinea) assert.ok(porNombre.has(claveDeNombre(n)), `{{${n}}}`);
+  const ejemplos = BLOQUES_DAR.flatMap((b): string[] => {
+    if (b.tipo === "cartas") return b.cartas;
+    if (b.tipo === "caso" && b.carta) return [b.carta];
+    return [];
+  });
+  for (const n of ejemplos) {
+    assert.ok(porNombre.has(claveDeNombre(n)) || sinImagen.has(claveDeNombre(n)), n);
+  }
+  for (const n of DAR_SIN_IMAGEN) {
+    assert.ok(!porNombre.has(claveDeNombre(n)), `${n} ya está en el catálogo`);
+    assert.ok(ejemplos.includes(n), `${n} ya no sale en el DAR`);
   }
 });
