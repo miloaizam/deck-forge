@@ -12,115 +12,216 @@ de perderse.
 
 Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
+De dónde sale lo de hoy (23-10-2026): la revisión de código (`/code-review`) y
+la de seguridad (`/security-review`) de todo lo de cuentas, Comunidad y foto
+de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
+768 y 390 px con la skill `taste-skill`.
+
 ---
 
-## Revisiones
+## Orden sugerido
 
-### Hallazgos de la revisión de código (23-10-2026)
+1. **Base de datos** (todo el grupo, en un solo cambio de `esquema.sql`): es
+   lo único que alguien puede aprovechar a propósito, se arregla en pocas
+   líneas y se pega en Supabase una sola vez.
+2. **Sincronización**: la pérdida de una edición y la traba por más de 50
+   barajas pueden hacerle perder trabajo a un jugador. Antes, decidir qué
+   pasa con lo del navegador al cerrar sesión.
+3. **Comunidad**: que una baraja pública que deja de cumplir salga de la
+   lista sola, y los dos detalles de `PublicarControl` y la foto.
+4. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
+   teléfono, órdenes de la Comunidad, portada por defecto, lazo de 11 px) en
+   una tanda; después «Tu cuenta» y las tarjetas de análisis.
+5. **Cartas destacadas en la portada**, con la maqueta primero.
+6. **Por decidir**, cuando haya ganas: no bloquea nada.
 
-Salieron de `/code-review` sobre `a620db7..HEAD` (cuentas, Comunidad, foto de
-perfil). Del más grave al menos grave:
+## Base de datos (`supabase/esquema.sql`)
 
-- **Una edición hecha durante la sincronización se pierde.**
-  `sincronizarAhora()` (`nube/sincronizar.ts`) lee barajas y lápidas antes
-  de los `await` y al final escribe `saveDecks(plan.locales)` y
-  `saveLapidas([])`. Lo guardado o borrado mientras viaja la petición se pisa,
-  y una baraja borrada en ese momento revive en todos los equipos.
-  Arreglo: volver a leer y fusionar justo antes de escribir, y borrar solo las
-  lápidas que viajaron.
-- **Otra persona en el mismo navegador hereda todo.** «Cerrar sesión» deja las
-  barajas y la colección en el navegador y borra el recuerdo de la cuenta;
-  quien entra después con otra cuenta las sube a la suya (`primeraVez`).
-  **Hay que decidir:** preguntar al entrar si se suman, o borrar lo local al
-  cerrar sesión, o sumarlo solo si el navegador no estaba unido a otra cuenta.
-- **Pasar de 50 barajas vivas traba la sincronización para siempre.**
-  `fusionarBarajas` (`lib/sync.ts`) sube toda baraja local sin mirar cuántas
-  vivas tiene la nube; el trigger rechaza la fila 51 y con ella el lote
-  entero, en cada vuelta. Arreglo: subir solo las que caben y avisar.
-- **El tope de 500 filas cuenta las borradas.** Las lápidas de `barajas` no se
-  purgan nunca, y el trigger de `INSERT` (`esquema.sql`) cuenta todas: tras
-  500 barajas creadas y borradas no se puede guardar ninguna nueva. Arreglo:
-  contar solo vivas, o purgar lápidas viejas.
-- **El dueño puede falsear `publicada_en`.** El trigger solo la fija al
-  publicar; con la baraja ya pública, un `PATCH` a mano la deja en 2099 y
-  encabeza «Más recientes» para siempre. Arreglo: en el trigger, conservar
-  `old.publicada_en` si ya era pública.
-- **Una pública editada no se revisa hasta abrir su detalle.** Ni la
-  afinidad ni la legalidad se recalculan al guardar o sincronizar: una baraja
-  que dejó de cumplir sigue listada, y con la afinidad vieja. Arreglo:
-  recalcular en la sincronización, no en el efecto de `PublicarControl`.
-- **`PublicarControl` repite el retiro.** El efecto depende de `publico`, que
-  es otro objeto tras cada sincronización: el retiro de una que dejó de
-  cumplir corre dos veces (dos `PATCH`, dos avisos), y la corrección de
-  afinidad se repite tras cada vuelta.
-- **Una baraja que llega de la nube no pasa por `nombreLibre`.** En
-  `fusionarBarajas`, cuando gana la copia remota no se mira si su nombre ya
-  lo usa otra baraja local: quedan dos con el mismo nombre.
-- **Cada pestaña abierta sincroniza de nuevo.** `programar` (`nube.ts`)
-  escucha los stores, que también avisan por el evento `storage` de otra
-  pestaña: con tres pestañas, cada sincronización dispara dos más. Arreglo:
-  ignorar los avisos que llegan de otra pestaña.
-- **Una foto subida a medias.** `subirAvatar` sube el archivo y después hace
-  el `PATCH` de `perfiles.avatar`; si el segundo falla, el archivo nuevo
-  queda bajo la versión vieja de la URL, con caché de un año: unos ven la
-  foto vieja y otros la nueva. Arreglo: subir con la versión nueva en la
-  ruta, o reintentar el `PATCH`.
+Todo este grupo cambia el esquema. Se prueba contra el Postgres local con el
+`storage` de imitación (`docs/cuentas.md`, «Probar la SQL») y, al terminar,
+**hay que volver a pegar `supabase/esquema.sql` en el SQL Editor de
+Supabase**.
 
-Terminado cuando cada punto está arreglado (con su test en `sync.test.ts` o
-`nube.spec.ts` donde se pueda) o descartado con su motivo. Lo que toque el
-esquema se prueba contra el Postgres local y se vuelve a pegar en Supabase.
+### Un usuario puede deshacer la moderación de su foto
 
-### Revisión de seguridad
+- **Qué:** la revisión de seguridad lo marcó como **Medium, confianza 9/10**.
+  `perfiles_proteger` conserva `avatar_oculto` solo en un `UPDATE`; en un
+  `INSERT` lo pone en `false`. Como `authenticated` tiene `DELETE` sobre
+  `perfiles` (el `grant` de la línea ~133 y la política `"perfil propio"`,
+  que es `for all`), quien tenga la foto oculta la recupera con dos
+  peticiones a mano: `DELETE /rest/v1/perfiles?user_id=eq.<su uid>` y un
+  `POST` con el mismo alias. La fila nueva nace con `avatar_oculto = false`,
+  el archivo de `avatares/<uid>` nunca se tocó y la foto vuelve a salir en la
+  Comunidad. Se puede repetir cada vez que se modere.
+- **Por dónde:**
+  - Quitar `delete` del `grant` de `perfiles` (la app no lo usa: `nube.ts`
+    solo hace GET, PATCH y upsert; borrar la cuenta va por
+    `borrar_mi_cuenta`, que corre como dueño).
+  - Para que no dependa de un permiso, guardar la moderación donde el
+    usuario no llegue: una tabla aparte (por ejemplo `moderacion`, con
+    `user_id` y `avatar_oculto`), sin políticas, que lean `ruta_avatar()`,
+    `listar_publicas` y `leer_publica`. Actualizar «Cómo moderar» en
+    `docs/cuentas.md`.
+- **Terminado cuando:** en el Postgres local, un usuario con la foto oculta no
+  puede borrar su perfil y, aunque lo recree, la foto sigue oculta.
 
-- **Qué:** correr la skill `security-review` sobre lo mismo, con foco en lo
-  que entra de afuera: las reglas por fila y las funciones `security definer`
-  de `supabase/esquema.sql`, el bucket `avatares` y sus políticas, lo que
-  responde Supabase (`comunidad.ts`, `sync.ts`, `avatar.ts`), la sesión de
-  `auth-js` y la vuelta de Google (`tomarVuelta`), y la CSP con el host de
-  Supabase.
-- **Por dónde:** `/security-review`. Lo que toque la base se prueba contra el
-  Postgres local con el `storage` de imitación (`docs/cuentas.md`).
-- **Terminado cuando:** cada hallazgo está arreglado o descartado con su
-  motivo; si cambia el esquema, se vuelve a pegar en Supabase.
+### El dueño puede falsear la fecha de publicación
+
+- **Qué:** `barajas_proteger` fija `publicada_en` solo cuando la baraja pasa a
+  pública. Con la baraja ya pública, un `PATCH /rest/v1/barajas?id=eq.X` con
+  `{"publicada_en":"2099-01-01"}` pasa las reglas y el trigger lo conserva: la
+  baraja encabeza «Más recientes» (y desempata arriba) para siempre.
+- **Por dónde:** en el trigger, si ya era pública, `new.publicada_en :=
+  old.publicada_en`. Revisar si alguna otra columna que solo debería escribir
+  la base (`afinidad` se escribe desde el cliente a propósito) tiene el mismo
+  hueco.
+- **Terminado cuando:** en el Postgres local el `PATCH` de arriba deja la fecha
+  como estaba.
+
+### El tope de 500 filas cuenta las barajas borradas
+
+- **Qué:** un borrado deja una fila con `borrada = true` (la lápida que evita
+  que otro equipo la reviva) y nunca se purga. El trigger de `INSERT` cuenta
+  **todas** las filas del usuario contra el tope de 500, así que tras 500
+  barajas creadas y borradas (una «copia» guardada de la Comunidad también
+  cuenta) no se puede guardar ninguna nueva, y la sincronización falla en cada
+  vuelta sin salida desde la interfaz.
+- **Por dónde:** contar solo las vivas en ese tope (el de 50 vivas ya existe
+  aparte), o purgar las lápidas de más de unos meses. Ojo: si se purgan, un
+  equipo que no se conectó en ese tiempo podría revivir la baraja; decidir el
+  plazo.
+- **Terminado cuando:** en el Postgres local, un usuario con 500 lápidas puede
+  crear una baraja nueva.
+
+## Sincronización
+
+Lógica pura en `src/lib/sync.ts` (con `sync.test.ts`) y la vuelta en
+`src/components/nube/sincronizar.ts`. Lo que se pueda se prueba en
+`sync.test.ts`; lo demás, en `e2e/nube.spec.ts` con el Supabase simulado.
+
+### Hay que decidir: qué pasa con lo del navegador al cerrar sesión
+
+- **Qué:** «Cerrar sesión» deja las barajas y la colección en el navegador
+  (es lo que dice CLAUDE.md) y borra el recuerdo de la cuenta. Si después
+  entra **otra cuenta** en el mismo navegador, `primeraVez` es verdadero y
+  todo lo que quedó se sube a la suya: las barajas con los mismos ids y la
+  colección sumada. En un computador compartido, los datos de una persona
+  terminan en la cuenta de otra.
+- **Opciones:**
+  1. Al cerrar sesión, borrar barajas, colección y borrador del navegador (lo
+     tuyo sigue en la cuenta). Lo más simple y lo más seguro.
+  2. Recordar de qué cuenta era lo local aunque se cierre sesión, y al entrar
+     con otra no sumarlo: preguntar o empezar vacío.
+  3. Preguntar siempre al entrar si lo del navegador se suma a la cuenta.
+- **Recomendación:** la 1. Con la cuenta obligatoria para lo personal, lo del
+  navegador ya no hace falta fuera de la sesión. Cambia CLAUDE.md («Cerrar
+  sesión deja todo en el navegador»), `/privacidad`, la ayuda (`faq.ts`) y la
+  prueba «cerrar sesion deja las barajas en el navegador».
+- **Terminado cuando:** está decidido, implementado y con su prueba en
+  `nube.spec.ts`.
+
+### Una edición hecha durante la sincronización se pierde
+
+- **Qué:** `sincronizarAhora()` lee barajas y lápidas antes de las peticiones
+  y al final escribe `saveDecks(plan.locales)` y `saveLapidas([])`. Lo que el
+  jugador guarde o borre mientras viajan (la sincronización corre ~2 s después
+  de cada guardado) se pisa con la copia vieja; una baraja borrada en ese
+  momento revive, y la siguiente vuelta la vuelve a subir a todos los
+  equipos.
+- **Por dónde:** justo antes de escribir, volver a leer `readDecks()` y
+  `readLapidas()`, aplicar encima solo lo que trajo la nube y borrar solo las
+  lápidas que viajaron (no `[]`). Que nunca corran dos vueltas a la vez en la
+  misma pestaña.
+- **Terminado cuando:** una prueba en `nube.spec.ts` que edita una baraja con
+  la petición del simulado demorada conserva la edición, y una que borra
+  conserva el borrado.
+
+### Más de 50 barajas vivas traba la sincronización para siempre
+
+- **Qué:** `fusionarBarajas` sube toda baraja que solo está en el navegador sin
+  mirar cuántas vivas tiene la nube. Si entre las dos suman más de 50, el
+  trigger rechaza la fila 51 y, con ella, el lote entero. Se repite en cada
+  vuelta: no sincroniza nunca más y las lápidas no se limpian.
+- **Por dónde:** en `fusionarBarajas`, subir solo las que caben bajo
+  `MAX_BARAJAS` contando las vivas de la nube; las demás se quedan en el
+  navegador y se avisa («N barajas no caben en la cuenta»), como ya se hace
+  con `noCupieron` en el otro sentido.
+- **Terminado cuando:** `sync.test.ts` cubre 30 locales + 40 en la nube y el
+  plan no pasa de 50.
+
+### Una baraja que llega de otro equipo puede repetir un nombre
+
+- **Qué:** cuando gana la copia de la nube, `fusionarBarajas` la pone en lugar
+  de la local sin pasar por `nombreLibre`, que sí se aplica a las que llegan
+  nuevas. Si en otro equipo se renombró a un nombre que aquí ya usa otra
+  baraja, quedan dos con el mismo nombre, y eso rompe la regla de nombres
+  únicos.
+- **Terminado cuando:** `sync.test.ts` lo cubre y sale «X (copia)».
+
+### Cada pestaña abierta sincroniza de nuevo
+
+- **Qué:** `programar` (`nube.ts`) escucha los stores de barajas y colección,
+  que también avisan por el evento `storage` cuando escribe otra pestaña. La
+  guarda `escribiendo` solo cubre la pestaña propia: con tres pestañas
+  abiertas, cada vuelta dispara dos más (lecturas y escrituras de más en el
+  plan gratuito).
+- **Por dónde:** distinguir el aviso que viene de otra pestaña y no
+  programar por él (esa pestaña ya sincronizó).
+- **Terminado cuando:** con dos pestañas, un guardado produce una sola vuelta.
+
+## Comunidad
+
+### Una baraja pública editada no se revisa al guardar
+
+- **Qué:** la afinidad de una pública y el retiro de una que dejó de cumplir
+  solo corren al abrir su detalle (`PublicarControl`). Si el dueño la edita en
+  el constructor y guarda, la sincronización sube los datos nuevos y la baraja
+  sigue listada: con una carta baneada, o bajo la afinidad vieja en el filtro.
+- **Por dónde:** recalcular legalidad y afinidad en la sincronización (o al
+  guardar una pública): si dejó de cumplir, se sube como privada y se avisa;
+  si cambió de afinidad, se sube la nueva.
+- **Terminado cuando:** una prueba en `nube.spec.ts` edita una pública hasta
+  dejarla ilegal desde el constructor y deja de salir en la Comunidad sin
+  abrir su detalle.
+
+### `PublicarControl` repite el retiro y la corrección de afinidad
+
+- **Qué:** el efecto depende de `publico`, que es un objeto nuevo tras cada
+  sincronización. Mientras el retiro de una que dejó de cumplir está en
+  curso, el efecto corre otra vez: dos `PATCH`, dos sincronizaciones y dos
+  avisos «dejó de cumplir». La corrección de afinidad no actualiza lo local
+  tras el `PATCH`, así que se repite después de cada vuelta.
+- **Por dónde:** depender de valores (`publica`, `afinidad`) y no del objeto,
+  y no relanzar mientras hay una en curso. Si la entrada anterior mueve esto a
+  la sincronización, este efecto puede desaparecer.
+- **Terminado cuando:** abrir el detalle de una pública ilegal produce un solo
+  `PATCH` y un solo aviso.
+
+### Una foto subida a medias se ve distinta según quién la mire
+
+- **Qué:** `subirAvatar` reemplaza el archivo y después hace el `PATCH` de
+  `perfiles.avatar`. Si el segundo falla, el archivo nuevo queda bajo la URL
+  de la versión vieja (`?v=` sin cambiar), que el CDN guarda un año: quien la
+  tenía en caché ve la foto vieja y quien no, la nueva, y la app dice que no
+  se guardó.
+- **Por dónde:** reintentar el `PATCH`, o si falla, volver a subir la foto
+  anterior; o guardar el archivo con la versión en el nombre
+  (`avatares/<uid>-<v>`), que cambia también las políticas del bucket.
+- **Terminado cuando:** con el `PATCH` fallando en el simulado, la foto que se
+  ve y la que dice el perfil son la misma.
 
 ## Interfaz
-
-### Cartas destacadas en la portada
-
-- **Qué:** un abanico de unas 5 cartas junto al título de la portada con las
-  más usadas en las barajas de la Comunidad, que rota: cambia una carta cada
-  5–6 s con un fundido, se pausa con el cursor encima y queda quieto con
-  «reducir movimiento». Al tocar una carta se abre en el catálogo. En el
-  teléfono va más chico y bajo el título.
-- **Decisiones ya tomadas:**
-  - Cuentan **solo las barajas públicas** y no ocultas, por `identidad` (las
-    impresiones de una carta suman juntas) y en las últimas semanas.
-  - El ranking sale de **Supabase**, con una función `security definer` en
-    `supabase/esquema.sql`, y la base apenas trabaja: se guarda ya calculado
-    (una tabla o vista materializada que se recalcula al publicar o una vez al
-    día, no en cada visita) y la portada lee solo esas ~12 filas, con caché.
-  - Antes de construir, una **maqueta** en captura para aprobarla.
-- **Por dónde:** el HTML trae un grupo fijo elegido a mano (las Legendarias,
-  por ejemplo), para que la portada se vea entera sin red y no empeore el LCP;
-  al terminar de cargar pide el ranking en segundo plano y cambia a esas
-  cartas. Con menos de ~10 barajas públicas, o si Supabase no responde, se
-  queda el grupo fijo. Es una segunda excepción a «un visitante sin cuenta no
-  le pide nada a Supabase» (hoy solo la Comunidad): cambiar en el mismo commit
-  CLAUDE.md §6.5, `/privacidad` y la prueba de `e2e/nube.spec.ts` que lo
-  vigila.
-- **Terminado cuando:** la maqueta está aprobada, la portada rota con el
-  ranking real, pasan `e2e`, `e2e:nube` y `a11y`, y Lighthouse no baja en la
-  portada.
 
 ### La pila de Oros en el detalle de una baraja
 
 - **Qué:** en la mesa de `/baraja` cada copia se dibuja desplazada, así que 35
   Oros sin habilidad hacen una columna de tres pantallas, casi vacía al lado.
   Es lo primero que se ve, y empuja «Probar una mano» y la curva de coste bajo
-  el pliegue. Pasa en la propia, en la pública y en el teléfono (revisión
-  visual del 23-10-2026).
+  el pliegue. Pasa en la propia, en la pública y en el teléfono. La crítica
+  de `taste-skill` le pone 6,5 al detalle y la marca como su problema número
+  uno.
 - **Por dónde:** dibujar como mucho 4 o 5 cartas por pila y el total encima
-  («×35»).
+  («×35»), con el mismo estilo de contador de las copias.
 - **Terminado cuando:** una baraja con 35 Oros cabe en una pantalla de
   escritorio con sus tarjetas de análisis a la vista.
 
@@ -130,7 +231,7 @@ esquema se prueba contra el Postgres local y se vuelve a pegar en Supabase.
   catálogo, de cada edición y de la colección dice «Nombre o habilid…», con
   un hueco hasta el botón de filtros.
 - **Por dónde:** `Filters.tsx`: el ancho fijo desde `sm`, y en el teléfono el
-  campo ocupa lo que deja el botón.
+  campo ocupa todo lo que deja el botón.
 - **Terminado cuando:** a 360 y 390 px se lee el texto entero y el ancho
   sigue fijo en escritorio y tableta.
 
@@ -148,11 +249,13 @@ esquema se prueba contra el Postgres local y se vuelve a pegar en Supabase.
 
 - **Qué:** sin portada elegida, la tarjeta de Mis barajas va sin imagen y la
   de la Comunidad muestra un recuadro oscuro vacío. Las dos vistas no dicen
-  lo mismo y la tarjeta no se reconoce de un vistazo.
+  lo mismo, la tarjeta no se reconoce de un vistazo y la Comunidad se ve «de
+  kit» (6,2 en la crítica, la nota más baja).
 - **Por dónde:** `DeckListView.tsx` y `ComunidadView.tsx`: si no hay
-  `portada`, usar el Aliado con más copias (o la primera carta del orden del
-  catálogo).
-- **Hay que decidir:** qué carta hace de portada por defecto.
+  `portada`, usar una carta de la baraja.
+- **Hay que decidir:** cuál. Recomendación: el Aliado con más copias y, si
+  empatan, el primero en el orden del catálogo; en una baraja sin Aliados, la
+  primera carta.
 - **Terminado cuando:** las dos vistas muestran una carta en toda tarjeta con
   cartas.
 
@@ -179,11 +282,38 @@ esquema se prueba contra el Postgres local y se vuelve a pegar en Supabase.
   alturas y centrar el gráfico.
 - **Terminado cuando:** ninguna de las dos tiene una banda vacía dentro.
 
+### Cartas destacadas en la portada
+
+- **Qué:** un abanico de unas 5 cartas junto al título de la portada con las
+  más usadas en las barajas de la Comunidad, que rota: cambia una carta cada
+  5–6 s con un fundido, se pausa con el cursor encima y queda quieto con
+  «reducir movimiento». Al tocar una carta se abre en el catálogo. En el
+  teléfono va más chico y bajo el título. Es lo que la crítica pone primero:
+  hoy la portada no muestra ninguna carta (6,4).
+- **Decisiones ya tomadas:**
+  - Cuentan **solo las barajas públicas** y no ocultas, por `identidad` (las
+    impresiones de una carta suman juntas) y en las últimas semanas.
+  - El ranking sale de **Supabase**, con una función `security definer` en
+    `supabase/esquema.sql`, y la base apenas trabaja: se guarda ya calculado
+    (una tabla o vista materializada que se recalcula al publicar o una vez al
+    día, no en cada visita) y la portada lee solo esas ~12 filas, con caché.
+  - Antes de construir, una **maqueta** en captura para aprobarla.
+- **Por dónde:** el HTML trae un grupo fijo elegido a mano (las Legendarias,
+  por ejemplo), para que la portada se vea entera sin red y no empeore el LCP;
+  al terminar de cargar pide el ranking en segundo plano y cambia a esas
+  cartas. Con menos de ~10 barajas públicas, o si Supabase no responde, se
+  queda el grupo fijo. Es una segunda excepción a «un visitante sin cuenta no
+  le pide nada a Supabase» (hoy solo la Comunidad): cambiar en el mismo commit
+  CLAUDE.md §6.5, `/privacidad` y la prueba de `e2e/nube.spec.ts` que lo
+  vigila.
+- **Terminado cuando:** la maqueta está aprobada, la portada rota con el
+  ranking real, pasan `e2e`, `e2e:nube` y `a11y`, y Lighthouse no baja en la
+  portada.
+
 ## Por decidir
 
-Salió de la revisión visual con la skill `taste-skill` (23-10-2026). Son
-cosas que esa skill marca como defecto y que hoy son decisiones de la marca;
-no se tocan sin decidirlo.
+Salió de la revisión visual con `taste-skill`. Son cosas que esa skill marca
+como defecto y que hoy son decisiones de la marca; no se tocan sin decidirlo.
 
 ### Documentos con media pantalla vacía
 
