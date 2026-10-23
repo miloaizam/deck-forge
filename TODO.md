@@ -21,33 +21,16 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Base de datos**: los arreglos ya están en `esquema.sql`; falta pegarlo
-   en Supabase.
-2. **Sincronización**: la pérdida de una edición y la traba por más de 50
+1. **Sincronización**: la pérdida de una edición y la traba por más de 50
    barajas pueden hacerle perder trabajo a un jugador. Antes, decidir qué
    pasa con lo del navegador al cerrar sesión.
-3. **Comunidad**: que una baraja pública que deja de cumplir salga de la
+2. **Comunidad**: que una baraja pública que deja de cumplir salga de la
    lista sola, y los dos detalles de `PublicarControl` y la foto.
-4. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
+3. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
    teléfono, órdenes de la Comunidad, portada por defecto, lazo de 11 px) en
    una tanda; después «Tu cuenta» y las tarjetas de análisis.
-5. **Cartas destacadas en la portada**, con la maqueta primero.
-6. **Por decidir**, cuando haya ganas: no bloquea nada.
-
-## Base de datos (`supabase/esquema.sql`)
-
-### Pegar el esquema nuevo en Supabase
-
-- **Qué:** el esquema cambió el 23-10-2026 con los tres arreglos de la
-  revisión: sin `delete` en `perfiles` (la moderación de la foto ya no se
-  deshace), `publicada_en` fija una vez pública y el tope de 500 filas que
-  purga las lápidas más viejas (`purgar_lapidas`). Probado contra el Postgres
-  local, corrido dos veces. Hasta que se pegue, en la base real siguen los
-  tres huecos.
-- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
-  → Run.
-- **Terminado cuando:** corrió sin errores. Para comprobarlo, en Database →
-  Functions aparece `purgar_lapidas`.
+4. **Cartas destacadas en la portada**, con la maqueta primero.
+5. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Sincronización
 
