@@ -55,8 +55,8 @@ import { cn } from "@/lib/utils";
 
 const VISTAS: { valor: VistaColeccion; titulo: string }[] = [
   { valor: "tengo", titulo: "Tengo" },
-  { valor: "faltan", titulo: "Me faltan" },
-  { valor: "agregar", titulo: "Agregar cartas" },
+  { valor: "faltan", titulo: "Faltan" },
+  { valor: "agregar", titulo: "Agregar" },
 ];
 
 const esVista = (v: string | null): v is VistaColeccion =>
@@ -274,46 +274,51 @@ function Coleccion({ cards }: { cards: Card[] }) {
         onChange={setFilters}
         onReset={() => setFilters(EMPTY_FILTERS)}
         acciones={
-          <ColeccionAcciones
-            coleccion={coleccion}
-            onImagen={
-              vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
-            }
-            onLista={vistaReal === "agregar" || lista.length === 0 ? null : listaTexto}
-            generandoImagen={generando}
-            soloLectura={compartida !== null}
-          />
-        }
-      />
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label="Qué cartas mostrar" className={SEGMENTOS}>
-          {vistas.map(({ valor, titulo }) => (
-            <button
-              key={valor}
-              type="button"
-              onClick={() => setVista(valor)}
-              aria-pressed={vistaReal === valor}
-              className={cn(
-                SEGMENTO,
-                vistaReal === valor ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-              )}
+          <>
+            <ColeccionAcciones
+              coleccion={coleccion}
+              onImagen={
+                vistaReal === "agregar" || lista.length === 0 ? null : () => void imagen()
+              }
+              onLista={vistaReal === "agregar" || lista.length === 0 ? null : listaTexto}
+              generandoImagen={generando}
+              soloLectura={compartida !== null}
+            />
+            {/* Tras el boton de vaciar: que pestana de la coleccion se ve. */}
+            <div
+              role="group"
+              aria-label="Qué cartas mostrar"
+              className={cn(SEGMENTOS, "h-11 shrink-0")}
             >
-              {titulo}
-              {cuenta[valor] !== null && (
-                <span
+              {vistas.map(({ valor, titulo }) => (
+                <button
+                  key={valor}
+                  type="button"
+                  onClick={() => setVista(valor)}
+                  aria-pressed={vistaReal === valor}
                   className={cn(
-                    "text-[12px] tabular-nums",
-                    vistaReal === valor ? "text-white/90" : "text-muted",
+                    SEGMENTO,
+                    "h-full px-3",
+                    vistaReal === valor ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
                   )}
                 >
-                  {cuenta[valor]}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+                  {titulo}
+                  {cuenta[valor] !== null && (
+                    <span
+                      className={cn(
+                        "text-[12px] tabular-nums",
+                        vistaReal === valor ? "text-white/90" : "text-muted",
+                      )}
+                    >
+                      {cuenta[valor]}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        }
+      />
 
       {lista.length > 0 ? (
         <ColeccionLista

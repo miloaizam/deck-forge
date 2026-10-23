@@ -93,7 +93,7 @@ test("en «Me faltan» se anotan mas de tres copias", async ({ page }) => {
   const corazon = page.getByRole("button", { name: / me falta$/ }).first();
   const nombre = (await corazon.getAttribute("aria-label"))!.replace(/ me falta$/, "");
   await corazon.click();
-  await page.getByRole("button", { name: /^Me faltan/ }).click();
+  await page.getByRole("button", { name: /^Faltan/ }).click();
   const sumar = page.getByRole("button", {
     name: `Sumar una copia que falta de ${nombre}`,
   });
@@ -115,7 +115,7 @@ test("una carta puede estar en «Tengo» y en «Me faltan» a la vez", async ({ 
   await expect(corazon).toHaveAttribute("aria-pressed", "true");
 
   // En las dos listas solo esta esa carta: su fila es la unica.
-  await page.getByRole("button", { name: /^Me faltan/ }).click();
+  await page.getByRole("button", { name: /^Faltan/ }).click();
   const fila = page.locator(".fila-coleccion");
   await expect(fila).toHaveCount(1);
   await fila.getByRole("button", { name: /^Sumar una copia que falta/ }).click();

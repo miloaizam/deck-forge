@@ -3,7 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Copy, Heart, Search, TrendingUp, Users } from "lucide-react";
+import {
+  ArrowDownAZ,
+  ArrowDownZA,
+  ArrowUpDown,
+  Copy,
+  Heart,
+  Search,
+  Users,
+} from "lucide-react";
 
 import { marcarCargada } from "../CardTile";
 import { Pagination } from "../Pagination";
@@ -27,28 +35,51 @@ import {
 import { pageRange } from "@/lib/catalog";
 import { irArriba } from "@/lib/scroll";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
-import { BOTON_ICONO_LIBRE_COMPACTO, ENLACE, TEXT_FIELD, VACIO } from "@/lib/ui";
+import {
+  BOTON_ICONO_LIBRE_COMPACTO,
+  ENLACE,
+  SEGMENTO,
+  SEGMENTO_ACTIVO,
+  SEGMENTO_INACTIVO,
+  SEGMENTOS,
+  TEXT_FIELD,
+  VACIO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const FECHA = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium" });
 
 interface Consulta {
   orden: OrdenComunidad;
+  /** El boton A-Z del buscador, como en el catalogo: manda sobre `orden`. */
+  nombre: PorNombre;
   afinidad: string;
   q: string;
   pagina: number;
 }
 
-const INICIAL: Consulta = { orden: "likes", afinidad: "", q: "", pagina: 1 };
+type PorNombre = "" | "asc" | "desc";
+
+const INICIAL: Consulta = { orden: "likes", nombre: "", afinidad: "", q: "", pagina: 1 };
+
+/** Sin orden por nombre, A-Z, Z-A y de vuelta: el ciclo del catalogo. */
+const SIGUIENTE: Record<PorNombre, PorNombre> = { "": "asc", asc: "desc", desc: "" };
+const ETIQUETA_NOMBRE: Record<PorNombre, string> = {
+  "": "Sin ordenar por nombre",
+  asc: "Nombre, de la A a la Z",
+  desc: "Nombre, de la Z a la A",
+};
 
 /** La consulta desde la URL, validando cada valor: la URL es entrada de afuera. */
 function leerUrl(search: string): Consulta {
   const p = new URLSearchParams(search);
   const orden = p.get("orden");
+  const nombre = p.get("nombre");
   const afinidad = p.get("afinidad");
   const pagina = Number(p.get("pagina"));
   return {
     orden: esOrdenComunidad(orden) ? orden : "likes",
+    nombre: nombre === "asc" || nombre === "desc" ? nombre : "",
     afinidad: esAfinidad(afinidad) ? afinidad : "",
     q: (p.get("q") ?? "").slice(0, 60),
     pagina: Number.isInteger(pagina) && pagina > 1 && pagina < 10_000 ? pagina : 1,
@@ -58,6 +89,7 @@ function leerUrl(search: string): Consulta {
 function escribirUrl(c: Consulta): string {
   const p = new URLSearchParams();
   if (c.orden !== "likes") p.set("orden", c.orden);
+  if (c.nombre) p.set("nombre", c.nombre);
   if (c.afinidad) p.set("afinidad", c.afinidad);
   if (c.q.trim()) p.set("q", c.q.trim());
   if (c.pagina > 1) p.set("pagina", String(c.pagina));
@@ -133,6 +165,7 @@ export function ComunidadView() {
       consulta.afinidad || null,
       consulta.q,
       consulta.pagina,
+      consulta.nombre,
     ).then(
       ({ filas, total }) =>
         vigente && setResultado({ clave, r: { fase: "ok", filas, total } }),
@@ -161,8 +194,8 @@ export function ComunidadView() {
   return (
     <div className="mt-10 flex flex-col gap-5">
       {/* La misma fila que el buscador del catalogo (Filters.tsx): el campo
-          ocupa lo que dejan los botones y, desde 42rem de fila, la mitad; el
-          orden va dentro del campo y cada pulsacion pasa al siguiente. */}
+          ocupa lo que dejan los botones y, desde 42rem de fila, la mitad; dentro
+          va el orden por nombre (A-Z, Z-A), que manda sobre el de abajo. */}
       <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="relative min-w-48 flex-1 @2xl:flex-none @2xl:basis-1/2">
           <Search
@@ -181,17 +214,22 @@ export function ComunidadView() {
           />
           <button
             type="button"
-            onClick={() => cambiar({ orden: siguienteOrdenComunidad(consulta.orden) })}
-            aria-label={`Ordenar: ${ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}. Pulsa para cambiar.`}
-            title={ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}
+            onClick={() => cambiar({ nombre: SIGUIENTE[consulta.nombre] })}
+            aria-label={`Ordenar: ${ETIQUETA_NOMBRE[consulta.nombre]}. Pulsa para cambiar.`}
+            title={ETIQUETA_NOMBRE[consulta.nombre]}
             className={cn(
               BOTON_ICONO_LIBRE_COMPACTO,
               "absolute top-1/2 right-1 -translate-y-1/2",
-              consulta.orden !== "likes" &&
-                "bg-accent-soft text-accent hover:text-accent",
+              consulta.nombre && "bg-accent-soft text-accent hover:text-accent",
             )}
           >
-            <IconoOrden orden={consulta.orden} />
+            {consulta.nombre === "asc" ? (
+              <ArrowDownAZ size={16} aria-hidden="true" />
+            ) : consulta.nombre === "desc" ? (
+              <ArrowDownZA size={16} aria-hidden="true" />
+            ) : (
+              <ArrowUpDown size={16} aria-hidden="true" />
+            )}
           </button>
         </div>
         <div className="ml-auto w-full @md:w-60">
@@ -206,9 +244,22 @@ export function ComunidadView() {
           />
         </div>
       </div>
-      <p className="text-muted -mt-2 text-[13px]">
-        Orden: {ETIQUETA_ORDEN_COMUNIDAD[consulta.orden]}
-      </p>
+      <div role="group" aria-label="Ordenar" className={cn(SEGMENTOS, "self-start")}>
+        {ORDENES_COMUNIDAD.map((o) => (
+          <button
+            key={o}
+            type="button"
+            aria-pressed={consulta.orden === o}
+            onClick={() => cambiar({ orden: o })}
+            className={cn(
+              SEGMENTO,
+              consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
+            )}
+          >
+            {ETIQUETA_ORDEN_COMUNIDAD[o]}
+          </button>
+        ))}
+      </div>
 
       {r.fase === "cargando" && (
         <div aria-busy="true">
@@ -320,25 +371,4 @@ export function ComunidadView() {
       )}
     </div>
   );
-}
-
-/** El siguiente orden de la lista, y tras el ultimo, el primero. */
-function siguienteOrdenComunidad(orden: OrdenComunidad): OrdenComunidad {
-  const i = ORDENES_COMUNIDAD.indexOf(orden);
-  return ORDENES_COMUNIDAD[(i + 1) % ORDENES_COMUNIDAD.length];
-}
-
-/** El icono del orden puesto: lo que se ve dentro del buscador. */
-function IconoOrden({ orden }: { orden: OrdenComunidad }) {
-  const props = { size: 16, "aria-hidden": true } as const;
-  switch (orden) {
-    case "likes":
-      return <Heart {...props} />;
-    case "tendencia":
-      return <TrendingUp {...props} />;
-    case "recientes":
-      return <Clock {...props} />;
-    case "copias":
-      return <Copy {...props} />;
-  }
 }

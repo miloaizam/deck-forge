@@ -75,7 +75,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿En qué orden salen las cartas?",
         respuesta: [
           "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
-          "El botón de las **flechas**, dentro del buscador, cambia el orden a **nombre de la A a la Z**, luego de la **Z a la A** y de vuelta al de siempre. Está en el catálogo, en el constructor y en tu colección, y el **embudo tachado** (limpiar filtros) también lo vuelve al de siempre. La lista de tu baraja sigue siempre el orden de edición y frecuencia.",
+          "El botón de las **flechas**, dentro del buscador, cambia el orden a **nombre de la A a la Z**, luego de la **Z a la A** y de vuelta al de siempre. Está en el catálogo, en el constructor, en tu colección y en la Comunidad, y el **embudo con una X** (limpiar filtros) también lo vuelve al de siempre. La lista de tu baraja sigue siempre el orden de edición y frecuencia.",
         ],
       },
       {
@@ -265,24 +265,24 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo agrego cartas?",
         respuesta: [
-          "En la pestaña **«Agregar cartas»** está todo el catálogo, con el buscador y los filtros. En cada carta:",
+          "En la pestaña **«Agregar»** está todo el catálogo, con el buscador y los filtros. En cada carta:",
         ],
         lista: [
           "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
-          "El **corazón** la anota en las que te faltan, aunque ya tengas alguna copia. En «Me faltan», el **+** y el **−** dicen cuántas copias te faltan: las que quieras.",
+          "El **corazón** la anota en las que te faltan, aunque ya tengas alguna copia. En «Faltan», el **+** y el **−** dicen cuántas copias te faltan: las que quieras.",
         ],
       },
       {
         pregunta: "Tengo una copia y quiero tres, ¿cómo lo anoto?",
         respuesta: [
-          "Una carta puede estar en las dos listas: deja **1** en **«Tengo»** y anota **2** en **«Me faltan»**. Cada fila dice lo que hay en la otra lista («te faltan 2», «tienes 1»).",
+          "Una carta puede estar en las dos listas: deja **1** en **«Tengo»** y anota **2** en **«Faltan»**. Cada fila dice lo que hay en la otra lista («te faltan 2», «tienes 1»).",
         ],
       },
       {
         pregunta: "¿Qué pasa cuando consigo una carta que me faltaba?",
         respuesta: [
-          "En **«Me faltan»**, toca **«Conseguí una»**: suma una copia en **«Tengo»** y resta una de las que te faltan. Cuando ya no falta ninguna, sale de la lista.",
-          "Si sumas copias directamente en **«Tengo»**, también se descuentan de las que te faltan. Para sacar una carta de «Me faltan» sin marcarla como tuya, baja sus copias con el **−** hasta cero.",
+          "En **«Faltan»**, toca **«Conseguí una»**: suma una copia en **«Tengo»** y resta una de las que te faltan. Cuando ya no falta ninguna, sale de la lista.",
+          "Si sumas copias directamente en **«Tengo»**, también se descuentan de las que te faltan. Para sacar una carta de «Faltan» sin marcarla como tuya, baja sus copias con el **−** hasta cero.",
         ],
       },
       {
@@ -296,7 +296,7 @@ export const FAQ: FaqSection[] = [
         respuesta: ["Sí, de tres formas:"],
         lista: [
           "El botón del **enlace**, junto a «Filtros», copia un enlace con tus dos listas. Quien lo abra ve lo que tienes y lo que te falta, sin poder cambiarlo, y su propia colección no se toca.",
-          "El botón de la **imagen** descarga una imagen de la lista que estás viendo, «Tengo» o «Me faltan», con los filtros que tengas puestos. Bajo cada carta van su **nombre**, su **edición** y su **frecuencia**, para que quien la vea sepa exactamente cuál es. Si la lista es muy larga, sale en **varias imágenes** para que las cartas se vean bien, y en el teléfono puedes compartirlas todas juntas.",
+          "El botón de la **imagen** descarga una imagen de la lista que estás viendo, «Tengo» o «Faltan», con los filtros que tengas puestos. Bajo cada carta van su **nombre**, su **edición** y su **frecuencia**, para que quien la vea sepa exactamente cuál es. Si la lista es muy larga, sale en **varias imágenes** para que las cartas se vean bien, y en el teléfono puedes compartirlas todas juntas.",
           "El botón de la **lista** copia como texto la lista que estás viendo, una carta por línea: las copias, el nombre y, entre paréntesis, la **edición** y la **frecuencia** («3x Akiko Yamamoto (Escuelas Elementales, Mega Real)»). Pégala en **WhatsApp** o donde quieras; los títulos salen en negrita. Si el navegador no deja copiar, se descarga como archivo de texto.",
         ],
       },
@@ -341,7 +341,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo funciona la Comunidad?",
         respuesta: [
-          "Ahí están las barajas que publicaron otros jugadores. El botón dentro del buscador las ordena por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**: cada pulsación pasa al siguiente. También puedes filtrarlas por raza, escuela o atributo.",
+          "Ahí están las barajas que publicaron otros jugadores. Puedes ordenarlas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, o por **nombre** con el botón de las flechas dentro del buscador, y filtrarlas por raza, escuela o atributo.",
           "Con tu cuenta puedes darles **like**, **guardarlas en tus barajas** o **reportarlas** con la bandera si tienen algo ofensivo o son spam.",
         ],
       },

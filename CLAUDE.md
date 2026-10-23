@@ -1121,8 +1121,9 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   pide al pie, y cada fila lleva `content-visibility: auto`
   (`.fila-coleccion` en `globals.css`). Reutiliza `Filters` y guarda los
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
-  Sus acciones (imagen, lista, enlace y vaciar) son iconos sin texto en la
-  fila del buscador, a la derecha de «Filtros» (`acciones` de `Filters`).
+  Sus acciones (imagen, enlace, lista y vaciar) son iconos sin texto en la
+  fila del buscador, a la derecha de «Filtros» (`acciones` de `Filters`), y
+  tras ellas las pestañas «Tengo / Faltan / Agregar».
 - **«Imagen»** baja un JPEG de la pestaña que se ve, con sus filtros y su
   orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
   Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
@@ -1501,7 +1502,7 @@ del catálogo a la A-Z, a la Z-A y de vuelta (`siguienteOrden`, `ORDENES` y
 en las tres vistas con buscador —catálogo (y cada edición), grilla del
 constructor y colección—; el panel de la baraja y su detalle se quedan con el
 orden fijo. El orden es un campo más de `CatalogFilters` (`orden`), así que
-va en la URL (`?orden=`) y **limpiar filtros (el embudo tachado) lo vuelve al de siempre**;
+va en la URL (`?orden=`) y **limpiar filtros (el embudo con una X, `FunnelX`) lo vuelve al de siempre**;
 no cuenta en el número del botón de filtros. Reemplazó al botón «Ordenar»
 (`SortMenu`), que ofrecía también coste y Fuerza. Los empates conservan el
 orden de catálogo (el `sort` es estable) y un orden elegido manda sobre la
@@ -1846,8 +1847,10 @@ quien toca el código.
   cambia de afinidad, se corrige.
 - **La Comunidad** (`/comunidad`, `ComunidadView.tsx`): tarjetas como las de
   Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
-  copiadas) en un botón dentro del buscador que pasa al siguiente con cada
-  pulsación, como el del catálogo, filtro por afinidad, todo en la URL. Se ve sin
+  copiadas) en segmentos bajo el buscador; dentro del buscador, el mismo botón
+  A-Z / Z-A del catálogo (`por_nombre` de `listar_publicas`, que manda sobre
+  el orden elegido y ordena con la intercalación `es-x-icu`, no la de la
+  base); filtro por afinidad, todo en la URL. Se ve sin
   cuenta. El detalle es **`/baraja/?p=<public_id>`** (`usePublica`), con el
   alias, el **like**, «Guardar en mis barajas» (cuenta una **copia**, una vez
   por persona con sesión) y **Reportar**. «Copiar enlace» copia esa

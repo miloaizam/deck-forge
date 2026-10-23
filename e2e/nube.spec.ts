@@ -262,6 +262,31 @@ test.describe("con la nube encendida", () => {
     ]);
   });
 
+  test("la Comunidad se ordena por nombre desde el buscador", async ({ page }) => {
+    const s = await simularSupabase(page);
+    publicarDe(s, USUARIO_B, "Otra_persona", {
+      ...barajaLegal("Zorros"),
+      id: "zorroszorr",
+    });
+    publicarDe(s, USUARIO_B, "Otra_persona", {
+      ...barajaLegal("Águilas"),
+      id: "aguilasagu",
+    });
+    await page.goto("/comunidad/");
+    const nombres = page.getByRole("list").getByRole("link");
+    await expect(nombres.first()).toBeVisible();
+
+    await page.getByRole("button", { name: /^Ordenar: Sin ordenar por nombre/ }).click();
+    await expect(page).toHaveURL(/nombre=asc/);
+    await expect(nombres).toHaveText(["Águilas", "Zorros"]);
+
+    await page.getByRole("button", { name: /^Ordenar: Nombre, de la A a la Z/ }).click();
+    await expect(page).toHaveURL(/nombre=desc/);
+    await expect(nombres).toHaveText(["Zorros", "Águilas"]);
+    // Los otros ordenes siguen en su fila, como antes.
+    await expect(page.getByRole("button", { name: "Más likes" })).toBeVisible();
+  });
+
   test("sin cuenta la Comunidad se ve, y el like invita a entrar", async ({ page }) => {
     const s = await simularSupabase(page);
     publicarDe(s, USUARIO_B, "Otra_persona", barajaLegal("Se ve sin cuenta"));

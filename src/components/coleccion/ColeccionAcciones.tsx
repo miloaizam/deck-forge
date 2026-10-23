@@ -125,7 +125,6 @@ export function ColeccionAcciones({
   return (
     <div className="flex shrink-0 gap-2">
       {imagen}
-      {lista}
       <button
         type="button"
         onClick={() => void compartir()}
@@ -136,6 +135,7 @@ export function ColeccionAcciones({
       >
         <Link2 size={16} aria-hidden="true" />
       </button>
+      {lista}
       <button
         type="button"
         onClick={() => setVaciar(true)}

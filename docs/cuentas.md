@@ -92,7 +92,9 @@ delete cascade`: borrar la cuenta borra todo lo suyo.
   suben funciones que corren como dueño de la base.
 - **Funciones** (`security definer`, `search_path` vacío, permisos de
   ejecución dados a mano): `listar_publicas` (la lista, con sus cuatro
-  órdenes, filtro y búsqueda), `leer_publica` (una baraja, con `mia` y
+  órdenes, el orden por nombre `por_nombre` —que manda sobre ellos y ordena
+  con la intercalación `es-x-icu`, para que «Águilas» no quede tras la Z—,
+  filtro y búsqueda), `leer_publica` (una baraja, con `mia` y
   `me_gusta`), `dar_like` (no a la propia), `registrar_copia`, `reportar` y
   `borrar_mi_cuenta`. Las dos primeras las puede llamar cualquiera; el resto,
   solo con sesión.
@@ -431,7 +433,13 @@ peticiones (`e2e/supabase-simulado.ts`). Deja `out/` con ese build: después,
 - **Cambiar el esquema**: editar `supabase/esquema.sql`, probarlo contra el
   Postgres local (dos veces seguidas) y pegarlo entero en el SQL Editor. Si
   agrega una tabla, darle sus permisos a mano en la sección «Permisos de las
-  tablas», como las demás.
+  tablas», como las demás. **Si cambia los parámetros de una función**, el
+  esquema la borra antes (`drop function if exists` con la firma vieja):
+  `create or replace` con otros parámetros crearía una segunda función al
+  lado y la API no sabría a cuál llamar. Así se hizo al sumar `por_nombre`
+  a `listar_publicas` (23-10-2026). Mientras el esquema nuevo no se pegue en
+  Supabase, el sitio sigue listando con el orden de siempre: el parámetro
+  solo se manda cuando el orden por nombre está puesto.
 - **Apagar las cuentas**: `url` y `key` en `null` en `proyecto.json`. El sitio
   vuelve a funcionar sin cuenta (nada pide entrar) y la auditoría vuelve a
   exigir `connect-src 'self'`. Quitar también la sección de la cuenta de

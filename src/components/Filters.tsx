@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Funnel, Search } from "lucide-react";
+import {
+  ArrowDownAZ,
+  ArrowDownZA,
+  ArrowUpDown,
+  Funnel,
+  FunnelX,
+  Search,
+} from "lucide-react";
 
 import { Select } from "./Select";
 import type { CatalogFilters, Facets } from "@/lib/catalog";
@@ -80,7 +87,14 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
       <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
         {/* Con `acciones` la fila puede no caber: bajo 12rem de buscador, los
             botones pasan a una segunda linea, a la derecha. */}
-        <div className="relative min-w-48 flex-1 @2xl:flex-none @2xl:basis-1/2">
+        <div
+          className={cn(
+            "relative min-w-48 flex-1",
+            // Sin acciones, desde 42rem el campo ocupa la mitad (el catalogo);
+            // con ellas, todo lo que dejen los botones.
+            !acciones && "@2xl:flex-none @2xl:basis-1/2",
+          )}
+        >
           <Search
             size={17}
             aria-hidden="true"
@@ -120,7 +134,7 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
           </button>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 @md:gap-3">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 @md:gap-3">
           {(activos > 0 || filters.query !== "" || filters.orden !== "") && (
             <button
               type="button"
@@ -129,11 +143,7 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
               title="Limpiar filtros"
               className={BOTON_ICONO}
             >
-              {/* Un embudo tachado: lucide no trae uno con raya (solo
-                  `funnel-x`), asi que se le suma la diagonal al Funnel. */}
-              <Funnel size={16} aria-hidden="true">
-                <path d="m2 2 20 20" />
-              </Funnel>
+              <FunnelX size={16} aria-hidden="true" />
             </button>
           )}
 

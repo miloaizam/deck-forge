@@ -38,8 +38,9 @@ export const NOVEDADES: Novedad[] = [
     tipo: "Mejora",
     titulo: "Todo a mano en la barra de búsqueda",
     texto: [
-      "En el constructor, «Baraja» y «Side deck» van junto al botón de filtros, y en la colección sus botones de imagen, lista, enlace y vaciar también, ahora como iconos.",
-      "La Comunidad tiene la misma barra de búsqueda que el catálogo, con el orden dentro: cada pulsación pasa a más likes, tendencia, más recientes o más copiadas.",
+      "En el constructor, «Baraja» y «Side deck» van junto al botón de filtros. En la colección también van ahí sus botones de imagen, enlace, lista y vaciar, ahora como iconos, y las pestañas, que pasan a llamarse «Tengo», «Faltan» y «Agregar».",
+      "La Comunidad tiene la misma barra de búsqueda que el catálogo, con el botón para ordenar por nombre, de la A a la Z o de la Z a la A.",
+      "Limpiar los filtros es ahora un embudo con una X.",
     ],
   },
   {

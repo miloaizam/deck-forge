@@ -300,6 +300,12 @@ export async function simularSupabase(
             ? b[clave] - a[clave]
             : Date.parse(b.publicada_en ?? "") - Date.parse(a.publicada_en ?? ""),
         );
+        if (args.por_nombre === "asc" || args.por_nombre === "desc") {
+          const signo = args.por_nombre === "asc" ? 1 : -1;
+          filas = filas.sort(
+            (a, b) => signo * (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"),
+          );
+        }
         const total = filas.length;
         const desde = Number(args.desde ?? 0);
         return json(

@@ -88,7 +88,7 @@ Sin cuentas pierdes solo una cosa: **barajas guardadas en la nube y sincronizado
 
 1. **Guardado local** (`localStorage`): las barajas del usuario quedan en su navegador. Al volver, siguen ahí.
 2. **Compartir por URL**: la baraja se codifica en un enlace (`deckforge.pages.dev/baraja?d=XXXX`). Cualquiera abre ese link y ve la baraja. Ideal para pasarlo por WhatsApp/Discord.
-3. **Exportar / importar**: botón para bajar la baraja como `.json` (o texto) y volver a cargarla.
+3. **Exportar / importar**: botón para bajar la baraja como `.json` (o texto) y volver a cargarla. *(Se quitó el 22-10-2026: con las cuentas, barajas y colección viajan solas.)*
 
 Cuándo agregarías login (fase futura, opcional): perfiles públicos, guardar barajas en la nube, "me gusta", comentarios. Eso se hace después con **Supabase** (tier gratis con auth + Postgres) sin reescribir el frontend. No lo necesitas para lanzar.
 
@@ -487,7 +487,7 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
 - Panel de baraja con conteos por tipo, tope de 50 y side de hasta 10.
 - Reglas del formato: copias por carta, Únicas, oro inicial, mínimo de Aliados
   o Tótems y afinidad por raza, escuela o atributo.
-- Guardado en `localStorage` + exportar/importar.
+- Guardado en `localStorage` (exportar/importar existió hasta que llegaron las cuentas).
 - Curva de coste del principal en el panel.
 - **Pendiente:** la banlist (TODO.md).
 

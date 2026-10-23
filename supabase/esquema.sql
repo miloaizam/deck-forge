@@ -274,12 +274,19 @@ $$;
 
 -- La lista de la Comunidad. `orden`: likes, tendencia, recientes o copias.
 -- `afinidad` exacta ('raza:Dragón') o null; `q` busca en el nombre.
+-- La version anterior no tenia `por_nombre`: se borra, porque con los dos
+-- parametros nuevos convivirian dos funciones y la API no sabria cual llamar.
+drop function if exists public.listar_publicas(text, text, text, integer, integer);
+
 create or replace function public.listar_publicas(
   orden text default 'likes',
   afinidad text default null,
   q text default null,
   desde integer default 0,
-  cuantos integer default 24
+  cuantos integer default 24,
+  -- 'asc' o 'desc': el boton A-Z del buscador. Manda sobre `orden`, que
+  -- queda de desempate, igual que en el catalogo.
+  por_nombre text default null
 )
 returns table (
   public_id uuid,
@@ -313,6 +320,10 @@ as $$
   select v.*, count(*) over () as total
   from visibles v
   order by
+    -- Con la intercalacion de Postgres para el espanol (ICU), no la de la base:
+    -- con "C", «Águilas» quedaba detras de la Z.
+    case when listar_publicas.por_nombre = 'asc' then v.nombre end collate "es-x-icu" asc,
+    case when listar_publicas.por_nombre = 'desc' then v.nombre end collate "es-x-icu" desc,
     case listar_publicas.orden
       when 'tendencia' then v.likes_semana
       when 'copias' then v.copias
@@ -448,7 +459,7 @@ $$;
 
 revoke execute on all functions in schema public from public, anon, authenticated;
 
-grant execute on function public.listar_publicas(text, text, text, integer, integer) to anon, authenticated;
+grant execute on function public.listar_publicas(text, text, text, integer, integer, text) to anon, authenticated;
 grant execute on function public.leer_publica(uuid) to anon, authenticated;
 grant execute on function public.dar_like(uuid, boolean) to authenticated;
 grant execute on function public.registrar_copia(uuid) to authenticated;

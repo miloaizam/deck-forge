@@ -35,6 +35,16 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Grande y con decisiones previas
 
+### Pegar el esquema nuevo en Supabase
+
+- **Qué:** `listar_publicas` ganó `por_nombre` (el orden A-Z de la
+  Comunidad, 23-10-2026). Hasta que se pegue el esquema, ese botón da error;
+  el resto de la Comunidad funciona igual.
+- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
+  → Run. Se puede correr las veces que haga falta.
+- **Terminado cuando:** en `/comunidad` el botón de las flechas ordena por
+  nombre sin error.
+
 ### Probar las cuentas de punta a punta
 
 - **Qué:** las cuentas y la Comunidad están encendidas (22-10-2026), pero

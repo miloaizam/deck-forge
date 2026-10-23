@@ -22,6 +22,8 @@ export async function listarPublicas(
   afinidad: string | null,
   q: string,
   pagina: number,
+  /** El boton A-Z del buscador; manda sobre `orden`. */
+  porNombre: "" | "asc" | "desc" = "",
 ): Promise<{ filas: FilaPublica[]; total: number }> {
   const datos = await api("rpc/listar_publicas", {
     metodo: "POST",
@@ -31,6 +33,9 @@ export async function listarPublicas(
       q: q.trim() === "" ? null : q.trim().slice(0, 60),
       desde: (pagina - 1) * POR_PAGINA,
       cuantos: POR_PAGINA,
+      // Solo si esta puesto: asi una base con el esquema anterior (sin
+      // `por_nombre`) sigue listando con el orden de siempre.
+      ...(porNombre ? { por_nombre: porNombre } : {}),
     },
     token: await token(),
   });
