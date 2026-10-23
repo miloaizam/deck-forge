@@ -155,25 +155,22 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
             aria-controls={panelId}
             className={cn(
               BOTON_SECUNDARIO,
-              "min-w-11 px-3 whitespace-nowrap @md:px-4",
+              "relative min-w-11 px-3 whitespace-nowrap @md:px-4",
               // Abierto o con filtros puestos queda marcado, como un segmento activo.
               (open || activos > 0) && "border-brand-600 bg-accent-soft text-ink",
             )}
           >
             <Funnel size={14} aria-hidden="true" />
             <span className="sr-only @md:not-sr-only">Filtros</span>
-            {/* Siempre montado, como limpiar filtros: sin filtros reserva el
-                ancho de un digito, y el buscador no se achica al poner uno. */}
-            {activos > 0 ? (
-              <span aria-label={`${activos} filtros aplicados`} className={CONTADOR}>
-                {activos}
-              </span>
-            ) : (
+            {/* El numero va de insignia sobre la esquina y no dentro: el boton
+                mide lo mismo con y sin filtros, sin reservar un hueco vacio. El
+                anillo del color del fondo lo despega del borde. */}
+            {activos > 0 && (
               <span
-                aria-hidden="true"
-                className={cn(CONTADOR, "invisible @max-md:hidden")}
+                aria-label={`${activos} filtros aplicados`}
+                className={cn(CONTADOR, "ring-bg absolute -top-2 -right-2 ring-2")}
               >
-                0
+                {activos}
               </span>
             )}
           </button>

@@ -1484,7 +1484,8 @@ barra de scroll, queda ~15 px más ancha y todo lo centrado se corre. Todas las
 páginas usan el mismo `<main>` de 1480 px.
 
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
-el número de filtros puestos; solo el buscador queda siempre a la vista. Hay
+el número de filtros puestos como insignia en su esquina (23-10-2026; antes
+iba dentro y sin filtros dejaba su hueco vacío); solo el buscador queda siempre a la vista. Hay
 ocho facetas: edición (solo en `/catalogo`, porque en la página de una edición
 no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
 y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro

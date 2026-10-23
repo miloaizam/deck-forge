@@ -386,7 +386,11 @@ un campo subrayado.
   Incompleta, Con baneada, con el tinte de su estado), el tipo de una novedad,
   el tipo, la raza y la escuela en el detalle de una carta.
 - `CONTADOR` — un número blanco sobre violeta, redondo de 20: filtros puestos,
-  cartas de cada tipo en el panel, erratas y baneadas por sección.
+  cartas de cada tipo en el panel, erratas y baneadas por sección. En
+  «Filtros» va de insignia sobre la esquina superior derecha
+  (`absolute -top-2 -right-2`, con `ring-2 ring-bg` que lo despega del
+  borde) y solo con filtros puestos: dentro del botón obligaba a reservar su
+  hueco vacío para que el ancho no saltara.
 - **Pública** — `PASTILLA` en `bg-accent-soft text-accent` con globo y los
   likes («Pública · 3 likes»), junto al estado en la tarjeta de Mis barajas.
   **Oculta por moderación** va en `bg-warning-soft text-warning` con ojo
