@@ -72,6 +72,7 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
     onChange({ ...filters, [key]: value });
 
   const activos = countActiveFilters(filters);
+  const hayQueLimpiar = activos > 0 || filters.query !== "" || filters.orden !== "";
 
   return (
     <section aria-label="Buscar y filtrar" className="flex flex-col gap-4">
@@ -135,17 +136,20 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
         </div>
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 @md:gap-3">
-          {(activos > 0 || filters.query !== "" || filters.orden !== "") && (
-            <button
-              type="button"
-              onClick={onReset}
-              aria-label="Limpiar filtros"
-              title="Limpiar filtros"
-              className={BOTON_ICONO}
-            >
-              <FunnelX size={16} aria-hidden="true" />
-            </button>
-          )}
+          {/* Siempre montado, invisible si no hay nada que limpiar: asi el
+              buscador mide lo mismo con y sin filtros, y no se estira ni se
+              encoge al poner o quitar uno. `invisible` lo saca tambien del
+              foco y de los lectores. */}
+          <button
+            type="button"
+            onClick={onReset}
+            aria-label="Limpiar filtros"
+            title="Limpiar filtros"
+            disabled={!hayQueLimpiar}
+            className={cn(BOTON_ICONO, !hayQueLimpiar && "invisible")}
+          >
+            <FunnelX size={16} aria-hidden="true" />
+          </button>
 
           <button
             type="button"
