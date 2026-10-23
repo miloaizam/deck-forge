@@ -117,8 +117,9 @@ export function PublicaAcciones({ baraja }: PublicaAccionesProps) {
       .finally(() => setOcupado(false));
   };
 
+  // contents: like y reportar se reparten en la fila de botones del detalle.
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="contents">
       {conSesion ? (
         <button
           type="button"

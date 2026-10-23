@@ -293,6 +293,10 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
               >
                 <Link2 size={16} aria-hidden="true" />
               </button>
+              {/* Like y reportar van junto al enlace en una baraja ajena. */}
+              {deLaComunidad && !deLaComunidad.mia && (
+                <PublicaAcciones baraja={deLaComunidad} />
+              )}
 
               {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
               {!compartido && (
@@ -329,9 +333,9 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
               {control}
             </div>
 
-            {(deLaComunidad || detalle) && (
+            {(deLaComunidad?.mia || detalle) && (
               <div className="mt-3 flex flex-col items-start gap-2 sm:col-start-2 sm:row-start-3 sm:mt-1.5 sm:items-end">
-                {deLaComunidad && <PublicaAcciones baraja={deLaComunidad} />}
+                {deLaComunidad?.mia && <PublicaAcciones baraja={deLaComunidad} />}
                 {detalle}
               </div>
             )}
