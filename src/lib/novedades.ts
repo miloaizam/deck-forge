@@ -39,7 +39,7 @@ export const NOVEDADES: Novedad[] = [
     titulo: "Las cartas más usadas, en la portada",
     texto: [
       "La portada lleva una cinta de cartas que corre sin parar: las más usadas en las barajas públicas de la Comunidad de las últimas semanas. Toca una para buscarla en el catálogo.",
-      "Se detiene al pasar el cursor encima o con su botón de pausa, y queda quieta si tu equipo pide reducir el movimiento.",
+      "Queda quieta si tu equipo pide reducir el movimiento.",
     ],
   },
   {

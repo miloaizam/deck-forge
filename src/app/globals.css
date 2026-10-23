@@ -344,8 +344,8 @@ html[data-barajas="0"] .solo-con-barajas {
  * La pista lleva la lista dos veces y corre hasta la mitad: ahi empieza la
  * copia, identica, y el salto al comienzo no se ve. Cada carta lleva su
  * separacion como padding y no como `gap`, para que la mitad caiga justo.
- * Se detiene con el cursor, con el foco dentro o con su boton, y con
- * «reducir movimiento» queda quieta y se desliza a mano.
+ * No se detiene con el cursor (decision del proyecto); solo con el foco del
+ * teclado dentro, y con «reducir movimiento» queda quieta y se desliza a mano.
  * ------------------------------------------------------------------ */
 
 @keyframes cinta-corre {
@@ -356,9 +356,7 @@ html[data-barajas="0"] .solo-con-barajas {
 .cinta-pista {
   animation: cinta-corre var(--cinta-duracion, 54s) linear infinite;
 }
-.cinta-marco:hover .cinta-pista,
-.cinta-marco:focus-within .cinta-pista,
-.cinta[data-pausada="true"] .cinta-pista {
+.cinta-marco:focus-within .cinta-pista {
   animation-play-state: paused;
 }
 /* Los bordes se funden con el fondo en vez de cortar la carta en seco. */

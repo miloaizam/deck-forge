@@ -1070,9 +1070,12 @@ barajas públicas de la Comunidad, de derecha a izquierda, en bucle:
   (`.cinta-pista` en `globals.css`); cada carta lleva su separación como
   padding y no como `gap`, para que la mitad caiga justo. La copia va
   `inert`: el teclado y el lector de pantalla recorren doce cartas, no 24.
-- **Se detiene** con el cursor, con el foco dentro y con su botón de pausa
-  (WCAG 2.2.2: algo que se mueve solo más de 5 s necesita cómo pararlo), y
-  con «reducir movimiento» queda quieta y se desliza a mano. Cada carta
+- **No se detiene con el cursor ni tiene botón de pausa** (decisión del
+  proyecto, 23-10-2026: hubo los dos y se quitaron). Solo para con el foco
+  del teclado dentro, para no mover la carta enfocada, y con «reducir
+  movimiento» queda quieta y se desliza a mano. Va a sabiendas contra WCAG
+  2.2.2, que pide una forma de pararla a quien no usa esa preferencia; axe
+  no lo mide. Cada carta
   abre el catálogo buscando su nombre (`/catalogo?q=…`).
 - **En el teléfono va entre el texto y los botones**, para verse sin bajar;
   desde `md`, al pie y a todo el ancho. En el HTML va al final, para que con

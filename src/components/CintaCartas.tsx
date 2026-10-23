@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
-import { Pause, Play } from "lucide-react";
 
 import { api } from "@/components/nube/api";
 import {
@@ -13,7 +12,7 @@ import {
   type CartaCinta,
 } from "@/lib/destacadas";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
-import { BOTON_ICONO_COMPACTO, CARD_RATIO, CONTORNO_CARTA } from "@/lib/ui";
+import { CARD_RATIO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** Segundos que tarda cada carta en cruzar su propio ancho: la velocidad. */
@@ -63,7 +62,8 @@ function cuandoEsteLibre(hacer: () => void): () => void {
 
 /**
  * La cinta de cartas de la portada: corre sin parar de derecha a izquierda,
- * se detiene con el cursor o el foco encima y con su boton, y queda quieta
+ * tambien con el cursor encima (decision del proyecto). Solo se detiene con
+ * el foco del teclado dentro, para no mover la carta enfocada, y queda quieta
  * (y deslizable) con «reducir movimiento». Llega con un grupo fijo en el
  * HTML y, si la Comunidad tiene barajas publicas suficientes, lo cambia por
  * las cartas mas usadas (`src/lib/destacadas.ts`).
@@ -76,7 +76,6 @@ export function CintaCartas({ fijas }: { fijas: CartaCinta[] }) {
   const [cartas, setCartas] = useState(fijas);
   const [deLaComunidad, setDeLaComunidad] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [pausada, setPausada] = useState(false);
   // Las imagenes se piden tras la carga: antes le quitaban ancho de banda al
   // JavaScript y Lighthouse en movil bajaba de 97 a 96 (LCP +0,2 s). Mientras,
   // cada carta es su hueco que late.
@@ -164,11 +163,7 @@ export function CintaCartas({ fijas }: { fijas: CartaCinta[] }) {
   );
 
   return (
-    <section
-      aria-label="Cartas destacadas"
-      className="cinta w-full"
-      data-pausada={pausada}
-    >
+    <section aria-label="Cartas destacadas" className="cinta w-full">
       <div className="cinta-marco overflow-hidden py-3 motion-reduce:overflow-x-auto">
         <div
           className={cn(
@@ -187,25 +182,11 @@ export function CintaCartas({ fijas }: { fijas: CartaCinta[] }) {
           {lista(true)}
         </div>
       </div>
-      <div className="mx-auto mt-1 flex min-h-9 max-w-[1040px] items-center justify-between gap-4 px-6">
-        <p className="text-muted text-sm">
-          {deLaComunidad ? "Las más usadas en la Comunidad" : ""}
-        </p>
-        <button
-          type="button"
-          onClick={() => setPausada((p) => !p)}
-          aria-label={
-            pausada ? "Reanudar la cinta de cartas" : "Pausar la cinta de cartas"
-          }
-          className={cn(BOTON_ICONO_COMPACTO, "shrink-0 motion-reduce:hidden")}
-        >
-          {pausada ? (
-            <Play size={15} aria-hidden="true" />
-          ) : (
-            <Pause size={15} aria-hidden="true" />
-          )}
-        </button>
-      </div>
+      {/* El rotulo solo sale con el ranking, pero su alto va reservado: si
+          apareciera tras la carga empujaria los botones de abajo. */}
+      <p className="text-muted mx-auto mt-1 min-h-5 max-w-[1040px] px-6 text-center text-sm">
+        {deLaComunidad ? "Las más usadas en la Comunidad" : ""}
+      </p>
     </section>
   );
 }

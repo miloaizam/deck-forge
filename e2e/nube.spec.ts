@@ -170,12 +170,17 @@ test.describe("con la nube encendida", () => {
     await expect(cinta.getByRole("img", { name: "Lararium" })).toHaveCount(0);
     // Doce cartas, y la copia del bucle no cuenta para el teclado ni el lector.
     await expect(cinta.getByRole("link")).toHaveCount(12);
-    // Corre sin parar: con su boton se detiene, y entonces se puede tocar.
-    await cinta.getByRole("button", { name: "Pausar la cinta de cartas" }).click();
-    await expect(
-      cinta.getByRole("button", { name: "Reanudar la cinta de cartas" }),
-    ).toBeVisible();
-    await primera.click();
+    // Con el cursor encima sigue corriendo; solo el foco del teclado la para.
+    const pista = page.locator(".cinta-pista");
+    const posicion = () => pista.evaluate((el) => getComputedStyle(el).transform);
+    await cinta.hover();
+    const antes = await posicion();
+    await expect.poll(posicion).not.toBe(antes);
+    await primera.focus();
+    const quieta = await posicion();
+    await page.waitForTimeout(300);
+    expect(await posicion()).toBe(quieta);
+    await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\/catalogo\/?\?q=Kuzuryu/);
   });
 
