@@ -339,6 +339,39 @@ html[data-barajas="0"] .solo-con-barajas {
 }
 
 /* ------------------------------------------------------------------ *
+ * Cinta de cartas de la portada (CintaCartas.tsx)
+ *
+ * La pista lleva la lista dos veces y corre hasta la mitad: ahi empieza la
+ * copia, identica, y el salto al comienzo no se ve. Cada carta lleva su
+ * separacion como padding y no como `gap`, para que la mitad caiga justo.
+ * Se detiene con el cursor, con el foco dentro o con su boton, y con
+ * «reducir movimiento» queda quieta y se desliza a mano.
+ * ------------------------------------------------------------------ */
+
+@keyframes cinta-corre {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.cinta-pista {
+  animation: cinta-corre var(--cinta-duracion, 54s) linear infinite;
+}
+.cinta-marco:hover .cinta-pista,
+.cinta-marco:focus-within .cinta-pista,
+.cinta[data-pausada="true"] .cinta-pista {
+  animation-play-state: paused;
+}
+/* Los bordes se funden con el fondo en vez de cortar la carta en seco. */
+.cinta-marco {
+  mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinta-pista {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
  * Cambio de pagina (View Transitions)
  *
  * El layout de (app) envuelve cada pagina en un <ViewTransition> con la clase

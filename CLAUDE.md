@@ -865,9 +865,10 @@ pero eso no se deja al azar:
    píxeles de seguimiento. Todo se sirve desde nuestro origen, salvo las fotos
    de perfil, que vienen del Storage del mismo Supabase. La telemetría
    de Next.js está desactivada. **Un visitante sin cuenta no hace ninguna
-   petición a Supabase** fuera de la Comunidad: `@supabase/auth-js` se
-   carga solo si hay una sesión guardada, al volver de Google o al pulsar
-   «Entrar» (`e2e/nube.spec.ts` lo vigila).
+   petición a Supabase** fuera de la Comunidad y de **una** en la portada
+   (`rpc/cartas_destacadas`, la cinta de cartas, que no lleva nada del
+   visitante): `@supabase/auth-js` se carga solo si hay una sesión guardada,
+   al volver de Google o al pulsar «Entrar» (`e2e/nube.spec.ts` lo vigila).
 
 6. **Cadena de suministro.** `pnpm-lock.yaml` commiteado; dependencias mínimas y
    justificadas; `pnpm audit` antes de publicar; revisar qué instala un
@@ -1035,6 +1036,48 @@ debajo «Iniciar sesión con Google» y «¿No tienes cuenta? Crea una aquí», 
 qué se guarda.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
+
+**La portada lleva una cinta de cartas que corre sin parar**
+(`CintaCartas.tsx`, 23-10-2026, decisión del proyecto: una cinta y no una
+ruleta 3D, elegida sobre maqueta). Son las 12 cartas más usadas en las
+barajas públicas de la Comunidad, de derecha a izquierda, en bucle:
+
+- **El ranking lo guarda la base ya calculado.** `cartas_destacadas()`
+  (`esquema.sql`) devuelve las 80 ids que están en más barajas públicas y
+  visibles de las últimas 8 semanas, y sobre cuántas barajas contó; si el
+  cálculo tiene más de una hora lo rehace antes de responder (con un lock
+  consultivo, uno a la vez). La portada no hace trabajar a la base en cada
+  visita. Se llama con POST porque escribe.
+- **Agrupar lo hace el sitio** (`src/lib/destacadas.ts`): las impresiones de
+  una carta suman juntas y los Oros sin habilidad, que están en todas las
+  barajas, no entran. Como la portada no baja el catálogo, lee
+  `/data/portada.json` (~24 KB con gzip), que escribe en el build un Route
+  Handler estático (`src/app/data/portada.json/route.ts`): un grupo por
+  carta, con sus ids, su nombre y la imagen de su primera impresión. Se pide
+  solo si hay ranking.
+- **El HTML trae un grupo fijo** (`DESTACADAS_FIJAS`, Legendarias y Ultra
+  Reales de Escuelas Elementales): la portada se ve entera sin red y el
+  ranking llega tras la carga, con el hilo libre, con un fundido. **Con menos
+  de 10 barajas públicas, menos de 12 cartas distintas o sin respuesta, se
+  queda el grupo fijo.** Con ranking, la cinta dice «Las más usadas en la
+  Comunidad».
+- **Las imágenes se piden tras el evento `load`**; hasta entonces cada carta
+  es su hueco que late. Pedidas de entrada, sus ~70 KB le quitaban ancho de
+  banda al JavaScript y Lighthouse en móvil bajaba de 97 a 96 (LCP de 2,5 a
+  2,7 s, aunque el LCP es el párrafo); así queda en 97, como antes de la
+  cinta. `fetchPriority="low"` no bastó.
+- **El bucle es la lista dos veces** y la pista corre hasta la mitad
+  (`.cinta-pista` en `globals.css`); cada carta lleva su separación como
+  padding y no como `gap`, para que la mitad caiga justo. La copia va
+  `inert`: el teclado y el lector de pantalla recorren doce cartas, no 24.
+- **Se detiene** con el cursor, con el foco dentro y con su botón de pausa
+  (WCAG 2.2.2: algo que se mueve solo más de 5 s necesita cómo pararlo), y
+  con «reducir movimiento» queda quieta y se desliza a mano. Cada carta
+  abre el catálogo buscando su nombre (`/catalogo?q=…`).
+- **En el teléfono va entre el texto y los botones**, para verse sin bajar;
+  desde `md`, al pie y a todo el ancho. En el HTML va al final, para que con
+  el teclado se llegue primero a «Entrar a la forja»; el sitio lo cambia con
+  `order`.
 
 **Las páginas de error son una sola pantalla, `ErrorScreen`, y solo cambia el
 código.** El texto de cada uno vive en el mapa `ERRORES` del componente, así
@@ -1906,7 +1949,8 @@ quien toca el código.
   (`e2e/supabase-simulado.ts`): fusión al entrar, publicar con alias, una
   ilegal no se publica, like, copia, reporte, moderación, cerrar sesión, la
   foto de perfil (achicar, subir, verla, ocultarla, quitarla y borrarla con la
-  cuenta), y que sin cuenta no salga ninguna petición. La SQL, contra
+  cuenta), la cinta de la portada, y que sin cuenta no salga ninguna
+  petición fuera de la Comunidad y la cinta. La SQL, contra
   Postgres local con un `storage` de imitación (`docs/cuentas.md`).
 - **Foto de perfil** (23-10-2026, decisión del proyecto: subida por el
   usuario y no un arte de carta). Bucket público `avatares` de Storage, un

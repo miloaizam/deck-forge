@@ -21,52 +21,21 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Pegar el esquema en Supabase** (lo de la portada por defecto en la
-   Comunidad).
-2. **Cartas destacadas en la portada**, con la maqueta primero.
-3. **Por decidir**, cuando haya ganas: no bloquea nada.
+1. **Pegar el esquema en Supabase** (la cinta de la portada).
+2. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Base de datos
 
 ### Pegar el esquema nuevo en Supabase
 
-- **Qué:** `listar_publicas` devuelve ahora `principal` (las cartas de cada
-  baraja, solo ids y copias), para que las tarjetas de la Comunidad sin
-  portada elegida muestren su Aliado con más copias. Hasta pegarlo, esas
-  tarjetas siguen con el recuadro vacío; nada se rompe.
+- **Qué:** la cinta de cartas de la portada pide `cartas_destacadas()`, que
+  no existe hasta pegar el esquema (con las tablas `destacadas` y
+  `destacadas_estado`). Mientras tanto la portada recibe un 404 y se queda
+  con el grupo fijo de cartas; nada se rompe.
 - **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
   → Run.
-- **Terminado cuando:** en `/comunidad` toda tarjeta lleva una carta.
-
-## Interfaz
-
-### Cartas destacadas en la portada
-
-- **Qué:** un abanico de unas 5 cartas junto al título de la portada con las
-  más usadas en las barajas de la Comunidad, que rota: cambia una carta cada
-  5–6 s con un fundido, se pausa con el cursor encima y queda quieto con
-  «reducir movimiento». Al tocar una carta se abre en el catálogo. En el
-  teléfono va más chico y bajo el título. Es lo que la crítica pone primero:
-  hoy la portada no muestra ninguna carta (6,4).
-- **Decisiones ya tomadas:**
-  - Cuentan **solo las barajas públicas** y no ocultas, por `identidad` (las
-    impresiones de una carta suman juntas) y en las últimas semanas.
-  - El ranking sale de **Supabase**, con una función `security definer` en
-    `supabase/esquema.sql`, y la base apenas trabaja: se guarda ya calculado
-    (una tabla o vista materializada que se recalcula al publicar o una vez al
-    día, no en cada visita) y la portada lee solo esas ~12 filas, con caché.
-  - Antes de construir, una **maqueta** en captura para aprobarla.
-- **Por dónde:** el HTML trae un grupo fijo elegido a mano (las Legendarias,
-  por ejemplo), para que la portada se vea entera sin red y no empeore el LCP;
-  al terminar de cargar pide el ranking en segundo plano y cambia a esas
-  cartas. Con menos de ~10 barajas públicas, o si Supabase no responde, se
-  queda el grupo fijo. Es una segunda excepción a «un visitante sin cuenta no
-  le pide nada a Supabase» (hoy solo la Comunidad): cambiar en el mismo commit
-  CLAUDE.md §6.5, `/privacidad` y la prueba de `e2e/nube.spec.ts` que lo
-  vigila.
-- **Terminado cuando:** la maqueta está aprobada, la portada rota con el
-  ranking real, pasan `e2e`, `e2e:nube` y `a11y`, y Lighthouse no baja en la
-  portada.
+- **Terminado cuando:** con 10 barajas públicas o más, la portada dice «Las
+  más usadas en la Comunidad» bajo la cinta.
 
 ## Por decidir
 

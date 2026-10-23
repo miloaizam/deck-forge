@@ -120,6 +120,28 @@ alter table public.reportes add constraint reportes_motivo_check
   check (motivo in ('nombre', 'nota', 'foto', 'spam', 'otro'));
 
 -- ---------------------------------------------------------------------------
+-- Cartas destacadas de la portada
+--
+-- Las cartas que mas aparecen en las barajas publicas, ya calculadas: la
+-- portada las lee en cada visita y la base no recorre las barajas cada vez.
+-- Las recalcula `cartas_destacadas()` como mucho una vez por hora. Solo ids:
+-- agrupar por carta y quitar los Oros lo hace el sitio, que tiene el catalogo.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.destacadas (
+  carta text primary key,
+  -- En cuantas barajas publicas esta.
+  barajas integer not null
+);
+
+-- Una sola fila: cuando se calculo y sobre cuantas barajas.
+create table if not exists public.destacadas_estado (
+  unica boolean primary key default true check (unica),
+  calculado timestamptz not null,
+  barajas integer not null
+);
+
+-- ---------------------------------------------------------------------------
 -- Permisos de las tablas
 --
 -- Explicitos, para no depender de la casilla «Automatically expose new
@@ -128,7 +150,8 @@ alter table public.reportes add constraint reportes_motivo_check
 -- ---------------------------------------------------------------------------
 
 revoke all on public.perfiles, public.barajas, public.colecciones,
-  public.likes, public.copias, public.reportes from anon, authenticated;
+  public.likes, public.copias, public.reportes,
+  public.destacadas, public.destacadas_estado from anon, authenticated;
 
 -- Sin `delete` en perfiles: borrar la fila y volver a crearla le quitaria la
 -- moderacion de la foto (`avatar_oculto` nace en false). El sitio no lo
@@ -136,7 +159,7 @@ revoke all on public.perfiles, public.barajas, public.colecciones,
 grant select, insert, update on public.perfiles to authenticated;
 grant select, insert, update on public.barajas to authenticated;
 grant select, insert, update on public.colecciones to authenticated;
--- likes, copias y reportes: nada. Solo las funciones de abajo, que corren
+-- likes, copias, reportes y las destacadas: nada. Solo las funciones de abajo, que corren
 -- como dueno de la base.
 
 -- ---------------------------------------------------------------------------
@@ -149,6 +172,8 @@ alter table public.colecciones enable row level security;
 alter table public.likes enable row level security;
 alter table public.copias enable row level security;
 alter table public.reportes enable row level security;
+alter table public.destacadas enable row level security;
+alter table public.destacadas_estado enable row level security;
 
 drop policy if exists "perfil propio" on public.perfiles;
 create policy "perfil propio" on public.perfiles for all to authenticated
@@ -428,6 +453,74 @@ as $$
   limit least(greatest(1, cuantos), 48);
 $$;
 
+-- Que barajas cuentan para las destacadas: publicas, visibles y publicadas o
+-- editadas en las ultimas 8 semanas.
+create or replace function public.cuenta_para_destacadas(
+  publica boolean, oculta boolean, borrada boolean,
+  publicada_en timestamptz, actualizado bigint)
+returns boolean
+language sql
+stable
+set search_path = ''
+as $$
+  select publica and not oculta and not borrada
+    -- `actualizado` lo pone el navegador: se acota para que una fecha absurda
+    -- no haga fallar el calculo de todos (to_timestamp tiene un rango).
+    and greatest(publicada_en,
+      to_timestamp(least(actualizado, 32503680000000) / 1000.0))
+      > now() - interval '8 weeks';
+$$;
+
+-- Las cartas destacadas de la portada: las 80 que estan en mas barajas
+-- publicas de las ultimas 8 semanas (publicadas o editadas), y sobre cuantas
+-- barajas se conto (`total`), para que el sitio no muestre un ranking de tres
+-- barajas. Si el calculo tiene mas de una hora lo rehace antes de responder;
+-- con dos visitas a la vez, una recalcula y la otra lee el anterior.
+--
+-- Escribe, asi que no es `stable`: se llama con POST.
+create or replace function public.cartas_destacadas()
+returns table (carta text, barajas integer, total integer)
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+#variable_conflict use_column
+begin
+  if coalesce((select e.calculado < now() - interval '1 hour'
+               from public.destacadas_estado e), true)
+     and pg_try_advisory_xact_lock(hashtext('deckforge.cartas_destacadas')) then
+    delete from public.destacadas where true;
+    insert into public.destacadas (carta, barajas)
+      select x.id, count(distinct b.public_id)::integer
+      from public.barajas b
+      cross join lateral jsonb_array_elements(
+        case when jsonb_typeof(b.datos -> 'principal') = 'array'
+          then b.datos -> 'principal' else '[]'::jsonb end) as e (v)
+      cross join lateral (select e.v ->> 'id' as id) x
+      where public.cuenta_para_destacadas(b.publica, b.oculta, b.borrada,
+          b.publicada_en, b.actualizado)
+        and jsonb_typeof(e.v) = 'object' and x.id ~ '^[a-z]{2}-[0-9]{3}$'
+      group by x.id
+      order by 2 desc, 1
+      limit 80;
+
+    insert into public.destacadas_estado (unica, calculado, barajas)
+      values (true, now(), (
+        select count(*)::integer from public.barajas b
+        where public.cuenta_para_destacadas(b.publica, b.oculta, b.borrada,
+          b.publicada_en, b.actualizado)))
+    on conflict (unica) do update
+      set calculado = excluded.calculado, barajas = excluded.barajas;
+  end if;
+
+  return query
+    select d.carta, d.barajas, e.barajas
+    from public.destacadas d cross join public.destacadas_estado e
+    order by d.barajas desc, d.carta;
+end;
+$$;
+
 -- Una baraja publica, con su contenido. `mia` y `me_gusta` dicen si es del
 -- que pregunta y si ya le dio like (falso sin sesion).
 drop function if exists public.leer_publica(uuid);
@@ -557,6 +650,7 @@ revoke execute on all functions in schema public from public, anon, authenticate
 
 grant execute on function public.listar_publicas(text, text, text, integer, integer, text) to anon, authenticated;
 grant execute on function public.leer_publica(uuid) to anon, authenticated;
+grant execute on function public.cartas_destacadas() to anon, authenticated;
 grant execute on function public.dar_like(uuid, boolean) to authenticated;
 grant execute on function public.registrar_copia(uuid) to authenticated;
 grant execute on function public.reportar(uuid, text, text) to authenticated;

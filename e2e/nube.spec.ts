@@ -17,6 +17,7 @@ import {
   simularSupabase,
   USUARIO_A,
   USUARIO_B,
+  type Simulado,
 } from "./supabase-simulado";
 
 /**
@@ -121,12 +122,84 @@ test("sin cuenta no se pide nada a Supabase", async ({ page }) => {
     await expect(
       page.getByRole("button", { name: "Iniciar sesión con Google" }),
     ).toBeVisible();
-    expect(pedidos).toEqual([]);
+    // La unica excepcion: la cinta de la portada pide las cartas destacadas.
+    expect(pedidos.filter((u) => !u.endsWith("/rest/v1/rpc/cartas_destacadas"))).toEqual(
+      [],
+    );
   }
 });
 
 test.describe("con la nube encendida", () => {
   test.skip(!NUBE, "necesita `pnpm run e2e:nube`");
+
+  /** `n` barajas publicas de otro: Kuzuryu y un Oro sin habilidad en todas. */
+  function publicarParaLaCinta(s: Simulado, n: number) {
+    const otras = [
+      "bu-001",
+      "bu-002",
+      "bu-003",
+      "bu-004",
+      "bu-005",
+      "bu-006",
+      "bu-007",
+    ].concat(["bu-008", "bu-010", "bu-011", "bu-012", "bu-013", "hs-040"]);
+    for (let i = 0; i < n; i++) {
+      publicarDe(s, USUARIO_B, "Robo", {
+        id: `cinta${String(i).padStart(5, "0")}`,
+        nombre: `Cinta ${i}`,
+        principal: [
+          { id: "bu-009", n: 3 },
+          { id: "ai-221", n: 20 },
+          ...[0, 1, 2, 3, 4, 5].map((k) => ({ id: otras[(i + k) % otras.length], n: 1 })),
+        ],
+      });
+    }
+  }
+
+  test("la cinta de la portada muestra lo mas usado en la Comunidad", async ({
+    page,
+  }) => {
+    const s = await simularSupabase(page);
+    publicarParaLaCinta(s, 10);
+    await page.goto("/");
+    const cinta = page.getByRole("region", { name: "Cartas destacadas" });
+    await expect(cinta.getByText("Las más usadas en la Comunidad")).toBeVisible();
+    const primera = cinta.getByRole("link").first();
+    await expect(primera).toHaveAccessibleName("Ver en el catálogo: Kuzuryu");
+    // El Oro sin habilidad esta en todas, pero no dice nada: no sale.
+    await expect(cinta.getByRole("img", { name: "Lararium" })).toHaveCount(0);
+    // Doce cartas, y la copia del bucle no cuenta para el teclado ni el lector.
+    await expect(cinta.getByRole("link")).toHaveCount(12);
+    // Corre sin parar: con su boton se detiene, y entonces se puede tocar.
+    await cinta.getByRole("button", { name: "Pausar la cinta de cartas" }).click();
+    await expect(
+      cinta.getByRole("button", { name: "Reanudar la cinta de cartas" }),
+    ).toBeVisible();
+    await primera.click();
+    await expect(page).toHaveURL(/\/catalogo\/?\?q=Kuzuryu/);
+  });
+
+  test("con pocas barajas publicas la cinta se queda con el grupo fijo", async ({
+    page,
+  }) => {
+    const s = await simularSupabase(page);
+    publicarParaLaCinta(s, 9);
+    const archivo: string[] = [];
+    page.on("request", (r) => {
+      if (r.url().includes("/data/portada.json")) archivo.push(r.url());
+    });
+    await page.goto("/");
+    await expect
+      .poll(() => s.peticiones.some((p) => p.includes("cartas_destacadas")))
+      .toBe(true);
+    const cinta = page.getByRole("region", { name: "Cartas destacadas" });
+    await expect(cinta.getByRole("link").first()).toHaveAccessibleName(
+      "Ver en el catálogo: Leonardo",
+    );
+    await expect(cinta.getByText("Las más usadas", { exact: false })).toHaveCount(0);
+    // Sin ranking que agrupar, el archivo de grupos no se baja.
+    expect(archivo).toEqual([]);
+  });
 
   test("/cuenta sin sesion ofrece entrar con Google", async ({ page }) => {
     await simularSupabase(page);

@@ -38,6 +38,10 @@ export default function PrivacidadPage() {
               Las barajas y colecciones que compartes por enlace van dentro del mismo
               enlace y no pasan por ningún servidor.
             </p>
+            <p>
+              Para mostrar las cartas más usadas, la portada pide a Supabase la lista de
+              la Comunidad. Ese pedido no lleva nada tuyo.
+            </p>
             <p>El sitio no usa cookies, publicidad ni estadísticas de visitas.</p>
           </div>
         </section>

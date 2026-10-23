@@ -92,7 +92,12 @@ export function publicarDe(
   s: Simulado,
   userId: string,
   alias: string,
-  deck: { id: string; nombre: string; portada?: string | null },
+  deck: {
+    id: string;
+    nombre: string;
+    portada?: string | null;
+    principal?: { id: string; n: number }[];
+  },
 ): string {
   s.perfiles.set(userId, alias);
   const public_id = uuid();
@@ -367,6 +372,25 @@ export async function simularSupabase(
           filas
             .slice(desde, desde + Number(args.cuantos ?? 24))
             .map((f) => ({ ...f, total })),
+        );
+      }
+      case "/rest/v1/rpc/cartas_destacadas": {
+        // Como la de verdad, sin la cache de una hora ni la ventana de 8
+        // semanas: en cuantas barajas visibles esta cada id.
+        const barajas = s.barajas.filter(visible);
+        const usos = new Map<string, number>();
+        for (const f of barajas) {
+          const principal = (f.datos as { principal?: { id: string }[] } | null)
+            ?.principal;
+          for (const id of new Set((principal ?? []).map((e) => e.id)))
+            usos.set(id, (usos.get(id) ?? 0) + 1);
+        }
+        return json(
+          route,
+          [...usos]
+            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+            .slice(0, 80)
+            .map(([carta, n]) => ({ carta, barajas: n, total: barajas.length })),
         );
       }
       case "/rest/v1/rpc/leer_publica": {

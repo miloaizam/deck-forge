@@ -124,8 +124,9 @@ delete cascade`: borrar la cuenta borra todo lo suyo.
   con la intercalación `es-x-icu`, para que «Águilas» no quede tras la Z—,
   filtro y búsqueda), `leer_publica` (una baraja, con `mia` y
   `me_gusta`), `dar_like` (no a la propia), `registrar_copia`, `reportar` y
-  `borrar_mi_cuenta`. Las dos primeras las puede llamar cualquiera; el resto,
-  solo con sesión.
+  `borrar_mi_cuenta`, más `cartas_destacadas` (la cinta de la portada; la
+  única que escribe sin sesión, y solo su propio ranking). Las dos primeras y
+  la última las puede llamar cualquiera; el resto, solo con sesión.
 - Topes de tamaño en la base: 32 KB por baraja, 256 KB por colección.
 - Se puede volver a correr entero sin romper nada: así se aplica una versión
   nueva.
@@ -171,7 +172,8 @@ completo trae tiempo real, archivos y funciones que el sitio no usa.
    renueva el token solo.
 4. **Nada se descarga sin hacer falta**: `auth-js` se carga solo si existe
    `deckforge-sesion`, al volver de Google o al pulsar «Entrar». Un visitante
-   sin cuenta no hace ninguna petición a Supabase fuera de la Comunidad.
+   sin cuenta no hace ninguna petición a Supabase fuera de la Comunidad y de
+   la cinta de la portada (`rpc/cartas_destacadas`, sin nada del visitante).
 5. Cerrar sesión primero sincroniza y, si lo pendiente llegó a la cuenta,
    **borra de este navegador** las barajas, la colección y el borrador del
    constructor, para que quien lo use después no los herede. Si no pudo
@@ -243,6 +245,14 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
 - **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
   últimos 7 días, más recientes, más copiadas), filtro por afinidad y buscador;
   todo en la URL. Se ve sin cuenta.
+- **La cinta de la portada** muestra las 12 cartas más usadas en las barajas
+  públicas. `cartas_destacadas()` guarda el ranking ya calculado en
+  `destacadas` y `destacadas_estado` (sin permisos para nadie desde la API) y
+  lo rehace como mucho una vez por hora: 80 ids, en cuántas barajas públicas
+  y visibles de las últimas 8 semanas está cada una, y sobre cuántas barajas
+  se contó. El sitio agrupa por carta y quita los Oros sin habilidad
+  (`src/lib/destacadas.ts`); con menos de 10 barajas se queda con un grupo
+  fijo. Más en CLAUDE.md, «La portada lleva una cinta de cartas».
 - **El detalle público** es `/baraja/?p=<public_id>`: el alias, el like (uno
   por persona, no a la propia), «Guardar en mis barajas» (cuenta una copia por
   persona con sesión) y «Reportar».
@@ -281,8 +291,9 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
   memoria (`e2e/supabase-simulado.ts`), en los tres dispositivos: la vuelta
   de Google de punta a punta (`/authorize` → `?code=` → canje PKCE, y la
   vuelta con error), entrar y juntar, publicar con alias, una ilegal no se publica, like, copia, reporte,
-  moderación, cerrar sesión, lo que pide cuenta y lo que no, accesibilidad, y
-  que sin cuenta no salga ninguna petición. Deja `out/` con ese build:
+  moderación, cerrar sesión, lo que pide cuenta y lo que no, accesibilidad, la
+  cinta de la portada (con ranking y con el grupo fijo), y que sin cuenta no
+  salga ninguna petición fuera de la Comunidad y la cinta. Deja `out/` con ese build:
   después, `pnpm run build`.
 - `pnpm run e2e` y `pnpm run a11y` entran con una cuenta de mentira
   (`entrarSimulado`), porque el constructor, Mis barajas y la colección la
