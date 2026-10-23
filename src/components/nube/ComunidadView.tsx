@@ -197,7 +197,7 @@ export function ComunidadView() {
           llena lo que dejan los botones hasta 20rem (el ancho del constructor);
           dentro va el orden por nombre (A-Z, Z-A), que manda sobre el de abajo. */}
       <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
-        <div className="relative min-w-48 flex-1 @lg:max-w-80">
+        <div className="relative min-w-64 flex-1 @lg:max-w-80">
           <Search
             size={17}
             aria-hidden="true"
@@ -232,33 +232,39 @@ export function ComunidadView() {
             )}
           </button>
         </div>
-        <div className="ml-auto w-full @md:w-60">
-          <Select
-            label="Afinidad"
-            etiquetaOculta
-            value={consulta.afinidad}
-            options={[...AFINIDADES]}
-            onChange={(v) => cambiar({ afinidad: v })}
-            placeholder="Todas las afinidades"
-            format={etiquetaAfinidad}
-          />
+        {/* A la derecha, la afinidad y el orden, en la misma fila; en el
+            telefono bajan bajo el buscador, y si el orden no cabe se desliza
+            (SEGMENTOS lleva `overflow-x-auto`) en vez de ensanchar la pagina. */}
+        <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <div className="w-full @md:w-60">
+            <Select
+              label="Afinidad"
+              etiquetaOculta
+              value={consulta.afinidad}
+              options={[...AFINIDADES]}
+              onChange={(v) => cambiar({ afinidad: v })}
+              placeholder="Todas las afinidades"
+              format={etiquetaAfinidad}
+            />
+          </div>
+          <div role="group" aria-label="Ordenar" className={cn(SEGMENTOS, "h-11")}>
+            {ORDENES_COMUNIDAD.map((o) => (
+              <button
+                key={o}
+                type="button"
+                aria-pressed={consulta.orden === o}
+                onClick={() => cambiar({ orden: o })}
+                className={cn(
+                  SEGMENTO,
+                  "h-full",
+                  consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
+                )}
+              >
+                {ETIQUETA_ORDEN_COMUNIDAD[o]}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div role="group" aria-label="Ordenar" className={cn(SEGMENTOS, "self-start")}>
-        {ORDENES_COMUNIDAD.map((o) => (
-          <button
-            key={o}
-            type="button"
-            aria-pressed={consulta.orden === o}
-            onClick={() => cambiar({ orden: o })}
-            className={cn(
-              SEGMENTO,
-              consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-            )}
-          >
-            {ETIQUETA_ORDEN_COMUNIDAD[o]}
-          </button>
-        ))}
       </div>
 
       {r.fase === "cargando" && (

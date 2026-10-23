@@ -203,131 +203,139 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* El nombre de la baraja ES el titulo de la pagina; a su lado, el conteo y
-          las mismas acciones que trae su tarjeta en /barajas. */}
-      <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-        <div className="min-w-0">
-          <p className="eyebrow mb-3">
-            {deLaComunidad ? (
-              <Link href="/comunidad" className="hover:text-ink">
-                Comunidad
-              </Link>
-            ) : (
-              "Baraja"
-            )}
-          </p>
-          <h1 className="text-3xl font-bold tracking-[-0.02em]">{deckTitle(deck)}</h1>
-          {deLaComunidad && (
-            <p className="mt-1.5 text-[14px]">
-              por <span className="text-accent font-medium">{deLaComunidad.alias}</span>
-              <span className="text-muted">
-                {" · "}
-                {etiquetaAfinidad(claveAfinidad(stats.afinidad))}
-              </span>
+      {/* El nombre de la baraja ES el titulo de la pagina; a su lado, las
+          mismas acciones que trae su tarjeta en /barajas. */}
+      <PublicarControl
+        deck={deck}
+        legal={legal}
+        afinidad={claveAfinidad(stats.afinidad)}
+        activo={!compartido}
+      >
+        {({ control, detalle }) => (
+          // Una grilla desde `sm`: los botones a la altura del titulo y lo
+          // de la Comunidad (enlace, likes, copias) a la del subtitulo. El
+          // orden del DOM es el del telefono, donde va todo en una columna.
+          <header className="sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-x-6">
+            <p className="eyebrow mb-3 sm:col-start-1 sm:row-start-1">
+              {deLaComunidad ? (
+                <Link href="/comunidad" className="hover:text-ink">
+                  Comunidad
+                </Link>
+              ) : (
+                "Baraja"
+              )}
             </p>
-          )}
-          {/* El conteo va bajo el titulo, que es lo que describe; arriba a la
-              derecha flotaba lejos de el, sobre los botones. */}
-          <p className="text-muted mt-1.5 text-[14px] tabular-nums">
-            {stats.totalPrincipal}/{DECK_TOTAL} cartas
-            {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-          </p>
-          {/* La descripcion es opcional: si esta vacia no deja hueco. */}
-          {deck.descripcion.trim() !== "" && (
-            <p className="text-muted mt-2 max-w-[60ch] text-[13px] leading-relaxed">
-              {deck.descripcion}
-            </p>
-          )}
-        </div>
 
-        <PublicarControl
-          deck={deck}
-          legal={legal}
-          afinidad={claveAfinidad(stats.afinidad)}
-          activo={!compartido}
-        >
-          {({ control, detalle }) => (
-            <div className="flex flex-col items-start gap-3 sm:items-end">
-              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                {compartido ? (
-                  <button type="button" onClick={guardar} className={BOTON_SECUNDARIO}>
-                    <Save size={14} aria-hidden="true" />
-                    Guardar en mis barajas
-                  </button>
-                ) : (
-                  <Link href={`/constructor/?m=${deck.id}`} className={BOTON_SECUNDARIO}>
-                    <Hammer size={14} aria-hidden="true" />
-                    Editar
-                  </Link>
-                )}
-                {/* Las acciones sobre la baraja van en iconos, con su nombre
-                    en el title y en aria-label; al final, Privada / Publica. */}
-                <button
-                  type="button"
-                  onClick={() => descargarImagenDeBaraja(deck, res)}
-                  aria-label="Descargar como imagen"
-                  title="Descargar como imagen"
-                  className={BOTON_ICONO}
-                >
-                  <ImageDown size={16} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    void (deLaComunidad
-                      ? copyPublicLink(deck, deLaComunidad.public_id)
-                      : copyShareLink(deck))
-                  }
-                  aria-label="Copiar enlace"
-                  title="Copiar enlace"
-                  className={BOTON_ICONO}
-                >
-                  <Link2 size={16} aria-hidden="true" />
-                </button>
+            <h1 className="text-3xl font-bold tracking-[-0.02em] sm:col-start-1 sm:row-start-2">
+              {deckTitle(deck)}
+            </h1>
 
-                {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
-                {!compartido && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const copia = duplicateDeck(
-                          deck,
-                          nombreLibre(deck.nombre, decks),
-                        );
-                        const r = saveDeck(copia);
-                        if (r === "ok") {
-                          toast(
-                            `Baraja duplicada como "${deckTitle(copia)}". La copia está en Mis barajas.`,
-                            "success",
-                          );
-                        } else toast(mensajeNoGuardada(r, "duplicar"), "warning");
-                      }}
-                      aria-label="Duplicar la baraja"
-                      title="Duplicar"
-                      className={BOTON_ICONO}
-                    >
-                      <Copy size={16} aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPorBorrar(true)}
-                      aria-label="Borrar la baraja"
-                      title="Borrar"
-                      className={cn(BOTON_ICONO, HOVER_PELIGRO)}
-                    >
-                      <Trash2 size={16} aria-hidden="true" />
-                    </button>
-                  </>
-                )}
-                {control}
-              </div>
-              {deLaComunidad && <PublicaAcciones baraja={deLaComunidad} />}
-              {detalle}
+            <div className="min-w-0 sm:col-start-1 sm:row-start-3">
+              {deLaComunidad && (
+                <p className="mt-1.5 text-[14px]">
+                  por{" "}
+                  <span className="text-accent font-medium">{deLaComunidad.alias}</span>
+                  <span className="text-muted">
+                    {" · "}
+                    {etiquetaAfinidad(claveAfinidad(stats.afinidad))}
+                  </span>
+                </p>
+              )}
+
+              {/* El conteo va bajo el titulo, que es lo que describe. */}
+              <p className="text-muted mt-1.5 text-[14px] tabular-nums">
+                {stats.totalPrincipal}/{DECK_TOTAL} cartas
+                {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
+              </p>
             </div>
-          )}
-        </PublicarControl>
-      </header>
+            {/* La descripcion es opcional: si esta vacia no deja hueco. */}
+            {deck.descripcion.trim() !== "" && (
+              <p className="text-muted mt-2 max-w-[60ch] text-[13px] leading-relaxed sm:col-start-1 sm:row-start-4">
+                {deck.descripcion}
+              </p>
+            )}
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 sm:col-start-2 sm:row-start-2 sm:mt-0 sm:justify-end">
+              {compartido ? (
+                <button type="button" onClick={guardar} className={BOTON_SECUNDARIO}>
+                  <Save size={14} aria-hidden="true" />
+                  Guardar en mis barajas
+                </button>
+              ) : (
+                <Link href={`/constructor/?m=${deck.id}`} className={BOTON_SECUNDARIO}>
+                  <Hammer size={14} aria-hidden="true" />
+                  Editar
+                </Link>
+              )}
+              {/* Las acciones sobre la baraja van en iconos, con su nombre
+                    en el title y en aria-label; al final, Privada / Publica. */}
+              <button
+                type="button"
+                onClick={() => descargarImagenDeBaraja(deck, res)}
+                aria-label="Descargar como imagen"
+                title="Descargar como imagen"
+                className={BOTON_ICONO}
+              >
+                <ImageDown size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  void (deLaComunidad
+                    ? copyPublicLink(deck, deLaComunidad.public_id)
+                    : copyShareLink(deck))
+                }
+                aria-label="Copiar enlace"
+                title="Copiar enlace"
+                className={BOTON_ICONO}
+              >
+                <Link2 size={16} aria-hidden="true" />
+              </button>
+
+              {/* Duplicar y borrar solo tienen sentido sobre una baraja tuya. */}
+              {!compartido && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const copia = duplicateDeck(deck, nombreLibre(deck.nombre, decks));
+                      const r = saveDeck(copia);
+                      if (r === "ok") {
+                        toast(
+                          `Baraja duplicada como "${deckTitle(copia)}". La copia está en Mis barajas.`,
+                          "success",
+                        );
+                      } else toast(mensajeNoGuardada(r, "duplicar"), "warning");
+                    }}
+                    aria-label="Duplicar la baraja"
+                    title="Duplicar"
+                    className={BOTON_ICONO}
+                  >
+                    <Copy size={16} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPorBorrar(true)}
+                    aria-label="Borrar la baraja"
+                    title="Borrar"
+                    className={cn(BOTON_ICONO, HOVER_PELIGRO)}
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
+                  </button>
+                </>
+              )}
+              {control}
+            </div>
+
+            {(deLaComunidad || detalle) && (
+              <div className="mt-3 flex flex-col items-start gap-2 sm:col-start-2 sm:row-start-3 sm:mt-1.5 sm:items-end">
+                {deLaComunidad && <PublicaAcciones baraja={deLaComunidad} />}
+                {detalle}
+              </div>
+            )}
+          </header>
+        )}
+      </PublicarControl>
 
       {/* El estado solo aparece cuando hay algo que corregir: decirle "todo
           bien" a quien ya ve la baraja completa es ruido. Es el mismo
