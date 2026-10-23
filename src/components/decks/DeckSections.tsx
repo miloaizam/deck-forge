@@ -20,6 +20,14 @@ const ALTO = 732 / 512;
  */
 const ASOMO = 0.13;
 
+/**
+ * Copias que se dibujan como mucho por pila. Hasta cuatro el monton dice
+ * cuantas son; mas alla no se cuentan a ojo y solo alargan la mesa: 35 Oros
+ * sin habilidad hacian una columna de tres pantallas. Con mas, la pila se
+ * queda en cuatro y lleva el total escrito.
+ */
+const MAX_A_LA_VISTA = 4;
+
 interface PilaItem {
   key: string;
   fila: ResolvedEntry;
@@ -127,9 +135,10 @@ function Encabezado({ titulo, total }: { titulo: string; total: number }) {
 /**
  * Una carta con todas sus copias apiladas, como quedarian sobre la mesa.
  *
- * Se dibujan las N copias de verdad, cada una corrida hacia abajo: la de
+ * Se dibujan las copias de verdad, cada una corrida hacia abajo: la de
  * adelante tapa a las de atras y de ellas solo asoma la franja de arriba. Asi
- * el monton mismo dice cuantas son, sin tener que leer un rotulo.
+ * el monton mismo dice cuantas son, sin tener que leer un rotulo. Pasadas
+ * MAX_A_LA_VISTA, se dibujan esas y el total va escrito sobre la carta.
  *
  * No lleva pie: el arte ya trae el nombre y el monton ya dice las copias. Lo
  * que el pie decia se conserva donde importa —en el `aria-label` del boton,
@@ -149,6 +158,7 @@ function Pila({
   onVer: (cardId: string) => void;
 }) {
   const copias = fila.n === 1 ? "1 copia" : `${fila.n} copias`;
+  const dibujadas = Math.min(fila.n, MAX_A_LA_VISTA);
 
   return (
     <li className="aparece group relative">
@@ -165,9 +175,9 @@ function Pila({
         <div
           // Al apuntar, el contorno de color rodea la pila entera.
           className={cn("relative w-full", CONTORNO_CARTA_GRUPO)}
-          style={{ paddingBottom: `${ALTO * (1 + (fila.n - 1) * ASOMO) * 100}%` }}
+          style={{ paddingBottom: `${ALTO * (1 + (dibujadas - 1) * ASOMO) * 100}%` }}
         >
-          {Array.from({ length: fila.n }, (_, i) => (
+          {Array.from({ length: dibujadas }, (_, i) => (
             // La primera es la del fondo y la ultima la de adelante: el orden del
             // DOM ya las apila bien, sin z-index. Van con alt vacio a proposito,
             // que el nombre lo pone el boton una sola vez.
@@ -186,6 +196,16 @@ function Pila({
               }}
             />
           ))}
+          {fila.n > dibujadas && (
+            // Sobre la carta de adelante, abajo: arriba van el oro inicial y la
+            // portada. El numero ya lo dice el `aria-label` del boton.
+            <span
+              aria-hidden="true"
+              className="bg-surface/85 text-ink rounded-chip absolute right-1.5 bottom-1.5 px-1.5 py-0.5 text-[12px] font-semibold tabular-nums backdrop-blur"
+            >
+              ×{fila.n}
+            </span>
+          )}
         </div>
       </button>
 

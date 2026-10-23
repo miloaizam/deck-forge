@@ -166,6 +166,7 @@ function filaPublica(s: Simulado, f: Fila) {
     nombre: (f.datos as { nombre?: string } | null)?.nombre ?? null,
     afinidad: f.afinidad,
     portada: (f.datos as { portada?: string | null } | null)?.portada ?? null,
+    principal: (f.datos as { principal?: unknown } | null)?.principal ?? null,
     alias: s.perfiles.get(f.user_id) ?? "",
     avatar: rutaDe(s, f.user_id),
     likes: f.likes,

@@ -21,83 +21,24 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
-   teléfono, órdenes de la Comunidad, portada por defecto, lazo de 11 px) en
-   una tanda; después «Tu cuenta» y las tarjetas de análisis.
+1. **Pegar el esquema en Supabase** (lo de la portada por defecto en la
+   Comunidad).
 2. **Cartas destacadas en la portada**, con la maqueta primero.
 3. **Por decidir**, cuando haya ganas: no bloquea nada.
 
+## Base de datos
+
+### Pegar el esquema nuevo en Supabase
+
+- **Qué:** `listar_publicas` devuelve ahora `principal` (las cartas de cada
+  baraja, solo ids y copias), para que las tarjetas de la Comunidad sin
+  portada elegida muestren su Aliado con más copias. Hasta pegarlo, esas
+  tarjetas siguen con el recuadro vacío; nada se rompe.
+- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
+  → Run.
+- **Terminado cuando:** en `/comunidad` toda tarjeta lleva una carta.
+
 ## Interfaz
-
-### La pila de Oros en el detalle de una baraja
-
-- **Qué:** en la mesa de `/baraja` cada copia se dibuja desplazada, así que 35
-  Oros sin habilidad hacen una columna de tres pantallas, casi vacía al lado.
-  Es lo primero que se ve, y empuja «Probar una mano» y la curva de coste bajo
-  el pliegue. Pasa en la propia, en la pública y en el teléfono. La crítica
-  de `taste-skill` le pone 6,5 al detalle y la marca como su problema número
-  uno.
-- **Por dónde:** dibujar como mucho 4 o 5 cartas por pila y el total encima
-  («×35»), con el mismo estilo de contador de las copias.
-- **Terminado cuando:** una baraja con 35 Oros cabe en una pantalla de
-  escritorio con sus tarjetas de análisis a la vista.
-
-### El buscador del teléfono se corta
-
-- **Qué:** con el ancho fijo de la barra de búsqueda, a 390 px el campo del
-  catálogo, de cada edición y de la colección dice «Nombre o habilid…», con
-  un hueco hasta el botón de filtros.
-- **Por dónde:** `Filters.tsx`: el ancho fijo desde `sm`, y en el teléfono el
-  campo ocupa todo lo que deja el botón.
-- **Terminado cuando:** a 360 y 390 px se lee el texto entero y el ancho
-  sigue fijo en escritorio y tableta.
-
-### Los órdenes de la Comunidad se cortan en el teléfono
-
-- **Qué:** los segmentos «Más likes / Tendencia / Más recientes / Más
-  copiadas» se deslizan de lado (`overflow-x-auto` de `SEGMENTOS`), pero nada
-  lo indica: «Más recientes» queda a medias y «Más copiadas» no se ve.
-- **Por dónde:** `ComunidadView.tsx`. En el teléfono, un `Select` como el de
-  afinidades, o que los segmentos bajen de línea.
-- **Terminado cuando:** a 360 px se ven o se alcanzan las cuatro opciones sin
-  adivinar.
-
-### Portada por defecto en las tarjetas de barajas
-
-- **Qué:** sin portada elegida, la tarjeta de Mis barajas va sin imagen y la
-  de la Comunidad muestra un recuadro oscuro vacío. Las dos vistas no dicen
-  lo mismo, la tarjeta no se reconoce de un vistazo y la Comunidad se ve «de
-  kit» (6,2 en la crítica, la nota más baja).
-- **Por dónde:** `DeckListView.tsx` y `ComunidadView.tsx`: si no hay
-  `portada`, usar una carta de la baraja.
-- **Hay que decidir:** cuál. Recomendación: el Aliado con más copias y, si
-  empatan, el primero en el orden del catálogo; en una baraja sin Aliados, la
-  primera carta.
-- **Terminado cuando:** las dos vistas muestran una carta en toda tarjeta con
-  cartas.
-
-### El lazo «Errata» mide 10 px
-
-- **Qué:** el lazo de las cartas de la grilla (`CardRibbons.tsx`) está bajo el
-  mínimo de 11 px para texto.
-- **Terminado cuando:** mide 11 px y sigue cabiendo en la esquina del tile.
-
-### «Tu cuenta» en dos columnas
-
-- **Qué:** en escritorio el contenido ocupa ~600 px y deja vacío el 40 %
-  derecho de la pantalla.
-- **Por dónde:** `CuentaView.tsx`: el perfil a la izquierda y Alias y
-  Sincronización a la derecha; «Borrar la cuenta» al pie, a lo ancho.
-- **Terminado cuando:** a 1440 px no queda una columna vacía al lado.
-
-### Las tarjetas de análisis del detalle, a la misma altura
-
-- **Qué:** «Probar una mano» y «Curva de coste» van lado a lado y la curva
-  queda con una franja vacía de ~180 px (o la mano, de ~40) porque cada una
-  mide distinto.
-- **Por dónde:** `HandTester.tsx` y `CostCurve.tsx` en el detalle: igualar
-  alturas y centrar el gráfico.
-- **Terminado cuando:** ninguna de las dos tiene una banda vacía dentro.
 
 ### Cartas destacadas en la portada
 

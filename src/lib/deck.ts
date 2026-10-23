@@ -100,6 +100,34 @@ export function setCover(deck: Deck, cardId: string | null): Deck {
   return touch(deck, { portada: cardId });
 }
 
+/**
+ * La carta que hace de portada cuando el usuario no eligio ninguna: el Aliado
+ * con mas copias (la cara de la baraja, no los 35 Oros con que se paga), y si
+ * no lleva Aliados, la carta con mas copias que no sea Oro, o la primera. Los
+ * empates se los lleva la que va primero en la baraja. La comparten Mis
+ * barajas y la Comunidad, para que la misma baraja se vea igual en las dos.
+ *
+ * `tipoDe` dice el tipo de cada id; uno que no conoce (fuera del catalogo) no
+ * se elige.
+ */
+export function portadaPorDefecto(
+  principal: readonly DeckEntry[],
+  tipoDe: (id: string) => string | undefined,
+): string | null {
+  const conocidas = principal.filter((e) => tipoDe(e.id) !== undefined);
+  const masCopias = (entradas: DeckEntry[]): string | null =>
+    entradas.reduce<DeckEntry | null>(
+      (mejor, e) => (!mejor || e.n > mejor.n ? e : mejor),
+      null,
+    )?.id ?? null;
+  return (
+    masCopias(conocidas.filter((e) => tipoDe(e.id) === "Aliado")) ??
+    masCopias(conocidas.filter((e) => tipoDe(e.id) !== "Oro")) ??
+    conocidas[0]?.id ??
+    null
+  );
+}
+
 export function addCard(deck: Deck, cardId: string, zone: DeckZone, cuantas = 1): Deck {
   return setQuantity(deck, cardId, zone, copiesOf(deck, cardId, zone) + cuantas);
 }

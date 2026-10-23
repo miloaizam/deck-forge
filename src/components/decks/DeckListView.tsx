@@ -24,7 +24,7 @@ import { DeckListSkeleton } from "../Skeleton";
 import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
 import { useDecks, useHydrated } from "./use-decks";
 import { useNube } from "../nube/nube";
-import { deckTitle, duplicateDeck } from "@/lib/deck";
+import { deckTitle, duplicateDeck, portadaPorDefecto } from "@/lib/deck";
 import {
   buildCardIndex,
   deckStats,
@@ -167,7 +167,12 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
           const res = resolveDeck(deck, index);
           const stats = deckStats(res);
           const estado = estadoDeBaraja(validateDeck(deck, index));
-          const portada = deck.portada ? index.porId.get(deck.portada) : undefined;
+          // La elegida en /baraja o, si no hay, su Aliado con mas copias:
+          // la misma regla que la Comunidad.
+          const portadaId =
+            (deck.portada && index.porId.has(deck.portada) ? deck.portada : null) ??
+            portadaPorDefecto(deck.principal, (id) => index.porId.get(id)?.tipo);
+          const portada = portadaId ? index.porId.get(portadaId) : undefined;
 
           return (
             <li
@@ -180,10 +185,9 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
               // no al de la pantalla (una, dos o tres por fila).
               className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group @container relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
             >
-              {/* La portada la elige el usuario en /baraja, y va a la izquierda
-                    de todo lo demas. Si la carta ya no esta en el catalogo no
-                    se dibuja nada: un hueco vacio diria menos que la tarjeta
-                    sin foto. */}
+              {/* La portada va a la izquierda de todo lo demas. Solo una baraja
+                    vacia queda sin foto: un hueco vacio diria menos que la
+                    tarjeta sin ella. */}
               {portada && (
                 <Image
                   src={portada.thumb}
@@ -260,11 +264,18 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
                 </div>
 
                 {/* `mt-auto` los manda al fondo: la portada fija el alto de
-                      la tarjeta y los botones cierran contra su borde. */}
+                      la tarjeta y los botones cierran contra su borde. En una
+                      columna de texto bajo 20rem (el telefono, la tableta, con
+                      la portada al lado) «Editar» queda solo con su icono: con
+                      el texto, «Borrar» bajaba solo a una segunda fila. */}
                 <div className="relative z-10 mt-auto flex flex-wrap gap-1.5 self-start">
-                  <Link href={`/constructor/?m=${deck.id}`} className={ACCION}>
+                  <Link
+                    href={`/constructor/?m=${deck.id}`}
+                    title="Editar"
+                    className={cn(ACCION, "@max-xs:w-9 @max-xs:px-0")}
+                  >
                     <Hammer size={14} aria-hidden="true" />
-                    Editar
+                    <span className="@max-xs:sr-only">Editar</span>
                   </Link>
                   <button
                     type="button"

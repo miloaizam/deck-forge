@@ -134,14 +134,16 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
           {/* Siempre montado, invisible si no hay nada que limpiar: asi el
               buscador mide lo mismo con y sin filtros, y no se estira ni se
               encoge al poner o quitar uno. `invisible` lo saca tambien del
-              foco y de los lectores. */}
+              foco y de los lectores. En una fila de telefono (bajo 28rem) no
+              reserva nada: ahi el campo ocupa todo lo que queda, y esos 44 px
+              eran los que cortaban «Nombre o habilidad…». */}
           <button
             type="button"
             onClick={onReset}
             aria-label="Limpiar filtros"
             title="Limpiar filtros"
             disabled={!hayQueLimpiar}
-            className={cn(BOTON_ICONO, !hayQueLimpiar && "invisible")}
+            className={cn(BOTON_ICONO, !hayQueLimpiar && "invisible @max-md:hidden")}
           >
             <FunnelX size={16} aria-hidden="true" />
           </button>
@@ -167,7 +169,10 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
                 {activos}
               </span>
             ) : (
-              <span aria-hidden="true" className={cn(CONTADOR, "invisible")}>
+              <span
+                aria-hidden="true"
+                className={cn(CONTADOR, "invisible @max-md:hidden")}
+              >
                 0
               </span>
             )}

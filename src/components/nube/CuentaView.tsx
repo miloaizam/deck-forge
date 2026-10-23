@@ -107,13 +107,23 @@ export function CuentaView() {
 
   const { usuario, alias, avatar, sincronizando, ultima, error } = nube;
 
+  // En escritorio, a todo el ancho de la pagina: perfil, Alias y
+  // Sincronizacion en una fila de tres, a la misma altura, y Borrar la cuenta
+  // debajo, a lo ancho. Antes era una columna de ~900 px que dejaba vacio el
+  // 40 % derecho. En la tableta, el perfil arriba a lo ancho y lo demas de a
+  // dos; en el telefono, todo en una columna.
   return (
-    <div className="mt-8 grid max-w-4xl gap-4 md:grid-cols-2">
+    <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <section
         aria-label="Tus datos"
-        className={cn(TARJETA, "sm:flex-row sm:items-center md:col-span-2")}
+        className={cn(
+          TARJETA,
+          "sm:flex-row sm:items-center md:col-span-2 lg:col-span-1 lg:flex-col lg:items-stretch",
+        )}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+        {/* En la fila del escritorio, arriba y con «Cerrar sesión» al pie:
+            estirado y centrado quedaba flotando a media tarjeta. */}
+        <div className="flex min-w-0 flex-1 items-center gap-4 lg:flex-none lg:items-start">
           <Avatar ruta={rutaAvatar(usuario.id, avatar)} lado={56} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold">
@@ -140,7 +150,11 @@ export function CuentaView() {
               .then(() => toast("Sesión cerrada.", "info"))
               .finally(() => setSaliendo(false));
           }}
-          className={cn(BOTON_SECUNDARIO, "self-start sm:self-center")}
+          // Al pie de la tarjeta en escritorio, a la altura de «Sincronizar ahora».
+          className={cn(
+            BOTON_SECUNDARIO,
+            "self-start sm:self-center lg:mt-auto lg:self-start",
+          )}
         >
           <LogOut size={16} aria-hidden="true" />
           {saliendo ? "Cerrando sesión…" : "Cerrar sesión"}
@@ -201,7 +215,7 @@ export function CuentaView() {
         </div>
       </section>
 
-      <section className="border-line rounded-panel flex flex-col gap-3 border border-dashed p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6 md:col-span-2">
+      <section className="border-line rounded-panel flex flex-col gap-3 border border-dashed p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6 md:col-span-2 lg:col-span-3">
         <div className="flex-1">
           <h2 className="font-semibold">Borrar la cuenta</h2>
           <p className="text-muted mt-1 text-[13px] leading-relaxed">

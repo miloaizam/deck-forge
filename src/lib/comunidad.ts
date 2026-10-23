@@ -2,7 +2,7 @@ import * as z from "zod/mini";
 
 import { esRutaAvatar } from "./avatar";
 import type { Afinidad } from "./deck-rules";
-import { ATRIBUTOS, deckSchema, ESCUELAS, RAZAS } from "./types";
+import { ATRIBUTOS, deckEntrySchema, deckSchema, ESCUELAS, RAZAS } from "./types";
 
 /**
  * La Comunidad: las barajas que sus duenos publicaron. Logica pura, sin red:
@@ -115,6 +115,10 @@ export const filaPublicaSchema = z.object({
   nombre: z._default(z.nullable(texto(60)), null),
   afinidad: afinidadRemota,
   portada: z.nullable(z.string().check(z.maxLength(40), z.regex(/^[a-z0-9-]+$/))),
+  // Las cartas del principal, para la portada por defecto. Llega desde el
+  // esquema del 23-10-2026: antes no viene. Si falta o viene rota queda null,
+  // sin llevarse la fila: es solo para elegir una foto.
+  principal: z.catch(z.nullable(z.array(deckEntrySchema).check(z.maxLength(60))), null),
   alias: texto(20),
   avatar: avatarRemoto,
   likes: contador,

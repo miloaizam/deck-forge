@@ -357,7 +357,8 @@ $$;
 -- `afinidad` exacta ('raza:Dragón') o null; `q` busca en el nombre.
 -- Las versiones anteriores se borran antes de crear la de hoy: sin
 -- `por_nombre` convivirian dos funciones y la API no sabria cual llamar, y sin
--- `avatar` cambia el tipo que devuelve, que `create or replace` no acepta.
+-- `avatar` (o `principal`) cambia el tipo que devuelve, que `create or
+-- replace` no acepta.
 drop function if exists public.listar_publicas(text, text, text, integer, integer);
 drop function if exists public.listar_publicas(text, text, text, integer, integer, text);
 
@@ -376,6 +377,9 @@ returns table (
   nombre text,
   afinidad text,
   portada text,
+  -- Las cartas del principal (`[{ id, n }]`), para que el sitio elija una
+  -- portada cuando no hay: su Aliado con mas copias. Solo ids y copias.
+  principal jsonb,
   alias text,
   -- `<user_id>?v=<avatar>`, la ruta de la foto en el bucket `avatares`; null
   -- sin foto o con la foto oculta por moderacion.
@@ -392,7 +396,7 @@ security definer
 set search_path = ''
 as $$
   with visibles as (
-    select b.public_id, b.nombre, b.afinidad, b.portada, p.alias,
+    select b.public_id, b.nombre, b.afinidad, b.portada, b.datos -> 'principal', p.alias,
       public.ruta_avatar(p.user_id, p.avatar, p.avatar_oculto) as avatar,
       b.likes, b.copias,
       (select count(*)::integer from public.likes l

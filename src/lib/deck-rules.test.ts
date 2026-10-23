@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   addCard,
   createDeck,
+  portadaPorDefecto,
   swapPrinting,
   deckTitle,
   renameDeck,
@@ -693,4 +694,34 @@ test("cambiar el arte pasa todas las copias a la impresion elegida", () => {
   assert.deepEqual(nuevo.principal, [{ id: "b", n: 3 }]);
   assert.deepEqual(nuevo.side, [{ id: "b", n: 1 }]);
   assert.equal(nuevo.oroInicial, "b");
+});
+
+test("la portada por defecto es el Aliado con mas copias, no los Oros", () => {
+  const tipos: Record<string, string> = {
+    "a-1": "Aliado",
+    "a-2": "Aliado",
+    "o-1": "Oro",
+    "t-1": "Talismán",
+  };
+  const tipoDe = (id: string) => tipos[id];
+  const entrada = (id: string, n: number) => ({ id, n });
+  // El Oro lleva mas copias, pero la cara de la baraja es su Aliado.
+  assert.equal(
+    portadaPorDefecto(
+      [entrada("o-1", 34), entrada("a-1", 2), entrada("a-2", 3), entrada("t-1", 3)],
+      tipoDe,
+    ),
+    "a-2",
+  );
+  // Empate: la que va primero.
+  assert.equal(portadaPorDefecto([entrada("a-1", 3), entrada("a-2", 3)], tipoDe), "a-1");
+  // Sin Aliados, lo que no sea Oro; solo Oros, el primero.
+  assert.equal(portadaPorDefecto([entrada("o-1", 30), entrada("t-1", 1)], tipoDe), "t-1");
+  assert.equal(portadaPorDefecto([entrada("o-1", 30)], tipoDe), "o-1");
+  // Un id que el catalogo no conoce no se elige; una baraja vacia no tiene.
+  assert.equal(
+    portadaPorDefecto([entrada("zz-999", 3), entrada("t-1", 1)], tipoDe),
+    "t-1",
+  );
+  assert.equal(portadaPorDefecto([], tipoDe), null);
 });

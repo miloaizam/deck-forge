@@ -34,6 +34,7 @@ import {
   type OrdenComunidad,
 } from "@/lib/comunidad";
 import { pageRange } from "@/lib/catalog";
+import { portadaPorDefecto } from "@/lib/deck";
 import { irArriba } from "@/lib/scroll";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
@@ -233,9 +234,11 @@ export function ComunidadView() {
             )}
           </button>
         </div>
-        {/* A la derecha, la afinidad y el orden, en la misma fila; en el
-            telefono bajan bajo el buscador, y si el orden no cabe se desliza
-            (SEGMENTOS lleva `overflow-x-auto`) en vez de ensanchar la pagina. */}
+        {/* A la derecha, la afinidad y el orden, en la misma fila. En el
+            telefono (fila bajo 28rem) bajan bajo el buscador y el orden pasa a
+            una grilla de 2 x 2 a todo el ancho: en una tira, «Más recientes»
+            quedaba cortada y «Más copiadas» fuera, sin nada que dijera que se
+            podia deslizar. */}
         <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
           <div className="w-full @md:w-60">
             <Select
@@ -248,7 +251,14 @@ export function ComunidadView() {
               format={etiquetaAfinidad}
             />
           </div>
-          <div role="group" aria-label="Ordenar" className={cn(SEGMENTOS, "h-11")}>
+          <div
+            role="group"
+            aria-label="Ordenar"
+            className={cn(
+              SEGMENTOS,
+              "h-11 @max-md:grid @max-md:h-auto @max-md:w-full @max-md:grid-cols-2",
+            )}
+          >
             {ORDENES_COMUNIDAD.map((o) => (
               <button
                 key={o}
@@ -257,7 +267,7 @@ export function ComunidadView() {
                 onClick={() => cambiar({ orden: o })}
                 className={cn(
                   SEGMENTO,
-                  "h-full",
+                  "h-full @max-md:h-9 @max-md:justify-center",
                   consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
                 )}
               >
@@ -308,11 +318,19 @@ export function ComunidadView() {
         <>
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {r.filas.map((f) => {
-              const portada = f.portada ? porId.get(f.portada) : undefined;
+              // La elegida o, si no hay, la misma que pinta Mis barajas: su
+              // Aliado con mas copias (`principal` llega desde el esquema del
+              // 23-10-2026; antes de pegarlo, null).
+              const id =
+                (f.portada && porId.has(f.portada) ? f.portada : null) ??
+                portadaPorDefecto(f.principal ?? [], (c) => porId.get(c)?.tipo);
+              const portada = id ? porId.get(id) : undefined;
               return (
                 <li
                   key={f.public_id}
-                  className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
+                  // `@container`: la foto se mide con la tarjeta, como en Mis
+                  // barajas (92 px de ancho, 64 en una tarjeta angosta).
+                  className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group @container relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
                 >
                   {portada ? (
                     <Image
@@ -322,12 +340,17 @@ export function ComunidadView() {
                       height={92}
                       loading="lazy"
                       onLoad={marcarCargada}
-                      className="imagen-carga border-line h-[92px] w-[64px] shrink-0 self-start rounded border object-cover"
+                      className="imagen-carga border-line h-[92px] w-[64px] shrink-0 self-start rounded border object-cover @sm:h-[131px] @sm:w-[92px]"
                     />
                   ) : (
+                    // Mientras baja el catalogo, el hueco de la foto late como
+                    // cualquier imagen que carga.
                     <div
                       aria-hidden="true"
-                      className="border-line bg-surface h-[92px] w-[64px] shrink-0 rounded border"
+                      className={cn(
+                        "border-line bg-surface h-[92px] w-[64px] shrink-0 rounded border @sm:h-[131px] @sm:w-[92px]",
+                        !catalogo.cards && "imagen-carga",
+                      )}
                     />
                   )}
                   <div className="flex min-w-0 flex-1 flex-col gap-1">

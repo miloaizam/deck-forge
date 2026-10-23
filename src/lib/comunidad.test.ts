@@ -65,6 +65,21 @@ test("la foto del dueno llega solo si es una ruta del bucket", () => {
   );
 });
 
+test("las cartas de la fila se leen, y si vienen rotas no se llevan la fila", () => {
+  const { filas } = leerListaPublica([
+    { ...fila, principal: [{ id: "bu-001", n: 3 }] },
+    { ...fila, principal: [{ id: "../malo", n: 3 }] },
+    { ...fila, principal: "basura" },
+    fila, // sin el campo: un esquema anterior
+  ]);
+  assert.equal(filas.length, 4);
+  assert.deepEqual(filas[0].principal, [{ id: "bu-001", n: 3 }]);
+  assert.deepEqual(
+    filas.slice(1).map((f) => f.principal),
+    [null, null, null],
+  );
+});
+
 test("una afinidad desconocida llega como null", () => {
   const { filas } = leerListaPublica([{ ...fila, afinidad: "raza:Inventada" }]);
   assert.equal(filas[0].afinidad, null);

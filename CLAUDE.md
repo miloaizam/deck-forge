@@ -1411,11 +1411,20 @@ mismo componente vive en sitios de distinto ancho:
   pantalla con el panel, y a 1024 px el campo quedaba en 245 px con el texto
   cortado. El contenedor es **la fila y no la sección**: un contenedor crea un
   contexto de apilamiento, y los desplegables del panel de filtros quedarían
-  debajo de la grilla.
-- **La tarjeta de Mis barajas**: la portada se achica bajo 24rem de tarjeta y
-  la pastilla de estado baja bajo 20rem de **columna de texto** (sin la
-  portada), que reemplazó a un `flex-wrap` con `flex-basis` que hacía lo mismo
-  sin decirlo.
+  debajo de la grilla. Bajo 28rem de fila (el teléfono) limpiar filtros y el
+  contador de «Filtros» dejan de reservar su sitio (`@max-md:hidden`): esos
+  ~64 px cortaban el texto del campo en «Nombre o habilid…».
+- **La tarjeta de Mis barajas** (y la de la Comunidad, igual): la portada se
+  achica bajo 24rem de tarjeta y la pastilla de estado baja bajo 20rem de
+  **columna de texto** (sin la portada), que reemplazó a un `flex-wrap` con
+  `flex-basis` que hacía lo mismo sin decirlo. Bajo esos mismos 20rem,
+  «Editar» queda solo con su icono, para que los cinco botones quepan en una
+  fila. Sin portada elegida va la de `portadaPorDefecto` (`deck.ts`): el
+  Aliado con más copias, o lo que no sea Oro, o la primera. La Comunidad la
+  calcula con `principal`, que devuelve `listar_publicas` desde el 23-10-2026.
+- **Los órdenes de la Comunidad**: bajo 28rem de fila, una grilla de 2 × 2 a
+  todo el ancho en vez de la tira, que se cortaba sin decir que se podía
+  deslizar.
 - **La fila de la colección**: «Conseguí una» muestra su texto desde 28rem de
   fila. En la tableta van dos filas por línea y le quitaba el sitio al nombre.
 

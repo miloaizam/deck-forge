@@ -603,9 +603,11 @@ html[data-barajas="0"] .solo-con-barajas {
     rotate: 45deg;
     padding-block: 2px;
     text-align: center;
-    font-size: 10px;
+    /* 11 px, el minimo del sitio para texto; con menos tracking que antes
+       (0.1em a 10 px), para que «Baneada» siga cabiendo en la esquina. */
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #fff;
     box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);

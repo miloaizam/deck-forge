@@ -236,6 +236,10 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
   edición llegó de otro equipo (`revisarPublica` de `comunidad-api.ts`, una
   sola en curso por baraja). La sincronización no puede hacerla: no tiene el
   catálogo.
+- **La portada de cada tarjeta** es la que eligió su dueño o, si no eligió,
+  su Aliado con más copias (`portadaPorDefecto`, la misma regla que Mis
+  barajas). Para eso `listar_publicas` devuelve también `principal`, las
+  cartas de la baraja (solo ids y copias).
 - **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
   últimos 7 días, más recientes, más copiadas), filtro por afinidad y buscador;
   todo en la URL. Se ve sin cuenta.

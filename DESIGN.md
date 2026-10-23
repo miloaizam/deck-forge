@@ -367,7 +367,8 @@ lista y vaciar y tras ellos «Tengo / Faltan / Agregar»—. El campo mide lo mi
 en todas las vistas: llena lo que dejan los botones hasta **20rem**, el ancho que
 tiene en el constructor, y en el teléfono ocupa todo el ancho. No cambia al
 poner o quitar filtros: limpiar filtros y el contador de «Filtros» reservan su
-sitio aunque no se vean. Si el campo bajara de 12rem, los botones pasan a otra
+sitio aunque no se vean, salvo en el teléfono, donde el campo ya llena la fila
+y esos dos huecos le cortaban el texto. Si el campo bajara de 12rem, los botones pasan a otra
 línea.
 
 ### Campos
@@ -447,7 +448,7 @@ barrido `imagen-carga` mientras baja.
 | Vista | Tamaño | Radio | Al apuntar | Encima | Por qué |
 |---|---|---|---|---|---|
 | Catálogo y constructor (`CardTile`) | hasta 200 px, grilla | `card` | `CONTORNO_CARTA`: anillo y sube 4 px; el nombre pasa a `accent` | lazos Errata / Baneada, pastilla «Oro inicial», pie `− n +` en el constructor | es la vista de elegir: lleva todo lo que decide |
-| Mesa de `/baraja` (`DeckSections`) | 10 por fila, copias apiladas | `card`, con `shadow-panel` | `CONTORNO_CARTA_GRUPO`: el anillo rodea la pila entera | moneda del oro inicial, estrella de portada | se lee como un mazo sobre la mesa; la sombra separa las copias |
+| Mesa de `/baraja` (`DeckSections`) | 10 por fila, copias apiladas (4 a la vista como mucho; con más, «×34» sobre la de adelante) | `card`, con `shadow-panel` | `CONTORNO_CARTA_GRUPO`: el anillo rodea la pila entera | moneda del oro inicial, estrella de portada, total de copias | se lee como un mazo sobre la mesa; la sombra separa las copias |
 | Mano de prueba | hasta 88 px | `card` | `CONTORNO_CARTA` | nada | es un vistazo: sin lazos ni insignias |
 | Detalle (`CardModal`) | 420 px | `card` | — | lazos grandes, selector de impresiones (56 px, borde violeta en la elegida) | aquí se lee la carta |
 | Fila de la colección | 36 px | 4 px (`rounded`) | la fila lleva el anillo | gris y atenuada en «Me faltan» | se recorren cientos: importa el nombre |

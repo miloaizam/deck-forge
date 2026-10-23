@@ -34,6 +34,17 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-23",
+    version: "5.5.0",
+    tipo: "Mejora",
+    titulo: "Mesa más corta, portadas para todas y mejor en el teléfono",
+    texto: [
+      "En la página de una baraja, una carta con muchas copias ya no hace una columna larguísima: se ven cuatro y el total encima («×34»). Así la baraja entera, la mano de prueba y la curva caben en una pantalla.",
+      "Toda baraja lleva portada en Mis barajas y en la Comunidad: la que elegiste o, si no, su Aliado con más copias.",
+      "En el teléfono, el buscador ocupa todo el ancho y se lee entero, y los cuatro órdenes de la Comunidad se ven a la vez. «Tu cuenta» aprovecha todo el ancho en el computador.",
+    ],
+  },
+  {
+    fecha: "2026-10-23",
     version: "5.4.2",
     tipo: "Arreglo",
     titulo: "Una baraja pública que deja de ser legal sale sola de la Comunidad",
