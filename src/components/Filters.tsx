@@ -165,9 +165,15 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
           >
             <Funnel size={14} aria-hidden="true" />
             <span className="sr-only @md:not-sr-only">Filtros</span>
-            {activos > 0 && (
+            {/* Siempre montado, como limpiar filtros: sin filtros reserva el
+                ancho de un digito, y el buscador no se achica al poner uno. */}
+            {activos > 0 ? (
               <span aria-label={`${activos} filtros aplicados`} className={CONTADOR}>
                 {activos}
+              </span>
+            ) : (
+              <span aria-hidden="true" className={cn(CONTADOR, "invisible")}>
+                0
               </span>
             )}
           </button>
