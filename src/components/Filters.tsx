@@ -81,21 +81,16 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
           fila. Las medidas miran el ancho de esta fila (`@container`) y no el
           de la pantalla: en el constructor la grilla comparte la pantalla con
           el panel, y a 1024 px el buscador quedaba en 245 px con el texto
-          cortado. Hasta 42rem ocupa todo lo que dejan los botones. El
+          cortado. El campo llena lo que dejan los botones hasta 20rem, el
+          ancho que tiene en el constructor, y es el mismo en todas las vistas;
+          bajo 32rem de fila (el telefono) ocupa todo el ancho. El
           contenedor es la fila y no la seccion: un contenedor crea un
           contexto de apilamiento, y los desplegables del panel quedarian
           debajo de la grilla. */}
       <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
         {/* Con `acciones` la fila puede no caber: bajo 12rem de buscador, los
             botones pasan a una segunda linea, a la derecha. */}
-        <div
-          className={cn(
-            "relative min-w-48 flex-1",
-            // Sin acciones, desde 42rem el campo ocupa la mitad (el catalogo);
-            // con ellas, todo lo que dejen los botones.
-            !acciones && "@2xl:flex-none @2xl:basis-1/2",
-          )}
-        >
+        <div className="relative min-w-48 flex-1 @lg:max-w-80">
           <Search
             size={17}
             aria-hidden="true"

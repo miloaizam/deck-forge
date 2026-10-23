@@ -194,10 +194,10 @@ export function ComunidadView() {
   return (
     <div className="mt-10 flex flex-col gap-5">
       {/* La misma fila que el buscador del catalogo (Filters.tsx): el campo
-          ocupa lo que dejan los botones y, desde 42rem de fila, la mitad; dentro
-          va el orden por nombre (A-Z, Z-A), que manda sobre el de abajo. */}
+          llena lo que dejan los botones hasta 20rem (el ancho del constructor);
+          dentro va el orden por nombre (A-Z, Z-A), que manda sobre el de abajo. */}
       <div className="@container flex flex-wrap items-center gap-2 sm:gap-3">
-        <div className="relative min-w-48 flex-1 @2xl:flex-none @2xl:basis-1/2">
+        <div className="relative min-w-48 flex-1 @lg:max-w-80">
           <Search
             size={17}
             aria-hidden="true"

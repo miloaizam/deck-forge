@@ -363,7 +363,12 @@ Pública».
 constructor, la colección y la Comunidad: el campo con el orden dentro y, a la
 derecha, «Filtros» y lo que la vista sume en `acciones` —«Baraja / Side deck»
 sin rótulo en el constructor; en la colección, los iconos de imagen, enlace,
-lista y vaciar y tras ellos «Tengo / Faltan / Agregar»—. Si el campo bajara de 12rem, los botones pasan a otra línea.
+lista y vaciar y tras ellos «Tengo / Faltan / Agregar»—. El campo mide lo mismo
+en todas las vistas: llena lo que dejan los botones hasta **20rem**, el ancho que
+tiene en el constructor, y en el teléfono ocupa todo el ancho. No cambia al
+poner o quitar filtros: limpiar filtros y el contador de «Filtros» reservan su
+sitio aunque no se vean. Si el campo bajara de 12rem, los botones pasan a otra
+línea.
 
 ### Campos
 
