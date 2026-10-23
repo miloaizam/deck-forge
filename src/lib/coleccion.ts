@@ -207,18 +207,19 @@ export function coleccionComoTexto(
 const disponible = () => typeof window !== "undefined";
 
 let cache: Coleccion | null = null;
-const oyentes = new Set<() => void>();
+/** `otraPestana`: el cambio lo escribio otra pestana (evento `storage`). */
+const oyentes = new Set<(otraPestana: boolean) => void>();
 
-function avisar(): void {
+function avisar(otraPestana = false): void {
   cache = null;
-  for (const cb of oyentes) cb();
+  for (const cb of oyentes) cb(otraPestana);
 }
 
 function alCambiarStorage(e: StorageEvent): void {
-  if (e.key === COLECCION_KEY || e.key === null) avisar();
+  if (e.key === COLECCION_KEY || e.key === null) avisar(true);
 }
 
-export function subscribeColeccion(cb: () => void): () => void {
+export function subscribeColeccion(cb: (otraPestana: boolean) => void): () => void {
   if (oyentes.size === 0 && disponible()) {
     window.addEventListener("storage", alCambiarStorage);
   }
@@ -260,6 +261,17 @@ export function readColeccionActualizado(): number {
 
 export function getServerColeccionSnapshot(): Coleccion {
   return COLECCION_VACIA;
+}
+
+/** Borra la coleccion del navegador (al cerrar sesion: ya esta en la cuenta). */
+export function borrarColeccionDelNavegador(): void {
+  if (!disponible()) return;
+  try {
+    localStorage.removeItem(COLECCION_KEY);
+  } catch {
+    // Almacenamiento bloqueado: no habia nada que borrar.
+  }
+  avisar();
 }
 
 /**

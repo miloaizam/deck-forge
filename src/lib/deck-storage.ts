@@ -87,21 +87,22 @@ export function readDeck(id: string): Deck | null {
  * que ser la MISMA referencia mientras nada cambie o React entra en bucle.
  */
 let cache: Deck[] | null = null;
-const oyentes = new Set<() => void>();
+/** `otraPestana`: el cambio lo escribio otra pestana (evento `storage`). */
+const oyentes = new Set<(otraPestana: boolean) => void>();
 
 /** Instantanea del servidor y del primer render: siempre el mismo array. */
 const VACIO: Deck[] = [];
 
-function avisar(): void {
+function avisar(otraPestana = false): void {
   cache = null;
-  for (const cb of oyentes) cb();
+  for (const cb of oyentes) cb(otraPestana);
 }
 
 function alCambiarStorage(e: StorageEvent): void {
-  if (e.key === DECKS_KEY || e.key === null) avisar();
+  if (e.key === DECKS_KEY || e.key === null) avisar(true);
 }
 
-export function subscribeDecks(cb: () => void): () => void {
+export function subscribeDecks(cb: (otraPestana: boolean) => void): () => void {
   if (oyentes.size === 0 && disponible()) {
     window.addEventListener("storage", alCambiarStorage);
   }
@@ -290,6 +291,22 @@ export function readLapidas(): Lapida[] {
   } catch {
     return [];
   }
+}
+
+/**
+ * Borra del navegador las barajas guardadas y sus lapidas. Lo usa cerrar
+ * sesion: lo de la cuenta ya esta en la cuenta, y la proxima persona que use
+ * este navegador no lo hereda.
+ */
+export function borrarBarajasDelNavegador(): void {
+  if (!disponible()) return;
+  try {
+    localStorage.removeItem(DECKS_KEY);
+    localStorage.removeItem(LAPIDAS_KEY);
+  } catch {
+    // Almacenamiento bloqueado: no habia nada que borrar.
+  }
+  avisar();
 }
 
 export function saveLapidas(lapidas: Lapida[]): void {

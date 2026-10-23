@@ -115,6 +115,64 @@ test("un choque de nombre entra renombrado y sube asi", () => {
   assert.ok(plan.subir.some((d) => d.id === alla.id && d.nombre === "dragones (copia)"));
 });
 
+test("no sube mas de lo que cabe en la cuenta: el resto se queda aqui", () => {
+  // 30 solo aqui y 40 distintas alla: subirlas todas pasaria de 50 y la base
+  // rechazaria el lote entero.
+  const aqui = Array.from({ length: 30 }, (_, i) => baraja(`A${i}`, 10));
+  const alla = Array.from({ length: 40 }, (_, i) => baraja(`R${i}`, 10));
+  const plan = fusionarBarajas(aqui, alla.map(remota), [], 99);
+  assert.equal(plan.subir.length, MAX_BARAJAS - 40);
+  assert.equal(plan.sinSubir, 30 - (MAX_BARAJAS - 40));
+  assert.ok(
+    aqui.every((d) => plan.locales.includes(d)),
+    "las que no suben siguen aqui",
+  );
+
+  // Una edicion de algo que ya esta alla sube siempre: no ocupa lugar nuevo.
+  const llenas = Array.from({ length: MAX_BARAJAS }, (_, i) => baraja(`R${i}`, 10));
+  const editada = { ...llenas[0], nombre: "Editada", actualizado: 20 };
+  const nueva = baraja("Nueva", 20);
+  const lleno = fusionarBarajas([editada, nueva], llenas.map(remota), [], 99);
+  assert.deepEqual(
+    lleno.subir.map((d) => d.id),
+    [editada.id],
+  );
+  assert.equal(lleno.sinSubir, 1);
+
+  // Un borrado que viaja en el mismo plan libera su lugar.
+  const conBorrado = fusionarBarajas(
+    [nueva],
+    llenas.map(remota),
+    [{ id: llenas[1].id, borrada: 30 }],
+    99,
+  );
+  assert.deepEqual(
+    conBorrado.subir.map((d) => d.id),
+    [nueva.id],
+  );
+  assert.equal(conBorrado.sinSubir, 0);
+});
+
+test("si gana la version de la nube y su nombre ya se usa aqui, se renombra", () => {
+  // Renombrada en otro equipo a un nombre que aqui ya tiene otra baraja.
+  const original = baraja("Original", 10);
+  const otra = baraja("Dragones", 10);
+  const renombradaAlla = { ...original, nombre: "Dragones", actualizado: 20 };
+  const plan = fusionarBarajas(
+    [original, otra],
+    [remota(renombradaAlla), remota(otra)],
+    [],
+    99,
+  );
+  const llegada = plan.locales.find((d) => d.id === original.id)!;
+  assert.equal(llegada.nombre, "Dragones (copia)");
+  assert.equal(llegada.actualizado, 99);
+  assert.ok(
+    plan.subir.some((d) => d.id === original.id && d.nombre === "Dragones (copia)"),
+  );
+  assert.equal(plan.locales.find((d) => d.id === otra.id)!.nombre, "Dragones");
+});
+
 test("las filas de la nube se validan: lo raro se ignora sin lanzar", () => {
   const d = baraja("Buena", 10);
   const fila = {

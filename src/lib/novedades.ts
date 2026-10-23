@@ -34,6 +34,17 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-10-23",
+    version: "5.4.1",
+    tipo: "Arreglo",
+    titulo: "Cerrar sesión borra tus barajas de este navegador",
+    texto: [
+      "Al cerrar sesión, tus barajas, tu colección y el borrador del constructor se borran de este navegador. Siguen en tu cuenta, y quien use el navegador después ya no las ve ni se le pasan a la suya.",
+      "Si en ese momento no se pudo guardar lo último en tu cuenta, queda en el navegador y se sube cuando vuelvas a entrar.",
+      "Además, lo que cambias mientras se sincroniza ya no se pierde, y tener más de 50 barajas entre el navegador y la cuenta ya no detiene la sincronización: las que no caben se quedan en el navegador, con un aviso.",
+    ],
+  },
+  {
+    fecha: "2026-10-23",
     version: "5.4.0",
     tipo: "Novedad",
     titulo: "Foto de perfil",

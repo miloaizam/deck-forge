@@ -104,8 +104,12 @@ export default function PrivacidadPage() {
                 tu cuenta
               </Link>
               , con «Borrar mi cuenta», se borran al instante tu cuenta y todos sus datos,
-              foto incluida. «Quitar foto» borra solo la foto. Lo que quede en el
-              navegador se borra desde su configuración, eliminando los datos del sitio.
+              foto incluida, y también lo de este navegador. «Quitar foto» borra solo la
+              foto. Al cerrar sesión, tus barajas, tu colección y el borrador del
+              constructor se borran de este navegador (siguen en tu cuenta), así que quien
+              lo use después no los ve. Si en ese momento no se pudo guardar lo último en
+              tu cuenta, queda en el navegador hasta que vuelvas a entrar; si entra otra
+              cuenta antes, se borra sin pasarse a ella.
             </p>
           </div>
         </section>

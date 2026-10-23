@@ -21,92 +21,13 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Sincronización**: la pérdida de una edición y la traba por más de 50
-   barajas pueden hacerle perder trabajo a un jugador. Antes, decidir qué
-   pasa con lo del navegador al cerrar sesión.
-2. **Comunidad**: que una baraja pública que deja de cumplir salga de la
+1. **Comunidad**: que una baraja pública que deja de cumplir salga de la
    lista sola, y los dos detalles de `PublicarControl` y la foto.
-3. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
+2. **Interfaz**: los cinco arreglos visibles (pila de Oros, buscador del
    teléfono, órdenes de la Comunidad, portada por defecto, lazo de 11 px) en
    una tanda; después «Tu cuenta» y las tarjetas de análisis.
-4. **Cartas destacadas en la portada**, con la maqueta primero.
-5. **Por decidir**, cuando haya ganas: no bloquea nada.
-
-## Sincronización
-
-Lógica pura en `src/lib/sync.ts` (con `sync.test.ts`) y la vuelta en
-`src/components/nube/sincronizar.ts`. Lo que se pueda se prueba en
-`sync.test.ts`; lo demás, en `e2e/nube.spec.ts` con el Supabase simulado.
-
-### Hay que decidir: qué pasa con lo del navegador al cerrar sesión
-
-- **Qué:** «Cerrar sesión» deja las barajas y la colección en el navegador
-  (es lo que dice CLAUDE.md) y borra el recuerdo de la cuenta. Si después
-  entra **otra cuenta** en el mismo navegador, `primeraVez` es verdadero y
-  todo lo que quedó se sube a la suya: las barajas con los mismos ids y la
-  colección sumada. En un computador compartido, los datos de una persona
-  terminan en la cuenta de otra.
-- **Opciones:**
-  1. Al cerrar sesión, borrar barajas, colección y borrador del navegador (lo
-     tuyo sigue en la cuenta). Lo más simple y lo más seguro.
-  2. Recordar de qué cuenta era lo local aunque se cierre sesión, y al entrar
-     con otra no sumarlo: preguntar o empezar vacío.
-  3. Preguntar siempre al entrar si lo del navegador se suma a la cuenta.
-- **Recomendación:** la 1. Con la cuenta obligatoria para lo personal, lo del
-  navegador ya no hace falta fuera de la sesión. Cambia CLAUDE.md («Cerrar
-  sesión deja todo en el navegador»), `/privacidad`, la ayuda (`faq.ts`) y la
-  prueba «cerrar sesion deja las barajas en el navegador».
-- **Terminado cuando:** está decidido, implementado y con su prueba en
-  `nube.spec.ts`.
-
-### Una edición hecha durante la sincronización se pierde
-
-- **Qué:** `sincronizarAhora()` lee barajas y lápidas antes de las peticiones
-  y al final escribe `saveDecks(plan.locales)` y `saveLapidas([])`. Lo que el
-  jugador guarde o borre mientras viajan (la sincronización corre ~2 s después
-  de cada guardado) se pisa con la copia vieja; una baraja borrada en ese
-  momento revive, y la siguiente vuelta la vuelve a subir a todos los
-  equipos.
-- **Por dónde:** justo antes de escribir, volver a leer `readDecks()` y
-  `readLapidas()`, aplicar encima solo lo que trajo la nube y borrar solo las
-  lápidas que viajaron (no `[]`). Que nunca corran dos vueltas a la vez en la
-  misma pestaña.
-- **Terminado cuando:** una prueba en `nube.spec.ts` que edita una baraja con
-  la petición del simulado demorada conserva la edición, y una que borra
-  conserva el borrado.
-
-### Más de 50 barajas vivas traba la sincronización para siempre
-
-- **Qué:** `fusionarBarajas` sube toda baraja que solo está en el navegador sin
-  mirar cuántas vivas tiene la nube. Si entre las dos suman más de 50, el
-  trigger rechaza la fila 51 y, con ella, el lote entero. Se repite en cada
-  vuelta: no sincroniza nunca más y las lápidas no se limpian.
-- **Por dónde:** en `fusionarBarajas`, subir solo las que caben bajo
-  `MAX_BARAJAS` contando las vivas de la nube; las demás se quedan en el
-  navegador y se avisa («N barajas no caben en la cuenta»), como ya se hace
-  con `noCupieron` en el otro sentido.
-- **Terminado cuando:** `sync.test.ts` cubre 30 locales + 40 en la nube y el
-  plan no pasa de 50.
-
-### Una baraja que llega de otro equipo puede repetir un nombre
-
-- **Qué:** cuando gana la copia de la nube, `fusionarBarajas` la pone en lugar
-  de la local sin pasar por `nombreLibre`, que sí se aplica a las que llegan
-  nuevas. Si en otro equipo se renombró a un nombre que aquí ya usa otra
-  baraja, quedan dos con el mismo nombre, y eso rompe la regla de nombres
-  únicos.
-- **Terminado cuando:** `sync.test.ts` lo cubre y sale «X (copia)».
-
-### Cada pestaña abierta sincroniza de nuevo
-
-- **Qué:** `programar` (`nube.ts`) escucha los stores de barajas y colección,
-  que también avisan por el evento `storage` cuando escribe otra pestaña. La
-  guarda `escribiendo` solo cubre la pestaña propia: con tres pestañas
-  abiertas, cada vuelta dispara dos más (lecturas y escrituras de más en el
-  plan gratuito).
-- **Por dónde:** distinguir el aviso que viene de otra pestaña y no
-  programar por él (esa pestaña ya sincronizó).
-- **Terminado cuando:** con dos pestañas, un guardado produce una sola vuelta.
+3. **Cartas destacadas en la portada**, con la maqueta primero.
+4. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Comunidad
 

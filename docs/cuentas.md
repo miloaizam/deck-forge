@@ -164,8 +164,14 @@ completo trae tiempo real, archivos y funciones que el sitio no usa.
 4. **Nada se descarga sin hacer falta**: `auth-js` se carga solo si existe
    `deckforge-sesion`, al volver de Google o al pulsar «Entrar». Un visitante
    sin cuenta no hace ninguna petición a Supabase fuera de la Comunidad.
-5. Cerrar sesión borra la sesión de este navegador y deja las barajas y la
-   colección donde estaban.
+5. Cerrar sesión primero sincroniza y, si lo pendiente llegó a la cuenta,
+   **borra de este navegador** las barajas, la colección y el borrador del
+   constructor, para que quien lo use después no los herede. Si no pudo
+   subir (sin red), no borra nada y avisa: lo del navegador queda con el
+   recuerdo de su cuenta (`deckforge-nube`), se sube cuando esa cuenta vuelve
+   a entrar y, si entra otra, se borra antes de sincronizar. Lo que el
+   navegador tenía de antes de tener cuenta (sin recuerdo) se suma a la
+   primera que entre. «Borrar mi cuenta» también lo borra.
 
 ### Lo que pide cuenta
 
@@ -183,8 +189,13 @@ esas páginas se pintan de una, sin esperar a `auth-js`.
 ### La sincronización
 
 Corre al entrar, unos 2 segundos después de cada guardado (escucha los stores
-de barajas y colección) y al volver a la pestaña si pasó más de un minuto. Son
-cuatro peticiones como mucho.
+de barajas y colección, pero no lo que escribe otra pestaña) y al volver a la
+pestaña si pasó más de un minuto. Son cuatro peticiones como mucho.
+
+**Lo que cambia mientras viaja no se pisa.** La vuelta guarda lo que había al
+empezar y, antes de escribir en el navegador, compara: si se guardó o borró
+algo entretanto, no escribe y deja que la vuelta siguiente (que ese cambio ya
+programó) junte todo. De las lápidas borra solo las que viajaron.
 
 - **Por baraja gana el `actualizado` más nuevo.** Lo que está en un solo lado
   pasa al otro.
@@ -192,7 +203,12 @@ cuatro peticiones como mucho.
   equipo no revive una baraja borrada, y una edición posterior en otro equipo
   sí gana al borrado.
 - **Nunca desplaza**: lo que llega de la nube entra solo si cabe bajo las 50;
-  lo demás se queda en la nube. Un nombre repetido entra como «X (copia)».
+  lo demás se queda en la nube. Al revés, lo mismo: una baraja que la cuenta
+  no tiene viva sube solo si allá hay lugar bajo las 50 (contando los borrados
+  de esa vuelta); las demás se quedan en el navegador, con un aviso. Sin eso,
+  la base rechazaba el lote entero y no se volvía a sincronizar.
+- **Nombres repetidos**: una que llega, o una cuya versión de la nube gana,
+  con el nombre de otra del navegador queda como «X (copia)», y así sube.
 - **La colección**: la primera vez que un navegador se une a una cuenta se
   **suman** (la cantidad mayor de cada carta); después gana la más reciente.
 - `deckforge-nube` recuerda de qué cuenta es lo sincronizado, cuándo, el alias

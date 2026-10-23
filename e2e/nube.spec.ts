@@ -385,24 +385,116 @@ test.describe("con la nube encendida", () => {
     await expect(page.getByText("Todavía no hay barajas públicas.")).toBeVisible();
   });
 
-  test("cerrar sesion deja las barajas en el navegador", async ({ page }) => {
-    await simularSupabase(page);
-    const deck = barajaLegal("Se queda");
+  test("cerrar sesion sube lo pendiente y borra lo del navegador", async ({ page }) => {
+    const s = await simularSupabase(page);
+    const deck = barajaLegal("Se va a la cuenta");
     await conBarajas(page, [deck]);
     await conSesion(page, USUARIO_A);
     await page.goto("/cuenta/");
+    await expect.poll(() => s.barajas.some((f) => f.id === deck.id)).toBe(true);
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(
       page.getByRole("button", { name: "Iniciar sesión con Google" }),
     ).toBeVisible();
-    // Mis barajas pide entrar, y avisa que la guardada se suma a la cuenta.
+    // En la cuenta sigue; en el navegador ya no.
+    expect(s.barajas.find((f) => f.id === deck.id)?.borrada).toBe(false);
+    const local = await page.evaluate(() => ({
+      barajas: localStorage.getItem("deckforge-decks"),
+      coleccion: localStorage.getItem("deckforge-coleccion"),
+      nube: localStorage.getItem("deckforge-nube"),
+    }));
+    expect(local).toEqual({ barajas: null, coleccion: null, nube: null });
+  });
+
+  test("sin poder subir no se borra, y otra cuenta no lo hereda", async ({ page }) => {
+    const s = await simularSupabase(page);
+    const deck = barajaLegal("De A sin subir");
+    await conBarajas(page, [deck]);
+    await conSesion(page, USUARIO_A);
+    await page.goto("/cuenta/");
+    await expect.poll(() => s.barajas.some((f) => f.id === deck.id)).toBe(true);
+    // Se edita y se corta la red antes de que suba.
+    await page.route("https://*.supabase.co/rest/v1/barajas**", (r) => r.abort());
+    await page.evaluate(
+      ([d]) => {
+        const sobre = JSON.parse(localStorage.getItem("deckforge-decks")!);
+        sobre.mazos[0] = { ...d, nombre: "Editada sin red", actualizado: Date.now() };
+        localStorage.setItem("deckforge-decks", JSON.stringify(sobre));
+      },
+      [deck],
+    );
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await expect(
+      page.getByText(/No se pudo guardar en tu cuenta lo último/).last(),
+    ).toBeVisible();
+    expect(await page.evaluate(() => localStorage.getItem("deckforge-decks"))).toContain(
+      "Editada sin red",
+    );
+
+    // Entra OTRA cuenta en el mismo navegador: lo de A se borra sin subirse.
+    await page.unroute("https://*.supabase.co/rest/v1/barajas**");
+    await page.evaluate(
+      ([clave, valor]) => localStorage.setItem(clave, valor),
+      ["deckforge-sesion", sesion(USUARIO_B)],
+    );
     await page.goto("/barajas/");
-    await expect(
-      page.getByRole("heading", { name: "Inicia sesión para ver tus barajas" }),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Tienes 1 baraja guardada en este navegador"),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Mis barajas" })).toBeVisible();
+    // Hasta que la cuenta B termina su primera vuelta.
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("deckforge-nube") ?? ""))
+      .toContain(USUARIO_B);
+    await expect(page.getByText("Editada sin red")).toHaveCount(0);
+    expect(s.barajas.filter((f) => f.user_id === USUARIO_B)).toEqual([]);
+    expect(s.barajas.find((f) => f.id === deck.id)?.user_id).toBe(USUARIO_A);
+  });
+
+  test("lo que se edita mientras sincroniza no se pisa", async ({ page }) => {
+    const s = await simularSupabase(page);
+    const aqui = barajaLegal("Aqui");
+    // Una en la cuenta que no esta aqui: la vuelta reescribe la lista local.
+    s.barajas.push({
+      user_id: USUARIO_A,
+      id: "nubenube01",
+      datos: { ...barajaLegal("De la nube"), id: "nubenube01" },
+      actualizado: 1,
+      borrada: false,
+      publica: false,
+      publicada_en: null,
+      public_id: "10000000-0000-4000-8000-0000000000ff",
+      afinidad: null,
+      oculta: false,
+      likes: 0,
+      copias: 0,
+    });
+    await conBarajas(page, [aqui]);
+    await conSesion(page, USUARIO_A);
+    // La subida tarda: mientras viaja, se edita la de aqui.
+    await page.route("https://*.supabase.co/rest/v1/barajas**", async (r) => {
+      if (r.request().method() === "POST")
+        await new Promise((ok) => setTimeout(ok, 1500));
+      await r.fallback();
+    });
+    const subida = page.waitForRequest(
+      (r) => r.method() === "POST" && r.url().includes("/rest/v1/barajas"),
+    );
+    await page.goto("/cuenta/");
+    await subida;
+    await page.evaluate(() => {
+      const sobre = JSON.parse(localStorage.getItem("deckforge-decks")!);
+      sobre.mazos = sobre.mazos.map((d: { nombre: string }) => ({
+        ...d,
+        nombre: "Editada durante la vuelta",
+        actualizado: Date.now(),
+      }));
+      localStorage.setItem("deckforge-decks", JSON.stringify(sobre));
+    });
+    await page.waitForResponse(
+      (r) => r.request().method() === "POST" && r.url().includes("/rest/v1/barajas"),
+    );
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => localStorage.getItem("deckforge-decks"))).toContain(
+      "Editada durante la vuelta",
+    );
   });
 
   test("lo personal pide cuenta; lo compartido no", async ({ page }) => {

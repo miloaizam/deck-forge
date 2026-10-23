@@ -111,6 +111,12 @@ export interface PlanBarajas {
   traidas: number;
   /** Cuantas de la nube no cupieron bajo MAX_BARAJAS (se quedan alla). */
   noCupieron: number;
+  /**
+   * Cuantas de aqui no suben porque la cuenta ya llego a MAX_BARAJAS vivas
+   * (se quedan en el navegador). Si subieran, la base rechazaria el lote
+   * entero y no se sincronizaria nunca mas.
+   */
+  sinSubir: number;
 }
 
 /**
@@ -124,7 +130,12 @@ export interface PlanBarajas {
  * nube entra solo si cabe bajo MAX_BARAJAS, empezando por lo mas reciente, y
  * lo que no cabe se queda en la nube sin borrarse. Si una que llega choca de
  * nombre con otra del navegador, entra renombrada con `nombreLibre` y sube
- * asi, para que el nombre nuevo quede tambien alla.
+ * asi, para que el nombre nuevo quede tambien alla. Lo mismo vale para una
+ * que ya estaba aqui y gana la version de la nube.
+ *
+ * **Tampoco pasa el tope de la cuenta**: una baraja que la nube no tiene viva
+ * sube solo si alla quedan menos de MAX_BARAJAS vivas (contando las que este
+ * plan borra); las demas se quedan aqui (`sinSubir`).
  *
  * `ahora` es la fecha de esa reescritura (inyectada para los tests).
  */
@@ -141,23 +152,8 @@ export function fusionarBarajas(
   const borrar: Lapida[] = [];
   let cambioLocal = false;
 
-  // 1. Lo que hay en el navegador, contra la nube.
-  const quedan: Deck[] = [];
-  for (const local of locales) {
-    const remota = remotaDe.get(local.id);
-    if (!remota || local.actualizado > remota.actualizado) {
-      subir.push(local);
-      quedan.push(local);
-    } else if (remota.actualizado > local.actualizado) {
-      cambioLocal = true;
-      if (remota.deck) quedan.push(remota.deck);
-      // Borrada en la nube despues de la ultima edicion de aqui: se va.
-    } else {
-      quedan.push(local);
-    }
-  }
-
-  // 2. Lo borrado en el navegador que la nube todavia tiene viva.
+  // 1. Lo borrado en el navegador que la nube todavia tiene viva. Va primero
+  // porque libera lugar en la cuenta para lo que sube despues.
   const enLocal = new Set(locales.map((d) => d.id));
   const restaurar: Deck[] = [];
   for (const [id, borrada] of lapidaDe) {
@@ -166,6 +162,47 @@ export function fusionarBarajas(
     if (!remota?.deck) continue; // ya borrada alla, o nunca subio
     if (borrada >= remota.actualizado) borrar.push({ id, borrada });
     else restaurar.push(remota.deck); // se edito alla despues de borrarla aqui
+  }
+
+  // Lugar en la cuenta para barajas que alla no estan vivas.
+  let cupo = MAX_BARAJAS - (remotas.filter((r) => r.deck).length - borrar.length);
+  let sinSubir = 0;
+
+  // 2. Lo que hay en el navegador, contra la nube.
+  const quedan: Deck[] = [];
+  const ganoLaNube = new Set<string>();
+  for (const local of locales) {
+    const remota = remotaDe.get(local.id);
+    if (!remota || local.actualizado > remota.actualizado) {
+      if (remota?.deck)
+        subir.push(local); // ya ocupa su lugar alla
+      else if (cupo > 0) {
+        subir.push(local);
+        cupo--;
+      } else sinSubir++;
+      quedan.push(local);
+    } else if (remota.actualizado > local.actualizado) {
+      cambioLocal = true;
+      if (remota.deck) {
+        quedan.push(remota.deck);
+        ganoLaNube.add(local.id);
+      }
+      // Borrada en la nube despues de la ultima edicion de aqui: se va.
+    } else {
+      quedan.push(local);
+    }
+  }
+
+  // Una que gano la nube puede traer un nombre que aqui ya usa otra.
+  for (let i = 0; i < quedan.length; i++) {
+    const deck = quedan[i];
+    if (!ganoLaNube.has(deck.id)) continue;
+    const otras = quedan.filter((d) => d.id !== deck.id);
+    const nombre = nombreLibre(deck.nombre, otras);
+    if (nombre === deck.nombre) continue;
+    const renombrada = { ...deck, nombre, actualizado: ahora };
+    quedan[i] = renombrada;
+    subir.push(renombrada);
   }
 
   // 3. Lo que solo esta en la nube, de lo mas reciente a lo mas viejo.
@@ -201,6 +238,7 @@ export function fusionarBarajas(
     borrar,
     traidas: llegan.length,
     noCupieron,
+    sinSubir,
   };
 }
 

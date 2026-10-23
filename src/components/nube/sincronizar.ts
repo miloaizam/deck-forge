@@ -19,8 +19,12 @@ import {
   getEstado,
   guardarRecuerdo,
   leerRecuerdo,
+  limpiarNavegador,
   token,
 } from "./nube";
+
+/** Cuantas barajas no subieron por el tope la ultima vez que se aviso. */
+let avisadasSinSubir = 0;
 
 /**
  * Una vuelta de sincronizacion: baja lo de la cuenta, lo junta con lo del
@@ -39,6 +43,12 @@ export async function sincronizarAhora(): Promise<void> {
   if (inicio.fase !== "con-sesion") return;
   const uid = inicio.usuario.id;
   const recuerdo = leerRecuerdo();
+  // Lo que quedo en el navegador es de OTRA cuenta (cerro sesion sin poder
+  // subirlo): no se hereda. Sin recuerdo, es de antes de tener cuenta y se suma.
+  if (recuerdo && recuerdo.uid !== uid) {
+    limpiarNavegador();
+    guardarRecuerdo(null);
+  }
   const primeraVez = recuerdo?.uid !== uid;
   const ahora = Date.now();
   const t = await token();
@@ -47,8 +57,11 @@ export async function sincronizarAhora(): Promise<void> {
   const { remotas, publicas } = leerFilas(
     await api(`barajas?select=${COLUMNAS}&user_id=eq.${uid}`, { token: t }),
   );
+  // Lo que habia al empezar. Lo que se guarde o borre mientras viajan las
+  // peticiones no se pisa: al final se compara (`intacto`).
+  const decksAntes = readDecks();
   const lapidas = readLapidas();
-  const plan = fusionarBarajas(readDecks(), remotas, lapidas, ahora);
+  const plan = fusionarBarajas(decksAntes, remotas, lapidas, ahora);
 
   const filas = [
     ...plan.subir.map((d) => ({
@@ -74,9 +87,16 @@ export async function sincronizarAhora(): Promise<void> {
       token: t,
     });
   }
-  if (plan.cambioLocal) escribiendoDesdeLaNube(() => saveDecks(plan.locales));
-  // Lo borrado ya viajo (o la nube ya no lo tenia): las lapidas sobran.
-  if (lapidas.length > 0) saveLapidas([]);
+  // Si aqui cambio algo mientras tanto, no se escribe: ese cambio ya programo
+  // otra vuelta, que junta todo de nuevo.
+  const intacto = JSON.stringify(readDecks()) === JSON.stringify(decksAntes);
+  if (plan.cambioLocal && intacto) escribiendoDesdeLaNube(() => saveDecks(plan.locales));
+  // Las lapidas que viajaron (o que la nube ya no necesitaba) sobran; una
+  // nueva, anotada durante la vuelta, se queda para la siguiente.
+  if (lapidas.length > 0) {
+    const viajaron = new Set(lapidas.map((l) => `${l.id}:${l.borrada}`));
+    saveLapidas(readLapidas().filter((l) => !viajaron.has(`${l.id}:${l.borrada}`)));
+  }
   for (const l of plan.borrar) delete publicas[l.id];
 
   // --- Coleccion ---
@@ -88,8 +108,9 @@ export async function sincronizarAhora(): Promise<void> {
     typeof fila === "object" && fila !== null && "datos" in fila && "actualizado" in fila
       ? leerColeccionRemota(fila.datos, fila.actualizado)
       : null;
+  const colAntes = readColeccionActualizado();
   const planCol = fusionarColecciones(
-    { coleccion: getColeccionSnapshot(), actualizado: readColeccionActualizado() },
+    { coleccion: getColeccionSnapshot(), actualizado: colAntes },
     remotaCol,
     primeraVez,
     ahora,
@@ -107,7 +128,8 @@ export async function sincronizarAhora(): Promise<void> {
     });
   }
   const local = planCol.local;
-  if (local)
+  // Igual que con las barajas: si se cambio durante la vuelta, gana el cambio.
+  if (local && readColeccionActualizado() === colAntes)
     escribiendoDesdeLaNube(() => saveColeccion(local.coleccion, local.actualizado));
 
   // --- Listo ---
@@ -117,7 +139,16 @@ export async function sincronizarAhora(): Promise<void> {
   guardarRecuerdo({ uid, ultima, alias: fin.alias, avatar: fin.avatar, publicas });
   conSesion({ ultima, publicas, error: null });
 
-  if (primeraVez && plan.traidas > 0) {
+  if (plan.sinSubir !== avisadasSinSubir) {
+    avisadasSinSubir = plan.sinSubir;
+    if (plan.sinSubir > 0) {
+      toast(
+        `${plan.sinSubir === 1 ? "1 baraja de este navegador no se guardó" : `${plan.sinSubir} barajas de este navegador no se guardaron`} en tu cuenta porque ya tiene 50. Siguen aquí; borra alguna para hacerles lugar.`,
+        "warning",
+      );
+    }
+  }
+  if (primeraVez && intacto && plan.traidas > 0) {
     toast(
       plan.traidas === 1
         ? "Se cargó 1 baraja desde tu cuenta."

@@ -1843,15 +1843,28 @@ quien toca el código.
   `src/components/nube/sincronizar.ts`): por baraja gana el `actualizado`
   más nuevo; un borrado deja una **lápida** (`deckforge-borradas`,
   `deck-storage.ts`) con su fecha, para que otro equipo no la reviva; lo que
-  llega de la nube entra solo si cabe bajo las 50, **sin desplazar**, y un
-  nombre repetido entra como «X (copia)». La colección: la **primera vez**
+  llega de la nube entra solo si cabe bajo las 50, **sin desplazar**, y lo
+  que sube, solo si la cuenta tiene lugar (si no, la base rechazaría el lote
+  entero; las que no caben se quedan aquí, con aviso); un nombre repetido
+  entra como «X (copia)», también cuando gana la versión de la nube. Lo que
+  se guarda o borra mientras viajan las peticiones no se pisa: al final se
+  compara con lo que había al empezar y, si cambió, se deja para la vuelta
+  siguiente. La colección: la **primera vez**
   que un navegador se une a la cuenta se suman (`fusionar`); después gana la
   más reciente (`actualizado` en su sobre, aditivo). Corre al entrar, ~2 s
-  después de cada guardado (escuchando los stores de barajas y colección) y
-  al volver a la pestaña. El borrador del constructor no viaja.
+  después de cada guardado (escuchando los stores de barajas y colección,
+  pero no lo que escribe otra pestaña, que ya sincroniza lo suyo) y al
+  volver a la pestaña. El borrador del constructor no viaja.
 - **`deckforge-nube`** recuerda de qué cuenta es lo sincronizado, cuándo, el
   alias y lo público de cada baraja, para pintar Mis barajas sin esperar a la
-  red. **Cerrar sesión deja todo en el navegador.**
+  red.
+- **Cerrar sesión borra lo del navegador** (23-10-2026, decisión del
+  proyecto): `salir()` sincroniza y, si llegó a la cuenta, borra barajas,
+  lápidas, colección y borrador (`limpiarNavegador`), para que quien use el
+  navegador después no lo herede. Si no pudo subir, no borra (se perdería
+  trabajo) y conserva el recuerdo de la cuenta: si entra **otra**, lo borra
+  antes de juntar nada (`sincronizar.ts`); sin recuerdo, lo del navegador es
+  de antes de tener cuenta y se suma. Borrar la cuenta también lo borra.
 - **Publicar** (`PublicarControl.tsx`, en el detalle de una baraja propia):
   «Privada / Pública» al final de la fila de botones (Editar, imagen,
   enlace, Duplicar, Eliminar) y a su altura, `h-11`; debajo, «Ver en la

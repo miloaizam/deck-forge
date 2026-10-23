@@ -4,8 +4,9 @@ import { useSyncExternalStore } from "react";
 import type { GoTrueClient, Session } from "@supabase/auth-js";
 import * as z from "zod/mini";
 
-import { subscribeColeccion } from "@/lib/coleccion";
-import { subscribeDecks } from "@/lib/deck-storage";
+import { borrarColeccionDelNavegador, subscribeColeccion } from "@/lib/coleccion";
+import { clearDraft } from "@/lib/deck-draft";
+import { borrarBarajasDelNavegador, subscribeDecks } from "@/lib/deck-storage";
 import {
   NUBE_ACTIVA,
   SESION_KEY,
@@ -13,6 +14,7 @@ import {
   SUPABASE_URL,
 } from "@/lib/supabase-config";
 import type { EstadoPublico } from "@/lib/sync";
+import { toast } from "../toast";
 import { api, ErrorNube, mensajeDeError, storage } from "./api";
 
 /**
@@ -361,22 +363,61 @@ export async function entrar(): Promise<void> {
 }
 
 /**
- * Cierra la sesion en este navegador. Las barajas y la coleccion se quedan
- * aqui: son del navegador tambien.
+ * Borra del navegador las barajas, la coleccion y el borrador del
+ * constructor. Al cerrar sesion ya estan en la cuenta, y quien use este
+ * navegador despues no las hereda (decision del proyecto, 23-10-2026).
  */
-export async function salir(): Promise<void> {
+export function limpiarNavegador(): void {
+  escribiendoDesdeLaNube(() => {
+    borrarBarajasDelNavegador();
+    borrarColeccionDelNavegador();
+    clearDraft();
+  });
+}
+
+/**
+ * Cierra la sesion de Supabase. Con `limpiar`, borra tambien lo del
+ * navegador y el recuerdo de la cuenta. Sin el, lo deja con su recuerdo: si
+ * despues entra OTRA cuenta, `sincronizar.ts` lo borra antes de juntar nada.
+ */
+async function cerrarSesion(limpiar: boolean): Promise<void> {
   try {
     await (await cliente()).signOut({ scope: "local" });
   } finally {
-    guardarRecuerdo(null);
+    if (limpiar) {
+      limpiarNavegador();
+      guardarRecuerdo(null);
+    }
     uidActual = null;
     setEstado({ fase: "sin-sesion", error: null });
   }
 }
 
 /**
+ * «Cerrar sesion»: primero sube lo pendiente y, si llego a la cuenta, borra
+ * las barajas y la coleccion de este navegador. Si no se pudo subir, no se
+ * borran (se perderia trabajo): se suben la proxima vez que entre esa misma
+ * cuenta, y si entra otra, se borran sin sumarse.
+ */
+export async function salir(): Promise<void> {
+  let subido = false;
+  if (estado.fase === "con-sesion") {
+    await sincronizar();
+    const fin = getEstado();
+    subido = fin.fase === "con-sesion" && fin.error === null;
+  }
+  await cerrarSesion(subido);
+  if (!subido) {
+    toast(
+      "No se pudo guardar en tu cuenta lo último que cambiaste. Queda en este navegador y se sube la próxima vez que entres con esta cuenta.",
+      "warning",
+    );
+  }
+}
+
+/**
  * Borra la cuenta y todo lo que tiene en la nube (`borrar_mi_cuenta()` en
- * `supabase/esquema.sql`). Lo del navegador se queda. Lanza si no pudo.
+ * `supabase/esquema.sql`), y despues lo de este navegador. Lanza si no pudo.
  */
 export async function borrarCuenta(): Promise<void> {
   // La foto primero: Supabase no deja borrar archivos de Storage desde SQL.
@@ -389,7 +430,8 @@ export async function borrarCuenta(): Promise<void> {
     }).catch(() => undefined);
   }
   await api("rpc/borrar_mi_cuenta", { metodo: "POST", cuerpo: {}, token: await token() });
-  await salir();
+  // La cuenta ya no existe: no hay nada que subir, y lo del navegador se va.
+  await cerrarSesion(true);
 }
 
 /* ------------------------------------------------------------------ *
@@ -534,7 +576,8 @@ export function sincronizar(): Promise<void> {
   enCurso = import("./sincronizar")
     .then((m) => m.sincronizarAhora())
     .catch((e: unknown) => {
-      if (e instanceof ErrorNube && e.status === 401) void salir();
+      // La sesion caduco: se cierra sin limpiar (no se pudo subir).
+      if (e instanceof ErrorNube && e.status === 401) void cerrarSesion(false);
       conSesion({ error: mensajeDeError(e) });
     })
     .finally(() => {
@@ -544,9 +587,13 @@ export function sincronizar(): Promise<void> {
   return enCurso;
 }
 
-/** Cada guardado programa una sincronizacion ~2 s despues, agrupando rafagas. */
-function programar(): void {
-  if (escribiendo || estado.fase !== "con-sesion") return;
+/**
+ * Cada guardado programa una sincronizacion ~2 s despues, agrupando rafagas.
+ * Lo que escribe otra pestana no: esa pestana ya sincroniza lo suyo, y si no,
+ * cada vuelta dispararia otra en cada pestana abierta.
+ */
+function programar(otraPestana = false): void {
+  if (otraPestana || escribiendo || estado.fase !== "con-sesion") return;
   clearTimeout(temporizador);
   temporizador = setTimeout(() => void sincronizar(), 2000);
 }

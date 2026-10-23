@@ -45,6 +45,8 @@ function cuandoSincronizo(fecha: number): string {
 export function CuentaView() {
   const nube = useNube();
   const [borrando, setBorrando] = useState(false);
+  // Cerrar sesion sube antes lo pendiente: puede tardar un momento.
+  const [saliendo, setSaliendo] = useState(false);
   const router = useRouter();
 
   // Quien entro desde el constructor, Mis barajas o la coleccion vuelve ahi.
@@ -130,13 +132,18 @@ export function CuentaView() {
         </div>
         <button
           type="button"
+          disabled={saliendo}
+          aria-busy={saliendo}
           onClick={() => {
-            void salir().then(() => toast("Sesión cerrada.", "info"));
+            setSaliendo(true);
+            void salir()
+              .then(() => toast("Sesión cerrada.", "info"))
+              .finally(() => setSaliendo(false));
           }}
           className={cn(BOTON_SECUNDARIO, "self-start sm:self-center")}
         >
           <LogOut size={16} aria-hidden="true" />
-          Cerrar sesión
+          {saliendo ? "Cerrando sesión…" : "Cerrar sesión"}
         </button>
       </section>
 

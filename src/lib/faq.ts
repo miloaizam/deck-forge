@@ -329,13 +329,14 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Qué se guarda en la cuenta?",
         respuesta: [
           "Tus **barajas** y tu **colección**. Se sincronizan solas cada vez que guardas, y en **«Tu cuenta»** puedes forzarlo con **«Sincronizar ahora»**.",
-          "Lo único que no se guarda en la cuenta es el borrador del constructor: queda en el navegador donde lo dejaste.",
+          "Lo único que no se guarda en la cuenta es el borrador del constructor: queda en el navegador donde lo dejaste, hasta que cierres sesión.",
         ],
       },
       {
         pregunta: "¿Qué pasa si cierro sesión?",
         respuesta: [
-          "Tus barajas y tu colección **siguen en tu cuenta**. Para volver a usar el constructor, Mis barajas o la colección, inicia sesión de nuevo.",
+          "Tus barajas y tu colección **siguen en tu cuenta**, y **se borran de este navegador**: si alguien más lo usa después, no las ve ni se le pasan a su cuenta. El borrador del constructor también se borra.",
+          "Si al cerrar sesión no se pudo guardar lo último (sin internet, por ejemplo), eso queda en el navegador y se sube cuando vuelvas a entrar con tu cuenta.",
         ],
       },
       {
