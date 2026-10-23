@@ -21,9 +21,8 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Orden sugerido
 
-1. **Base de datos** (todo el grupo, en un solo cambio de `esquema.sql`): es
-   lo único que alguien puede aprovechar a propósito, se arregla en pocas
-   líneas y se pega en Supabase una sola vez.
+1. **Base de datos**: los arreglos ya están en `esquema.sql`; falta pegarlo
+   en Supabase.
 2. **Sincronización**: la pérdida de una edición y la traba por más de 50
    barajas pueden hacerle perder trabajo a un jugador. Antes, decidir qué
    pasa con lo del navegador al cerrar sesión.
@@ -37,61 +36,18 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 ## Base de datos (`supabase/esquema.sql`)
 
-Todo este grupo cambia el esquema. Se prueba contra el Postgres local con el
-`storage` de imitación (`docs/cuentas.md`, «Probar la SQL») y, al terminar,
-**hay que volver a pegar `supabase/esquema.sql` en el SQL Editor de
-Supabase**.
+### Pegar el esquema nuevo en Supabase
 
-### Un usuario puede deshacer la moderación de su foto
-
-- **Qué:** la revisión de seguridad lo marcó como **Medium, confianza 9/10**.
-  `perfiles_proteger` conserva `avatar_oculto` solo en un `UPDATE`; en un
-  `INSERT` lo pone en `false`. Como `authenticated` tiene `DELETE` sobre
-  `perfiles` (el `grant` de la línea ~133 y la política `"perfil propio"`,
-  que es `for all`), quien tenga la foto oculta la recupera con dos
-  peticiones a mano: `DELETE /rest/v1/perfiles?user_id=eq.<su uid>` y un
-  `POST` con el mismo alias. La fila nueva nace con `avatar_oculto = false`,
-  el archivo de `avatares/<uid>` nunca se tocó y la foto vuelve a salir en la
-  Comunidad. Se puede repetir cada vez que se modere.
-- **Por dónde:**
-  - Quitar `delete` del `grant` de `perfiles` (la app no lo usa: `nube.ts`
-    solo hace GET, PATCH y upsert; borrar la cuenta va por
-    `borrar_mi_cuenta`, que corre como dueño).
-  - Para que no dependa de un permiso, guardar la moderación donde el
-    usuario no llegue: una tabla aparte (por ejemplo `moderacion`, con
-    `user_id` y `avatar_oculto`), sin políticas, que lean `ruta_avatar()`,
-    `listar_publicas` y `leer_publica`. Actualizar «Cómo moderar» en
-    `docs/cuentas.md`.
-- **Terminado cuando:** en el Postgres local, un usuario con la foto oculta no
-  puede borrar su perfil y, aunque lo recree, la foto sigue oculta.
-
-### El dueño puede falsear la fecha de publicación
-
-- **Qué:** `barajas_proteger` fija `publicada_en` solo cuando la baraja pasa a
-  pública. Con la baraja ya pública, un `PATCH /rest/v1/barajas?id=eq.X` con
-  `{"publicada_en":"2099-01-01"}` pasa las reglas y el trigger lo conserva: la
-  baraja encabeza «Más recientes» (y desempata arriba) para siempre.
-- **Por dónde:** en el trigger, si ya era pública, `new.publicada_en :=
-  old.publicada_en`. Revisar si alguna otra columna que solo debería escribir
-  la base (`afinidad` se escribe desde el cliente a propósito) tiene el mismo
-  hueco.
-- **Terminado cuando:** en el Postgres local el `PATCH` de arriba deja la fecha
-  como estaba.
-
-### El tope de 500 filas cuenta las barajas borradas
-
-- **Qué:** un borrado deja una fila con `borrada = true` (la lápida que evita
-  que otro equipo la reviva) y nunca se purga. El trigger de `INSERT` cuenta
-  **todas** las filas del usuario contra el tope de 500, así que tras 500
-  barajas creadas y borradas (una «copia» guardada de la Comunidad también
-  cuenta) no se puede guardar ninguna nueva, y la sincronización falla en cada
-  vuelta sin salida desde la interfaz.
-- **Por dónde:** contar solo las vivas en ese tope (el de 50 vivas ya existe
-  aparte), o purgar las lápidas de más de unos meses. Ojo: si se purgan, un
-  equipo que no se conectó en ese tiempo podría revivir la baraja; decidir el
-  plazo.
-- **Terminado cuando:** en el Postgres local, un usuario con 500 lápidas puede
-  crear una baraja nueva.
+- **Qué:** el esquema cambió el 23-10-2026 con los tres arreglos de la
+  revisión: sin `delete` en `perfiles` (la moderación de la foto ya no se
+  deshace), `publicada_en` fija una vez pública y el tope de 500 filas que
+  purga las lápidas más viejas (`purgar_lapidas`). Probado contra el Postgres
+  local, corrido dos veces. Hasta que se pegue, en la base real siguen los
+  tres huecos.
+- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
+  → Run.
+- **Terminado cuando:** corrió sin errores. Para comprobarlo, en Database →
+  Functions aparece `purgar_lapidas`.
 
 ## Sincronización
 

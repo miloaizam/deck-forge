@@ -94,14 +94,20 @@ delete cascade`: borrar la cuenta borra todo lo suyo.
 
 ### Las reglas de la base (`supabase/esquema.sql`)
 
-- **Permisos de tabla explícitos**: `authenticated` puede leer y escribir
-  `perfiles`, `barajas` y `colecciones`; `anon` nada; `likes`, `copias` y
-  `reportes` no los toca nadie desde la API.
+- **Permisos de tabla explícitos**: `authenticated` puede leer, crear y
+  actualizar sus filas de `perfiles`, `barajas` y `colecciones`, pero **no
+  borrarlas** (una baraja se borra con una lápida, y el perfil se va con la
+  cuenta): sin eso, borrar el perfil y volver a crearlo le quitaba la
+  moderación a la foto. `anon` nada; `likes`, `copias` y `reportes` no los
+  toca nadie desde la API.
 - **RLS**: cada usuario solo ve y escribe sus filas (`user_id = auth.uid()`).
 - **Trigger `barajas_proteger`**: desde el sitio el dueño no puede cambiar
-  `oculta`, los contadores ni el `public_id`; topa en **50 barajas vivas** y
-  500 filas por usuario; una baraja borrada pierde sus datos y deja de ser
-  pública; para publicar hace falta alias. Distingue «el sitio» del panel por
+  `oculta`, los contadores, el `public_id` ni la `publicada_en` de una que ya
+  era pública (ordena «Más recientes»); topa en **50 barajas vivas** y 500
+  filas por usuario, lápidas incluidas, pero al llegar a 500 purga las
+  lápidas más viejas (`purgar_lapidas`, que solo alcanza las propias) en vez
+  de rechazar; una baraja borrada pierde sus datos y deja de ser pública;
+  para publicar hace falta alias. Distingue «el sitio» del panel por
   el **rol** (`authenticated`), no por la sesión, porque los contadores los
   suben funciones que corren como dueño de la base.
 - **Funciones** (`security definer`, `search_path` vacío, permisos de

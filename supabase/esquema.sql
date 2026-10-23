@@ -130,7 +130,10 @@ alter table public.reportes add constraint reportes_motivo_check
 revoke all on public.perfiles, public.barajas, public.colecciones,
   public.likes, public.copias, public.reportes from anon, authenticated;
 
-grant select, insert, update, delete on public.perfiles to authenticated;
+-- Sin `delete` en perfiles: borrar la fila y volver a crearla le quitaria la
+-- moderacion de la foto (`avatar_oculto` nace en false). El sitio no lo
+-- necesita; borrar la cuenta va por `borrar_mi_cuenta`, que corre como dueno.
+grant select, insert, update on public.perfiles to authenticated;
 grant select, insert, update on public.barajas to authenticated;
 grant select, insert, update on public.colecciones to authenticated;
 -- likes, copias y reportes: nada. Solo las funciones de abajo, que corren
@@ -172,6 +175,25 @@ create policy "coleccion propia" on public.colecciones for all to authenticated
 -- contadores y el id publico. Se mira el ROL y no la sesion: desde la API se
 -- escribe como `authenticated`; el panel de Supabase y las funciones
 -- `security definer` de abajo (los contadores) corren como su dueno.
+-- Borra las `cuantas` lapidas mas viejas del usuario que llama. La usa el
+-- trigger de abajo, que corre como el usuario y no tiene `delete` sobre
+-- barajas. Solo alcanza lo propio (`auth.uid()`) y solo lapidas: a lo sumo
+-- un equipo que no se conecto en mucho tiempo revive una baraja vieja.
+create or replace function public.purgar_lapidas(cuantas integer)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.barajas
+  where (user_id, id) in (
+    select user_id, id from public.barajas
+    where user_id = (select auth.uid()) and borrada
+    order by actualizado asc
+    limit greatest(cuantas, 0)
+  );
+$$;
+
 create or replace function public.barajas_proteger()
 returns trigger
 language plpgsql
@@ -193,8 +215,15 @@ begin
       if not new.borrada and vivas >= 50 then
         raise exception 'Ya hay 50 barajas guardadas, el maximo.' using errcode = 'P0001';
       end if;
+      -- Las lapidas cuentan para el tope de filas (si no, se podrian crear
+      -- sin fin), pero no traban: al llegar, se purgan las mas viejas.
       if filas >= 500 then
-        raise exception 'Demasiadas barajas guardadas.' using errcode = 'P0001';
+        perform public.purgar_lapidas(filas - 499);
+        select count(*) into filas
+          from public.barajas where user_id = new.user_id and id <> new.id;
+        if filas >= 500 then
+          raise exception 'Demasiadas barajas guardadas.' using errcode = 'P0001';
+        end if;
       end if;
     else
       new.oculta := old.oculta;
@@ -227,6 +256,9 @@ begin
     end if;
     if tg_op = 'INSERT' or not old.publica then
       new.publicada_en := now();
+    else
+      -- Ya era publica: la fecha no la cambia nadie (ordena «Mas recientes»).
+      new.publicada_en := old.publicada_en;
     end if;
   else
     new.publicada_en := null;
@@ -525,6 +557,8 @@ grant execute on function public.dar_like(uuid, boolean) to authenticated;
 grant execute on function public.registrar_copia(uuid) to authenticated;
 grant execute on function public.reportar(uuid, text, text) to authenticated;
 grant execute on function public.borrar_mi_cuenta() to authenticated;
+-- La llama el trigger de barajas, que corre como el usuario.
+grant execute on function public.purgar_lapidas(integer) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Fotos de perfil (Storage)

@@ -1831,7 +1831,10 @@ quien toca el código.
   la cuenta) pasa por funciones `security definer` de `esquema.sql`, y
   `likes`, `copias` y `reportes` no tienen ninguna política: desde la API no
   se tocan directo. Un trigger impide que el dueño cambie `oculta`, los
-  contadores o el `public_id`, y topa en 50 barajas vivas. Se mira el **rol**
+  contadores, el `public_id` o la fecha de publicación, y topa en 50 barajas
+  vivas y 500 filas (al llegar, purga las lápidas más viejas). Nadie borra
+  filas desde la API: sin `delete` en `perfiles`, borrar y recrear el perfil
+  ya no le quita la moderación a la foto. Se mira el **rol**
   (`authenticated`), no la sesión: los contadores los suben funciones que
   corren como dueño de la base.
 - **Solo `@supabase/auth-js`** (sesión con PKCE, renovación del token) y
