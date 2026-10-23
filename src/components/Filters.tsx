@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Funnel, Search, X } from "lucide-react";
+import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Funnel, Search } from "lucide-react";
 
 import { Select } from "./Select";
 import type { CatalogFilters, Facets } from "@/lib/catalog";
@@ -10,6 +10,7 @@ import { countActiveFilters } from "@/lib/catalog";
 import { ETIQUETA_ORDEN, esOrden, siguienteOrden } from "@/lib/card-order";
 import { editionTitle } from "@/lib/editions";
 import {
+  BOTON_ICONO,
   BOTON_ICONO_LIBRE_COMPACTO,
   BOTON_SECUNDARIO,
   CONTADOR,
@@ -125,10 +126,14 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
               type="button"
               onClick={onReset}
               aria-label="Limpiar filtros"
-              className={cn(BOTON_SECUNDARIO, "min-w-11 px-3 whitespace-nowrap @md:px-4")}
+              title="Limpiar filtros"
+              className={BOTON_ICONO}
             >
-              <X size={14} aria-hidden="true" />
-              <span className="hidden @md:inline">Limpiar filtros</span>
+              {/* Un embudo tachado: lucide no trae uno con raya (solo
+                  `funnel-x`), asi que se le suma la diagonal al Funnel. */}
+              <Funnel size={16} aria-hidden="true">
+                <path d="m2 2 20 20" />
+              </Funnel>
             </button>
           )}
 

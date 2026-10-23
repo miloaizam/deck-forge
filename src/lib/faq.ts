@@ -75,7 +75,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿En qué orden salen las cartas?",
         respuesta: [
           "Primero la **edición más nueva**, Escuelas Elementales, y después Bushido; al final, Adicionales y Arte Alternativo. Dentro de cada edición, de la **frecuencia más rara** a la más común. Arte Alternativo va antes agrupado por la edición de donde sale cada arte, de la más nueva a la más vieja.",
-          "El botón de las **flechas**, dentro del buscador, cambia el orden a **nombre de la A a la Z**, luego de la **Z a la A** y de vuelta al de siempre. Está en el catálogo, en el constructor y en tu colección, y **«Limpiar filtros»** también lo vuelve al de siempre. La lista de tu baraja sigue siempre el orden de edición y frecuencia.",
+          "El botón de las **flechas**, dentro del buscador, cambia el orden a **nombre de la A a la Z**, luego de la **Z a la A** y de vuelta al de siempre. Está en el catálogo, en el constructor y en tu colección, y el **embudo tachado** (limpiar filtros) también lo vuelve al de siempre. La lista de tu baraja sigue siempre el orden de edición y frecuencia.",
         ],
       },
       {

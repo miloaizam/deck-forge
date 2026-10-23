@@ -1501,7 +1501,7 @@ del catálogo a la A-Z, a la Z-A y de vuelta (`siguienteOrden`, `ORDENES` y
 en las tres vistas con buscador —catálogo (y cada edición), grilla del
 constructor y colección—; el panel de la baraja y su detalle se quedan con el
 orden fijo. El orden es un campo más de `CatalogFilters` (`orden`), así que
-va en la URL (`?orden=`) y **«Limpiar filtros» lo vuelve al de siempre**;
+va en la URL (`?orden=`) y **limpiar filtros (el embudo tachado) lo vuelve al de siempre**;
 no cuenta en el número del botón de filtros. Reemplazó al botón «Ordenar»
 (`SortMenu`), que ofrecía también coste y Fuerza. Los empates conservan el
 orden de catálogo (el `sort` es estable) y un orden elegido manda sobre la

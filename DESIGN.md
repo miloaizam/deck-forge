@@ -321,9 +321,9 @@ Reglas comunes a todos:
 | Variante | Constante | Aspecto | Para qué | Ejemplos |
 |---|---|---|---|---|
 | Principal | `BOTON_PRIMARIO` | violeta lleno, texto blanco; al apuntar, violeta más claro y anillo | la acción principal de una vista: una por vista | Guardar baraja, Armar una baraja, Agregar a la baraja, Robar mano, Leer en el sitio |
-| Secundario | `BOTON_SECUNDARIO` | contorno `line`, texto `muted` que se aclara | todo lo demás | Editar, Mulligan, Quitar una copia, Filtros, Limpiar filtros, Ver más, Cancelar |
+| Secundario | `BOTON_SECUNDARIO` | contorno `line`, texto `muted` que se aclara | todo lo demás | Editar, Mulligan, Quitar una copia, Filtros, Ver más, Cancelar |
 | Suave | `BOTON_SUAVE` | `accent-soft` con borde violeta; se llena al apuntar | una acción destacada que no es la principal | Usar este arte en la baraja |
-| Icono | `BOTON_ICONO` | cuadrado de 44 con contorno | acciones sin texto de una vista | imagen, enlace, duplicar y borrar en el detalle; menú; vaciar colección |
+| Icono | `BOTON_ICONO` | cuadrado de 44 con contorno | acciones sin texto de una vista | imagen, enlace, duplicar y borrar en el detalle; limpiar filtros (un embudo tachado); menú; vaciar colección |
 | Icono libre | `BOTON_ICONO_LIBRE` | sin contorno, solo el icono | cerrar y conmutadores que no deben pesar | cerrar un modal, la hoja o la ayuda; tema; ayuda; ordenar |
 | Compactos | `BOTON_PRIMARIO_COMPACTO`, `BOTON_SECUNDARIO_COMPACTO`, `BOTON_ICONO_COMPACTO`, `BOTON_ICONO_LIBRE_COMPACTO` | igual, de 36 visibles | dentro de tarjetas, filas y avisos | acciones de una tarjeta de Mis barajas, Tengo / Ya la tengo, Recuperar / Descartar, − y + de la colección, cerrar un aviso, limpiar un filtro |
 | Peligro | `HOVER_PELIGRO` (se suma) | anillo y texto rojos al apuntar | lo que borra o vacía sin vuelta | Borrar la baraja, Vaciar la baraja, Vaciar la colección |
