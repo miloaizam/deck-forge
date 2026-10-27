@@ -1,6 +1,6 @@
 import * as z from "zod/mini";
 
-import { TIPOS } from "./types";
+import { TIPOS, type Formato } from "./types";
 
 /**
  * Los documentos oficiales del formato, transcritos a datos en
@@ -72,6 +72,14 @@ export const feDeErratasSchema = z.strictObject({
 });
 export type FeDeErratas = z.infer<typeof feDeErratasSchema>;
 
+/** Lo que una Banlist le pone a una carta de fuera del bloque EE. */
+const condicionFuera = z.enum(["Carta Única", "Carta Errante", "Libre por tres copias"]);
+
+/**
+ * La Banlist de un formato (Estandar, VCR o Infanteria). Cada formato tiene la
+ * suya y las tres comparten el DAR y la Fe de Erratas. Las de VCR e Infanteria
+ * se transcribieron de una imagen: no traen fecha, construccion ni erratas.
+ */
 export const banlistSchema = z.strictObject({
   titulo: texto,
   formato: texto,
@@ -79,24 +87,40 @@ export const banlistSchema = z.strictObject({
     titulo: texto,
     archivo: texto,
     paginas: z.int().check(z.positive()),
-    modificado: fecha,
+    /** `null` si el original no la dice (las imagenes de VCR e Infanteria). */
+    modificado: z.nullable(fecha),
   }),
   version: fecha,
-  construccion: texto,
+  construccion: z.optional(texto),
   prohibidas: z.array(texto).check(z.minLength(1)),
   unicas: z.array(texto).check(z.minLength(1)),
-  observacion: z.strictObject({
-    descripcion: texto,
-    condiciones: z.array(z.strictObject({ carta: texto, condicion: z.nullable(texto) })),
-    porRaza: z.array(
-      z.strictObject({
-        raza: texto,
-        cartas: z
-          .array(z.strictObject({ carta: texto, edicion: texto }))
-          .check(z.minLength(1)),
-      }),
-    ),
-  }),
+  /** Las que el formato vuelve Errantes (VCR e Infanteria las listan aparte). */
+  errantes: z.optional(z.array(texto).check(z.minLength(1))),
+  /**
+   * Las cartas de fuera del bloque EE que el formato admite, y como. Se
+   * publican (las de `observacion`, no: decision del proyecto, CLAUDE.md).
+   */
+  fueraDelBloque: z.optional(
+    z
+      .array(z.strictObject({ carta: texto, edicion: texto, condicion: condicionFuera }))
+      .check(z.minLength(1)),
+  ),
+  observacion: z.optional(
+    z.strictObject({
+      descripcion: texto,
+      condiciones: z.array(
+        z.strictObject({ carta: texto, condicion: z.nullable(texto) }),
+      ),
+      porRaza: z.array(
+        z.strictObject({
+          raza: texto,
+          cartas: z
+            .array(z.strictObject({ carta: texto, edicion: texto }))
+            .check(z.minLength(1)),
+        }),
+      ),
+    }),
+  ),
   erratas: z.array(
     z.strictObject({
       carta: texto,
@@ -246,12 +270,46 @@ export function cartasDeLaBanlist(b: Banlist): string[] {
     ...new Set([
       ...b.prohibidas,
       ...b.unicas,
+      ...(b.errantes ?? []),
       ...b.erratas.map((e) => e.carta),
-      ...b.observacion.condiciones.map((c) => c.carta),
-      ...b.observacion.porRaza.flatMap((r) => r.cartas.map((c) => c.carta)),
+      ...cartasFueraDelBloque(b),
     ]),
   ];
 }
+
+/**
+ * Las cartas de fuera del bloque EE que la banlist admite: las de
+ * `fueraDelBloque` y las de `observacion`, que la Estandar no publica.
+ */
+export function cartasFueraDelBloque(b: Banlist): string[] {
+  return [
+    ...new Set([
+      ...(b.fueraDelBloque ?? []).map((c) => c.carta),
+      ...(b.observacion?.condiciones ?? []).map((c) => c.carta),
+      ...(b.observacion?.porRaza ?? []).flatMap((r) => r.cartas.map((c) => c.carta)),
+    ]),
+  ];
+}
+
+/**
+ * Las cartas que nombra una Banlist y no estan en el catalogo. Las nueve de
+ * fuera del bloque de VCR estan pendientes de cargar en Adicionales (TODO.md);
+ * "Maquina del Tiempo", la baneada de Infanteria, no es de ninguna edicion del
+ * formato. Los tests las dejan pasar y exigen que sigan faltando: al cargar
+ * una, se borra de aqui.
+ */
+export const FALTAN_EN_EL_CATALOGO = [
+  "Nixe",
+  "Yudhishthira",
+  "Nefertari",
+  "Helios",
+  "Tormod Kark",
+  "Serpopardo",
+  "Sacerdotisa de Odín",
+  "Reina Aesir",
+  "Hadas",
+  "Máquina del Tiempo",
+] as const;
 
 /**
  * Un nombre de carta para comparar: sin mayusculas, sin tildes y sin
@@ -316,7 +374,24 @@ export const DOCUMENTOS = {
     pdf: "/reglas/BanlistEstandar-261023.pdf",
     paginas: 7,
   },
+  banlistVcr: {
+    ruta: "/documentos/banlist/vcr",
+    pdf: "/reglas/BanlistVCR-261027.pdf",
+    paginas: 6,
+  },
+  banlistInfanteria: {
+    ruta: "/documentos/banlist/infanteria",
+    pdf: "/reglas/BanlistInfanteria-261027.pdf",
+    paginas: 5,
+  },
 } as const satisfies Record<string, Documento>;
+
+/** La Banlist de cada formato. */
+export const DOCUMENTO_BANLIST: Record<Formato, Documento> = {
+  estandar: DOCUMENTOS.banlist,
+  vcr: DOCUMENTOS.banlistVcr,
+  infanteria: DOCUMENTOS.banlistInfanteria,
+};
 
 /** "2026-09-26" -> "26 de septiembre de 2026". */
 export function fechaLarga(iso: string): string {

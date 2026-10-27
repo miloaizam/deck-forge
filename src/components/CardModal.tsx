@@ -10,7 +10,7 @@ import { CardRibbons } from "./CardRibbons";
 import { marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import { tipoDeCarta } from "@/lib/oros";
-import type { Card } from "@/lib/types";
+import type { Card, Formato } from "@/lib/types";
 import {
   CARD_RATIO,
   BLOQUEADO,
@@ -51,6 +51,8 @@ interface CardModalProps {
    * cambia como se nombra en los textos.
    */
   destino?: "baraja" | "coleccion";
+  /** De que Banlist salen los lazos. */
+  formato?: Formato;
 }
 
 /** Marca de la entrada de historial que pone el modal al abrirse. */
@@ -80,6 +82,7 @@ export function CardModal({
   cambiarArte,
   copiasDe,
   destino = "baraja",
+  formato,
 }: CardModalProps) {
   const enDestino = destino === "baraja" ? "en la baraja" : "en tu colección";
   const ref = useRef<HTMLDialogElement>(null);
@@ -171,7 +174,7 @@ export function CardModal({
                       className="imagen-carga border-line rounded-card w-full border"
                       style={{ aspectRatio: CARD_RATIO }}
                     />
-                    <CardRibbons card={mostrada} grande />
+                    <CardRibbons card={mostrada} formato={formato} grande />
                   </div>
                 </CartaInclinable>
                 {onChangeCard && impresiones && impresiones.length > 1 && (

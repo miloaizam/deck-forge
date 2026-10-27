@@ -1,6 +1,8 @@
 import { Ban, CircleCheck, Info, TriangleAlert } from "lucide-react";
 
 import { DECK_TOTAL, isLegal, type DeckIssue } from "@/lib/deck-rules";
+import { DESCRIPCION_FORMATO, NOMBRE_FORMATO } from "@/lib/formatos";
+import type { Formato } from "@/lib/types";
 import { PASTILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -12,11 +14,13 @@ interface DeckIssuesProps {
   vacia: boolean;
   /** Si muestra la barra de progreso. El detalle ya dice el conteo arriba. */
   progreso?: boolean;
+  /** El formato de la baraja: la guia de la vacia dice lo que acota. */
+  formato?: Formato;
   className?: string;
 }
 
 /** Lo que deja la baraja fuera del formato aunque este completa. */
-const GRAVES = new Set<DeckIssue["code"]>(["carta-prohibida"]);
+const GRAVES = new Set<DeckIssue["code"]>(["carta-prohibida", "carta-fuera-de-formato"]);
 
 /**
  * El estado de una baraja: si cumple, cuanto le falta y que hay que corregir.
@@ -33,6 +37,7 @@ export function DeckIssues({
   total,
   vacia,
   progreso = true,
+  formato = "estandar",
   className,
 }: DeckIssuesProps) {
   const legal = isLegal(issues);
@@ -117,6 +122,8 @@ export function DeckIssues({
         <p className="text-muted text-[13px] leading-relaxed">
           Agrega cartas con el botón <span className="text-accent">+</span>. La baraja
           lleva {DECK_TOTAL} cartas, un oro inicial y al menos 15 Aliados o 15 Tótems.
+          {formato !== "estandar" &&
+            ` ${NOMBRE_FORMATO[formato]}: ${DESCRIPCION_FORMATO[formato]}`}
         </p>
       ) : (
         (errores.length > 0 || avisos.length > 0) && (
@@ -149,12 +156,23 @@ export function DeckIssues({
   );
 }
 
-/** En que estado esta una baraja, para la pastilla de su tarjeta o barra. */
-export type EstadoDeBaraja = "legal" | "incompleta" | "baneada";
+/**
+ * En que estado esta una baraja, para la pastilla de su tarjeta o barra. Una
+ * baneada y una carta de otro formato la dejan fuera igual; se nombra la
+ * baneada primero, que es la que el jugador busca en la Banlist.
+ */
+export type EstadoDeBaraja = "legal" | "incompleta" | "baneada" | "fuera-de-formato";
 
 export function estadoDeBaraja(issues: DeckIssue[]): EstadoDeBaraja {
   if (isLegal(issues)) return "legal";
-  return issues.some((i) => GRAVES.has(i.code)) ? "baneada" : "incompleta";
+  if (issues.some((i) => i.code === "carta-prohibida")) return "baneada";
+  if (issues.some((i) => i.code === "carta-fuera-de-formato")) return "fuera-de-formato";
+  return "incompleta";
+}
+
+/** Si el estado deja la baraja fuera del formato (rojo), no solo incompleta. */
+export function estaFuera(estado: EstadoDeBaraja): boolean {
+  return estado === "baneada" || estado === "fuera-de-formato";
 }
 
 /**
@@ -170,7 +188,7 @@ export function EstadoPastilla({
   className?: string;
 }) {
   const Icono =
-    estado === "legal" ? CircleCheck : estado === "baneada" ? Ban : TriangleAlert;
+    estado === "legal" ? CircleCheck : estaFuera(estado) ? Ban : TriangleAlert;
   return (
     <span
       className={cn(
@@ -179,12 +197,19 @@ export function EstadoPastilla({
         // /10 y no /15: en el tema claro el verde sobre /15 quedaba en 4,43:1.
         estado === "legal" && "bg-success/10 text-success",
         estado === "incompleta" && "bg-warning-soft text-warning",
-        estado === "baneada" && "bg-danger/15 text-danger",
+        estaFuera(estado) && "bg-danger/15 text-danger",
         className,
       )}
     >
       <Icono size={13} aria-hidden="true" />
-      {estado === "legal" ? "Legal" : estado === "baneada" ? "Con baneada" : "Incompleta"}
+      {
+        {
+          legal: "Legal",
+          baneada: "Con baneada",
+          "fuera-de-formato": "Fuera de formato",
+          incompleta: "Incompleta",
+        }[estado]
+      }
     </span>
   );
 }

@@ -80,6 +80,15 @@ test("las cartas de la fila se leen, y si vienen rotas no se llevan la fila", ()
   );
 });
 
+test("el formato llega, y sin el o desconocido es Estandar", () => {
+  assert.equal(leerListaPublica([{ ...fila, formato: "vcr" }]).filas[0].formato, "vcr");
+  // Una base con el esquema de antes no lo manda.
+  assert.equal(leerListaPublica([fila]).filas[0].formato, "estandar");
+  const rara = leerListaPublica([{ ...fila, formato: "__proto__" }]);
+  assert.equal(rara.filas.length, 1);
+  assert.equal(rara.filas[0].formato, "estandar");
+});
+
 test("una afinidad desconocida llega como null", () => {
   const { filas } = leerListaPublica([{ ...fila, afinidad: "raza:Inventada" }]);
   assert.equal(filas[0].afinidad, null);

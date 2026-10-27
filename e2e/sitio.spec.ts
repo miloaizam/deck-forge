@@ -215,6 +215,8 @@ const RUTAS = [
   "/documentos/dar/",
   "/documentos/fe-de-erratas/",
   "/documentos/banlist/",
+  "/documentos/banlist/vcr/",
+  "/documentos/banlist/infanteria/",
   "/novedades/",
   "/cuenta/",
   "/comunidad/",
@@ -353,5 +355,54 @@ test.describe("el DAR", () => {
       .getByRole("link", { name: "Trance Yoruba" })
       .first();
     await expect(carta).toHaveAttribute("href", /^\/catalogo\/?\?q=Trance%20Yoruba$/);
+  });
+});
+
+test.describe("formatos", () => {
+  test("en VCR el constructor no ofrece una Ultra Real", async ({ page }) => {
+    await page.goto("/constructor/");
+    const buscador = page.getByRole("searchbox", { name: "Buscar cartas" });
+    await buscador.fill("Kirin");
+    await expect(
+      page.getByRole("button", { name: /^Ver detalle de Kirin/ }).first(),
+    ).toBeVisible();
+
+    const panel = await abrirPanel(page);
+    await panel.getByRole("button", { name: "VCR", exact: true }).click();
+    await expect(panel.getByRole("button", { name: "VCR", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    if (page.viewportSize()!.width < 1024) await page.keyboard.press("Escape");
+    // La busqueda es difusa y trae otras: lo que importa es que Kirin no.
+    await expect(page.getByRole("button", { name: /^Ver detalle de Kirin/ })).toHaveCount(
+      0,
+    );
+  });
+
+  test("el catalogo se mira con el formato de la URL", async ({ page }) => {
+    // Rayo de Luna es Real: entra en VCR y no en Infanteria.
+    await page.goto("/catalogo/?formato=vcr&q=Rayo%20de%20Luna");
+    await expect(
+      page.getByRole("button", { name: /^Ver detalle de Rayo de Luna/ }).first(),
+    ).toBeVisible();
+    await page.goto("/catalogo/?formato=infanteria&q=Rayo%20de%20Luna");
+    await expect(page.getByText(/^Mostrando /)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^Ver detalle de Rayo de Luna/ }),
+    ).toHaveCount(0);
+  });
+
+  test("cada Banlist enlaza a las de los otros formatos", async ({ page }) => {
+    await page.goto("/documentos/banlist/");
+    await page
+      .getByRole("navigation", { name: "Banlist de cada formato" })
+      .getByRole("link", { name: "Infantería" })
+      .click();
+    await expect(page).toHaveURL(/\/documentos\/banlist\/infanteria\/?$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Banlist Infantería",
+    );
+    await expect(page.getByRole("heading", { name: /^Errantes/ })).toBeVisible();
   });
 });

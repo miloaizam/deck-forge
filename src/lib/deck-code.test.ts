@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import lzString from "lz-string";
 
-import { createDeck, setQuantity, setStartingGold } from "./deck";
+import { createDeck, setFormato, setQuantity, setStartingGold } from "./deck";
 import {
   decodeDeck,
   encodeDeck,
@@ -12,7 +12,7 @@ import {
   shareUrl,
   LARGO_INCOMODO,
 } from "./deck-code";
-import { deckSchema, type Deck } from "./types";
+import { deckSchema, FORMATOS, type Deck } from "./types";
 
 /**
  * El codigo del enlace es entrada externa: lo puede
@@ -135,6 +135,44 @@ test("un id que el formato binario no sabe escribir cae al formato 1", () => {
   }
 });
 
+test("el formato viaja en el enlace, y uno Estandar sale como antes", () => {
+  const original = mazoDePrueba();
+  const estandar = encodeDeck(original);
+  // Codigo de antes de los formatos, escrito a mano con el mismo contenido:
+  // un enlace Estandar no cambia ni un byte.
+  assert.equal(encodeDeck({ ...original, formato: "estandar" }), estandar);
+  for (const formato of FORMATOS) {
+    const codigo = encodeDeck(setFormato(original, formato));
+    const r = decodeDeck(codigo);
+    assert.ok(r.ok, formato);
+    assert.equal(r.deck.formato, formato);
+    assert.deepEqual(r.deck.side, original.side, formato);
+    // Dos bits de mas: a lo sumo un caracter.
+    assert.ok(codigo.length - estandar.length <= 1, formato);
+  }
+  // Tambien en el formato 1.
+  const rara = setFormato(
+    setQuantity(createDeck("Rara"), "xx-001", "principal", 1),
+    "vcr",
+  );
+  const r = decodeDeck(encodeDeck(rara));
+  assert.ok(r.ok);
+  assert.equal(r.deck.formato, "vcr");
+});
+
+test("un enlace con relleno de cualquier largo se lee Estandar", () => {
+  // Nombres de largo distinto dejan de 0 a 7 bits de relleno al final.
+  for (let largo = 1; largo <= 9; largo++) {
+    const deck = setQuantity(createDeck("x".repeat(largo)), "bu-001", "principal", 1);
+    const r = decodeDeck(encodeDeck(deck));
+    assert.ok(r.ok, String(largo));
+    assert.equal(r.deck.formato, "estandar", String(largo));
+    const vcr = decodeDeck(encodeDeck(setFormato(deck, "infanteria")));
+    assert.ok(vcr.ok);
+    assert.equal(vcr.deck.formato, "infanteria", String(largo));
+  }
+});
+
 test("un enlace del formato 1 se sigue leyendo", () => {
   // Codigo tal cual lo escribia la version anterior. Los que ya se compartieron
   // tienen que seguir abriendose.
@@ -152,6 +190,7 @@ test("un enlace del formato 1 se sigue leyendo", () => {
   );
   const r = decodeDeck(v1);
   assert.ok(r.ok);
+  assert.equal(r.deck.formato, "estandar");
   assert.equal(r.deck.nombre, "Dragones de prueba");
   assert.equal(r.deck.oroInicial, "bu-225");
   assert.deepEqual(r.deck.side, [{ id: "bu-045", n: 2 }]);

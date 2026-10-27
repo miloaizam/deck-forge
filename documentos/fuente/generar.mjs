@@ -7,7 +7,8 @@
  *
  * Uso, desde la raiz del repo:
  *
- *   node documentos/fuente/generar.mjs
+ *   node documentos/fuente/generar.mjs                  # todos
+ *   node documentos/fuente/generar.mjs BanlistVCR       # los que empiecen asi
  *
  * La tipografia sale de fuente/fuentes/: Space Grotesk en cuatro pesos
  * estaticos (ver documentos/README.md). Las cartas de ejemplo del DAR, de
@@ -28,6 +29,8 @@ const RAIZ = path.resolve(import.meta.dirname, "..", "..");
 const FUENTE = import.meta.dirname;
 const SALIDA = path.join(RAIZ, "public", "reglas");
 const VERSION = "261023"; // AAMMDD de esta transcripcion, en el nombre del archivo
+// Las Banlists de VCR e Infanteria se transcribieron despues: llevan su fecha.
+const VERSION_FORMATOS = "261027";
 
 const PLAYWRIGHT =
   process.env.PLAYWRIGHT_PATH ?? "/opt/node22/lib/node_modules/playwright/index.mjs";
@@ -359,6 +362,7 @@ const CSS_BANLIST = `
 .item { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 2mm 3mm; font-weight: 600; break-inside: avoid; }
 .item.prohibida { border-color: rgb(248 113 113 / .5); }
 .item.prohibida::before { content: "✕"; color: var(--danger); margin-right: 2mm; }
+.item.errante::before { content: "↻"; color: var(--accent); margin-right: 2mm; }
 .item.unica::before { content: "1"; display: inline-block; width: 4.2mm; height: 4.2mm; line-height: 4.2mm; text-align: center;
   border-radius: 50%; background: var(--brand); color: #fff; font-size: 7pt; margin-right: 2mm; vertical-align: 1px; }
 h2.seccion.peligro { color: var(--danger); }
@@ -367,31 +371,82 @@ h2.seccion.peligro { color: var(--danger); }
 .errata .ed { display: block; color: var(--muted); font-size: 7.8pt; font-weight: 400; }
 `;
 
-function banlist() {
-  const doc = JSON.parse(
-    readFileSync(path.join(FUENTE, "banlist-estandar.json"), "utf-8"),
-  );
+/**
+ * Lo que cambia de una Banlist a otra. Cada formato tiene la suya (VCR e
+ * Infanteria desde el 27-10-2026); las tres comparten el molde.
+ */
+const BANLISTS = {
+  estandar: {
+    archivo: "banlist-estandar.json",
+    eyebrow: "Formato Estándar RE MyL · Escuelas Elementales",
+    nombre: "Estándar",
+    bajada:
+      "Qué cartas no se pueden jugar, cuáles van con una sola copia y las erratas que se aplican al formato.",
+  },
+  vcr: {
+    archivo: "banlist-vcr.json",
+    eyebrow: "Formato VCR RE MyL · Escuelas Elementales",
+    nombre: "VCR",
+    bajada:
+      "Solo Vasallos, Cortesanos y Reales. Qué cartas no se pueden jugar, cuáles van con una sola copia, cuáles son Errantes y qué cartas de fuera del bloque se admiten.",
+  },
+  infanteria: {
+    archivo: "banlist-infanteria.json",
+    eyebrow: "Formato Infantería · Escuelas Elementales",
+    nombre: "Infantería",
+    bajada:
+      "Solo Vasallos y Cortesanos. Qué cartas no se pueden jugar, cuáles van con una sola copia y cuáles son Errantes.",
+  },
+};
+
+/** "2025-11-26" -> "26-11-2025", como lo escribe el resto de los documentos. */
+const fechaCorta = (iso) => iso.split("-").reverse().join("-");
+
+function banlist(formato) {
+  const meta = BANLISTS[formato];
+  const doc = JSON.parse(readFileSync(path.join(FUENTE, meta.archivo), "utf-8"));
   const col = new Intl.Collator("es");
   const ordenar = (l) => [...l].sort(col.compare);
+  const errantes = doc.errantes ?? [];
+  const fuera = doc.fueraDelBloque ?? [];
+  // La Estandar es un PDF con fecha y erratas de ortografia; las otras dos,
+  // una imagen sin fecha donde solo hubo que corregir nombres.
+  const origen = doc.original.modificado
+    ? `del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo`
+    : `de la imagen oficial «${esc(doc.original.titulo)}», que no trae fecha. Versión del ${esc(fechaCorta(doc.version))}. Se corrigieron los nombres de carta según el catálogo`;
+  const listas = [
+    { id: "prohibidas", titulo: "Prohibidas", cuenta: doc.prohibidas.length },
+    { id: "unicas", titulo: "Únicas", cuenta: doc.unicas.length },
+    errantes.length && { id: "errantes", titulo: "Errantes", cuenta: errantes.length },
+    fuera.length && {
+      id: "fuera-del-bloque",
+      titulo: "Fuera del bloque EE",
+      cuenta: fuera.length,
+    },
+    doc.erratas.length && {
+      id: "erratas",
+      titulo: "Erratas",
+      cuenta: doc.erratas.length,
+    },
+  ].filter(Boolean);
   const html = [
     portada({
-      eyebrow: "Formato Estándar RE MyL · Escuelas Elementales",
-      titulo: "Banlist<br><em>Estándar</em>",
-      bajada:
-        "Qué cartas no se pueden jugar, cuáles van con una sola copia y las erratas que se aplican al formato.",
+      eyebrow: meta.eyebrow,
+      titulo: `Banlist<br><em>${meta.nombre}</em>`,
+      bajada: meta.bajada,
       fichas: [
         [String(doc.prohibidas.length), "prohibidas"],
         [String(doc.unicas.length), "cartas Únicas"],
-        [String(doc.erratas.length), "erratas y ajustes"],
+        doc.erratas.length
+          ? [String(doc.erratas.length), "erratas y ajustes"]
+          : [String(errantes.length), "Errantes"],
       ],
-      aviso: `Transcripción de DeckForge del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo; está al final, en las notas de la transcripción.`,
+      aviso: `Transcripción de DeckForge ${origen}; está al final, en las notas de la transcripción.`,
     }),
-    indice("Las tres listas de la Banlist, en el orden del documento original.", [
-      { id: "prohibidas", titulo: "Prohibidas", cuenta: doc.prohibidas.length },
-      { id: "unicas", titulo: "Únicas", cuenta: doc.unicas.length },
-      { id: "erratas", titulo: "Erratas", cuenta: doc.erratas.length },
-      { id: ID_NOTAS, titulo: "Notas de la transcripción" },
-    ]),
+    indice(
+      `Las ${listas.length === 3 ? "tres" : "cuatro"} listas de la Banlist, en el orden del documento original.`,
+      [...listas, { id: ID_NOTAS, titulo: "Notas de la transcripción" }],
+    ),
     `<section class="bloque" id="prohibidas"><p class="eyebrow">Banlist</p>
       <h2 class="seccion peligro" style="margin-top:2mm">Prohibidas <span class="cuenta">${doc.prohibidas.length}</span></h2>
       <p class="seccion-bajada">No se pueden incluir en el Mazo Castillo ni en el side deck.</p>
@@ -403,8 +458,29 @@ function banlist() {
       <div class="rejilla">${ordenar(doc.unicas)
         .map((c) => `<div class="item unica">${esc(c)}</div>`)
         .join("")}</div>
+      ${
+        errantes.length
+          ? `<h2 class="seccion" id="errantes">Errantes <span class="cuenta">${errantes.length}</span></h2>
+      <p class="seccion-bajada">No puede haber dos con el mismo nombre en juego bajo tu control.</p>
+      <div class="rejilla">${ordenar(errantes)
+        .map((c) => `<div class="item errante">${esc(c)}</div>`)
+        .join("")}</div>`
+          : ""
+      }
     </section>`,
-    `<section class="bloque" id="erratas"><p class="eyebrow">Banlist</p><h2 class="seccion" style="margin-top:2mm">Erratas <span class="cuenta">${doc.erratas.length}</span></h2>
+    fuera.length
+      ? `<section class="bloque" id="fuera-del-bloque"><p class="eyebrow">Banlist</p><h2 class="seccion" style="margin-top:2mm">Fuera del bloque EE <span class="cuenta">${fuera.length}</span></h2>
+      <p class="seccion-bajada">Cartas de otras ediciones que el formato admite, y con qué condición. Las demás de fuera del bloque no se pueden jugar.</p>
+      ${fuera
+        .map(
+          (e) =>
+            `<div class="errata"><b>${esc(e.carta)}<span class="ed">${esc(e.edicion)}</span></b><span>${esc(e.condicion)}.</span></div>`,
+        )
+        .join("")}
+    </section>`
+      : "",
+    doc.erratas.length
+      ? `<section class="bloque" id="erratas"><p class="eyebrow">Banlist</p><h2 class="seccion" style="margin-top:2mm">Erratas <span class="cuenta">${doc.erratas.length}</span></h2>
       <p class="seccion-bajada">Cambios que la banlist aplica a cartas del formato.</p>
       ${doc.erratas
         .map(
@@ -412,7 +488,8 @@ function banlist() {
             `<div class="errata"><b>${esc(e.carta)}${e.edicion ? `<span class="ed">${esc(e.edicion)}</span>` : ""}</b><span>${esc(e.texto)}</span></div>`,
         )
         .join("")}
-    </section>`,
+    </section>`
+      : "",
     notasTranscripcion(doc.correcciones.map((texto) => ({ texto }))),
   ].join("\n");
   return { html, css: CSS_BANLIST, doc };
@@ -810,11 +887,28 @@ copyFileSync(
 
 const browser = await chromium.launch();
 try {
+  const pedidos = process.argv.slice(2);
   for (const [archivo, titulo, armar] of [
     [`DAR-${VERSION}.pdf`, "Documento Actualizado de Reglas · Escuelas Elementales", dar],
     [`FeDeErratas-${VERSION}.pdf`, "Fe de Erratas · Escuelas Elementales", feDeErratas],
-    [`BanlistEstandar-${VERSION}.pdf`, "Banlist Formato Estándar RE MyL", banlist],
-  ]) {
+    [
+      `BanlistEstandar-${VERSION}.pdf`,
+      "Banlist Formato Estándar RE MyL",
+      () => banlist("estandar"),
+    ],
+    [
+      `BanlistVCR-${VERSION_FORMATOS}.pdf`,
+      "Banlist Formato VCR RE MyL",
+      () => banlist("vcr"),
+    ],
+    [
+      `BanlistInfanteria-${VERSION_FORMATOS}.pdf`,
+      "Banlist Formato Infantería",
+      () => banlist("infanteria"),
+    ],
+  ].filter(
+    ([archivo]) => pedidos.length === 0 || pedidos.some((p) => archivo.startsWith(p)),
+  )) {
     const { html, css } = armar();
     const html_path = path.join(tmp, archivo.replace(".pdf", ".html"));
     writeFileSync(html_path, pagina(titulo, { html, css }));

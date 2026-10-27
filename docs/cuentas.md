@@ -122,7 +122,7 @@ delete cascade`: borrar la cuenta borra todo lo suyo.
   ejecución dados a mano): `listar_publicas` (la lista, con sus cuatro
   órdenes, el orden por nombre `por_nombre` —que manda sobre ellos y ordena
   con la intercalación `es-x-icu`, para que «Águilas» no quede tras la Z—,
-  filtro y búsqueda), `leer_publica` (una baraja, con `mia` y
+  filtros por afinidad y por formato, y búsqueda), `leer_publica` (una baraja, con `mia` y
   `me_gusta`), `dar_like` (no a la propia), `registrar_copia`, `reportar` y
   `borrar_mi_cuenta`, más `cartas_destacadas` (la cinta de la portada; la
   única que escribe sin sesión, y solo su propio ranking). Las dos primeras y
@@ -243,8 +243,12 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
   barajas). Para eso `listar_publicas` devuelve también `principal`, las
   cartas de la baraja (solo ids y copias).
 - **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
-  últimos 7 días, más recientes, más copiadas), filtro por afinidad y buscador;
-  todo en la URL. Se ve sin cuenta.
+  últimos 7 días, más recientes, más copiadas), filtros por formato y por
+  afinidad, y buscador; todo en la URL. Se ve sin cuenta.
+- **El formato** (Estándar, VCR o Infantería) es la columna generada
+  `barajas.formato`, que sale del jsonb como el nombre (27-10-2026): sin
+  `formato` en los datos, `estandar`. No la escribe el sitio, así que publicar
+  ni sincronizar cambiaron.
 - **La cinta de la portada** muestra las 12 cartas más usadas en las barajas
   públicas. `cartas_destacadas()` guarda el ranking ya calculado en
   `destacadas` y `destacadas_estado` (sin permisos para nadie desde la API) y
@@ -532,9 +536,11 @@ peticiones (`e2e/supabase-simulado.ts`). Deja `out/` con ese build: después,
   esquema la borra antes (`drop function if exists` con la firma vieja):
   `create or replace` con otros parámetros crearía una segunda función al
   lado y la API no sabría a cuál llamar. Así se hizo al sumar `por_nombre`
-  a `listar_publicas` (23-10-2026). Mientras el esquema nuevo no se pegue en
-  Supabase, el sitio sigue listando con el orden de siempre: el parámetro
-  solo se manda cuando el orden por nombre está puesto.
+  a `listar_publicas` (23-10-2026), y otra vez al sumar `formato`
+  (27-10-2026). Mientras el esquema nuevo no se pegue en Supabase, el sitio
+  sigue listando como antes: cada parámetro solo se manda cuando su orden o
+  su filtro está puesto (con el filtro de formato puesto contra una base
+  vieja, la lista da error).
 - **Apagar las cuentas**: `url` y `key` en `null` en `proyecto.json`. El sitio
   vuelve a funcionar sin cuenta (nada pide entrar) y la auditoría vuelve a
   exigir `connect-src 'self'`. Quitar también la sección de la cuenta de

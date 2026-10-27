@@ -2,17 +2,21 @@ import { statSync } from "node:fs";
 import path from "node:path";
 
 import darJson from "../../documentos/fuente/dar.json";
-import banlistJson from "../../documentos/fuente/banlist-estandar.json";
+import banlistEstandarJson from "../../documentos/fuente/banlist-estandar.json";
+import banlistInfanteriaJson from "../../documentos/fuente/banlist-infanteria.json";
+import banlistVcrJson from "../../documentos/fuente/banlist-vcr.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
 import {
   banlistSchema,
   darSchema,
   feDeErratasSchema,
+  type Banlist,
   type Documento,
 } from "./documentos";
+import type { Formato } from "./types";
 
 /**
- * Los datos del DAR, la Fe de Erratas y la Banlist, ya validados. Solo para Server
+ * Los datos del DAR, la Fe de Erratas y las tres Banlists, ya validados. Solo para Server
  * Components: se leen en el build, que es cuando se exporta la pagina, y un
  * JSON que no cumpla el esquema tumba el build en vez de publicarse roto.
  *
@@ -21,7 +25,12 @@ import {
  */
 
 export const FE_DE_ERRATAS = feDeErratasSchema.parse(feDeErratasJson);
-export const BANLIST = banlistSchema.parse(banlistJson);
+/** La Banlist de cada formato: Estandar, VCR e Infanteria. */
+export const BANLISTS: Record<Formato, Banlist> = {
+  estandar: banlistSchema.parse(banlistEstandarJson),
+  vcr: banlistSchema.parse(banlistVcrJson),
+  infanteria: banlistSchema.parse(banlistInfanteriaJson),
+};
 export const DAR = darSchema.parse(darJson);
 
 /** El peso del PDF publicado, para decirlo junto al enlace ("733 KB"). */

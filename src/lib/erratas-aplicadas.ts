@@ -14,6 +14,12 @@
  *
  * `erratas.test.ts` exige que cada `cambia` encuentre su texto en TODAS las
  * impresiones de la carta: un reemplazo que no se aplica falla, no se pierde.
+ *
+ * La Fe de Erratas es de los tres formatos; la Banlist, de uno. Lo que sale
+ * SOLO de la Banlist Estandar lleva `soloEstandar` y no se aplica en VCR ni en
+ * Infanteria, que tienen la suya (decision del proyecto, 27-10-2026). Lo que
+ * dicen los dos documentos vale en los tres. Las Unicas y Errantes de las
+ * listas de cada Banlist no van aqui: salen de `efectoEnReglas()`.
  */
 
 export interface TextoErratado {
@@ -25,6 +31,8 @@ export interface TextoErratado {
   agrega?: string;
   /** El nombre corregido. */
   nombre?: string;
+  /** Sale solo de la Banlist Estandar: no vale en VCR ni en Infanteria. */
+  soloEstandar?: true;
 }
 
 export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
@@ -41,6 +49,7 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
   },
   // Banlist: "si todos los Aliados que controlas son de Raza Faerie y/o Eterno".
   Amaterasu: {
+    soloEstandar: true,
     cambia: [
       [
         "son de Raza Faerie, puedes elegir",
@@ -53,7 +62,10 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
     cambia: [["hasta tres Armas en", "hasta tres Armas de distinto nombre en"]],
   },
   // Banlist: "Errante".
-  "Constantino XI": { declara: ["Errante"] },
+  "Constantino XI": {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
   // Fe de Erratas: "Cuando un Aliado de Raza Bestia entre en juego bajo tu control".
   Lahmu: {
     cambia: [
@@ -68,7 +80,10 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
     cambia: [["Destruye el Aliado oponente objetivo.", "Destruye un Aliado oponente."]],
   },
   // Banlist: "No puede hacer objetivo de su habilidad a sí mismo."
-  Adapa: { agrega: "Este Aliado no puede hacerse objetivo de su propia habilidad." },
+  Adapa: {
+    soloEstandar: true,
+    agrega: "Este Aliado no puede hacerse objetivo de su propia habilidad.",
+  },
   // Fe de Erratas: "Baraja el resto."
   Suleiman: { cambia: [["sin pagar su coste.", "sin pagar su coste. Baraja el resto."]] },
   // Fe de Erratas y Banlist: "una carta de ahí que no sea Oro".
@@ -78,9 +93,15 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
   // Fe de Erratas y Banlist: "Cuando un Oponente Robe una carta".
   "Babalú Ayé": { cambia: [["Cuando un jugador Robe", "Cuando un oponente Robe"]] },
   // Banlist: "Indesterrable".
-  Amikiri: { declara: ["Indesterrable"] },
+  Amikiri: {
+    soloEstandar: true,
+    declara: ["Indesterrable"],
+  },
   // Banlist: "Errante".
-  "Ciempiés Gigante": { declara: ["Errante"] },
+  "Ciempiés Gigante": {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
   // Fe de Erratas: errata de nombre.
   "Caída del Sol": { nombre: "Caída de Sol" },
   // Fe de Erratas y Banlist: cancela las habilidades disparadas.
@@ -137,10 +158,14 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
     ],
   },
   // Banlist: "Pasa a tener Oscuridad".
-  Harionna: { declara: ["Oscuridad"] },
+  Harionna: {
+    soloEstandar: true,
+    declara: ["Oscuridad"],
+  },
   // Banlist: coste 1 (en `efectoEnReglas`) y "solo puede disparar su
   // habilidad si solo controlas Aliados de raza Barbaro".
   "Arjumand Banu Begum": {
+    soloEstandar: true,
     cambia: [
       [
         "Cuando este Aliado haga daño de combate, puedes",
@@ -149,9 +174,13 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
     ],
   },
   // Banlist: "Carta Errante".
-  "Bibi Dalair Kaur": { declara: ["Errante"] },
+  "Bibi Dalair Kaur": {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
   // Banlist: "y si solo controlas Aliados de raza Sombra".
   "Ráksasa Sombrío": {
+    soloEstandar: true,
     cambia: [
       [
         "Cuando este Aliado haga daño de combate, puedes",
@@ -162,6 +191,7 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
   // Banlist: "Solo puedes usar este Totem si solamente controlas Aliados de
   // raza Eterno".
   Járnvid: {
+    soloEstandar: true,
     cambia: [
       [
         "En tu Fase de Vigilia, una vez por turno, puedes",
@@ -172,10 +202,19 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
   // Fe de Erratas: "hasta dos copias".
   "Ojo de Balor": { cambia: [["hasta dos de copias", "hasta dos copias"]] },
   // Banlist: "Errante".
-  Taishakuten: { declara: ["Errante"] },
+  Taishakuten: {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
   // Banlist: "Errante".
-  "Honjo Masamune": { declara: ["Errante"] },
+  "Honjo Masamune": {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
   // Banlist: "pasa de ser Carta Unica a Errante" (la Unica la quita
   // `efectoEnReglas`).
-  Tsukuyomi: { declara: ["Errante"] },
+  Tsukuyomi: {
+    soloEstandar: true,
+    declara: ["Errante"],
+  },
 };

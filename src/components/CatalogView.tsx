@@ -10,6 +10,7 @@ import { CardGridSkeleton } from "./Skeleton";
 import { reintentarCatalogo, useCatalogo } from "./use-catalogo";
 import {
   applyFilters,
+  buildFacets,
   buildSearchIndex,
   EMPTY_FILTERS,
   filtersFromSearch,
@@ -22,7 +23,9 @@ import {
   type Facets,
 } from "@/lib/catalog";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
-import type { Card } from "@/lib/types";
+import { cartasEnFormato } from "@/lib/en-formato";
+import { esFormato } from "@/lib/formatos";
+import type { Card, Formato } from "@/lib/types";
 import { ENLACE, VACIO } from "@/lib/ui";
 import { irArriba } from "@/lib/scroll";
 import { cn } from "@/lib/utils";
@@ -55,13 +58,24 @@ export function CatalogView({ inicial, total, facets, edicion }: CatalogViewProp
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Card | null>(null);
 
-  const catalogo = useCatalogo();
-  const cards = useMemo(
+  // El formato elegido decide que cartas hay: las que entran en el, con su
+  // texto erratado y sus lazos. Estandar es el catalogo de siempre.
+  const formato: Formato = esFormato(filters.formato) ? filters.formato : "estandar";
+  const catalogo = useCatalogo(formato);
+  const cards = useMemo(() => {
+    if (!catalogo.cards) return null;
+    const delFormato =
+      formato === "estandar" ? catalogo.cards : cartasEnFormato(catalogo.cards, formato);
+    return edicion ? delFormato.filter((c) => c.edicion === edicion) : delFormato;
+  }, [catalogo.cards, edicion, formato]);
+  // Las facetas del build son las de Estandar; en otro formato salen de sus
+  // cartas, para no ofrecer una Ultra Real en Infanteria.
+  const facetas = useMemo(
     () =>
-      catalogo.cards && edicion
-        ? catalogo.cards.filter((c) => c.edicion === edicion)
-        : catalogo.cards,
-    [catalogo.cards, edicion],
+      formato !== "estandar" && cards
+        ? { ...buildFacets(cards), ediciones: facets.ediciones }
+        : facets,
+    [formato, cards, facets],
   );
 
   // El indice es caro de construir y el catalogo no cambia en runtime.
@@ -130,9 +144,10 @@ export function CatalogView({ inicial, total, facets, edicion }: CatalogViewProp
     <div className="flex flex-col gap-5">
       <Filters
         filters={filters}
-        facets={facets}
+        facets={facetas}
         onChange={update}
         onReset={() => update(EMPTY_FILTERS)}
+        conFormato
       />
 
       {total === 0 ? (
@@ -165,7 +180,7 @@ export function CatalogView({ inicial, total, facets, edicion }: CatalogViewProp
         </div>
       ) : (
         <>
-          <CardGrid cards={visible} onSelect={setSelected} />
+          <CardGrid cards={visible} onSelect={setSelected} formato={formato} />
           <Pagination
             page={currentPage}
             total={totalPages}
@@ -180,6 +195,7 @@ export function CatalogView({ inicial, total, facets, edicion }: CatalogViewProp
         onClose={() => setSelected(null)}
         impresiones={selected ? impresiones.get(selected.identidad) : undefined}
         onChangeCard={setSelected}
+        formato={formato}
       />
     </div>
   );

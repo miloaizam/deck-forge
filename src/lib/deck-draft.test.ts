@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { addCard, createDeck, renameDeck } from "./deck";
+import { addCard, createDeck, renameDeck, setFormato } from "./deck";
 import { hayCambios, parseDraft } from "./deck-draft";
 
 /**
@@ -47,6 +47,7 @@ test("una baraja nueva vacia no cuenta; con una carta o un nombre, si", () => {
   assert.equal(hayCambios(vacia, null), false);
   assert.equal(hayCambios(renameDeck(vacia, "  "), null), false);
   assert.equal(hayCambios(renameDeck(vacia, "Oni"), null), true);
+  assert.equal(hayCambios(setFormato(vacia, "vcr"), null), true);
   assert.equal(hayCambios(addCard(vacia, "bu-001", "principal"), null), true);
 });
 

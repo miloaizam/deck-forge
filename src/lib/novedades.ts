@@ -33,6 +33,17 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-10-27",
+    version: "6.0.0",
+    tipo: "Novedad",
+    titulo: "Tres formatos: Estándar, VCR e Infantería",
+    texto: [
+      "Al armar una baraja eliges en qué formato se juega: Estándar, como hasta ahora; VCR, solo con Vasallos, Cortesanos y Reales; o Infantería, solo con Vasallos y Cortesanos. El constructor ofrece solo las cartas que entran, y la baraja te avisa si lleva una que no.",
+      "Cada formato tiene su Banlist, y las tres están en Documentos para leer y descargar. Las Únicas, las Errantes y las baneadas cambian con el formato, y así lo muestran el catálogo (en Filtros → Formato), el constructor y la página de cada baraja. El DAR y la Fe de Erratas son los mismos para los tres.",
+      "El formato viaja en el enlace para compartir una baraja, y en la Comunidad se puede filtrar por formato. Las barajas que ya tenías quedan en Estándar.",
+    ],
+  },
+  {
     fecha: "2026-10-23",
     version: "5.7.0",
     tipo: "Novedad",

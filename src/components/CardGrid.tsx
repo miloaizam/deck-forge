@@ -3,7 +3,7 @@
 import { CardTile } from "./CardTile";
 import { COLUMNAS_GRILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-import type { Card } from "@/lib/types";
+import type { Card, Formato } from "@/lib/types";
 
 interface CardGridProps {
   cards: Card[];
@@ -21,6 +21,8 @@ interface CardGridProps {
    * cede casi medio metro de pantalla al panel de la baraja y cierra en seis.
    */
   variante?: "catalogo" | "constructor";
+  /** De que Banlist salen los lazos de cada carta. */
+  formato?: Formato;
 }
 
 /**
@@ -56,6 +58,7 @@ export function CardGrid({
   addBlocked,
   onBlocked,
   variante = "catalogo",
+  formato,
 }: CardGridProps) {
   return (
     <ul className="flex flex-wrap justify-center gap-4">
@@ -72,6 +75,7 @@ export function CardGrid({
             onRemove={onRemove}
             addBlocked={addBlocked?.(card)}
             onBlocked={onBlocked}
+            formato={formato}
           />
         </li>
       ))}

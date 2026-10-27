@@ -73,6 +73,12 @@ create table if not exists public.barajas (
 create index if not exists barajas_publicas_idx on public.barajas (publicada_en desc)
   where publica and not oculta and not borrada;
 
+-- El formato de la baraja (27-10-2026): 'estandar', 'vcr' o 'infanteria'.
+-- Sale del jsonb como el nombre; una baraja de antes de los formatos no lo
+-- trae, y es Estandar.
+alter table public.barajas add column if not exists formato text
+  generated always as (left(coalesce(datos ->> 'formato', 'estandar'), 20)) stored;
+
 -- ---------------------------------------------------------------------------
 -- Coleccion: una fila por usuario
 -- ---------------------------------------------------------------------------
@@ -379,13 +385,15 @@ as $$
 $$;
 
 -- La lista de la Comunidad. `orden`: likes, tendencia, recientes o copias.
--- `afinidad` exacta ('raza:Dragón') o null; `q` busca en el nombre.
+-- `afinidad` exacta ('raza:Dragón') o null; `formato` exacto ('vcr') o null;
+-- `q` busca en el nombre.
 -- Las versiones anteriores se borran antes de crear la de hoy: sin
 -- `por_nombre` convivirian dos funciones y la API no sabria cual llamar, y sin
 -- `avatar` (o `principal`) cambia el tipo que devuelve, que `create or
 -- replace` no acepta.
 drop function if exists public.listar_publicas(text, text, text, integer, integer);
 drop function if exists public.listar_publicas(text, text, text, integer, integer, text);
+drop function if exists public.listar_publicas(text, text, text, integer, integer, text, text);
 
 create or replace function public.listar_publicas(
   orden text default 'likes',
@@ -395,12 +403,14 @@ create or replace function public.listar_publicas(
   cuantos integer default 24,
   -- 'asc' o 'desc': el boton A-Z del buscador. Manda sobre `orden`, que
   -- queda de desempate, igual que en el catalogo.
-  por_nombre text default null
+  por_nombre text default null,
+  formato text default null
 )
 returns table (
   public_id uuid,
   nombre text,
   afinidad text,
+  formato text,
   portada text,
   -- Las cartas del principal (`[{ id, n }]`), para que el sitio elija una
   -- portada cuando no hay: su Aliado con mas copias. Solo ids y copias.
@@ -421,7 +431,7 @@ security definer
 set search_path = ''
 as $$
   with visibles as (
-    select b.public_id, b.nombre, b.afinidad, b.portada, b.datos -> 'principal', p.alias,
+    select b.public_id, b.nombre, b.afinidad, b.formato, b.portada, b.datos -> 'principal', p.alias,
       public.ruta_avatar(p.user_id, p.avatar, p.avatar_oculto) as avatar,
       b.likes, b.copias,
       (select count(*)::integer from public.likes l
@@ -431,6 +441,7 @@ as $$
     join public.perfiles p on p.user_id = b.user_id
     where b.publica and not b.oculta and not b.borrada
       and (listar_publicas.afinidad is null or b.afinidad = listar_publicas.afinidad)
+      and (listar_publicas.formato is null or b.formato = listar_publicas.formato)
       and (listar_publicas.q is null or b.nombre ilike
         '%' || replace(replace(replace(left(listar_publicas.q, 60), '\', '\\'), '%', '\%'), '_', '\_') || '%')
   )
@@ -648,7 +659,7 @@ $$;
 
 revoke execute on all functions in schema public from public, anon, authenticated;
 
-grant execute on function public.listar_publicas(text, text, text, integer, integer, text) to anon, authenticated;
+grant execute on function public.listar_publicas(text, text, text, integer, integer, text, text) to anon, authenticated;
 grant execute on function public.leer_publica(uuid) to anon, authenticated;
 grant execute on function public.cartas_destacadas() to anon, authenticated;
 grant execute on function public.dar_like(uuid, boolean) to authenticated;

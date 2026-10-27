@@ -4,6 +4,7 @@ import {
   MAX_NOMBRE_BARAJA,
   type Deck,
   type DeckEntry,
+  type Formato,
 } from "./types";
 
 /**
@@ -43,6 +44,7 @@ export function createDeck(nombre = ""): Deck {
     principal: [],
     side: [],
     afinidadFijada: null,
+    formato: "estandar",
     creado: ahora,
     actualizado: ahora,
   };
@@ -168,6 +170,14 @@ export function renameDeck(deck: Deck, nombre: string): Deck {
 /** Cambia la descripcion. Es opcional: vacia es un valor legitimo. */
 export function describeDeck(deck: Deck, descripcion: string): Deck {
   return touch(deck, { descripcion: descripcion.slice(0, MAX_DESCRIPCION_BARAJA) });
+}
+
+/**
+ * Cambia el formato. Las cartas se quedan: lo que no entra en el nuevo lo
+ * marca `validateDeck`, y el jugador decide que sacar.
+ */
+export function setFormato(deck: Deck, formato: Formato): Deck {
+  return deck.formato === formato ? deck : touch(deck, { formato });
 }
 
 /** Como se muestra una baraja que todavia no tiene nombre. */

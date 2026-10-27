@@ -16,6 +16,7 @@ import { etiquetaDeTipo } from "@/lib/oros";
 import { countActiveFilters } from "@/lib/catalog";
 import { ETIQUETA_ORDEN, esOrden, siguienteOrden } from "@/lib/card-order";
 import { editionTitle } from "@/lib/editions";
+import { esFormato, NOMBRE_FORMATO } from "@/lib/formatos";
 import {
   BOTON_ICONO,
   BOTON_ICONO_LIBRE_COMPACTO,
@@ -35,7 +36,16 @@ interface FiltersProps {
    * la zona del constructor, las acciones de la coleccion.
    */
   acciones?: ReactNode;
+  /**
+   * Ofrece elegir el formato (catalogo y coleccion). El constructor no: alli
+   * manda el de la baraja.
+   */
+  conFormato?: boolean;
 }
+
+/** Las opciones del selector de formato: la vacia es Estandar. */
+const OTROS_FORMATOS = ["vcr", "infanteria"];
+const etiquetaDeFormato = (f: string) => (esFormato(f) ? NOMBRE_FORMATO[f] : f);
 
 /**
  * Busqueda siempre a la vista y el resto de los filtros detras de un boton.
@@ -44,7 +54,14 @@ interface FiltersProps {
  * pantalla, sobre todo en el telefono; plegados, la primera cosa que se ve al
  * entrar al catalogo son las cartas.
  */
-export function Filters({ filters, facets, onChange, onReset, acciones }: FiltersProps) {
+export function Filters({
+  filters,
+  facets,
+  onChange,
+  onReset,
+  acciones,
+  conFormato = false,
+}: FiltersProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const buscador = useRef<HTMLInputElement>(null);
@@ -186,13 +203,33 @@ export function Filters({ filters, facets, onChange, onReset, acciones }: Filter
         <div>
           <div className="pt-4">
             <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div
+                className={cn(
+                  "grid grid-cols-2 gap-3 sm:grid-cols-3",
+                  // Con el formato y la edicion son nueve: de a cinco, para que
+                  // no quede uno solo en una tercera fila.
+                  conFormato && facets.ediciones.length > 0
+                    ? "lg:grid-cols-5"
+                    : "lg:grid-cols-4",
+                )}
+              >
                 {/* Dos filas de cuatro en pantalla ancha, en el orden en que se
                 suele filtrar. Los tres tipos de Oro van dentro de Tipo. La
                 edicion solo aparece en /catalogo: en la
                 pagina de una edicion la faceta viene vacia y el Select no se
                 dibuja. Luz y Oscuridad no tienen selector propio: son
-                keywords impresas y salen en Habilidad. */}
+                keywords impresas y salen en Habilidad. El formato va primero:
+                cambia las cartas que hay, no solo cuales se ven. */}
+                {conFormato && (
+                  <Select
+                    label="Formato"
+                    value={filters.formato}
+                    options={OTROS_FORMATOS}
+                    onChange={set("formato")}
+                    format={etiquetaDeFormato}
+                    placeholder={NOMBRE_FORMATO.estandar}
+                  />
+                )}
                 <Select
                   label="Edición"
                   value={filters.edicion}

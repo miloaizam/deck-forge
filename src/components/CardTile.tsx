@@ -2,7 +2,7 @@ import { Minus, Plus, Sparkles } from "lucide-react";
 
 import { CardRibbons } from "./CardRibbons";
 import { claseDeOro, PASTILLA_ORO, subtituloDeCarta } from "@/lib/oros";
-import type { Card } from "@/lib/types";
+import type { Card, Formato } from "@/lib/types";
 import { BLOQUEADO, CARD_RATIO, CONTORNO_CARTA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,8 @@ interface CardTileProps {
   addBlocked?: string;
   /** Explica el bloqueo al pulsar un boton bloqueado (un aviso, en el constructor). */
   onBlocked?: (mensaje: string) => void;
+  /** De que Banlist salen los lazos. */
+  formato?: Formato;
 }
 
 export function CardTile({
@@ -38,6 +40,7 @@ export function CardTile({
   onRemove,
   addBlocked,
   onBlocked,
+  formato,
 }: CardTileProps) {
   const clase = claseDeOro(card);
   const pastilla = clase ? PASTILLA_ORO[clase] : undefined;
@@ -86,7 +89,7 @@ export function CardTile({
           {/* Los Oros iniciales de edicion y de raza se lucen: son la carta
               que se elige por gusto. La pastilla es adorno; el texto de abajo
               ya dice la clase para el lector de pantalla. */}
-          <CardRibbons card={card} />
+          <CardRibbons card={card} formato={formato} />
           {pastilla && (
             <span
               aria-hidden="true"

@@ -7,7 +7,7 @@ import {
   type MotivoReporte,
   type OrdenComunidad,
 } from "@/lib/comunidad";
-import type { Deck } from "@/lib/types";
+import type { Deck, Formato } from "@/lib/types";
 import { toast } from "../toast";
 import { api } from "./api";
 import { conSesion, getEstado, sincronizar, token } from "./nube";
@@ -25,6 +25,8 @@ export async function listarPublicas(
   pagina: number,
   /** El boton A-Z del buscador; manda sobre `orden`. */
   porNombre: "" | "asc" | "desc" = "",
+  /** Solo las barajas de un formato; `null`, todas. */
+  formato: Formato | null = null,
 ): Promise<{ filas: FilaPublica[]; total: number }> {
   const datos = await api("rpc/listar_publicas", {
     metodo: "POST",
@@ -37,6 +39,9 @@ export async function listarPublicas(
       // Solo si esta puesto: asi una base con el esquema anterior (sin
       // `por_nombre`) sigue listando con el orden de siempre.
       ...(porNombre ? { por_nombre: porNombre } : {}),
+      // Igual: sin filtro de formato no se manda, y una base sin `formato`
+      // (esquema anterior al 27-10-2026) sigue listando.
+      ...(formato ? { formato } : {}),
     },
     token: await token(),
   });

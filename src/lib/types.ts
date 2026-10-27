@@ -138,6 +138,13 @@ export const KEYWORDS_IMPRESAS = [
 
 export const LEGALIDADES = ["libre", "restringida", "prohibida"] as const;
 
+/**
+ * Los formatos de juego dentro de Escuelas Elementales. Comparten el DAR y la
+ * Fe de Erratas; cada uno tiene su Banlist y VCR e Infanteria acotan ademas
+ * las frecuencias (`formatos.ts`). El orden es el de los selectores.
+ */
+export const FORMATOS = ["estandar", "vcr", "infanteria"] as const;
+
 /** Slug seguro: minusculas, digitos y separadores. Sin puntos ni barras. */
 const SLUG = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 
@@ -378,6 +385,12 @@ export const deckSchema = z.object({
    * cartas que lleva, nunca por este campo.
    */
   afinidadFijada: z._default(z.nullable(deckAffinitySchema), null),
+  /**
+   * El formato en que se juega: decide la Banlist y las frecuencias que
+   * entran. Aditivo, como la afinidad de atributo: una baraja guardada antes
+   * de que hubiera formatos se lee Estandar, que es lo que era.
+   */
+  formato: z._default(z.enum(FORMATOS), "estandar"),
   creado: fechaSchema,
   actualizado: fechaSchema,
 });
@@ -392,4 +405,5 @@ export type Escuela = (typeof ESCUELAS)[number];
 export type Frecuencia = (typeof FRECUENCIAS)[number];
 export type Atributo = (typeof ATRIBUTOS)[number];
 export type Legalidad = (typeof LEGALIDADES)[number];
+export type Formato = (typeof FORMATOS)[number];
 export type Card = z.infer<typeof cardSchema>;

@@ -263,7 +263,12 @@ export function DeckPanel({
         </p>
       </div>
 
-      <DeckIssues issues={issues} total={stats.totalPrincipal} vacia={vacia} />
+      <DeckIssues
+        issues={issues}
+        total={stats.totalPrincipal}
+        vacia={vacia}
+        formato={deck.formato}
+      />
 
       {!vacia && (
         <>

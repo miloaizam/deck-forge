@@ -112,7 +112,20 @@ export const FAQ: FaqSection[] = [
           "Hasta **3 copias** de cada carta, o **1 si es Única**. Los **Oros sin habilidad** y los **Mercenarios** no tienen tope.",
           "Una sola **afinidad** para todos tus Aliados.",
           "Un **side deck** de hasta 10 cartas.",
-          "La **Banlist**: sin cartas **baneadas**, y con las cartas que declara Únicas a una copia.",
+          "La **Banlist** del formato: sin cartas **baneadas**, y con las cartas que declara Únicas a una copia.",
+          "En **VCR** e **Infantería**, solo las frecuencias que admiten.",
+        ],
+      },
+      {
+        pregunta: "¿Qué formatos hay?",
+        respuesta: [
+          "Tres, dentro de Escuelas Elementales. Se elige en el panel de la baraja, en **Formato**, y cada uno tiene su propia **Banlist**; el DAR y la Fe de Erratas son los mismos para los tres:",
+        ],
+        lista: [
+          "**Estándar:** todas las frecuencias.",
+          "**VCR:** solo cartas **Vasallo, Cortesano o Real**.",
+          "**Infantería:** solo cartas **Vasallo o Cortesano**.",
+          "Los **Oros** entran en los tres. Una carta vale si alguna de sus impresiones en las diez ediciones, de Bushido a Escuelas Elementales, es de esa frecuencia, y entonces se puede usar con cualquier arte. El constructor solo ofrece las cartas del formato elegido.",
         ],
       },
       {
@@ -123,14 +136,15 @@ export const FAQ: FaqSection[] = [
         lista: [
           "**Verde:** la baraja cumple las reglas del formato.",
           "**Ámbar:** está **incompleta**; cada línea dice qué falta, como el oro inicial o Aliados para llegar a 15.",
-          "**Rojo:** lleva una carta **baneada** y queda fuera del formato aunque esté completa.",
+          "**Rojo:** lleva una carta **baneada**, o una que no es del formato (en VCR, una Ultra Real), y queda fuera del formato aunque esté completa.",
         ],
       },
       {
         pregunta: "¿Qué significan los lazos «Errata» y «Baneada»?",
         respuesta: [
-          "**Errata**: la Fe de Erratas o la Banlist corrigen esa carta. Su detalle ya muestra el **texto corregido**, con sus keywords, y el constructor juega con él: si la errata la vuelve **Única**, admite una sola copia. El texto impreso en la carta puede decir otra cosa; manda el corregido.",
-          "**Baneada**: la Banlist la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
+          "**Errata**: la Fe de Erratas o la Banlist del formato corrigen esa carta. Su detalle ya muestra el **texto corregido**, con sus keywords, y el constructor juega con él: si la errata la vuelve **Única**, admite una sola copia. El texto impreso en la carta puede decir otra cosa; manda el corregido.",
+          "**Baneada**: la Banlist del formato la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
+          "Como cada formato tiene su Banlist, los lazos cambian con él: una carta puede ser Única en Estándar y estar baneada en VCR. El catálogo se mira en Estándar; para ver otro, elige en **Filtros → Formato**.",
         ],
       },
       {
@@ -349,7 +363,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo funciona la Comunidad?",
         respuesta: [
-          "Ahí están las barajas que publicaron otros jugadores. Puedes ordenarlas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, o por **nombre** con el botón de las flechas dentro del buscador, y filtrarlas por raza, escuela o atributo.",
+          "Ahí están las barajas que publicaron otros jugadores. Puedes ordenarlas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, o por **nombre** con el botón de las flechas dentro del buscador, y filtrarlas por **formato** y por raza, escuela o atributo.",
           "Con tu cuenta puedes darles **like**, **guardarlas en tus barajas** o **reportarlas** con la bandera si tienen algo ofensivo (también la foto de quien la publicó) o son spam.",
         ],
       },
@@ -381,7 +395,7 @@ export const FAQ: FaqSection[] = [
           "**Mis barajas:** las barajas que guardaste.",
           "**Colección:** las cartas que tienes y las que te faltan.",
           "**Comunidad:** las barajas que otros jugadores publicaron.",
-          "**Documentos:** el **Documento Actualizado de Reglas**, la **Fe de Erratas** y la **Banlist** del formato. Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya aplican las dos últimas.",
+          "**Documentos:** el **Documento Actualizado de Reglas**, la **Fe de Erratas** y la **Banlist** de cada formato (Estándar, VCR e Infantería). Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya aplican la Fe de Erratas y las Banlists.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
       },

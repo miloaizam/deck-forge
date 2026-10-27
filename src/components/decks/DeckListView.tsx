@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Copy,
   EyeOff,
@@ -26,14 +26,15 @@ import { useDecks, useHydrated } from "./use-decks";
 import { useNube } from "../nube/nube";
 import { deckTitle, duplicateDeck, portadaPorDefecto } from "@/lib/deck";
 import {
-  buildCardIndex,
+  indiceDe,
   deckStats,
   resolveDeck,
   validateDeck,
   DECK_TOTAL,
 } from "@/lib/deck-rules";
 import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
-import type { Card, Deck } from "@/lib/types";
+import { NOMBRE_FORMATO } from "@/lib/formatos";
+import type { Card, Deck, Formato } from "@/lib/types";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
   BOTON_ICONO_COMPACTO,
@@ -47,7 +48,8 @@ import { cn } from "@/lib/utils";
 import { marcarCargada } from "../CardTile";
 
 interface ListaProps {
-  cards: Card[];
+  /** Las cartas con las erratas de un formato: cada baraja, con las del suyo. */
+  deFormato: (f: Formato) => Card[];
   decks: Deck[];
 }
 
@@ -106,7 +108,7 @@ export function DeckListView() {
         <SinBarajas />
       ) : (
         <ConCatalogo esqueleto={<DeckListSkeleton />}>
-          {(cards) => <ListaDeBarajas cards={cards} decks={decks} />}
+          {(_, deFormato) => <ListaDeBarajas deFormato={deFormato} decks={decks} />}
         </ConCatalogo>
       )}
     </div>
@@ -131,11 +133,13 @@ function SinBarajas({ className }: { className?: string }) {
   );
 }
 
-function ListaDeBarajas({ cards, decks }: ListaProps) {
+function ListaDeBarajas({ deFormato, decks }: ListaProps) {
   /** Que baraja esta esperando confirmacion de borrado. Borrar no tiene vuelta. */
   const [porBorrar, setPorBorrar] = useState<Deck | null>(null);
 
-  const index = useMemo(() => buildCardIndex(cards), [cards]);
+  // Un indice por formato, y solo de los que hay en la lista (`indiceDe` los
+  // guarda): cada baraja se valida con la Banlist del suyo.
+  const indice = (f: Formato) => indiceDe(deFormato(f), f);
   const nube = useNube();
   const publicas = nube.fase === "con-sesion" ? nube.publicas : {};
   const conCuenta = nube.fase === "con-sesion";
@@ -164,6 +168,7 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
           de la pantalla en vez de truncar el titulo y bajar los botones. */}
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {decks.map((deck) => {
+          const index = indice(deck.formato);
           const res = resolveDeck(deck, index);
           const stats = deckStats(res);
           const estado = estadoDeBaraja(validateDeck(deck, index));
@@ -227,7 +232,7 @@ function ListaDeBarajas({ cards, decks }: ListaProps) {
                     <p className="text-muted mt-0.5 text-[13px] tabular-nums">
                       {stats.totalPrincipal}/{DECK_TOTAL} cartas
                       {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-                      {" · "}
+                      {` · ${NOMBRE_FORMATO[deck.formato]} · `}
                       {formatFecha(deck.actualizado)}
                     </p>
                     {/* Dos lineas como mucho: la tarjeta tiene que seguir

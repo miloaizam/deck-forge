@@ -1,4 +1,10 @@
 import { efectoEnReglas, estaBaneada } from "./erratas";
+import {
+  frecuenciasPorIdentidad,
+  motivoFueraDeFormato,
+  type MotivoFuera,
+} from "./en-formato";
+import { NOMBRE_FORMATO } from "./formatos";
 import { claseDeOro, type ClaseDeOro } from "./oros";
 import { sortCards } from "./card-order";
 import { copiesOf, totalCards, type DeckZone } from "./deck";
@@ -9,6 +15,8 @@ import {
   type Card,
   type Deck,
   type Escuela,
+  type Formato,
+  type Frecuencia,
   type Legalidad,
   type Raza,
   type Tipo,
@@ -59,6 +67,11 @@ export interface RuleCard {
   coste: number | null;
   thumb: string;
   legalidad: Legalidad;
+  /**
+   * Por que no entra en el formato del indice (su frecuencia, o ser de fuera
+   * del bloque EE sin que la Banlist la nombre), o `null` si entra.
+   */
+  fueraDeFormato: MotivoFuera | null;
   /** Lleva la keyword Unica: 1 copia por baraja. Tambien la traen seis Oros. */
   unica: boolean;
   /**
@@ -86,14 +99,21 @@ export interface RuleCard {
 }
 
 /**
- * La carta tal como la ven las reglas: con la Fe de Erratas y la Banlist
- * aplicadas (`erratas.ts`). Las cartas de `getCards()` ya llegan erratadas
- * (`conErratas`); se vuelve a aplicar aqui para que las reglas no dependan de
- * eso (los tests leen `cards.json` directo): una carta que la Banlist declara
- * Unica topa en una copia, y una baneada queda `prohibida`.
+ * La carta tal como la ven las reglas de un formato: con la Fe de Erratas y
+ * la Banlist del formato aplicadas (`erratas.ts`). Las cartas de `getCards()`
+ * ya llegan erratadas (`conErratas`); se vuelve a aplicar aqui para que las
+ * reglas no dependan de eso (los tests leen `cards.json` directo): una carta
+ * que la Banlist declara Unica topa en una copia, y una baneada queda
+ * `prohibida`. Si llegan erratadas, tiene que ser para el MISMO formato: la
+ * Unica que no dice la Banlist se lee de las keywords de la carta.
  */
-export function toRuleCard(c: Card, orden = 0): RuleCard {
-  const errata = efectoEnReglas(c);
+export function toRuleCard(
+  c: Card,
+  orden = 0,
+  formato: Formato = "estandar",
+  frecuencias?: Map<string, Set<Frecuencia>>,
+): RuleCard {
+  const errata = efectoEnReglas(c, formato);
   return {
     orden,
     id: c.id,
@@ -104,7 +124,8 @@ export function toRuleCard(c: Card, orden = 0): RuleCard {
     atributo: errata.atributo ?? c.atributo,
     coste: errata.coste ?? c.coste,
     thumb: c.thumb,
-    legalidad: estaBaneada(c) ? "prohibida" : c.legalidad,
+    legalidad: estaBaneada(c, formato) ? "prohibida" : c.legalidad,
+    fueraDeFormato: motivoFueraDeFormato(c, formato, frecuencias ?? new Map()),
     unica: errata.unica ?? c.keywords.includes("Única"),
     oroSinHabilidad: c.tipo === "Oro" && c.habilidad.trim() === "",
     mercenario: c.keywords.includes("Mercenario"),
@@ -113,15 +134,43 @@ export function toRuleCard(c: Card, orden = 0): RuleCard {
 }
 
 export interface CardIndex {
+  /** El formato con que se leyeron las cartas: el de la baraja que se valida. */
+  formato: Formato;
   porId: Map<string, RuleCard>;
 }
 
-/** Caro de construir y el catalogo no cambia en runtime: memorizar con useMemo. */
-export function buildCardIndex(cards: Card[]): CardIndex {
+/**
+ * Caro de construir y el catalogo no cambia en runtime: memorizar con useMemo.
+ * Una baraja se valida con el indice de SU formato (`indiceDe`).
+ */
+export function buildCardIndex(cards: Card[], formato: Formato = "estandar"): CardIndex {
   // Se ordena aqui y no se da por hecho el orden en que llegaron: el indice es
   // quien reparte el `orden` a cada carta, y de el sale el de la baraja.
   const ordenadas = sortCards(cards);
-  return { porId: new Map(ordenadas.map((c, i) => [c.id, toRuleCard(c, i)])) };
+  const frecuencias = frecuenciasPorIdentidad(cards);
+  return {
+    formato,
+    porId: new Map(
+      ordenadas.map((c, i) => [c.id, toRuleCard(c, i, formato, frecuencias)]),
+    ),
+  };
+}
+
+const INDICES = new WeakMap<Card[], Map<Formato, CardIndex>>();
+
+/**
+ * El indice de un formato, uno por catalogo y formato. Para las vistas que
+ * validan barajas de varios formatos a la vez (Mis barajas). Las cartas
+ * tienen que venir erratadas para ese formato, o sin erratar.
+ */
+export function indiceDe(cards: Card[], formato: Formato): CardIndex {
+  const porFormato = INDICES.get(cards) ?? new Map<Formato, CardIndex>();
+  INDICES.set(cards, porFormato);
+  const hecho = porFormato.get(formato);
+  if (hecho) return hecho;
+  const nuevo = buildCardIndex(cards, formato);
+  porFormato.set(formato, nuevo);
+  return nuevo;
 }
 
 /* ------------------------------------------------------------------ *
@@ -467,6 +516,7 @@ export type IssueCode =
   | "carta-desconocida"
   | "carta-prohibida"
   | "carta-restringida"
+  | "carta-fuera-de-formato"
   | "shingas-karna";
 
 export interface DeckIssue {
@@ -654,7 +704,14 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
       issues.push({
         code: "carta-prohibida",
         gravedad: "error",
-        mensaje: `${card.nombre} está baneada en la Banlist.`,
+        mensaje: `${card.nombre} está baneada en la Banlist ${NOMBRE_FORMATO[index.formato]}.`,
+        identidad: card.identidad,
+      });
+    } else if (card.fueraDeFormato) {
+      issues.push({
+        code: "carta-fuera-de-formato",
+        gravedad: "error",
+        mensaje: mensajeFueraDeFormato(card, index.formato),
         identidad: card.identidad,
       });
     } else if (card.legalidad === "restringida") {
@@ -667,20 +724,39 @@ export function validateDeck(deck: Deck, index: CardIndex): DeckIssue[] {
     }
   }
 
-  const karna = mensajeShingasKarna(copiasPorIdentidad(res));
+  const karna = mensajeShingasKarna(copiasPorIdentidad(res), index.formato);
   if (karna) issues.push(karna);
 
   return issues;
 }
 
+/** Las frecuencias que pide cada formato, para decir por que una carta no entra. */
+const FRECUENCIAS_EN_PALABRAS: Record<Formato, string> = {
+  estandar: "",
+  vcr: "Vasallo, Cortesano ni Real",
+  infanteria: "Vasallo ni Cortesano",
+};
+
+function mensajeFueraDeFormato(card: RuleCard, formato: Formato): string {
+  const nombre = NOMBRE_FORMATO[formato];
+  return card.fueraDeFormato === "frecuencia"
+    ? `${card.nombre} no tiene impresión ${FRECUENCIAS_EN_PALABRAS[formato]}: no entra en ${nombre}.`
+    : `${card.nombre} es de fuera del bloque y la Banlist ${nombre} no la admite.`;
+}
+
 /**
- * Regla de construccion de la Banlist ("Mazo Desafiante y/o Guerrero"): o
- * Shingas mas Karna como Carta Unica, o solo Karna hasta tres copias. O sea,
- * con Shingas en la baraja Karna topa en una.
+ * Regla de construccion de la Banlist Estandar ("Mazo Desafiante y/o
+ * Guerrero"): o Shingas mas Karna como Carta Unica, o solo Karna hasta tres
+ * copias. O sea, con Shingas en la baraja Karna topa en una. VCR e Infanteria
+ * no la tienen.
  */
 const SHINGAS = "shingas";
 const KARNA = "karna";
-function mensajeShingasKarna(copias: Map<string, number>): DeckIssue | null {
+function mensajeShingasKarna(
+  copias: Map<string, number>,
+  formato: Formato,
+): DeckIssue | null {
+  if (formato !== "estandar") return null;
   const karna = copias.get(KARNA) ?? 0;
   if ((copias.get(SHINGAS) ?? 0) === 0 || karna <= 1) return null;
   return {
@@ -718,6 +794,12 @@ export function canAdd(
   zone: DeckZone,
   index: CardIndex,
 ): AddCheck {
+  // Una carta que no es del formato no entra: la grilla ni la ofrece. Si
+  // llega igual (el modal, un enlace), se dice por que.
+  if (card.fueraDeFormato) {
+    return { ok: false, mensaje: mensajeFueraDeFormato(card, index.formato) };
+  }
+
   const res = resolveDeck(deck, index);
   const stats = deckStats(res);
 
@@ -747,7 +829,7 @@ export function canAdd(
   // hay mas de una Karna.
   const tras = new Map(copiasPorIdentidad(res));
   tras.set(card.identidad, copias + 1);
-  const karna = mensajeShingasKarna(tras);
+  const karna = mensajeShingasKarna(tras, index.formato);
   if (karna) return { ok: false, mensaje: karna.mensaje };
 
   // Una baneada SI se agrega: la baraja queda fuera del formato y el
@@ -755,7 +837,7 @@ export function canAdd(
   if (card.legalidad === "prohibida") {
     return {
       ok: true,
-      aviso: `${card.nombre} está baneada en la Banlist: la baraja no cumplirá el formato.`,
+      aviso: `${card.nombre} está baneada en la Banlist ${NOMBRE_FORMATO[index.formato]}: la baraja no cumplirá el formato.`,
     };
   }
 

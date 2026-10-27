@@ -551,6 +551,24 @@ test.describe("con la nube encendida", () => {
     await expect(page.getByRole("button", { name: "Más likes" })).toBeVisible();
   });
 
+  test("la Comunidad filtra por formato", async ({ page }) => {
+    const s = await simularSupabase(page);
+    publicarDe(s, USUARIO_B, "Otra_persona", barajaLegal("De siempre"));
+    publicarDe(s, USUARIO_B, "Otra_persona", {
+      ...barajaLegal("De Infanteria"),
+      id: "infanteria",
+      formato: "infanteria",
+    });
+    await page.goto("/comunidad/?formato=infanteria");
+    const nombres = page.getByRole("list").getByRole("link");
+    await expect(nombres).toHaveText(["De Infanteria"]);
+    await expect(page.getByRole("list").getByText(/^Infantería ·/)).toBeVisible();
+    // Sin filtro, las dos; la de antes de los formatos dice Estandar.
+    await page.goto("/comunidad/");
+    await expect(nombres).toHaveCount(2);
+    await expect(page.getByRole("list").getByText(/^Estándar ·/)).toBeVisible();
+  });
+
   test("sin cuenta la Comunidad se ve, y el like invita a entrar", async ({ page }) => {
     const s = await simularSupabase(page);
     publicarDe(s, USUARIO_B, "Otra_persona", barajaLegal("Se ve sin cuenta"));

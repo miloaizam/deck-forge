@@ -8,7 +8,8 @@ import { DeckClearButton, DeckPanel } from "./DeckPanel";
 import { DeckParamLoader, type DraftState } from "./DeckParamLoader";
 import { DraftNotice } from "./DraftNotice";
 import { DeckSheet } from "./DeckSheet";
-import { DeckIssues, estadoDeBaraja } from "../decks/DeckIssues";
+import { FormatoSwitch } from "./FormatoSwitch";
+import { DeckIssues, estadoDeBaraja, estaFuera } from "../decks/DeckIssues";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
@@ -42,6 +43,7 @@ import {
   describeDeck,
   removeCard,
   renameDeck,
+  setFormato,
   setQuantity,
   setStartingGold,
   swapPrinting,
@@ -63,6 +65,7 @@ import {
 } from "@/lib/deck-rules";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
 import { claveAfinidad } from "@/lib/comunidad";
+import { NOMBRE_FORMATO } from "@/lib/formatos";
 import { clearDraft, hayCambios, writeDraft } from "@/lib/deck-draft";
 import {
   mensajeNoGuardada,
@@ -76,6 +79,7 @@ import {
   MAX_NOMBRE_BARAJA,
   type Card,
   type Deck,
+  type Formato,
 } from "@/lib/types";
 import {
   BOTON_PRIMARIO,
@@ -203,10 +207,12 @@ export function BuilderView({
    * no se toca: sin el catalogo entero no se puede resolver ni validar, y un
    * borrador saldria con cartas de menos.
    */
-  const catalogo = useCatalogo();
+  const [deck, setDeck] = useState<Deck>(() => createDeck());
+  // Las cartas con las erratas del formato de la baraja: su texto, sus lazos
+  // y sus Unicas son los de esa Banlist.
+  const catalogo = useCatalogo(deck.formato);
   const completo = catalogo.cards !== null;
   const cards = catalogo.cards ?? inicial;
-  const [deck, setDeck] = useState<Deck>(() => createDeck());
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_FILTERS);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Card | null>(null);
@@ -305,7 +311,7 @@ export function BuilderView({
 
   // Caros de construir y el catalogo no cambia en runtime.
   const search = useMemo(() => buildSearchIndex(cards), [cards]);
-  const index = useMemo(() => buildCardIndex(cards), [cards]);
+  const index = useMemo(() => buildCardIndex(cards, deck.formato), [cards, deck.formato]);
   const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   const vigente = completo ? deck : SIN_CATALOGO;
@@ -340,10 +346,24 @@ export function BuilderView({
    * puede traer un Aliado que la baraja no admite.
    */
   const acotado = !stats.afinidad.vacio && stats.afinidad.vias.length > 0;
+  // Y solo las del formato: en VCR no se ofrece una Ultra Real. Sin el
+  // catalogo, el indice es el de la primera pagina y no sabe de frecuencias.
   const disponibles = useMemo(
-    () => (acotado ? cards.filter((c) => admite(stats.afinidad, c)) : cards),
-    [cards, stats.afinidad, acotado],
+    () =>
+      cards.filter(
+        (c) =>
+          (!completo || !index.porId.get(c.id)?.fueraDeFormato) &&
+          (!acotado || admite(stats.afinidad, c)),
+      ),
+    [cards, completo, index, stats.afinidad, acotado],
   );
+
+  const cambiarFormato = (f: Formato) => {
+    if (f === deck.formato) return;
+    setDeck((d) => setFormato(d, f));
+    setPage(1);
+    toast(`La baraja pasa a ${NOMBRE_FORMATO[f]}.`, "info");
+  };
 
   // Las facetas salen de lo que de verdad se puede agregar: si el filtro de
   // raza ofreciera razas que la grilla ya escondio, no devolveria nada nunca.
@@ -604,6 +624,7 @@ export function BuilderView({
                 addBlocked={bloqueoDe}
                 onBlocked={avisarError}
                 variante="constructor"
+                formato={deck.formato}
               />
               <Pagination
                 page={currentPage}
@@ -662,6 +683,11 @@ export function BuilderView({
                 rows={2}
                 className={cn(DECK_NOTE_FIELD, "bg-surface")}
               />
+              <FormatoSwitch
+                id="formato-panel"
+                formato={deck.formato}
+                onFormato={cambiarFormato}
+              />
               {panel}
               <div className="border-line flex flex-wrap gap-2 border-t pt-4">
                 <GuardarButton guardado={guardado} onGuardar={guardar} />
@@ -676,6 +702,7 @@ export function BuilderView({
         total={stats.totalPrincipal}
         estado={estadoDeBaraja(issues)}
         afinidad={affinityLabel(stats.afinidad)}
+        formato={NOMBRE_FORMATO[deck.formato]}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
 
@@ -710,6 +737,13 @@ export function BuilderView({
           rows={2}
           className={cn(DECK_NOTE_FIELD, "mt-2 mb-4")}
         />
+        <div className="mb-4">
+          <FormatoSwitch
+            id="formato-hoja"
+            formato={deck.formato}
+            onFormato={cambiarFormato}
+          />
+        </div>
         {panel}
       </DeckSheet>
 
@@ -725,6 +759,7 @@ export function BuilderView({
         // actuan sobre la elegida.
         impresiones={selected ? impresiones.get(selected.identidad) : undefined}
         onChangeCard={setSelected}
+        formato={deck.formato}
         copiasDe={(id) => copiasPorId.get(id) ?? 0}
         cambiarArte={
           selected
@@ -752,6 +787,7 @@ export function BuilderView({
         issues={issues}
         total={stats.totalPrincipal}
         vacia={res.principal.length === 0 && res.side.length === 0}
+        formato={deck.formato}
         onConfirm={() => escribir(readDeck(deck.id) !== null)}
         onCancel={() => setConfirmarGuardar(false)}
       />
@@ -772,6 +808,7 @@ function ConfirmGuardar({
   issues,
   total,
   vacia,
+  formato,
   onConfirm,
   onCancel,
 }: {
@@ -781,11 +818,12 @@ function ConfirmGuardar({
   issues: DeckIssue[];
   total: number;
   vacia: boolean;
+  formato: Formato;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
   const legal = isLegal(issues);
-  const fuera = estadoDeBaraja(issues) === "baneada";
+  const fuera = estaFuera(estadoDeBaraja(issues));
   const titulo = legal
     ? "¿Guardar los cambios?"
     : fuera
@@ -805,7 +843,9 @@ function ConfirmGuardar({
       onConfirm={onConfirm}
       onCancel={onCancel}
     >
-      {!legal && <DeckIssues issues={issues} total={total} vacia={vacia} />}
+      {!legal && (
+        <DeckIssues issues={issues} total={total} vacia={vacia} formato={formato} />
+      )}
     </ConfirmDialog>
   );
 }

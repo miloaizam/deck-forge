@@ -20,6 +20,8 @@ import {
 } from "../card-sheet-image";
 import { ColeccionSkeleton } from "@/components/Skeleton";
 import { agruparImpresiones, ordenarCartas } from "@/lib/card-order";
+import { cartasEnFormato } from "@/lib/en-formato";
+import { esFormato } from "@/lib/formatos";
 import {
   applyFilters,
   buildFacets,
@@ -41,7 +43,7 @@ import {
 } from "@/lib/coleccion";
 import { decodeColeccion } from "@/lib/coleccion-code";
 import { editionTitle, origenTitle } from "@/lib/editions";
-import type { Card } from "@/lib/types";
+import type { Card, Formato } from "@/lib/types";
 import {
   AVISO_EN_LINEA,
   ENLACE,
@@ -76,12 +78,18 @@ const esVista = (v: string | null): v is VistaColeccion =>
 export function ColeccionView() {
   return (
     <ConCatalogo esqueleto={<ColeccionSkeleton />}>
-      {(cards) => <Coleccion cards={cards} />}
+      {(cards, deFormato) => <Coleccion cards={cards} deFormato={deFormato} />}
     </ConCatalogo>
   );
 }
 
-function Coleccion({ cards }: { cards: Card[] }) {
+function Coleccion({
+  cards: estandar,
+  deFormato,
+}: {
+  cards: Card[];
+  deFormato: (f: Formato) => Card[];
+}) {
   const propia = useColeccion();
   const codigo = useCodigoCompartido();
   const compartida = useMemo(() => decodeColeccion(codigo), [codigo]);
@@ -97,22 +105,36 @@ function Coleccion({ cards }: { cards: Card[] }) {
   // Aparte de `partes`, para que el dialogo no se quede sin texto mientras sale.
   const [verPartes, setVerPartes] = useState(false);
 
+  // Con un formato elegido, la coleccion se mira con sus cartas y su texto:
+  // lo que no entra en el no sale en ninguna pestana.
+  const formato: Formato = esFormato(filters.formato) ? filters.formato : "estandar";
+  const cards = useMemo(
+    () =>
+      formato === "estandar" ? estandar : cartasEnFormato(deFormato(formato), formato),
+    [estandar, deFormato, formato],
+  );
   const index = useMemo(() => buildSearchIndex(cards), [cards]);
-  const facets = useMemo(() => buildFacets(cards), [cards]);
+  // Las de la URL se validan contra el catalogo entero, que no cambia al
+  // elegir formato: si no, leerla otra vez borraria el formato elegido.
+  const facetasUrl = useMemo(() => buildFacets(estandar), [estandar]);
+  const facets = useMemo(
+    () => (formato === "estandar" ? facetasUrl : buildFacets(cards)),
+    [formato, facetasUrl, cards],
+  );
   const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   // La URL, como en el catalogo: se lee una vez al montar y se escribe con
   // replaceState despues de leerla, para no borrar la que llego.
   const [leidaUrl, setLeidaUrl] = useState(false);
   useEffect(() => {
-    const { filters: f } = filtersFromSearch(window.location.search, facets);
+    const { filters: f } = filtersFromSearch(window.location.search, facetasUrl);
     const ver = new URLSearchParams(window.location.search).get("ver");
     // Sincroniza con un sistema externo (la URL) una sola vez, al montar.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilters(f);
     if (esVista(ver)) setVista(ver);
     setLeidaUrl(true);
-  }, [facets]);
+  }, [facetasUrl]);
   useEffect(() => {
     if (!leidaUrl) return;
     const params = new URLSearchParams(filtersToSearch(filters, 1));
@@ -273,6 +295,7 @@ function Coleccion({ cards }: { cards: Card[] }) {
         facets={facets}
         onChange={setFilters}
         onReset={() => setFilters(EMPTY_FILTERS)}
+        conFormato
         acciones={
           <>
             <ColeccionAcciones
@@ -372,6 +395,7 @@ function Coleccion({ cards }: { cards: Card[] }) {
         impresiones={selected ? impresiones.get(selected.identidad) : undefined}
         onChangeCard={setSelected}
         destino="coleccion"
+        formato={formato}
         copies={selected ? (coleccion.tengo[selected.id] ?? 0) : 0}
         onAdd={
           selected && !compartida

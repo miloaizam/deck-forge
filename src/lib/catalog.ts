@@ -1,6 +1,7 @@
 import MiniSearch from "minisearch";
 
 import { compareEditions, esOrden } from "./card-order";
+import { esFormato } from "./formatos";
 import { EDITIONS } from "./editions";
 import { coincideTipo, esClaseDeOro, OPCIONES_DE_TIPO } from "./oros";
 import { ESCUELAS, FRECUENCIAS, KEYWORDS_IMPRESAS, RAZAS, type Card } from "./types";
@@ -27,6 +28,12 @@ export interface CatalogFilters {
   fuerza: string;
   /** El orden de la grilla: `""` es el del catalogo (`ORDENES`, card-order.ts). */
   orden: string;
+  /**
+   * El formato con que se mira el catalogo: `""` es Estandar. No filtra en
+   * `applyFilters`: decide que lista de cartas recibe la vista (las del
+   * formato, con sus erratas y sus lazos).
+   */
+  formato: string;
 }
 
 export const EMPTY_FILTERS: CatalogFilters = {
@@ -40,6 +47,7 @@ export const EMPTY_FILTERS: CatalogFilters = {
   coste: "",
   fuerza: "",
   orden: "",
+  formato: "",
 };
 
 export function hasActiveFilters(f: CatalogFilters): boolean {
@@ -290,7 +298,7 @@ export function pageRange(
  * pagina se lee como entero positivo. Lo demas se ignora en silencio.
  */
 const CLAVES_URL: Record<
-  Exclude<keyof CatalogFilters, "query" | "orden">,
+  Exclude<keyof CatalogFilters, "query" | "orden" | "formato">,
   [string, keyof Facets]
 > = {
   edicion: ["ed", "ediciones"],
@@ -321,6 +329,8 @@ export function filtersFromSearch(
   }
   const orden = params.get("orden");
   if (esOrden(orden)) filters.orden = orden;
+  const formato = params.get("formato") ?? "";
+  if (esFormato(formato) && formato !== "estandar") filters.formato = formato;
   const p = Number.parseInt(params.get("p") ?? "", 10);
   return { filters, page: Number.isFinite(p) && p > 1 && p < 10_000 ? p : 1 };
 }
@@ -333,6 +343,7 @@ export function filtersToSearch(filters: CatalogFilters, page: number): string {
     if (valor) params.set(param, valor);
   }
   if (filters.orden) params.set("orden", filters.orden);
+  if (filters.formato) params.set("formato", filters.formato);
   if (page > 1) params.set("p", String(page));
   const s = params.toString();
   return s ? `?${s}` : "";

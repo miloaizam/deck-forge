@@ -5,7 +5,7 @@ import * as z from "zod/mini";
 
 import { sortCards } from "@/lib/card-order";
 import { conErratas } from "@/lib/erratas";
-import { cardSchema, type Card } from "@/lib/types";
+import { cardSchema, type Card, type Formato } from "@/lib/types";
 
 /**
  * El catalogo entero, pedido UNA vez por sesion a `/data/cards.json`.
@@ -19,7 +19,9 @@ import { cardSchema, type Card } from "@/lib/types";
  * memoria mientras se navega por el sitio.
  *
  * Sale igual que `getCards()`: validado con Zod (CLAUDE.md, seguridad #4),
- * con las erratas aplicadas y en el orden del catalogo.
+ * con las erratas aplicadas y en el orden del catalogo. Las erratas dependen
+ * del formato (cada uno tiene su Banlist): se baja una vez y se arma una
+ * lista por formato, la primera vez que alguien la pide.
  *
  * Es un store de modulo leido con `useSyncExternalStore`: en el servidor y
  * al hidratar no hay catalogo (`cards: null`), asi que el HTML estatico y el
@@ -40,6 +42,9 @@ const FALLO: EstadoCatalogo = Object.freeze({ cards: null, error: true });
 
 let estado: EstadoCatalogo = CARGANDO;
 let pedido: Promise<void> | null = null;
+/** Las cartas validadas, sin erratas: de ellas sale cada formato. */
+let crudas: Card[] | null = null;
+const porFormato = new Map<Formato, Card[]>();
 const oyentes = new Set<() => void>();
 
 function avisar(siguiente: EstadoCatalogo) {
@@ -70,9 +75,25 @@ async function bajar(): Promise<Card[]> {
     cards.push(...lista.slice(i, i + TANDA).map((c) => cardSchema.parse(c)));
   }
   await ceder();
-  const erratadas = cards.map(conErratas);
+  crudas = cards;
+  const erratadas = cards.map((c) => conErratas(c));
   await ceder();
-  return sortCards(erratadas);
+  const estandar = sortCards(erratadas);
+  porFormato.set("estandar", estandar);
+  return estandar;
+}
+
+/**
+ * El catalogo con las erratas de un formato, la misma lista cada vez. `null`
+ * mientras no se baje. La de Estandar sale al bajarlo; las otras se arman la
+ * primera vez que se piden (unas decenas de ms).
+ */
+export function cartasDelFormato(formato: Formato): Card[] | null {
+  const hecha = porFormato.get(formato);
+  if (hecha || !crudas) return hecha ?? null;
+  const nueva = sortCards(crudas.map((c) => conErratas(c, formato)));
+  porFormato.set(formato, nueva);
+  return nueva;
 }
 
 function cargar() {
@@ -103,6 +124,9 @@ function subscribe(cb: () => void) {
 const getSnapshot = () => estado;
 const getServerSnapshot = () => CARGANDO;
 
-export function useCatalogo(): EstadoCatalogo {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+/** El catalogo, con las erratas del formato (Estandar si no se dice). */
+export function useCatalogo(formato: Formato = "estandar"): EstadoCatalogo {
+  const e = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  if (formato === "estandar" || !e.cards) return e;
+  return { cards: cartasDelFormato(formato), error: false };
 }

@@ -1,21 +1,30 @@
 import type { CSSProperties } from "react";
 
 import { estaBaneada, tieneErrata } from "@/lib/erratas";
-import type { Card } from "@/lib/types";
+import type { Card, Formato } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
  * Los lazos de la esquina superior derecha de una carta: "Baneada" si la
- * Banlist la prohibe y "Errata" si la Fe de Erratas o la Banlist la corrigen.
- * Con las dos cosas van los dos, la baneada por fuera. Es decorado: el modal
- * dice lo mismo en texto, asi que el lector de pantalla no lo repite.
+ * Banlist del formato la prohibe y "Errata" si la Fe de Erratas o esa Banlist
+ * la corrigen. Con las dos cosas van los dos, la baneada por fuera. Es
+ * decorado: el texto de la carta ya trae la errata, asi que el lector de
+ * pantalla no lo repite.
  *
  * Va dentro de un contenedor `relative` que envuelva la imagen.
  */
-export function CardRibbons({ card, grande = false }: { card: Card; grande?: boolean }) {
+export function CardRibbons({
+  card,
+  formato = "estandar",
+  grande = false,
+}: {
+  card: Card;
+  formato?: Formato;
+  grande?: boolean;
+}) {
   const lazos = [
-    estaBaneada(card) && { texto: "Baneada", clase: "lazo-baneada" },
-    tieneErrata(card) && { texto: "Errata", clase: "lazo-errata" },
+    estaBaneada(card, formato) && { texto: "Baneada", clase: "lazo-baneada" },
+    tieneErrata(card, formato) && { texto: "Errata", clase: "lazo-errata" },
   ].filter((l) => l !== false);
   if (lazos.length === 0) return null;
   return (

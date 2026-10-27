@@ -13,6 +13,8 @@ interface DeckSheetProps {
   estado: EstadoDeBaraja;
   /** Resumen corto de la afinidad, del estilo "Dragón" o "Clan Desafiante". */
   afinidad: string;
+  /** El formato de la baraja, por su nombre. */
+  formato: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   children: ReactNode;
@@ -39,6 +41,7 @@ export function DeckSheet({
   total,
   estado,
   afinidad,
+  formato,
   open,
   onOpenChange,
   children,
@@ -71,7 +74,9 @@ export function DeckSheet({
 
           <EstadoPastilla estado={estado} />
 
-          <span className="text-muted ml-auto truncate text-[13px]">{afinidad}</span>
+          <span className="text-muted ml-auto truncate text-[13px]">
+            {[formato, afinidad].filter(Boolean).join(" · ")}
+          </span>
           <ChevronUp size={16} aria-hidden="true" className="text-muted shrink-0" />
         </button>
       </div>

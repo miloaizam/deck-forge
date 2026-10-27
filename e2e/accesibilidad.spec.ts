@@ -51,6 +51,8 @@ const PAGINAS = [
   "/documentos/dar/",
   "/documentos/fe-de-erratas/",
   "/documentos/banlist/",
+  "/documentos/banlist/vcr/",
+  "/documentos/banlist/infanteria/",
   "/novedades/",
   "/cuenta/",
   "/comunidad/",

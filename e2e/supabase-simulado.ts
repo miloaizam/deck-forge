@@ -97,6 +97,7 @@ export function publicarDe(
     nombre: string;
     portada?: string | null;
     principal?: { id: string; n: number }[];
+    formato?: string;
   },
 ): string {
   s.perfiles.set(userId, alias);
@@ -170,6 +171,8 @@ function filaPublica(s: Simulado, f: Fila) {
     public_id: f.public_id,
     nombre: (f.datos as { nombre?: string } | null)?.nombre ?? null,
     afinidad: f.afinidad,
+    // Como la columna generada de la base: sin formato en los datos, Estandar.
+    formato: (f.datos as { formato?: string } | null)?.formato ?? "estandar",
     portada: (f.datos as { portada?: string | null } | null)?.portada ?? null,
     principal: (f.datos as { principal?: unknown } | null)?.principal ?? null,
     alias: s.perfiles.get(f.user_id) ?? "",
@@ -350,6 +353,7 @@ export async function simularSupabase(
           .filter(visible)
           .filter((f) => !args.afinidad || f.afinidad === args.afinidad)
           .map((f) => filaPublica(s, f))
+          .filter((f) => !args.formato || f.formato === args.formato)
           .filter((f) => !q || (f.nombre ?? "").toLowerCase().includes(q));
         const clave = { likes: "likes", tendencia: "likes_semana", copias: "copias" }[
           String(args.orden)

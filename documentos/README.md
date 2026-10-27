@@ -4,9 +4,11 @@ Transcripciones de DeckForge de los documentos oficiales del formato Escuelas
 Elementales, con el estilo del sitio. Esta carpeta es la **fuente**: los datos y
 el generador. Los PDF viven en **`public/reglas/`** y se publican; la página
 `/documentos` los enlaza para abrir y descargar, y `/documentos/dar`,
-`/documentos/fe-de-erratas` y `/documentos/banlist` los dibujan en HTML con
-estos mismos datos. El catálogo y el validador de barajas aplican la Fe de
-Erratas y la Banlist (`src/lib/erratas.ts`).
+`/documentos/fe-de-erratas` y `/documentos/banlist` (y `/vcr`, `/infanteria`)
+los dibujan en HTML con estos mismos datos. El catálogo y el validador de
+barajas aplican la Fe de Erratas y la Banlist del formato de cada baraja
+(`src/lib/erratas.ts`). Hay **tres formatos** (Estándar, VCR e Infantería):
+comparten el DAR y la Fe de Erratas, y cada uno tiene su Banlist.
 
 Los tres siguen **el mismo molde**, en el sitio y en PDF: portada (en el PDF),
 índice enlazado, secciones con el mismo título y "Notas de la transcripción"
@@ -17,8 +19,13 @@ al final, con lo que se corrigió del original.
 | `public/reglas/DAR-261023.pdf` | Cómo se juega: 10 secciones y un anexo, 90 reglas con letra, 48 conceptos de juego y las cartas de ejemplo del catálogo. | *Documento Actualizado de Reglas*, revisión de julio de 2021 (62 páginas) |
 | `public/reglas/FeDeErratas-261023.pdf` | 63 cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado. | *Fe de Erratas: Escuelas Elementales*, junio de 2022 (20 páginas) |
 | `public/reglas/BanlistEstandar-261023.pdf` | 9 prohibidas, 31 Únicas, y 37 erratas y ajustes. Las cartas en observación siguen en el JSON (se aplican) pero no se publican. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
+| `public/reglas/BanlistVCR-261027.pdf` | Solo Vasallos, Cortesanos y Reales: 15 prohibidas, 47 Únicas, 15 Errantes y 13 cartas de fuera del bloque admitidas (9 todavía no están en el catálogo). | *Banlist Formato VCR RE MYL*, una imagen sin fecha |
+| `public/reglas/BanlistInfanteria-261027.pdf` | Solo Vasallos y Cortesanos: 8 prohibidas, 40 Únicas y 7 Errantes. | *Banlist Open Formato Infantería Elemental Fights!!!*, una imagen sin fecha |
 
-El sufijo es la fecha de la transcripción (AAMMDD). Una versión nueva del
+El sufijo es la fecha de la transcripción (AAMMDD); las Banlists de VCR e
+Infantería, que llegaron después, llevan la suya (`VERSION_FORMATOS`). Para
+generar solo algunos, se pasa el comienzo del nombre:
+`node documentos/fuente/generar.mjs BanlistVCR BanlistInfanteria`. Una versión nueva del
 documento oficial es un archivo nuevo, no se pisa el anterior: al cambiarlo,
 actualizar `VERSION` en `generar.mjs` y `DOCUMENTOS` en `src/lib/documentos.ts`
 (el test comprueba que el PDF exista y tenga las páginas que dice).

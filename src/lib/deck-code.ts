@@ -2,14 +2,21 @@ import lzString from "lz-string";
 import * as z from "zod/mini";
 
 import { createDeck } from "./deck";
-import { deckSchema, MAX_NOMBRE_BARAJA, type Deck, type DeckEntry } from "./types";
+import {
+  deckSchema,
+  FORMATOS,
+  MAX_NOMBRE_BARAJA,
+  type Deck,
+  type DeckEntry,
+  type Formato,
+} from "./types";
 
 /**
  * Codificar y decodificar una baraja para compartirlo por enlace.
  *
  * La baraja entera no viaja: fuera quedan el id local, las fechas, la descripcion,
  * la portada y la afinidad fijada — no le sirven a quien recibe el enlace y solo
- * alargan la URL. Viajan el nombre, el oro inicial y las dos zonas.
+ * alargan la URL. Viajan el nombre, el oro inicial, las dos zonas y el formato.
  *
  * El codigo es BINARIO y va en base64url, que no lleva ningun caracter que la
  * URL tenga que escapar. La version 1 metia la baraja en JSON y la comprimia con
@@ -27,6 +34,8 @@ import { deckSchema, MAX_NOMBRE_BARAJA, type Deck, type DeckEntry } from "./type
  *   oro inicial       1 bit de presencia + la referencia a la carta
  *   principal         una zona
  *   side              una zona
+ *   formato           2 bits (su posicion en FORMATOS), y SOLO si no es
+ *                     Estandar
  *
  * Una referencia a una impresion son 15 bits: 5 de edicion (la posicion de su
  * prefijo en `PREFIJOS`) y 10 del numero dentro de la edicion. Dentro de una
@@ -38,6 +47,12 @@ import { deckSchema, MAX_NOMBRE_BARAJA, type Deck, type DeckEntry } from "./type
  * tabla, un id con otra forma— no se pierde: el enlace sale en el formato 1,
  * que admite cualquier id. Y los enlaces del formato 1 ya compartidos se siguen
  * leyendo.
+ *
+ * El formato llego despues y va al final, fuera de la version: un enlace
+ * Estandar sale igual que antes, byte por byte, y uno de antes se lee
+ * Estandar, que es lo que era. Los bits que rellenan el ultimo byte son
+ * ceros, y cero es Estandar; si quedan menos de dos, tambien. Un sitio viejo
+ * que lea un enlace VCR no mira esos bits y la abre como Estandar.
  *
  * La version va primero para que un decodificador viejo pueda RECHAZAR un
  * codigo nuevo con un mensaje claro, en vez de malinterpretarlo y mostrar un
@@ -137,6 +152,8 @@ const ANCHO_ENTRADAS = 6;
 export const ANCHO_SALTO = 6;
 /** Copias, cuando no son 1, 2 ni 3. */
 const ANCHO_COPIAS = 6;
+/** El formato, al final: cuatro valores y hoy hay tres. */
+const ANCHO_FORMATO = 2;
 
 /** El salto no cabe (o no hay anterior): el numero va entero detras. */
 const SALTO_ESCAPE = (1 << ANCHO_SALTO) - 1;
@@ -203,6 +220,11 @@ export class BitReader {
       this.pos++;
     }
     return valor;
+  }
+
+  /** Los bits que faltan por leer, relleno del ultimo byte incluido. */
+  quedan(): number {
+    return this.datos.length * 8 - this.pos;
   }
 }
 
@@ -318,11 +340,16 @@ function encodeBinario(deck: Deck): string | null {
 
   if (!escribirZona(w, deck.principal)) return null;
   if (!escribirZona(w, deck.side)) return null;
+  if (deck.formato !== "estandar") w.write(FORMATOS.indexOf(deck.formato), ANCHO_FORMATO);
 
   return aBase64Url(w.final());
 }
 
-/** [ version, nombre, oroInicial, principal, side ] */
+/**
+ * [ version, nombre, oroInicial, principal, side, formato? ]. El formato va
+ * solo si no es Estandar: un sitio de antes de los formatos rechaza la tupla
+ * de seis, y asi los enlaces Estandar se le siguen abriendo.
+ */
 function encodeLz(deck: Deck): string {
   const wire = [
     WIRE_VERSION_LZ,
@@ -330,6 +357,7 @@ function encodeLz(deck: Deck): string {
     deck.oroInicial,
     deck.principal.map((e) => [e.id, e.n]),
     deck.side.map((e) => [e.id, e.n]),
+    ...(deck.formato === "estandar" ? [] : [deck.formato]),
   ];
   return compressToEncodedURIComponent(JSON.stringify(wire));
 }
@@ -364,9 +392,10 @@ function armar(
   oroInicial: string | null,
   principal: DeckEntry[],
   side: DeckEntry[],
+  formato: Formato,
 ): DecodeResult {
   const base = createDeck(nombre || "Baraja compartida");
-  const parsed = deckSchema.safeParse({ ...base, oroInicial, principal, side });
+  const parsed = deckSchema.safeParse({ ...base, oroInicial, principal, side, formato });
   return parsed.success ? { ok: true, deck: parsed.data } : ILEGIBLE;
 }
 
@@ -437,7 +466,12 @@ function decodeBinario(codigo: string): DecodeResult | null {
     const oroInicial = leerOro(r);
     const principal = leerZona(r);
     const side = leerZona(r);
-    return armar(new TextDecoder().decode(nombre), oroInicial, principal, side);
+    // Un valor que esta version no conoce se lee Estandar, como un enlace viejo.
+    const formato: Formato =
+      r.quedan() >= ANCHO_FORMATO
+        ? (FORMATOS[r.read(ANCHO_FORMATO)] ?? "estandar")
+        : "estandar";
+    return armar(new TextDecoder().decode(nombre), oroInicial, principal, side, formato);
   } catch {
     // Un codigo cortado por el chat que lo llevaba, o que nunca fue una baraja.
     return null;
@@ -449,7 +483,7 @@ const entradasSchema = z.array(
   z.tuple([z.string().check(z.regex(SLUG)), z.int().check(z.minimum(1), z.maximum(50))]),
 );
 
-const wireLzSchema = z.tuple([
+const camposLz = [
   z.literal(WIRE_VERSION_LZ),
   // Igual que el esquema de la baraja: se admite leer mas largo de lo que se
   // deja escribir, para no romper un enlace hecho cuando el tope era otro.
@@ -457,6 +491,11 @@ const wireLzSchema = z.tuple([
   z.nullable(z.string().check(z.regex(SLUG))),
   entradasSchema.check(z.maxLength(60)),
   entradasSchema.check(z.maxLength(20)),
+] as const;
+
+const wireLzSchema = z.union([
+  z.tuple([...camposLz, z.enum(FORMATOS)]),
+  z.tuple([...camposLz]),
 ]);
 
 function decodeLz(codigo: string): DecodeResult {
@@ -482,12 +521,13 @@ function decodeLz(codigo: string): DecodeResult {
   const parsed = wireLzSchema.safeParse(bruto);
   if (!parsed.success) return ILEGIBLE;
 
-  const [, nombre, oroInicial, principal, side] = parsed.data;
+  const [, nombre, oroInicial, principal, side, formato = "estandar"] = parsed.data;
   return armar(
     nombre,
     oroInicial,
     principal.map(([id, n]) => ({ id, n })),
     side.map(([id, n]) => ({ id, n })),
+    formato,
   );
 }
 

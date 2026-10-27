@@ -1,0 +1,170 @@
+{
+  "titulo": "Banlist Formato VCR RE MyL",
+  "formato": "VCR RE MyL (Escuelas Elementales)",
+  "original": {
+    "titulo": "Banlist Formato VCR RE MYL",
+    "archivo": "Banlist Formato VCR RE MYL.jpg",
+    "paginas": 1,
+    "modificado": null
+  },
+  "version": "2026-10-27",
+  "construccion": "La construcción del mazo debe contener siempre un mínimo de 15 Aliados o Tótems, más side deck de 10 cartas.",
+  "prohibidas": [
+    "Pergamino de Agua",
+    "Anillo de Aire",
+    "Traer el Horror",
+    "Cristalino Amarillo",
+    "Raziel",
+    "Bechard",
+    "Butic",
+    "Baco",
+    "Gris-Gris",
+    "Nephilim",
+    "Roce de Hielo",
+    "Scarbo",
+    "Katadesmos",
+    "Luz Solar",
+    "Viaje en el Tiempo"
+  ],
+  "unicas": [
+    "Rayo de Luna",
+    "Kiyo Hime",
+    "Salto de Dragón",
+    "Koan",
+    "Sutoku",
+    "Proyección Astral",
+    "Forja Masamune",
+    "Supay",
+    "Amphisbaena",
+    "Caballero Errante",
+    "Piedad",
+    "Cavorita",
+    "Yestay",
+    "Elal",
+    "Flamma",
+    "Neptuno",
+    "Inpuku",
+    "Miraculum",
+    "Carmen Saliare",
+    "Grace O'Malley",
+    "Ludus Magnus",
+    "Yinlong",
+    "Zitiron",
+    "Jaguar de Fuego",
+    "Spada da Lato",
+    "Vlad Tepes",
+    "Bartolomeo Colleoni",
+    "Gente Lagarto",
+    "Messer",
+    "Alcázar de Segovia",
+    "Dub-Sar",
+    "Damnatio Memoriae",
+    "Acobardar",
+    "Tecpatl",
+    "Rito de Sangre",
+    "Razón Muerta",
+    "Piasa",
+    "Mare",
+    "Bendición Bífida",
+    "Aymerich el Inquisidor",
+    "Carruaje Infernal",
+    "Manada Fantasma",
+    "Carga Gaesatae",
+    "Atui Koro Ekashi",
+    "Contrabando de Seda",
+    "Maledictus Examina",
+    "Macana Estrellada"
+  ],
+  "errantes": [
+    "Arcoíris",
+    "Ciempiés Gigante",
+    "Futsunushi",
+    "Tsukuyomi",
+    "Yasuke",
+    "Hakutaku",
+    "Lakúma",
+    "Castillo en las Nubes",
+    "Apolonio de Tiana",
+    "Constantino XI",
+    "Zion",
+    "Catedral de Salisbury",
+    "Mal Nido",
+    "Espada Cangrejo",
+    "Danubio Salvaje"
+  ],
+  "fueraDelBloque": [
+    {
+      "carta": "Wyvern Dorado",
+      "edicion": "Camelot",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Járnvid",
+      "edicion": "Asgard",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Nixe",
+      "edicion": "Templarios",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Yudhishthira",
+      "edicion": "Dharma",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Nefertari",
+      "edicion": "Kemet",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Helios",
+      "edicion": "Kemet",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Tormod Kark",
+      "edicion": "Asgard",
+      "condicion": "Carta Única"
+    },
+    {
+      "carta": "Bibi Dalair Kaur",
+      "edicion": "Dharma",
+      "condicion": "Carta Errante"
+    },
+    {
+      "carta": "Serpopardo",
+      "edicion": "Camelot",
+      "condicion": "Carta Errante"
+    },
+    {
+      "carta": "Mut",
+      "edicion": "Kemet",
+      "condicion": "Carta Errante"
+    },
+    {
+      "carta": "Sacerdotisa de Odín",
+      "edicion": "Midgard",
+      "condicion": "Libre por tres copias"
+    },
+    {
+      "carta": "Reina Aesir",
+      "edicion": "Asgard",
+      "condicion": "Libre por tres copias"
+    },
+    {
+      "carta": "Hadas",
+      "edicion": "Furia",
+      "condicion": "Libre por tres copias"
+    }
+  ],
+  "erratas": [],
+  "correcciones": [
+    "El original es una imagen sin fecha: se transcribió el 27-10-2026.",
+    "Nombres de carta según el catálogo: «Salto Dragón» → Salto de Dragón, «Aphisbaena» → Amphisbaena, «Impuku» → Inpuku, «Carmen Salieare» → Carmen Saliare, «Alcázar de Sogovía» → Alcázar de Segovia, «Dubsar» → Dub-Sar, «Atui Ekoro Ekashi» → Atui Koro Ekashi, «Arco Iris» → Arcoíris, «Traer el Terror» → Traer el Horror (BU-081), «Katadesnmos» → Katadesmos, «Jarnvid» → Járnvid, «Sacerdotisa de Odin» → Sacerdotisa de Odín.",
+    "«Apolonio de Aquitania» no existe: se lee como Apolonio de Tiana, la única carta Apolonio del formato.",
+    "Mut sale como de «Dharma»; es de Kemet, como dice la Banlist Estándar.",
+    "Las cartas agregadas fuera del bloque EE «por tres copias» van en la columna de Prohibidas del original, pero se pueden jugar: quedan libres por tres copias."
+  ]
+}

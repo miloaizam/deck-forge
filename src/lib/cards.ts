@@ -4,7 +4,7 @@ import path from "node:path";
 import { sortCards } from "./card-order";
 import { buildFacets, PAGE_SIZE, paginate, type Facets } from "./catalog";
 import { conErratas } from "./erratas";
-import { catalogSchema, type Card } from "./types";
+import { catalogSchema, type Card, type Formato } from "./types";
 
 /**
  * Lee el catalogo generado por `scripts/build_cards.py`.
@@ -15,16 +15,19 @@ import { catalogSchema, type Card } from "./types";
  * con Zod aunque sea un archivo propio: si el generador cambia de forma,
  * preferimos fallar en el build y no en la cara del usuario.
  *
- * Sale con la Fe de Erratas y la Banlist aplicadas (`conErratas`): el
- * catalogo muestra el texto vigente, no el impreso que guarda el JSON.
+ * Sale con la Fe de Erratas y la Banlist del formato aplicadas
+ * (`conErratas`): el catalogo muestra el texto vigente, no el impreso que
+ * guarda el JSON. El HTML estatico es siempre Estandar.
  *
  * Sale ya ordenado con `compareCards`, que es el orden que comparten el
  * catalogo, la grilla del constructor y el contenido de una baraja.
  */
-export async function getCards(): Promise<Card[]> {
+export async function getCards(formato: Formato = "estandar"): Promise<Card[]> {
   const file = path.join(process.cwd(), "public", "data", "cards.json");
   const raw = await readFile(file, "utf-8");
-  return sortCards(catalogSchema.parse(JSON.parse(raw)).map(conErratas));
+  return sortCards(
+    catalogSchema.parse(JSON.parse(raw)).map((c) => conErratas(c, formato)),
+  );
 }
 
 /** Las cartas de una sola edicion, por su slug. */

@@ -7,7 +7,9 @@ agente), lee esto primero. Para lo visual, ver [DESIGN.md](DESIGN.md).
 
 ## 1. Qué es
 
-Deckbuilder web para el formato **Escuelas Elementales** de Mitos y Leyendas.
+Deckbuilder web para el formato **Escuelas Elementales** de Mitos y Leyendas,
+en sus tres modalidades: **Estándar**, **VCR** e **Infantería** (ver «Los
+formatos de juego», §9).
 Sitio **100% estático**: no hay servidor propio. Todo corre en el navegador
 del usuario.
 
@@ -1030,8 +1032,9 @@ debajo «Iniciar sesión con Google» y «¿No tienes cuenta? Crea una aquí», 
 `PortadaCuenta.tsx`) · `/catalogo` todo · `/catalogo/<edicion>` ·
 `/constructor` arma y edita · `/barajas` la lista · `/baraja` el detalle ·
 `/coleccion` lo que el usuario tiene y le falta ·
-`/documentos` el DAR, la Fe de Erratas y la Banlist, con `/documentos/dar`,
-`/documentos/fe-de-erratas` y `/documentos/banlist` para leerlos · `/novedades` la línea de tiempo de cambios ·
+`/documentos` el DAR, la Fe de Erratas y las tres Banlists, con `/documentos/dar`,
+`/documentos/fe-de-erratas`, `/documentos/banlist` (Estándar),
+`/documentos/banlist/vcr` y `/documentos/banlist/infanteria` para leerlos · `/novedades` la línea de tiempo de cambios ·
 `/cuenta` entrar y la cuenta · `/comunidad` las barajas públicas · `/privacidad`
 qué se guarda.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
@@ -2477,6 +2480,76 @@ Banlist se leen igual en el sitio y en PDF.
   la elección de impresión y los tres diagramas están duplicados allí, con un
   comentario en cada lado. Si cambia uno, se cambia el otro.
 
+### Los formatos de juego
+
+Dentro de Escuelas Elementales hay **tres formatos** (decisión del proyecto,
+27-10-2026), y cada baraja juega en uno: **Estándar** (todas las
+frecuencias, el de siempre), **VCR** (solo Vasallo, Cortesano y Real) e
+**Infantería** (solo Vasallo y Cortesano). Los tres comparten el DAR y la Fe
+de Erratas; **cada uno tiene su Banlist** (`documentos/fuente/banlist-<formato>.json`).
+
+- **El modelo.** `FORMATOS` (`types.ts`) y `deckSchema.formato`, con
+  `_default("estandar")` y sin subir `DECK_VERSION`: una baraja guardada antes
+  se lee Estándar. Nombres, frecuencias y la frase de cada uno en
+  `src/lib/formatos.ts`, que es liviano a propósito (lo importan los filtros y
+  la Comunidad); lo que necesita las Banlists vive en `en-formato.ts`.
+- **La frecuencia se mira por CARTA (`identidad`), no por impresión**, y solo
+  en las diez ediciones (decisión del proyecto): Kirin no entra en VCR aunque
+  tenga una promo, y Acobardar entra en Infantería con cualquier arte, su
+  Milenaria incluida, porque en ContraAtaque es Vasallo. Arte Alternativo y
+  Adicionales no cuentan, salvo que la carta solo exista ahí (los packs): ahí
+  manda su propia frecuencia. **Los Oros entran en los tres**: Infantería hace
+  Únicas a dos (Cavorita, Contrabando de Seda). `frecuenciasPorIdentidad()` y
+  `motivoFueraDeFormato()` de `en-formato.ts`.
+- **Las cartas de fuera del bloque EE** (las de observación de Adicionales)
+  valen solo en el formato cuya Banlist las nombra: en VCR, Wyvern Dorado,
+  Járnvid, Bibi Dalair Kaur y Mut sí, Wotan, Melusina y compañía no; en
+  Infantería, ninguna. Las nueve de VCR que no están en el catálogo (Nixe,
+  Helios…) van en `FALTAN_EN_EL_CATALOGO` (`documentos.ts`) y en TODO.md.
+- **La sección «erratas» de la Banlist Estándar es solo de Estándar**
+  (decisión del proyecto): VCR e Infantería aplican sus Únicas, Errantes y
+  Prohibidas y nada más. En `TEXTOS_ERRATADOS` lo que sale solo de la Banlist
+  Estándar lleva `soloEstandar`; lo que dice también la Fe de Erratas vale en
+  los tres. Shingas y Karna, `EFECTOS_A_MANO` y `REGLAS_DE_CONSTRUCCION`,
+  solo Estándar.
+- **Errante por lista quita la Única**, como dice la Estándar de Tsukuyomi
+  («pasa de ser Carta Única a Errante»), salvo que la misma Banlist la haga
+  Única. Y si la Fe de Erratas la hace Errante y la Banlist Única (Piedad en
+  VCR e Infantería), manda la Banlist.
+- **Todo lo de `erratas.ts` recibe el formato** (por defecto Estándar):
+  `conErratas`, `efectoEnReglas`, `estaBaneada`, `tieneErrata`,
+  `fueraDelBloque`. El catálogo del navegador guarda las cartas validadas y
+  arma una lista por formato la primera vez que se pide
+  (`cartasDelFormato`, `useCatalogo(formato)`); `ConCatalogo` entrega
+  `deFormato` a Mis barajas y al detalle, que validan cada baraja con la suya.
+  **Un índice de reglas es de un formato** (`buildCardIndex(cards, formato)`,
+  `indiceDe` para varios): las cartas que recibe tienen que venir erratadas
+  para ese formato, o sin erratar, porque la Única que no dice la Banlist se
+  lee de sus keywords.
+- **Una carta fuera de formato es `carta-fuera-de-formato`**, error grave como
+  una baneada (rojo, «Fuera de formato» en la pastilla), pero **`canAdd` la
+  frena**: la grilla del constructor ni la ofrece. Una baneada se sigue
+  pudiendo agregar con aviso.
+- **Dónde se elige.** En el constructor, `FormatoSwitch` bajo la descripción
+  (panel y hoja del teléfono); cambiarlo no saca cartas: lo que no entra lo
+  marca el estado. En el catálogo y la colección, el `Select` «Formato» de
+  `Filters` (`conFormato`), en la URL como `?formato=vcr`: cambia las cartas,
+  su texto y sus lazos; sin él, Estándar. El detalle, Mis barajas, la imagen
+  descargada y la Comunidad dicen el formato de cada baraja.
+- **El enlace compartido** lleva el formato en 2 bits al final, **solo si no
+  es Estándar**: un enlace Estándar sale igual que antes byte por byte, y uno
+  viejo (relleno en cero, o sin bits) se lee Estándar. En el formato 1, sexto
+  elemento opcional (`deck-code.ts`).
+- **La Comunidad filtra por formato**: columna generada `barajas.formato`
+  (del jsonb, como el nombre) y parámetro `formato` de `listar_publicas`, que
+  el sitio solo manda con el filtro puesto.
+- **Los documentos.** `BanlistDocumento.tsx` pinta las tres con el mismo
+  molde y segmentos para saltar entre ellas; secciones Errantes, Fuera del
+  bloque y Erratas solo si tienen algo. VCR e Infantería se transcribieron de
+  una imagen sin fecha (`original.modificado: null`). Sus PDF llevan su
+  propia fecha (`VERSION_FORMATOS` en `generar.mjs`, que acepta un prefijo
+  para generar solo esos: `node documentos/fuente/generar.mjs BanlistVCR`).
+
 **La Fe de Erratas y la Banlist se aplican** (decisión del proyecto,
 04-10-2026). Los datos están en `documentos/fuente/*.json`, se validan con los
 esquemas de `src/lib/documentos.ts` y `documentos.test.ts` los cruza con el
@@ -2527,7 +2600,7 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
   cumple». Lo dicen el panel del constructor, el detalle y la imagen descargada, que
   la nombra bajo el título y la marca en rojo. El campo `legalidad` de
   `cards.json` sigue en `libre`: manda la Banlist.
-- **El documento de la Banlist no publica las cartas en observación** (ni su
+- **El documento de la Banlist Estándar no publica las cartas en observación** (ni su
   lista por raza ni las notas de la transcripción; decisión del proyecto,
   04-10-2026), pero sus condiciones **siguen aplicándose**: el JSON las
   conserva y `erratas.ts` las lee.

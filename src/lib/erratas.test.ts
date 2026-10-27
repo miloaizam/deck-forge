@@ -5,18 +5,19 @@ import path from "node:path";
 
 import { createDeck } from "./deck";
 import { buildCardIndex, canAdd, limiteDeCopias, validateDeck } from "./deck-rules";
-import { claveDeNombre } from "./documentos";
+import { FALTAN_EN_EL_CATALOGO, claveDeNombre } from "./documentos";
 import {
   conErratas,
   efectoEnReglas,
   erratasDe,
   estaBaneada,
+  fueraDelBloque,
   nombresConErrata,
   tieneErrata,
 } from "./erratas";
 import { keywordsPropias } from "./ability";
 import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
-import { catalogSchema, type Card } from "./types";
+import { FORMATOS, catalogSchema, type Card, type Formato } from "./types";
 
 /** La Fe de Erratas y la Banlist aplicadas, contra el catalogo real. */
 const CATALOGO: Card[] = catalogSchema.parse(
@@ -34,8 +35,12 @@ test("cada errata y cada baneada nombra una carta del catalogo", () => {
   const nombres = new Set(CATALOGO.map((c) => claveDeNombre(c.nombre)));
   const sueltas = nombresConErrata().filter((n) => !nombres.has(n));
   // "Caida de Sol" es el nombre NUEVO de una errata de nombre: la carta se
-  // llama todavia "Caida del Sol" en el catalogo, que guarda el original.
-  assert.deepEqual(sueltas, [claveDeNombre("Caída de Sol")]);
+  // llama todavia "Caida del Sol" en el catalogo, que guarda el original. Las
+  // demas son las que faltan cargar (`FALTAN_EN_EL_CATALOGO`).
+  assert.deepEqual(
+    [...new Set(sueltas)].sort(),
+    [claveDeNombre("Caída de Sol"), ...FALTAN_EN_EL_CATALOGO.map(claveDeNombre)].sort(),
+  );
 });
 
 test("la errata alcanza a todas las impresiones, Arte Alternativo incluido", () => {
@@ -127,10 +132,16 @@ test("cada cambio a mano encuentra su texto en todas las impresiones", () => {
 
 test("una Unica nunca es ademas Errante", () => {
   // Una sola copia en la baraja ya impide la segunda en mesa. Si una edicion
-  // nueva las imprime juntas, esto falla y hay que decidir que hacer.
-  for (const c of CATALOGO) {
-    const k = conErratas(c).keywords;
-    assert.ok(!(k.includes("Única") && k.includes("Errante")), `${c.id} ${c.nombre}`);
+  // nueva las imprime juntas, esto falla y hay que decidir que hacer. En los
+  // tres formatos: cada Banlist hace Unicas y Errantes a su manera.
+  for (const f of FORMATOS) {
+    for (const c of CATALOGO) {
+      const k = conErratas(c, f).keywords;
+      assert.ok(
+        !(k.includes("Única") && k.includes("Errante")),
+        `${f} ${c.id} ${c.nombre}`,
+      );
+    }
   }
   // Las dos que la Banlist vuelve Unicas pierden la Errante impresa.
   for (const nombre of ["Krisna", "Anubis de Inpu"]) {
@@ -169,4 +180,93 @@ test("el catalogo lleva el texto erratado, con sus keywords", () => {
     for (const k of keywordsPropias(e.habilidad)) assert.ok(e.keywords.includes(k), e.id);
     if (efectoEnReglas(c).unica === true) assert.ok(e.keywords.includes("Única"), e.id);
   }
+});
+
+/* Cada formato con su Banlist; la Fe de Erratas, comun. */
+
+const INDICES = Object.fromEntries(
+  FORMATOS.map((f) => [f, buildCardIndex(CATALOGO, f)]),
+) as Record<Formato, ReturnType<typeof buildCardIndex>>; // una entrada por formato
+const reglaEn = (f: Formato, nombre: string) =>
+  INDICES[f].porId.get(porNombre(nombre).id)!;
+
+test("cada formato banea lo suyo", () => {
+  // Pergamino de Agua, en las tres.
+  for (const f of FORMATOS) assert.ok(estaBaneada(porNombre("Pergamino de Agua"), f), f);
+  // Scarbo: Unica en Estandar, baneada en VCR e Infanteria.
+  assert.ok(!estaBaneada(porNombre("Scarbo"), "estandar"));
+  assert.equal(reglaEn("estandar", "Scarbo").unica, true);
+  assert.ok(estaBaneada(porNombre("Scarbo"), "vcr"));
+  assert.ok(estaBaneada(porNombre("Scarbo"), "infanteria"));
+  // Koan: Unica en VCR, baneada en Infanteria, libre en Estandar.
+  assert.equal(reglaEn("vcr", "Koan").unica, true);
+  assert.equal(reglaEn("infanteria", "Koan").legalidad, "prohibida");
+  assert.equal(reglaEn("estandar", "Koan").legalidad, "libre");
+  // Bechard: baneada en Estandar y VCR, Unica en Infanteria.
+  assert.equal(reglaEn("infanteria", "Bechard").legalidad, "libre");
+  assert.equal(reglaEn("infanteria", "Bechard").unica, true);
+});
+
+test("las erratas de la Banlist Estandar no valen en VCR ni Infanteria", () => {
+  assert.equal(reglaEn("estandar", "Arjumand Banu Begum").coste, 1);
+  assert.equal(reglaEn("vcr", "Arjumand Banu Begum").coste, 2);
+  assert.doesNotMatch(conErratas(porNombre("Amaterasu"), "vcr").habilidad, /y\/o Eterno/);
+  assert.match(conErratas(porNombre("Amaterasu"), "estandar").habilidad, /y\/o Eterno/);
+  // Lo que tambien dice la Fe de Erratas vale en los tres.
+  for (const f of FORMATOS) {
+    assert.match(
+      conErratas(porNombre("Lahmu"), f).habilidad,
+      /entre en juego bajo tu control/,
+    );
+  }
+  // Shingas y Karna: regla de la Estandar.
+  const deck = (formato: Formato) => ({
+    ...createDeck("Desafiante"),
+    formato,
+    principal: [
+      { id: porNombre("Shingas").id, n: 1 },
+      { id: porNombre("Karna").id, n: 2 },
+    ],
+  });
+  assert.ok(
+    validateDeck(deck("estandar"), INDICES.estandar).some(
+      (i) => i.code === "shingas-karna",
+    ),
+  );
+  assert.ok(
+    !validateDeck(deck("vcr"), INDICES.vcr).some((i) => i.code === "shingas-karna"),
+  );
+});
+
+test("las Errantes de la lista entran al texto y quitan la Unica", () => {
+  // Tsukuyomi: VCR la lista Errante, como la Estandar en su errata.
+  for (const f of ["estandar", "vcr"] as const) {
+    const t = conErratas(porNombre("Tsukuyomi"), f);
+    assert.ok(t.keywords.includes("Errante"), f);
+    assert.ok(!t.keywords.includes("Única"), f);
+    assert.equal(reglaEn(f, "Tsukuyomi").unica, false, f);
+  }
+  assert.ok(conErratas(porNombre("Dodomeki"), "infanteria").keywords.includes("Errante"));
+  assert.ok(!conErratas(porNombre("Dodomeki"), "vcr").keywords.includes("Errante"));
+  // Piedad: Errante por la Fe de Erratas, Unica por las Banlists de VCR e
+  // Infanteria. Manda la Banlist.
+  const piedad = conErratas(porNombre("Piedad"), "vcr");
+  assert.ok(piedad.keywords.includes("Única"));
+  assert.ok(!piedad.keywords.includes("Errante"));
+  assert.ok(tieneErrata(porNombre("Dodomeki"), "infanteria"));
+  assert.ok(!tieneErrata(porNombre("Dodomeki"), "estandar"));
+});
+
+test("las cartas de fuera del bloque entran solo si la Banlist las nombra", () => {
+  for (const f of FORMATOS)
+    assert.equal(fueraDelBloque(porNombre("Wyvern Dorado"), f), f === "infanteria");
+  assert.ok(!fueraDelBloque(porNombre("Wotan"), "estandar"));
+  assert.ok(fueraDelBloque(porNombre("Wotan"), "vcr"));
+  // Las de las diez ediciones nunca.
+  assert.ok(!fueraDelBloque(porNombre("Scarbo"), "infanteria"));
+  assert.equal(reglaEn("vcr", "Wotan").fueraDeFormato, "fuera-del-bloque");
+  assert.equal(reglaEn("vcr", "Wyvern Dorado").unica, true);
+  // Mut: Errante en VCR.
+  assert.ok(conErratas(porNombre("Mut"), "vcr").keywords.includes("Errante"));
+  assert.ok(erratasDe(porNombre("Mut"), "vcr").length > 0);
 });

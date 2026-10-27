@@ -35,6 +35,8 @@ import {
 } from "@/lib/comunidad";
 import { pageRange } from "@/lib/catalog";
 import { portadaPorDefecto } from "@/lib/deck";
+import { esFormato, NOMBRE_FORMATO } from "@/lib/formatos";
+import { FORMATOS, type Formato } from "@/lib/types";
 import { irArriba } from "@/lib/scroll";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
@@ -56,13 +58,24 @@ interface Consulta {
   /** El boton A-Z del buscador, como en el catalogo: manda sobre `orden`. */
   nombre: PorNombre;
   afinidad: string;
+  /** `""`: todos los formatos. */
+  formato: Formato | "";
   q: string;
   pagina: number;
 }
 
 type PorNombre = "" | "asc" | "desc";
 
-const INICIAL: Consulta = { orden: "likes", nombre: "", afinidad: "", q: "", pagina: 1 };
+const INICIAL: Consulta = {
+  orden: "likes",
+  nombre: "",
+  afinidad: "",
+  formato: "",
+  q: "",
+  pagina: 1,
+};
+
+const etiquetaDeFormato = (f: string) => (esFormato(f) ? NOMBRE_FORMATO[f] : f);
 
 /** Sin orden por nombre, A-Z, Z-A y de vuelta: el ciclo del catalogo. */
 const SIGUIENTE: Record<PorNombre, PorNombre> = { "": "asc", asc: "desc", desc: "" };
@@ -78,11 +91,13 @@ function leerUrl(search: string): Consulta {
   const orden = p.get("orden");
   const nombre = p.get("nombre");
   const afinidad = p.get("afinidad");
+  const formato = p.get("formato") ?? "";
   const pagina = Number(p.get("pagina"));
   return {
     orden: esOrdenComunidad(orden) ? orden : "likes",
     nombre: nombre === "asc" || nombre === "desc" ? nombre : "",
     afinidad: esAfinidad(afinidad) ? afinidad : "",
+    formato: esFormato(formato) ? formato : "",
     q: (p.get("q") ?? "").slice(0, 60),
     pagina: Number.isInteger(pagina) && pagina > 1 && pagina < 10_000 ? pagina : 1,
   };
@@ -93,6 +108,7 @@ function escribirUrl(c: Consulta): string {
   if (c.orden !== "likes") p.set("orden", c.orden);
   if (c.nombre) p.set("nombre", c.nombre);
   if (c.afinidad) p.set("afinidad", c.afinidad);
+  if (c.formato) p.set("formato", c.formato);
   if (c.q.trim()) p.set("q", c.q.trim());
   if (c.pagina > 1) p.set("pagina", String(c.pagina));
   const s = p.toString();
@@ -168,6 +184,7 @@ export function ComunidadView() {
       consulta.q,
       consulta.pagina,
       consulta.nombre,
+      consulta.formato || null,
     ).then(
       ({ filas, total }) =>
         vigente && setResultado({ clave, r: { fase: "ok", filas, total } }),
@@ -240,6 +257,17 @@ export function ComunidadView() {
             quedaba cortada y «Más copiadas» fuera, sin nada que dijera que se
             podia deslizar. */}
         <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <div className="w-full @md:w-44">
+            <Select
+              label="Formato"
+              etiquetaOculta
+              value={consulta.formato}
+              options={[...FORMATOS]}
+              onChange={(v) => cambiar({ formato: esFormato(v) ? v : "" })}
+              placeholder="Todos los formatos"
+              format={etiquetaDeFormato}
+            />
+          </div>
           <div className="w-full @md:w-60">
             <Select
               label="Afinidad"
@@ -300,7 +328,7 @@ export function ComunidadView() {
             className="text-muted mx-auto mb-4 opacity-60"
           />
           <p className="text-ink text-lg">
-            {consulta.q || consulta.afinidad
+            {consulta.q || consulta.afinidad || consulta.formato
               ? "No hay barajas que coincidan con tu búsqueda."
               : "Todavía no hay barajas públicas."}
           </p>
@@ -367,7 +395,8 @@ export function ComunidadView() {
                       </span>
                     </p>
                     <p className="text-muted truncate text-[13px]">
-                      {etiquetaAfinidad(f.afinidad)} · {FECHA.format(f.publicada_en)}
+                      {NOMBRE_FORMATO[f.formato]} · {etiquetaAfinidad(f.afinidad)} ·{" "}
+                      {FECHA.format(f.publicada_en)}
                     </p>
                     <p className="text-muted mt-auto flex gap-3 text-[13px] tabular-nums">
                       <span className="inline-flex items-center gap-1">

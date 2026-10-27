@@ -29,7 +29,7 @@ import { claveAfinidad, etiquetaAfinidad } from "@/lib/comunidad";
 import { deckTitle, duplicateDeck, newDeckId, setCover } from "@/lib/deck";
 import { decodeDeck } from "@/lib/deck-code";
 import {
-  buildCardIndex,
+  indiceDe,
   deckStats,
   isLegal,
   resolveDeck,
@@ -37,12 +37,14 @@ import {
   DECK_TOTAL,
 } from "@/lib/deck-rules";
 import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
-import type { Card, Deck } from "@/lib/types";
+import { NOMBRE_FORMATO } from "@/lib/formatos";
+import type { Card, Deck, Formato } from "@/lib/types";
 import { BOTON_ICONO, BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckDetailViewProps {
-  cards: Card[];
+  /** Las cartas con las erratas de un formato: las de la baraja que se mira. */
+  deFormato: (f: Formato) => Card[];
 }
 
 /** Las dos tarjetas de analisis del final: mano de prueba y curva. */
@@ -70,13 +72,13 @@ export function DeckDetailView() {
       libre={ajena}
     >
       <ConCatalogo esqueleto={<DeckDetailSkeleton />}>
-        {(cards) => <DeckDetail cards={cards} />}
+        {(_, deFormato) => <DeckDetail deFormato={deFormato} />}
       </ConCatalogo>
     </RequiereCuenta>
   );
 }
 
-function DeckDetail({ cards }: DeckDetailViewProps) {
+function DeckDetail({ deFormato }: DeckDetailViewProps) {
   const params = useSearchParams();
   const m = params.get("m");
   const p = params.get("p");
@@ -92,8 +94,6 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
   const decks = useDecks();
   const nube = useNube();
   const cargado = useHydrated();
-  const index = useMemo(() => buildCardIndex(cards), [cards]);
-  const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   // Aparte y solo con `d`, para no volver a decodificar cada vez que cambia
   // el store (guardar la compartida lo cambia).
@@ -125,6 +125,13 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
     }
     return { deck: null, error: "Este enlace no contiene ninguna baraja." };
   }, [m, compartida, decks, publica]);
+
+  // La baraja se mira con la Banlist de su formato: sus lazos, sus Unicas y
+  // lo que no cumple son los de ese formato.
+  const formato: Formato = deck?.formato ?? "estandar";
+  const cards = useMemo(() => deFormato(formato), [deFormato, formato]);
+  const index = useMemo(() => indiceDe(cards, formato), [cards, formato]);
+  const impresiones = useMemo(() => agruparImpresiones(cards), [cards]);
 
   /**
    * La portada se guarda al vuelo: la baraja sale del store, asi que escribirlo
@@ -248,6 +255,7 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
               <p className="text-muted mt-1.5 text-[14px] tabular-nums">
                 {stats.totalPrincipal}/{DECK_TOTAL} cartas
                 {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
+                {` · ${NOMBRE_FORMATO[deck.formato]}`}
               </p>
             </div>
             {/* La descripcion es opcional: si esta vacia no deja hueco. */}
@@ -351,6 +359,7 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
           issues={issues}
           total={stats.totalPrincipal}
           vacia={res.principal.length === 0 && res.side.length === 0}
+          formato={deck.formato}
         />
       )}
 
@@ -391,6 +400,7 @@ function DeckDetail({ cards }: DeckDetailViewProps) {
         onClose={() => setVista(null)}
         impresiones={vista ? impresiones.get(vista.identidad) : undefined}
         onChangeCard={setVista}
+        formato={deck.formato}
       />
 
       <ConfirmDialog

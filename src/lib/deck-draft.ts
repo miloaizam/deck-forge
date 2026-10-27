@@ -80,7 +80,8 @@ const contenido = (d: Deck) => JSON.stringify({ ...d, creado: 0, actualizado: 0 
 /**
  * Si vale la pena guardar `deck` como borrador.
  *
- * Una baraja nueva, si ya tiene algo: una carta, un nombre o una nota. Una que
+ * Una baraja nueva, si ya tiene algo: una carta, un nombre, una nota o un
+ * formato que no es el de siempre. Una que
  * se esta editando, si difiere de la version guardada. Asi, abrir el
  * constructor o una baraja y no tocar nada no deja un borrador que despues
  * aparezca "recuperado" sin que haya nada que recuperar.
@@ -91,6 +92,7 @@ export function hayCambios(deck: Deck, guardada: Deck | null): boolean {
     deck.principal.length > 0 ||
     deck.side.length > 0 ||
     deck.nombre.trim() !== "" ||
-    deck.descripcion.trim() !== ""
+    deck.descripcion.trim() !== "" ||
+    deck.formato !== "estandar"
   );
 }

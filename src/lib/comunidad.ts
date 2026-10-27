@@ -2,7 +2,14 @@ import * as z from "zod/mini";
 
 import { esRutaAvatar } from "./avatar";
 import type { Afinidad } from "./deck-rules";
-import { ATRIBUTOS, deckEntrySchema, deckSchema, ESCUELAS, RAZAS } from "./types";
+import {
+  ATRIBUTOS,
+  deckEntrySchema,
+  deckSchema,
+  ESCUELAS,
+  FORMATOS,
+  RAZAS,
+} from "./types";
 
 /**
  * La Comunidad: las barajas que sus duenos publicaron. Logica pura, sin red:
@@ -114,6 +121,9 @@ export const filaPublicaSchema = z.object({
   public_id: z.string().check(z.uuid()),
   nombre: z._default(z.nullable(texto(60)), null),
   afinidad: afinidadRemota,
+  // El formato llega desde el esquema del 27-10-2026; antes, y con un valor
+  // que no conocemos, la baraja se lee Estandar, que es lo que era.
+  formato: z.catch(z._default(z.enum(FORMATOS), "estandar"), "estandar"),
   portada: z.nullable(z.string().check(z.maxLength(40), z.regex(/^[a-z0-9-]+$/))),
   // Las cartas del principal, para la portada por defecto. Llega desde el
   // esquema del 23-10-2026: antes no viene. Si falta o viene rota queda null,
