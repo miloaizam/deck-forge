@@ -30,9 +30,7 @@ const FUENTE = import.meta.dirname;
 const SALIDA = path.join(RAIZ, "public", "reglas");
 const VERSION = "261023"; // AAMMDD de esta transcripcion, en el nombre del archivo
 // Las Banlists de VCR e Infanteria se transcribieron despues: llevan su fecha.
-const VERSION_FORMATOS = "261027";
-// La de Infanteria se corrigio despues (Viaje en el Tiempo): archivo nuevo.
-const VERSION_INFANTERIA = "261116";
+const VERSION_FORMATOS = "261116";
 
 const PLAYWRIGHT =
   process.env.PLAYWRIGHT_PATH ?? "/opt/node22/lib/node_modules/playwright/index.mjs";
@@ -401,9 +399,6 @@ const BANLISTS = {
   },
 };
 
-/** "2025-11-26" -> "26-11-2025", como lo escribe el resto de los documentos. */
-const fechaCorta = (iso) => iso.split("-").reverse().join("-");
-
 function banlist(formato) {
   const meta = BANLISTS[formato];
   const doc = JSON.parse(readFileSync(path.join(FUENTE, meta.archivo), "utf-8"));
@@ -415,7 +410,7 @@ function banlist(formato) {
   // una imagen sin fecha donde solo hubo que corregir nombres.
   const origen = doc.original.modificado
     ? `del documento oficial «${esc(doc.original.titulo)}» (modificado el ${esc(doc.original.modificado)}). Versión del ${esc(doc.version)}. Se corrigió la ortografía del documento y los nombres de carta según el catálogo`
-    : `de la imagen oficial «${esc(doc.original.titulo)}», que no trae fecha. Versión del ${esc(fechaCorta(doc.version))}. Se corrigieron los nombres de carta según el catálogo`;
+    : `de la imagen oficial «${esc(doc.original.titulo)}», que no trae fecha. Versión del ${esc(doc.version)}. Se corrigieron los nombres de carta según el catálogo`;
   const listas = [
     { id: "prohibidas", titulo: "Prohibidas", cuenta: doc.prohibidas.length },
     { id: "unicas", titulo: "Únicas", cuenta: doc.unicas.length },
@@ -862,19 +857,9 @@ function dar() {
  * Impresion
  * ------------------------------------------------------------------ */
 
-// El pie se dibuja aparte de la pagina y no ve sus @font-face: la letra va
-// incrustada en el propio pie. Con la "sans-serif" del sistema (variable),
-// Chromium la guardaba como Type3 una vez por hoja.
-const LETRA_PIE = readFileSync(path.join(FUENTE, "fuentes", "sg-400.woff2")).toString(
-  "base64",
-);
-const PIE = (
-  titulo,
-) => `<style>@font-face{font-family:SGPie;src:url(data:font/woff2;base64,${LETRA_PIE})}</style>
-  <div style="width:100%;font-family:SGPie,sans-serif;font-size:7px;color:#9a93b5;padding:0 15mm;
-  display:flex;justify-content:space-between;-webkit-print-color-adjust:exact">
-  <span>${esc(titulo)} · Transcripción de DeckForge · deckforge-myl.pages.dev</span>
-  <span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>`;
+// Sin pie de pagina, como los PDF publicados del DAR, la Fe de Erratas y la
+// Banlist Estandar: los cinco documentos tienen que verse iguales. El pie que
+// hubo salia con otra letra (Chromium no le aplicaba la incrustada).
 
 const tmp = mkdtempSync(path.join(tmpdir(), "deckforge-docs-"));
 for (const w of [400, 500, 600, 700])
@@ -904,7 +889,7 @@ try {
       () => banlist("vcr"),
     ],
     [
-      `BanlistInfanteria-${VERSION_INFANTERIA}.pdf`,
+      `BanlistInfanteria-${VERSION_FORMATOS}.pdf`,
       "Banlist Formato Infantería",
       () => banlist("infanteria"),
     ],
@@ -941,9 +926,6 @@ try {
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
-      displayHeaderFooter: true,
-      headerTemplate: "<span></span>",
-      footerTemplate: PIE(titulo),
       // Sin PDF etiquetado: con la tipografia variable, Chromium la incrusta
       // como Type3 y las etiquetas suben la Fe de Erratas a ~990 KB, pegado
       // al limite de 1 MB del pre-commit. Sin ellas queda en ~750 KB. Los

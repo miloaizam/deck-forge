@@ -374,7 +374,7 @@ export const DOCUMENTOS = {
   },
   banlistVcr: {
     ruta: "/documentos/banlist/vcr",
-    pdf: "/reglas/BanlistVCR-261027.pdf",
+    pdf: "/reglas/BanlistVCR-261116.pdf",
     paginas: 6,
   },
   banlistInfanteria: {

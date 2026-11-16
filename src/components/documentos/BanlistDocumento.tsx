@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { RefreshCw, X } from "lucide-react";
 
 import { DocumentHeader } from "./DocumentHeader";
@@ -8,15 +7,8 @@ import { ID_NOTAS, NotasTranscripcion } from "./NotasTranscripcion";
 import { DOCUMENTO_BANLIST, fechaLarga } from "@/lib/documentos";
 import { BANLISTS, pesoDelPdf } from "@/lib/documentos-data";
 import { DESCRIPCION_FORMATO, NOMBRE_FORMATO } from "@/lib/formatos";
-import { FORMATOS, type Formato } from "@/lib/types";
-import {
-  CONTADOR,
-  SEGMENTO,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
-  SEGMENTOS,
-} from "@/lib/ui";
-import { cn } from "@/lib/utils";
+import type { Formato } from "@/lib/types";
+import { CONTADOR } from "@/lib/ui";
 
 const col = new Intl.Collator("es");
 const ordenar = (l: string[]) => [...l].sort(col.compare);
@@ -36,8 +28,10 @@ const BAJADA: Record<Formato, string> = {
 /**
  * La Banlist de un formato en HTML, dibujada con los mismos datos que su PDF
  * (`documentos/fuente/banlist-<formato>.json`). Las tres comparten el DAR y la
- * Fe de Erratas; esta pagina es lo que cambia. Server Component, sin
- * JavaScript propio salvo el indice, que es el de los tres documentos.
+ * Fe de Erratas; esta pagina es lo que cambia. Lleva el mismo molde que los
+ * demas documentos, sin nada propio en la cabecera: de una Banlist a otra se
+ * pasa por /documentos. Server Component, sin JavaScript propio salvo el
+ * indice, que es el de todos los documentos.
  */
 export function BanlistDocumento({ formato }: { formato: Formato }) {
   const doc = BANLISTS[formato];
@@ -56,25 +50,7 @@ export function BanlistDocumento({ formato }: { formato: Formato }) {
         bajada={`${formato === "estandar" ? "" : `${DESCRIPCION_FORMATO[formato]} `}${BAJADA[formato]}`}
         origen={origen}
         peso={pesoDelPdf(ficha)}
-      >
-        {/* Cada formato tiene su Banlist: se salta de una a otra sin volver
-            a Documentos. */}
-        <nav aria-label="Banlist de cada formato" className={cn(SEGMENTOS, "mt-5")}>
-          {FORMATOS.map((f) => (
-            <Link
-              key={f}
-              href={DOCUMENTO_BANLIST[f].ruta}
-              aria-current={f === formato ? "page" : undefined}
-              className={cn(
-                SEGMENTO,
-                f === formato ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-              )}
-            >
-              {NOMBRE_FORMATO[f]}
-            </Link>
-          ))}
-        </nav>
-      </DocumentHeader>
+      />
 
       <DocumentLayout
         indice={[

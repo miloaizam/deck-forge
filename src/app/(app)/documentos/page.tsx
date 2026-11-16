@@ -29,9 +29,9 @@ export default function DocumentosPage() {
         Banlist, cada uno tiene la suya.
       </p>
 
-      {/* Las reglas comunes arriba, de a dos desde lg, y debajo una Banlist
-          por formato: de a tres desde xl (de a dos, la tercera quedaba sola). */}
-      <div className="mt-10 grid gap-5 lg:grid-cols-2">
+      {/* Una sobre otra hasta xl, y de a tres desde ahi: todas las tarjetas
+          del mismo ancho, como cuando eran tres documentos. */}
+      <div className="mt-10 grid gap-5 xl:grid-cols-3">
         <Tarjeta
           doc={DOCUMENTOS.dar}
           icono={<BookOpenText size={20} aria-hidden="true" />}
@@ -57,12 +57,6 @@ export default function DocumentosPage() {
             ],
           ]}
         />
-      </div>
-
-      <h2 className="text-ink mt-12 text-xl font-semibold tracking-[-0.01em]">
-        Banlist de cada formato
-      </h2>
-      <div className="mt-5 grid gap-5 xl:grid-cols-3">
         <Tarjeta
           doc={DOCUMENTOS.banlist}
           icono={<Ban size={20} aria-hidden="true" />}
@@ -150,7 +144,7 @@ function Tarjeta({
         nombre={titulo}
         peso={peso}
         verEnElSitio
-        className="mt-5 pt-1 lg:mt-auto lg:pt-5"
+        className="mt-5 pt-1 xl:mt-auto xl:pt-5"
       />
     </section>
   );

@@ -393,11 +393,24 @@ test.describe("formatos", () => {
     ).toHaveCount(0);
   });
 
-  test("cada Banlist enlaza a las de los otros formatos", async ({ page }) => {
-    await page.goto("/documentos/banlist/");
+  test("los lazos de la grilla son los de la Banlist del formato", async ({ page }) => {
+    // Scarbo: Unica en Estandar (lazo Errata), baneada en VCR.
+    const scarbo = page
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("button", { name: /^Ver detalle de Scarbo/ }) })
+      .first();
+    await page.goto("/catalogo/?q=Scarbo");
+    await expect(scarbo.locator(".lazo-errata")).toBeVisible();
+    await expect(scarbo.locator(".lazo-baneada")).toHaveCount(0);
+    await page.goto("/catalogo/?q=Scarbo&formato=vcr");
+    await expect(scarbo.locator(".lazo-baneada")).toBeVisible();
+  });
+
+  test("cada Banlist se abre desde Documentos", async ({ page }) => {
+    await page.goto("/documentos/");
     await page
-      .getByRole("navigation", { name: "Banlist de cada formato" })
-      .getByRole("link", { name: "Infantería" })
+      .getByRole("region", { name: "Banlist Infantería" })
+      .getByRole("link", { name: /Leer en el sitio/ })
       .click();
     await expect(page).toHaveURL(/\/documentos\/banlist\/infanteria\/?$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(

@@ -2543,9 +2543,13 @@ de Erratas; **cada uno tiene su Banlist** (`documentos/fuente/banlist-<formato>.
 - **La Comunidad filtra por formato**: columna generada `barajas.formato`
   (del jsonb, como el nombre) y parámetro `formato` de `listar_publicas`, que
   el sitio solo manda con el filtro puesto.
-- **Los documentos.** `BanlistDocumento.tsx` pinta las tres con el mismo
-  molde y segmentos para saltar entre ellas; secciones Errantes, Fuera del
-  bloque y Erratas solo si tienen algo. VCR e Infantería se transcribieron de
+- **Los documentos.** `BanlistDocumento.tsx` pinta las tres con **el mismo
+  molde que el DAR y la Fe de Erratas**, sin nada propio en la cabecera
+  (hubo segmentos para saltar entre Banlists y se quitaron, decisión del
+  proyecto, 16-11-2026: de una a otra se pasa por `/documentos`, que las
+  muestra como cinco tarjetas iguales). Secciones Errantes, Fuera del bloque
+  y Erratas solo si tienen algo. **Los PDF de los dos formatos se basan en los
+  tres primeros** y van, como ellos, sin pie de página. VCR e Infantería se transcribieron de
   una imagen sin fecha (`original.modificado: null`). Sus PDF llevan su
   propia fecha (`VERSION_FORMATOS` en `generar.mjs`, que acepta un prefijo
   para generar solo esos: `node documentos/fuente/generar.mjs BanlistVCR`).
