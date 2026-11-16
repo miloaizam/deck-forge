@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
-import { Copy, Hammer, ImageDown, Layers, Link2, Save, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Hammer,
+  ImageDown,
+  Layers,
+  Link2,
+  Save,
+  Swords,
+  Trash2,
+} from "lucide-react";
 
 import { DeckSections } from "./DeckSections";
 import { CardModal } from "../CardModal";
@@ -38,8 +47,15 @@ import {
 } from "@/lib/deck-rules";
 import { deleteDeck, mensajeNoGuardada, nombreLibre, saveDeck } from "@/lib/deck-storage";
 import { NOMBRE_FORMATO } from "@/lib/formatos";
-import type { Card, Deck, Formato } from "@/lib/types";
-import { BOTON_ICONO, BOTON_SECUNDARIO, ENLACE, HOVER_PELIGRO, VACIO } from "@/lib/ui";
+import { SECCIONES_DE_LA_BARAJA, type Card, type Deck, type Formato } from "@/lib/types";
+import {
+  BOTON_ICONO,
+  BOTON_SECUNDARIO,
+  ENLACE,
+  HOVER_PELIGRO,
+  PASTILLA,
+  VACIO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface DeckDetailViewProps {
@@ -234,9 +250,21 @@ function DeckDetail({ deFormato }: DeckDetailViewProps) {
               )}
             </p>
 
-            <h1 className="text-3xl font-bold tracking-[-0.02em] sm:col-start-1 sm:row-start-2">
-              {deckTitle(deck)}
-            </h1>
+            {/* El formato va junto al titulo, en una pastilla: decide la Banlist
+                con que se mira toda la pagina. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:col-start-1 sm:row-start-2">
+              <h1 className="text-3xl font-bold tracking-[-0.02em]">{deckTitle(deck)}</h1>
+              <span
+                className={cn(
+                  PASTILLA,
+                  "bg-accent-soft text-accent px-2.5 py-1 text-[13px] font-semibold",
+                )}
+              >
+                <Swords size={14} aria-hidden="true" />
+                <span className="sr-only">Formato</span>
+                {NOMBRE_FORMATO[deck.formato]}
+              </span>
+            </div>
 
             <div className="min-w-0 sm:col-start-1 sm:row-start-3">
               {deLaComunidad && (
@@ -251,12 +279,27 @@ function DeckDetail({ deFormato }: DeckDetailViewProps) {
                 </p>
               )}
 
-              {/* El conteo va bajo el titulo, que es lo que describe. */}
+              {/* El conteo va bajo el titulo, que es lo que describe: el total y
+                  cuantas de cada tipo, en el orden de la mesa. Solo la baraja,
+                  como los contadores del constructor: el side va aparte. */}
               <p className="text-muted mt-1.5 text-[14px] tabular-nums">
                 {stats.totalPrincipal}/{DECK_TOTAL} cartas
                 {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-                {` · ${NOMBRE_FORMATO[deck.formato]}`}
               </p>
+              {stats.totalPrincipal > 0 && (
+                <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[14px] tabular-nums">
+                  {SECCIONES_DE_LA_BARAJA.filter(
+                    ({ tipo }) => stats.porTipo[tipo] > 0,
+                  ).map(({ tipo, titulo }) => (
+                    <li key={tipo} className="text-muted">
+                      <span className="text-ink font-semibold">
+                        {stats.porTipo[tipo]}
+                      </span>{" "}
+                      {stats.porTipo[tipo] === 1 ? tipo : titulo}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             {/* La descripcion es opcional: si esta vacia no deja hueco. */}
             {deck.descripcion.trim() !== "" && (

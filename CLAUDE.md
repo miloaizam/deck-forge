@@ -2535,7 +2535,9 @@ de Erratas; **cada uno tiene su Banlist** (`documentos/fuente/banlist-<formato>.
   marca el estado. En el catálogo y la colección, el `Select` «Formato» de
   `Filters` (`conFormato`), en la URL como `?formato=vcr`: cambia las cartas,
   su texto y sus lazos; sin él, Estándar. El detalle, Mis barajas, la imagen
-  descargada y la Comunidad dicen el formato de cada baraja.
+  descargada y la Comunidad dicen el formato de cada baraja; en el detalle va
+  en una pastilla violeta junto al título, y bajo el título, cuántas cartas
+  de cada tipo lleva la baraja (sin el side, como los contadores del panel).
 - **El enlace compartido** lleva el formato en 2 bits al final, **solo si no
   es Estándar**: un enlace Estándar sale igual que antes byte por byte, y uno
   viejo (relleno en cero, o sin bits) se lee Estándar. En el formato 1, sexto

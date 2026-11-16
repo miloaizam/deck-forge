@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-16",
+    version: "6.1.0",
+    tipo: "Mejora",
+    titulo: "El formato y los tipos de carta, bajo el nombre de la baraja",
+    texto: [
+      "La página de una baraja muestra su formato junto al nombre, bien a la vista, y debajo cuántas cartas lleva de cada tipo: Aliados, Armas, Talismanes, Tótems y Oros.",
+    ],
+  },
+  {
+    fecha: "2026-11-16",
     version: "6.0.1",
     tipo: "Arreglo",
     titulo: "Viaje en el Tiempo, baneada en Infantería",

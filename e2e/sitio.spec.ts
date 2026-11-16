@@ -406,6 +406,20 @@ test.describe("formatos", () => {
     await expect(scarbo.locator(".lazo-baneada")).toBeVisible();
   });
 
+  test("el detalle dice el formato y cuantas cartas hay de cada tipo", async ({
+    page,
+  }) => {
+    // Una baraja VCR compartida: 18 Aliados, 1 Arma, 6 Talismanes y 2 Totems.
+    await page.goto("/baraja/#d=AgxEcmFnb25lcyBWQ1IEBf4TwEBAQEBNoCAogaBA");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dragones VCR");
+    await expect(page.getByText("FormatoVCR")).toBeVisible();
+    for (const t of ["18 Aliados", "1 Arma", "6 Talismanes", "2 Tótems"]) {
+      await expect(
+        page.getByRole("listitem").filter({ hasText: t }).first(),
+      ).toBeVisible();
+    }
+  });
+
   test("cada Banlist se abre desde Documentos", async ({ page }) => {
     await page.goto("/documentos/");
     await page
