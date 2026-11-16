@@ -23,7 +23,7 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 
 1. **Pegar el esquema en Supabase** (la cinta de la portada y el filtro de
    formato de la Comunidad).
-2. **Cargar las cartas de fuera del bloque de VCR** (y averiguar «Máquina del Tiempo»).
+2. **Cargar las cartas de fuera del bloque de VCR.**
 3. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Base de datos
@@ -58,16 +58,7 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
   `FALTAN_EN_EL_CATALOGO` (`src/lib/documentos.ts`): el test exige que
   sigan faltando mientras estén ahí. Ojo con «Hadas»: que sea la de Furia.
 - **Terminado cuando:** las nueve salen en el catálogo con `?formato=vcr` y
-  `FALTAN_EN_EL_CATALOGO` solo lleva «Máquina del Tiempo».
-
-### «Máquina del Tiempo», baneada en Infantería
-
-- **Qué:** la Banlist de Infantería la banea y no es de ninguna edición del
-  formato ni está en el catálogo. Puede ser una carta de otra edición o un
-  error de la imagen original (¿«Viaje en el Tiempo»?).
-- **Por dónde:** confirmarlo con quien publica la Banlist; si era otra carta,
-  corregir `banlist-infanteria.json`, su nota y el PDF.
-- **Terminado cuando:** se sabe qué carta es.
+  `FALTAN_EN_EL_CATALOGO` queda vacía.
 
 ## Por decidir
 

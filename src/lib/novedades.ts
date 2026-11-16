@@ -33,6 +33,15 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-11-16",
+    version: "6.0.1",
+    tipo: "Arreglo",
+    titulo: "Viaje en el Tiempo, baneada en Infantería",
+    texto: [
+      "La Banlist de Infantería nombra «Máquina del Tiempo», que es Viaje en el Tiempo. Ahora sale baneada en ese formato, en el catálogo, el constructor y la Banlist.",
+    ],
+  },
+  {
     fecha: "2026-10-27",
     version: "6.0.0",
     tipo: "Novedad",

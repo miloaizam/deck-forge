@@ -31,6 +31,8 @@ const SALIDA = path.join(RAIZ, "public", "reglas");
 const VERSION = "261023"; // AAMMDD de esta transcripcion, en el nombre del archivo
 // Las Banlists de VCR e Infanteria se transcribieron despues: llevan su fecha.
 const VERSION_FORMATOS = "261027";
+// La de Infanteria se corrigio despues (Viaje en el Tiempo): archivo nuevo.
+const VERSION_INFANTERIA = "261116";
 
 const PLAYWRIGHT =
   process.env.PLAYWRIGHT_PATH ?? "/opt/node22/lib/node_modules/playwright/index.mjs";
@@ -902,7 +904,7 @@ try {
       () => banlist("vcr"),
     ],
     [
-      `BanlistInfanteria-${VERSION_FORMATOS}.pdf`,
+      `BanlistInfanteria-${VERSION_INFANTERIA}.pdf`,
       "Banlist Formato Infantería",
       () => banlist("infanteria"),
     ],

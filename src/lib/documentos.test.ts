@@ -44,7 +44,7 @@ for (const c of CATALOGO) {
 
 /**
  * Cartas que alguna Banlist nombra y que el catalogo no tiene: las nueve de
- * fuera del bloque de VCR y "Maquina del Tiempo" (`FALTAN_EN_EL_CATALOGO`).
+ * fuera del bloque de VCR (`FALTAN_EN_EL_CATALOGO`).
  * Las nueve "en observacion" de la Estandar estan en Adicionales desde que
  * llegaron Wotan y Jarnvid.
  */

@@ -20,10 +20,12 @@ al final, con lo que se corrigió del original.
 | `public/reglas/FeDeErratas-261023.pdf` | 63 cartas corregidas: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado. | *Fe de Erratas: Escuelas Elementales*, junio de 2022 (20 páginas) |
 | `public/reglas/BanlistEstandar-261023.pdf` | 9 prohibidas, 31 Únicas, y 37 erratas y ajustes. Las cartas en observación siguen en el JSON (se aplican) pero no se publican. | *Banlist Formato Estándar RE MyL*, modificado el 26-11-2025 (5 páginas) |
 | `public/reglas/BanlistVCR-261027.pdf` | Solo Vasallos, Cortesanos y Reales: 15 prohibidas, 47 Únicas, 15 Errantes y 13 cartas de fuera del bloque admitidas (9 todavía no están en el catálogo). | *Banlist Formato VCR RE MYL*, una imagen sin fecha |
-| `public/reglas/BanlistInfanteria-261027.pdf` | Solo Vasallos y Cortesanos: 8 prohibidas, 40 Únicas y 7 Errantes. | *Banlist Open Formato Infantería Elemental Fights!!!*, una imagen sin fecha |
+| `public/reglas/BanlistInfanteria-261116.pdf` | Solo Vasallos y Cortesanos: 8 prohibidas, 40 Únicas y 7 Errantes. | *Banlist Open Formato Infantería Elemental Fights!!!*, una imagen sin fecha |
 
 El sufijo es la fecha de la transcripción (AAMMDD); las Banlists de VCR e
-Infantería, que llegaron después, llevan la suya (`VERSION_FORMATOS`). Para
+Infantería, que llegaron después, llevan la suya (`VERSION_FORMATOS`), y la de
+Infantería, corregida el 16-11-2026 («Máquina del Tiempo» es Viaje en el
+Tiempo), otra (`VERSION_INFANTERIA`). Para
 generar solo algunos, se pasa el comienzo del nombre:
 `node documentos/fuente/generar.mjs BanlistVCR BanlistInfanteria`. Una versión nueva del
 documento oficial es un archivo nuevo, no se pisa el anterior: al cambiarlo,

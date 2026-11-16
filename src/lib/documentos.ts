@@ -292,11 +292,10 @@ export function cartasFueraDelBloque(b: Banlist): string[] {
 }
 
 /**
- * Las cartas que nombra una Banlist y no estan en el catalogo. Las nueve de
- * fuera del bloque de VCR estan pendientes de cargar en Adicionales (TODO.md);
- * "Maquina del Tiempo", la baneada de Infanteria, no es de ninguna edicion del
- * formato. Los tests las dejan pasar y exigen que sigan faltando: al cargar
- * una, se borra de aqui.
+ * Las cartas que nombra una Banlist y no estan en el catalogo: las nueve de
+ * fuera del bloque de VCR, pendientes de cargar en Adicionales (TODO.md). Los
+ * tests las dejan pasar y exigen que sigan faltando: al cargar una, se borra
+ * de aqui.
  */
 export const FALTAN_EN_EL_CATALOGO = [
   "Nixe",
@@ -308,7 +307,6 @@ export const FALTAN_EN_EL_CATALOGO = [
   "Sacerdotisa de Odín",
   "Reina Aesir",
   "Hadas",
-  "Máquina del Tiempo",
 ] as const;
 
 /**
@@ -381,7 +379,7 @@ export const DOCUMENTOS = {
   },
   banlistInfanteria: {
     ruta: "/documentos/banlist/infanteria",
-    pdf: "/reglas/BanlistInfanteria-261027.pdf",
+    pdf: "/reglas/BanlistInfanteria-261116.pdf",
     paginas: 5,
   },
 } as const satisfies Record<string, Documento>;

@@ -202,6 +202,9 @@ test("cada formato banea lo suyo", () => {
   assert.equal(reglaEn("vcr", "Koan").unica, true);
   assert.equal(reglaEn("infanteria", "Koan").legalidad, "prohibida");
   assert.equal(reglaEn("estandar", "Koan").legalidad, "libre");
+  // Viaje en el Tiempo: la "Maquina del Tiempo" de la imagen de Infanteria.
+  assert.ok(estaBaneada(porNombre("Viaje en el Tiempo"), "infanteria"));
+  assert.equal(reglaEn("infanteria", "Viaje en el Tiempo").legalidad, "prohibida");
   // Bechard: baneada en Estandar y VCR, Unica en Infanteria.
   assert.equal(reglaEn("infanteria", "Bechard").legalidad, "libre");
   assert.equal(reglaEn("infanteria", "Bechard").unica, true);
