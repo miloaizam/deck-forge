@@ -2623,6 +2623,25 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
   `erratas.test.ts` exige que cada reemplazo encuentre su texto en **todas**
   las impresiones. La regla «Mazo Desafiante y/o Guerrero» (Shingas y Karna)
   no es texto de carta y no se escribe en ninguna: la aplica el validador.
+- **Lo que cambió una errata va en dorado** en el detalle de la carta
+  (17-11-2026, decisión del proyecto; tokens `errata` y `errata-soft`, ver
+  DESIGN.md). `conErratas` devuelve una `CartaVigente` con `resaltes` —los
+  trozos que puso la errata— y `razaErratada`; no son datos del catálogo y
+  no van en `types.ts` ni en `schema.py`. Salen de dos sitios: del **diff**
+  (`wordDiff`) entre lo impreso y lo erratado, para lo que se aplica al leer
+  (`TEXTOS_ERRATADOS`, las Únicas y Errantes de cada Banlist, las de
+  observación), y de **`RESALTES_IMPRESOS`** (`erratas-aplicadas.ts`), a
+  mano, para las erratas que ya vienen en `data-src` porque Escuelas
+  Elementales reimprimió la carta corregida (Astra, las Únicas de la Fe de
+  Erratas, Azi Dahaka…): ahí no queda texto viejo con que comparar. Una
+  frase marca su siguiente aparición y entre corchetes va la parte a pintar
+  («Mientras este [Tótem]»). Depende del formato: Nixe resalta `Única` solo
+  en VCR. `erratas.test.ts` exige que cada frase esté en todas las
+  impresiones y que **ninguna errata de texto de la Fe de Erratas ni de la
+  Banlist del formato quede sin resaltar**, en los tres formatos. Al revisarlo
+  salió que Constantino XI no era Errante en Infantería aunque lo dice la Fe
+  de Erratas (su entrada estaba marcada solo para Estándar): ahora lo es en
+  los tres.
 - **Las reglas juegan con lo erratado.** `toRuleCard` (`deck-rules.ts`) toma
   de `efectoEnReglas()` la Única, la raza, el atributo y el coste: las **31
   Únicas de la Banlist** y las de observación topan en una copia, Tsukuyomi

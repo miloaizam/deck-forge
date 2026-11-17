@@ -142,7 +142,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Qué significan los lazos «Errata» y «Baneada»?",
         respuesta: [
-          "**Errata**: la Fe de Erratas o la Banlist del formato corrigen esa carta. Su detalle ya muestra el **texto corregido**, con sus keywords, y el constructor juega con él: si la errata la vuelve **Única**, admite una sola copia. El texto impreso en la carta puede decir otra cosa; manda el corregido.",
+          "**Errata**: la Fe de Erratas o la Banlist del formato corrigen esa carta. Su detalle ya muestra el **texto corregido**, con sus keywords, y lo que cambió la errata va en **dorado**. El constructor juega con ese texto: si la errata la vuelve **Única**, admite una sola copia. El texto impreso en la carta puede decir otra cosa; manda el corregido.",
           "**Baneada**: la Banlist del formato la prohíbe. Se puede agregar igual, pero la baraja queda **fuera del formato** y lo dicen el constructor, la página de la baraja y la imagen descargada.",
           "Como cada formato tiene su Banlist, los lazos cambian con él: una carta puede ser Única en Estándar y estar baneada en VCR. El catálogo se mira en Estándar; para ver otro, elige en **Filtros → Formato**.",
         ],

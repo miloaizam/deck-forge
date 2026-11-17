@@ -45,6 +45,14 @@
      del texto sobre el fondo lavanda daba malva, y el aviso se leia rosado. */
   --color-warning-soft: rgb(251 191 36 / 0.1);
 
+  /* Lo que cambio una errata en el texto de una carta (`AbilityText`).
+     Dorado: es el complementario dividido calido del violeta de marca, el
+     que mas resalta a su lado sin confundirse con `success` ni `danger`, y
+     es el color de los Oros. Token propio y no `warning`, que dice «no se
+     pudo»: comparten familia pero no significado. 12:1 sobre `panel`. */
+  --color-errata: #fcd34d;
+  --color-errata-soft: rgb(252 211 77 / 0.14);
+
   /* Superficies claras (uso puntual: hojas de marca, impresion) --- */
   --color-light-bg: #f5f3fb;
   --color-light-line: #e3def2;
@@ -104,6 +112,10 @@
      el fondo y sobre `warning-soft`. */
   --color-warning: #7a4f00;
   --color-warning-soft: #fdf4d6;
+  /* El dorado del tema oscuro no se lee sobre blanco: aqui va tostado, 5.7:1
+     sobre su propio fondo de marcador. */
+  --color-errata: #8a5300;
+  --color-errata-soft: #fdf3d0;
 
   --color-halo: rgb(167 139 250 / 0.3);
 

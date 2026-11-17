@@ -3,7 +3,7 @@ import banlistInfanteriaJson from "../../documentos/fuente/banlist-infanteria.js
 import banlistVcrJson from "../../documentos/fuente/banlist-vcr.json";
 import feDeErratasJson from "../../documentos/fuente/fe-de-erratas.json";
 import { keywordsPropias, sinRecordatorios, splitAbility } from "./ability";
-import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
+import { RESALTES_IMPRESOS, TEXTOS_ERRATADOS, sinCorchetes } from "./erratas-aplicadas";
 import {
   cartasFueraDelBloque,
   claveDeNombre,
@@ -20,6 +20,7 @@ import {
   type Formato,
   type Raza,
 } from "./types";
+import { wordDiff } from "./word-diff";
 
 /**
  * La Fe de Erratas y la Banlist de cada formato, aplicadas a las cartas.
@@ -348,9 +349,61 @@ function quitarDeclaracion(texto: string, keyword: string): string {
 }
 
 /**
+ * La carta tal como se muestra: con las erratas aplicadas y lo que cambiaron
+ * marcado. No es dato del catalogo (no va en `cards.json` ni en `schema.py`):
+ * lo agrega `conErratas` y lo pinta `AbilityText`.
+ */
+export type CartaVigente = Card & {
+  /**
+   * Los trozos del texto que puso una errata, tal como salen en `habilidad`.
+   * Entre corchetes, la parte que se pinta (ver `RESALTES_IMPRESOS`).
+   */
+  resaltes?: string[];
+  /** La errata le cambio la raza (Devastador, Nanna). */
+  razaErratada?: true;
+};
+
+/** Los resaltes de una carta del catalogo; ninguno si no los trae. */
+export function resaltesDe(card: Card): string[] {
+  if (!("resaltes" in card) || !Array.isArray(card.resaltes)) return [];
+  return card.resaltes.filter((r): r is string => typeof r === "string");
+}
+
+/** Si la errata le cambio la raza a la carta. */
+export function razaErratada(card: Card): boolean {
+  return "razaErratada" in card && card.razaErratada === true;
+}
+
+/**
+ * Lo que la errata puso en el texto. Si se aplico al leer, sale exacto del
+ * diff entre lo impreso y lo vigente. Si ya venia en `data-src` (Escuelas
+ * Elementales reimprimio la carta corregida y el texto se propago), no hay
+ * texto viejo con que comparar y lo dice `RESALTES_IMPRESOS`, escrito a mano.
+ */
+function resaltar(
+  impreso: string,
+  vigente: string,
+  nombre: string,
+  formato: Formato,
+): string[] {
+  const delDiff = wordDiff(impreso, vigente)
+    .despues.filter((t) => t.tipo === "entra")
+    .map((t) => t.texto.trim())
+    .filter((t) => t !== "");
+  const escrito = RESALTES_IMPRESOS[nombre];
+  const aMano =
+    escrito && !(escrito.soloEstandar && formato !== "estandar")
+      ? escrito.frases.filter((f) => vigente.includes(sinCorchetes(f)))
+      : [];
+  // Sin quitar repetidos: cada frase marca su siguiente aparicion.
+  return [...delDiff, ...aMano];
+}
+
+/**
  * La carta con la Fe de Erratas y la Banlist del formato aplicadas: el texto
  * vigente, que es el que muestra el catalogo y el que se juega. El lazo de la
- * imagen (`CardRibbons`) avisa que el texto no es el impreso.
+ * imagen (`CardRibbons`) avisa que el texto no es el impreso, y `resaltes`
+ * dice que trozos cambio (`AbilityText` los pinta en dorado).
  *
  * Cambia la habilidad (con `TEXTOS_ERRATADOS` y las Unicas y Errantes de los
  * documentos), las keywords que de ella salen, el nombre, la raza, el
@@ -358,11 +411,19 @@ function quitarDeclaracion(texto: string, keyword: string): string {
  * su texto, que no se leen de la declaracion (`keywords.test.ts`), se
  * conservan. Las cartas sin errata salen tal cual, la misma referencia.
  */
-export function conErratas(card: Card, formato: Formato = "estandar"): Card {
+export function conErratas(card: Card, formato: Formato = "estandar"): CartaVigente {
   const escrito = TEXTOS_ERRATADOS[card.nombre];
   const texto = escrito?.soloEstandar && formato !== "estandar" ? undefined : escrito;
   const efecto = efectoEnReglas(card, formato);
-  if (!texto && Object.keys(efecto).length === 0) return card;
+  const deRaza = erratasDe(card, formato).some((e) => e.cambio === "raza");
+  if (
+    !texto &&
+    Object.keys(efecto).length === 0 &&
+    !RESALTES_IMPRESOS[card.nombre] &&
+    !deRaza
+  ) {
+    return card;
+  }
 
   let habilidad = card.habilidad;
   for (const [antes, despues] of texto?.cambia ?? []) {
@@ -384,6 +445,7 @@ export function conErratas(card: Card, formato: Formato = "estandar"): Card {
   const antes = new Set(keywordsPropias(card.habilidad));
   const condicionales = card.keywords.filter((k) => !antes.has(k));
   const keywords = [...new Set([...keywordsPropias(habilidad), ...condicionales])];
+  const resaltes = resaltar(card.habilidad, habilidad, card.nombre, formato);
 
   return {
     ...card,
@@ -393,5 +455,7 @@ export function conErratas(card: Card, formato: Formato = "estandar"): Card {
     raza: efecto.raza ?? card.raza,
     atributo: efecto.atributo ?? card.atributo,
     coste: efecto.coste ?? card.coste,
+    ...(resaltes.length > 0 ? { resaltes } : {}),
+    ...(deRaza ? { razaErratada: true as const } : {}),
   };
 }

@@ -5,18 +5,21 @@ import path from "node:path";
 
 import { createDeck } from "./deck";
 import { buildCardIndex, canAdd, limiteDeCopias, validateDeck } from "./deck-rules";
-import { FALTAN_EN_EL_CATALOGO, claveDeNombre } from "./documentos";
+import { FALTAN_EN_EL_CATALOGO, claveDeNombre, type FeDeErratas } from "./documentos";
 import {
+  BANLISTS,
   conErratas,
   efectoEnReglas,
   erratasDe,
   estaBaneada,
   fueraDelBloque,
   nombresConErrata,
+  razaErratada,
+  resaltesDe,
   tieneErrata,
 } from "./erratas";
 import { keywordsPropias } from "./ability";
-import { TEXTOS_ERRATADOS } from "./erratas-aplicadas";
+import { RESALTES_IMPRESOS, TEXTOS_ERRATADOS, sinCorchetes } from "./erratas-aplicadas";
 import { FORMATOS, catalogSchema, type Card, type Formato } from "./types";
 
 /** La Fe de Erratas y la Banlist aplicadas, contra el catalogo real. */
@@ -272,4 +275,78 @@ test("las cartas de fuera del bloque entran solo si la Banlist las nombra", () =
   // Mut: Errante en VCR.
   assert.ok(conErratas(porNombre("Mut"), "vcr").keywords.includes("Errante"));
   assert.ok(erratasDe(porNombre("Mut"), "vcr").length > 0);
+});
+
+// --- Lo que cambio una errata, resaltado (AbilityText lo pinta en dorado) ---
+
+const FE_JSON = JSON.parse(
+  readFileSync(path.join(process.cwd(), "documentos/fuente/fe-de-erratas.json"), "utf8"),
+) as FeDeErratas; // lo valida documentos.test.ts
+const impresiones = (nombre: string) =>
+  CATALOGO.filter((c) => claveDeNombre(c.nombre) === claveDeNombre(nombre));
+
+test("cada frase escrita a mano esta en todas las impresiones de su carta", () => {
+  for (const [nombre, r] of Object.entries(RESALTES_IMPRESOS)) {
+    const cs = impresiones(nombre);
+    assert.ok(cs.length > 0, nombre);
+    for (const f of FORMATOS) {
+      if (r.soloEstandar && f !== "estandar") continue;
+      for (const c of cs) {
+        const vigente = conErratas(c, f).habilidad;
+        for (const frase of r.frases) {
+          assert.ok(vigente.includes(sinCorchetes(frase)), `${c.id} (${f}): «${frase}»`);
+        }
+      }
+    }
+  }
+});
+
+test("ninguna errata de texto queda sin resaltar, en ningun formato", () => {
+  const deHabilidad = FE_JSON.entradas
+    .filter((e) => e.cambio === "habilidad")
+    .map((e) => e.nombre);
+  for (const f of FORMATOS) {
+    // La seccion de erratas de la Banlist del formato, sin las de raza (se
+    // marcan en la pastilla) ni las reglas de construccion (no son texto).
+    const deBanlist = BANLISTS[f].erratas
+      .filter((e) => !/^Raza /.test(e.texto) && impresiones(e.carta).length > 0)
+      .map((e) => e.carta);
+    for (const nombre of [...deHabilidad, ...deBanlist]) {
+      for (const c of impresiones(nombre)) {
+        assert.ok(resaltesDe(conErratas(c, f)).length > 0, `${c.id} (${f})`);
+      }
+    }
+    // Y toda carta cuyo texto cambia al leer: las Unicas y Errantes de cada
+    // Banlist, las de observacion, las de TEXTOS_ERRATADOS.
+    for (const c of CATALOGO) {
+      const v = conErratas(c, f);
+      if (v.habilidad !== c.habilidad) {
+        assert.ok(resaltesDe(v).length > 0, `${c.id} (${f}) cambia sin resaltar`);
+      }
+    }
+  }
+});
+
+test("lo resaltado depende del formato", () => {
+  const astra = conErratas(porNombre("Astra"));
+  assert.deepEqual(resaltesDe(astra), ["Desterrar"]);
+  // Nixe: Unica por la Banlist VCR, nada en Estandar ni Infanteria.
+  const nixe = porNombre("Nixe");
+  assert.deepEqual(resaltesDe(conErratas(nixe, "vcr")), ["Única."]);
+  assert.deepEqual(resaltesDe(conErratas(nixe, "estandar")), []);
+  // Amaterasu: la errata es solo de la Banlist Estandar.
+  const amaterasu = porNombre("Amaterasu");
+  assert.ok(
+    resaltesDe(conErratas(amaterasu, "estandar")).some((r) => r.includes("Eterno")),
+  );
+  assert.deepEqual(resaltesDe(conErratas(amaterasu, "vcr")), []);
+  // Sin errata, nada.
+  assert.deepEqual(resaltesDe(conErratas(porNombre("Kirin"))), []);
+});
+
+test("la errata de raza marca la raza", () => {
+  for (const nombre of ["Nanna", "Devastador", "Dragón de Magma"]) {
+    for (const c of impresiones(nombre)) assert.ok(razaErratada(conErratas(c)), c.id);
+  }
+  assert.equal(razaErratada(conErratas(porNombre("Kirin"))), false);
 });

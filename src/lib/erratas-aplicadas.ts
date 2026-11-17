@@ -61,11 +61,9 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
   "Ada Lovelace": {
     cambia: [["hasta tres Armas en", "hasta tres Armas de distinto nombre en"]],
   },
-  // Banlist: "Errante".
-  "Constantino XI": {
-    soloEstandar: true,
-    declara: ["Errante"],
-  },
+  // Fe de Erratas y Banlist: "Errante". De los tres formatos: lo dice la Fe
+  // de Erratas, no solo la Banlist Estandar.
+  "Constantino XI": { declara: ["Errante"] },
   // Fe de Erratas: "Cuando un Aliado de Raza Bestia entre en juego bajo tu control".
   Lahmu: {
     cambia: [
@@ -218,3 +216,120 @@ export const TEXTOS_ERRATADOS: Record<string, TextoErratado> = {
     declara: ["Errante"],
   },
 };
+
+/**
+ * Lo que una errata cambio en cartas cuyo texto ya viene corregido en
+ * `data-src`: Escuelas Elementales reimprimio la carta con la errata y su
+ * texto se propago hacia atras (CLAUDE.md), asi que el catalogo ya no tiene
+ * el texto viejo con que comparar. Las frases van tal como las dice el
+ * catalogo, y `AbilityText` las pinta en dorado. Las que se aplican al leer
+ * (`TEXTOS_ERRATADOS`, las Unicas y Errantes de las Banlists) no van aqui:
+ * salen del diff que hace `conErratas`.
+ *
+ * `erratas.test.ts` exige que cada frase este en el texto vigente de TODAS
+ * las impresiones de la carta, y que ninguna errata de habilidad de los dos
+ * documentos quede sin resaltar.
+ */
+export interface ResalteImpreso {
+  /**
+   * Cada frase marca su siguiente aparicion en el texto: "juego" cuatro veces
+   * son las cuatro primeras. Entre corchetes va la parte que se pinta y fuera
+   * el contexto que la ubica ("Mientras este [Tótem]"), para no marcar la
+   * aparicion equivocada ni una palabra que no cambio.
+   */
+  frases: string[];
+  /** Sale solo de la Banlist Estandar: no se marca en VCR ni en Infanteria. */
+  soloEstandar?: true;
+}
+
+/** Las erratas que solo le dan `Única` a una carta que ya la declara. */
+const UNICA: ResalteImpreso = { frases: ["Única"] };
+
+export const RESALTES_IMPRESOS: Record<string, ResalteImpreso> = {
+  // Fe de Erratas: la hacen Unica.
+  Aruspicina: UNICA,
+  "Akai Misuto": UNICA,
+  "Ballesta Gigante": UNICA,
+  Bouda: UNICA,
+  "Cristalino Amarillo": UNICA,
+  Euforia: UNICA,
+  "Fuerza Compartida": UNICA,
+  Hidromancia: UNICA,
+  Hnoss: UNICA,
+  Ikiryo: UNICA,
+  "Luz Solar": UNICA,
+  Mantus: UNICA,
+  "Margot la Fee": UNICA,
+  Raziel: UNICA,
+  "Rey Roble": UNICA,
+  Sarras: UNICA,
+  Simargl: UNICA,
+  Tezcatlipoca: UNICA,
+  // Fe de Erratas: "entre en juego bajo tu control" en vez de "juegues". En
+  // Estandar suma la linea de la Banlist, que sale del diff.
+  Adapa: { frases: ["Sacerdote [entra en juego bajo tu control]"] },
+  // Fe de Erratas y Banlist: "Desterrar" en vez de "Destruir".
+  Astra: { frases: ["Desterrar"] },
+  // Fe de Erratas y Banlist: "Mientras esta Arma" / "Mientras este Tótem".
+  Archa: { frases: ["Mientras esta [Arma]"] },
+  "Coto de Caza": { frases: ["Mientras este [Tótem]"] },
+  // Fe de Erratas: Errante y la condicion de escuela o de raza.
+  "Akiko Yamamoto": {
+    frases: [
+      "Errante",
+      "si todos los Aliados que controlas son Luz y/o Samurái,",
+      "el Aliado [Samurái] objetivo",
+    ],
+  },
+  "Azi Dahaka": {
+    frases: ["Errante", "si todos los Aliados que controlas son de Raza Dragón,"],
+  },
+  Dimachaerus: {
+    frases: ["Errante", "si todos los Aliados que controlas son Guerrero,"],
+  },
+  Nostradamus: {
+    frases: ["Errante", "si todos los Aliados que controlas son Sacerdote,"],
+  },
+  Yaoguai: { frases: ["Errante"] },
+  // Fe de Erratas: "En Guerra de Talismanes" en vez de "En la Fase de
+  // Asignacion de Dano".
+  "Carmina Burana": { frases: ["En Guerra de Talismanes"] },
+  // Fe de Erratas: entra desde la mano y no se usa en el primer turno.
+  "Espejo Negro": { frases: ["desde tu mano", "Si no es tu primer turno,"] },
+  // Fe de Erratas: "un Oro" en vez de "el Oro objetivo".
+  Kukulkán: { frases: ["Destruir [un] Oro"] },
+  // Fe de Erratas: "Desterrar" en vez de "Descartar".
+  Kuyén: { frases: ["Desterrar"] },
+  // Fe de Erratas: sobraba un "de" ("dos de copias"). Se marca donde estaba.
+  "Ojo de Balor": { frases: ["hasta [dos copias]"] },
+  // Fe de Erratas: el Talisman oponente se anula y la carta se reescribe.
+  Sealtiel: {
+    frases: ["Única", "para Anular una carta oponente, jugada desde su mano,"],
+  },
+  // Fe de Erratas: cancela las habilidades disparadas.
+  Teúrgia: { frases: ["Cancela las habilidades disparadas de ese Aliado"] },
+  // Fe de Erratas: "de tu Cementerio" en vez de "de un Cementerio".
+  Trismegistus: { frases: ["Desterrada de [tu] Cementerio"] },
+  // Fe de Erratas: "en tu Mazo Castillo o Cementerio".
+  "Ukita Hideie": { frases: ["en tu Mazo Castillo o Cementerio"] },
+  // Fe de Erratas: sobraba "o habilidad" ("un efecto o habilidad oponente").
+  Vodyanoy: { frases: ["un [efecto oponente]"] },
+  // Fe de Erratas: el oponente, que se puede usar mas de una vez por turno,
+  // Bestias, todos los contadores y "una habilidad" sin "activada objetivo".
+  Yestay: {
+    frases: [
+      "bajo el control de [un Oponente]",
+      "Puedes utilizar esta habilidad más de una vez por turno.",
+      "Si sólo controlas [Bestias]",
+      "quitar [todos los contadores de] Alimento",
+      "para cancelar [una habilidad]",
+    ],
+  },
+  // Fe de Erratas: "en juego" donde la carta decia "en jugo", cuatro veces.
+  "Wyrm de la Plaga": { frases: ["juego", "juego", "juego", "juego"] },
+};
+
+/** La frase sin los corchetes que marcan la parte a pintar. */
+export function sinCorchetes(frase: string): string {
+  return frase.replace(/[[\]]/g, "");
+}

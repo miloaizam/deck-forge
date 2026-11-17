@@ -9,6 +9,7 @@ import { CartaInclinable } from "./CartaInclinable";
 import { CardRibbons } from "./CardRibbons";
 import { marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
+import { razaErratada, resaltesDe } from "@/lib/erratas";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card, Formato } from "@/lib/types";
 import {
@@ -213,11 +214,23 @@ export function CardModal({
                   <span className={cn(PASTILLA, "bg-accent-soft text-accent")}>
                     {tipoDeCarta(mostrada)}
                   </span>
-                  {mostrada.raza && (
-                    <span className={cn(PASTILLA, "border-line text-muted border")}>
-                      {mostrada.raza}
-                    </span>
-                  )}
+                  {mostrada.raza &&
+                    (razaErratada(mostrada) ? (
+                      // La errata le cambio la raza: en dorado, como el texto.
+                      <ins
+                        className={cn(
+                          PASTILLA,
+                          "bg-errata-soft text-errata border-errata/50 border no-underline",
+                        )}
+                        title="Cambió con una errata"
+                      >
+                        {mostrada.raza}
+                      </ins>
+                    ) : (
+                      <span className={cn(PASTILLA, "border-line text-muted border")}>
+                        {mostrada.raza}
+                      </span>
+                    ))}
                   {mostrada.escuela && (
                     <span className={cn(PASTILLA, "border-line text-muted border")}>
                       {mostrada.escuela}
@@ -239,7 +252,11 @@ export function CardModal({
                       Habilidad
                     </h3>
                     <div className="mt-2">
-                      <AbilityText text={mostrada.habilidad} />
+                      <AbilityText
+                        text={mostrada.habilidad}
+                        resaltes={resaltesDe(mostrada)}
+                        conLeyenda={razaErratada(mostrada)}
+                      />
                     </div>
                   </div>
                 )}

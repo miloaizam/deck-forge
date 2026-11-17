@@ -107,6 +107,24 @@ token `warning-soft`.
 | `warning-soft` | ámbar al 10 % | `#FDF4D6` | el fondo de lo que está en ámbar: la caja de estado y la pastilla «Incompleta» |
 | `accent` | (el de la marca) | | informativo: enlace copiado, archivo exportado |
 
+### Lo que cambió una errata, en dorado
+
+En el detalle de una carta, lo que puso una errata —una palabra, una
+condición, una keyword o la raza— va en **dorado** sobre un fondo de
+marcador (`AbilityText`, `<ins>` con título «Cambió con una errata»), y una
+línea al pie lo explica: «En dorado, lo que cambió una errata.». El violeta
+ya es la marca y el resaltado de las keywords, así que hacía falta otro tono:
+el dorado es el **complementario dividido cálido** del violeta (~263°), el que
+más resalta a su lado sin confundirse con el verde ni el rojo de los estados,
+y es el color de los Oros. El amarillo puro no daba contraste en el tema
+claro. Tiene **token propio** y no reusa `warning`, que significa «no se
+pudo»: son de la misma familia, no dicen lo mismo.
+
+| Token | Oscuro | Claro | Uso |
+|---|---|---|---|
+| `errata` | `#FCD34D` | `#8A5300` | el texto que cambió una errata (12:1 y 5,7:1) |
+| `errata-soft` | dorado al 14 % | `#FDF3D0` | su fondo de marcador |
+
 ### Al pasar el cursor
 
 Todo lo que se puede pulsar y tiene contorno —botones, filtros, selectores,

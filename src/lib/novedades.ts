@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-17",
+    version: "6.4.0",
+    tipo: "Mejora",
+    titulo: "Lo que cambió una errata, en dorado",
+    texto: [
+      "En el detalle de una carta con errata, lo que cambió va en dorado: la palabra nueva (Astra ya no se Destruye, se Destierra), la condición que se agregó o la keyword que la vuelve Única o Errante. Vale para la Fe de Erratas y para la Banlist de cada formato, así que lo marcado cambia con el formato elegido.",
+      "Y Constantino XI es Errante también en Infantería, como dice la Fe de Erratas; antes no lo era en ese formato.",
+    ],
+  },
+  {
+    fecha: "2026-11-17",
     version: "6.3.1",
     tipo: "Arreglo",
     titulo: "Fuera las impresiones con estrella",
