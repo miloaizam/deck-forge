@@ -336,7 +336,7 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Cómo pongo una foto de perfil?",
         respuesta: [
           "En **«Tu cuenta»**, con **«Poner foto»**. Elige cualquier imagen: se recorta al cuadrado del centro y se achica antes de subirla. Primero tienes que elegir un **alias**.",
-          "La foto se ve arriba a la derecha y junto a tu alias en la **Comunidad**. Para cambiarla usa **«Cambiar foto»**, y para borrarla, **«Quitar foto»**.",
+          "La foto se ve arriba a la derecha y junto a tu alias en la **Comunidad**. Para cambiarla usa **«Cambiar foto»**, y para borrarla, el botón de la **papelera** que va a su lado.",
         ],
       },
       {

@@ -113,9 +113,12 @@ export function DocumentIndex({ entradas }: { entradas: EntradaIndice[] }) {
         </nav>
       </details>
 
+      {/* `p-1` y `-ml-1`: un contenedor que scrollea recorta el anillo del
+          foco y del cursor (4 px por fuera), y sin margen la entrada marcada
+          salia cortada a la izquierda. */}
       <nav
         aria-label="Índice"
-        className="sticky top-24 hidden max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain pr-1 pb-4 lg:block"
+        className="sticky top-24 -ml-1 hidden max-h-[calc(100dvh-8rem)] overflow-y-auto overscroll-contain p-1 pb-4 lg:block"
       >
         <p className="text-muted mb-3 px-2 text-[11px] font-semibold tracking-[0.18em] uppercase">
           Índice

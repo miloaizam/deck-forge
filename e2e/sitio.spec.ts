@@ -424,7 +424,7 @@ test.describe("formatos", () => {
     await page.goto("/documentos/");
     await page
       .getByRole("region", { name: "Banlist Infantería" })
-      .getByRole("link", { name: /Leer en el sitio/ })
+      .getByRole("link", { name: /^Leer/ })
       .click();
     await expect(page).toHaveURL(/\/documentos\/banlist\/infanteria\/?$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(

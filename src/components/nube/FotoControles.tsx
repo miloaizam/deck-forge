@@ -7,11 +7,11 @@ import { toast } from "../toast";
 import { FotoNoValida, achicarAvatar } from "./achicar-avatar";
 import { mensajeDeError } from "./api";
 import { quitarAvatar, subirAvatar } from "./nube";
-import { BOTON_SECUNDARIO_COMPACTO, HOVER_PELIGRO } from "@/lib/ui";
+import { BOTON_ICONO, BOTON_SECUNDARIO, HOVER_PELIGRO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface FotoControlesProps {
-  /** Sin alias no hay foto: los dos viven en la misma fila del perfil. */
+  /** Sin alias no hay foto. */
   conAlias: boolean;
   conFoto: boolean;
 }
@@ -41,20 +41,21 @@ export function FotoControles({ conAlias, conFoto }: FotoControlesProps) {
     }
   };
 
-  if (!conAlias) {
-    return <p className="text-muted text-[13px]">Elige un alias para poner una foto.</p>;
-  }
+  // Sin alias no hay foto; «Tu cuenta» lo dice bajo el nombre.
+  if (!conAlias) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    // «Quitar foto» va solo con su icono (y su nombre para el lector): con
+    // texto, los tres botones del pie de «Tu cuenta» no cabian en una fila.
+    <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={() => input.current?.click()}
         disabled={ocupado}
         aria-busy={ocupado}
-        className={BOTON_SECUNDARIO_COMPACTO}
+        className={BOTON_SECUNDARIO}
       >
-        <ImageUp size={14} aria-hidden="true" />
+        <ImageUp size={16} aria-hidden="true" />
         {ocupado ? "Guardando…" : conFoto ? "Cambiar foto" : "Poner foto"}
       </button>
       {conFoto && (
@@ -71,10 +72,11 @@ export function FotoControles({ conAlias, conFoto }: FotoControlesProps) {
               )
               .finally(() => setOcupado(false));
           }}
-          className={cn(BOTON_SECUNDARIO_COMPACTO, HOVER_PELIGRO)}
+          aria-label="Quitar foto"
+          title="Quitar foto"
+          className={cn(BOTON_ICONO, HOVER_PELIGRO)}
         >
-          <Trash2 size={14} aria-hidden="true" />
-          Quitar foto
+          <Trash2 size={18} aria-hidden="true" />
         </button>
       )}
       <input

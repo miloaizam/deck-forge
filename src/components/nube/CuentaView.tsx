@@ -116,14 +116,9 @@ export function CuentaView() {
     <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <section
         aria-label="Tus datos"
-        className={cn(
-          TARJETA,
-          "sm:flex-row sm:items-center md:col-span-2 lg:col-span-1 lg:flex-col lg:items-stretch",
-        )}
+        className={cn(TARJETA, "md:col-span-2 lg:col-span-1")}
       >
-        {/* En la fila del escritorio, arriba y con «Cerrar sesión» al pie:
-            estirado y centrado quedaba flotando a media tarjeta. */}
-        <div className="flex min-w-0 flex-1 items-center gap-4 lg:flex-none lg:items-start">
+        <div className="flex min-w-0 items-center gap-4">
           <Avatar ruta={rutaAvatar(usuario.id, avatar)} lado={56} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-semibold">
@@ -135,30 +130,34 @@ export function CuentaView() {
             <p className="text-muted mt-1 text-[13px]">
               Nadie más ve tu nombre ni tu correo.
             </p>
-            <div className="mt-3">
-              <FotoControles conAlias={alias !== null} conFoto={avatar !== null} />
-            </div>
+            {alias === null && (
+              <p className="text-muted mt-1 text-[13px]">
+                Elige un alias para poner una foto.
+              </p>
+            )}
           </div>
         </div>
-        <button
-          type="button"
-          disabled={saliendo}
-          aria-busy={saliendo}
-          onClick={() => {
-            setSaliendo(true);
-            void salir()
-              .then(() => toast("Sesión cerrada.", "info"))
-              .finally(() => setSaliendo(false));
-          }}
-          // Al pie de la tarjeta en escritorio, a la altura de «Sincronizar ahora».
-          className={cn(
-            BOTON_SECUNDARIO,
-            "self-start sm:self-center lg:mt-auto lg:self-start",
-          )}
-        >
-          <LogOut size={16} aria-hidden="true" />
-          {saliendo ? "Cerrando sesión…" : "Cerrar sesión"}
-        </button>
+        {/* Los botones juntos al pie, a la altura de «Sincronizar ahora»: los
+            de la foto a la izquierda y «Cerrar sesión» a la derecha. Antes la
+            foto iba sangrada bajo el nombre y la sesión sola mas abajo. */}
+        <div className="flex flex-wrap items-center gap-2 lg:mt-auto">
+          <FotoControles conAlias={alias !== null} conFoto={avatar !== null} />
+          <button
+            type="button"
+            disabled={saliendo}
+            aria-busy={saliendo}
+            onClick={() => {
+              setSaliendo(true);
+              void salir()
+                .then(() => toast("Sesión cerrada.", "info"))
+                .finally(() => setSaliendo(false));
+            }}
+            className={cn(BOTON_SECUNDARIO, "ml-auto")}
+          >
+            <LogOut size={16} aria-hidden="true" />
+            {saliendo ? "Cerrando sesión…" : "Cerrar sesión"}
+          </button>
+        </div>
       </section>
 
       <section className={TARJETA}>
@@ -202,7 +201,7 @@ export function CuentaView() {
         <p className="text-muted text-[13px] leading-relaxed">
           Tus barajas y tu colección se sincronizan solas cada vez que guardas.
         </p>
-        <div>
+        <div className="lg:mt-auto">
           <button
             type="button"
             disabled={sincronizando}

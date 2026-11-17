@@ -12,11 +12,6 @@ de perderse.
 
 Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
-De dónde sale lo de hoy (23-10-2026): la revisión de código (`/code-review`) y
-la de seguridad (`/security-review`) de todo lo de cuentas, Comunidad y foto
-de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
-768 y 390 px con la skill `taste-skill`.
-
 ---
 
 ## Orden sugerido
@@ -24,7 +19,6 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
 1. **Pegar el esquema en Supabase** (la cinta de la portada y el filtro de
    formato de la Comunidad).
 2. **Cargar las cartas de fuera del bloque de VCR.**
-3. **Por decidir**, cuando haya ganas: no bloquea nada.
 
 ## Base de datos
 
@@ -59,31 +53,3 @@ de perfil (`a620db7..HEAD`), y la revisión visual de las 16 páginas a 1440,
   sigan faltando mientras estén ahí. Ojo con «Hadas»: que sea la de Furia.
 - **Terminado cuando:** las nueve salen en el catálogo con `?formato=vcr` y
   `FALTAN_EN_EL_CATALOGO` queda vacía.
-
-## Por decidir
-
-Salió de la revisión visual con `taste-skill`. Son cosas que esa skill marca
-como defecto y que hoy son decisiones de la marca; no se tocan sin decidirlo.
-
-### Documentos con media pantalla vacía
-
-- **Qué:** bajo las tres tarjetas (DAR, Fe de Erratas y Banlist) no hay nada.
-- **Opciones:** dejarla así (es una página de paso) o agregar debajo lo último
-  que cambió en cada documento.
-
-### Columnas angostas en Novedades y Privacidad
-
-- **Qué:** en escritorio el texto ocupa ~650 px y deja vacía la derecha. La
-  skill lo castiga; para texto de lectura es lo correcto.
-- **Recomendación:** dejarlo como está.
-
-### Lo que la skill considera «plantilla»
-
-- **Qué:** el violeta de marca, el degradado y el título degradado de la
-  portada, las etiquetas chicas en mayúsculas sobre cada título («BARAJAS»,
-  «COMUNIDAD», «TODO»), los iconos dentro de círculos de color, las pastillas
-  («Legal», «Oro inicial»), el brillo violeta de la última novedad y las
-  etiquetas «DONDE DICE / DEBE DECIR» de la Fe de Erratas.
-- **Recomendación:** mantenerlos; son coherentes en todo el sitio y están en
-  DESIGN.md. Lo único que valdría revisar es la etiqueta «TODO» del catálogo,
-  que no dice nada.

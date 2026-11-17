@@ -2,11 +2,13 @@ import Link from "next/link";
 import { BookOpen, Download, ExternalLink } from "lucide-react";
 
 import type { Documento } from "@/lib/documentos";
-import { BOTON_PRIMARIO, BOTON_SECUNDARIO } from "@/lib/ui";
+import {
+  BOTON_PRIMARIO,
+  BOTON_PRIMARIO_COMPACTO,
+  BOTON_SECUNDARIO,
+  BOTON_SECUNDARIO_COMPACTO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
-
-const BOTON = BOTON_SECUNDARIO;
-const PRIMARIO = BOTON_PRIMARIO;
 
 /**
  * Lo que se puede hacer con un documento: leerlo en el sitio, abrir el PDF
@@ -17,6 +19,10 @@ const PRIMARIO = BOTON_PRIMARIO;
  * de CLAUDE.md). La lectura en el sitio es la pagina HTML, dibujada con los
  * mismos datos; "Abrir" lo deja en manos del visor del navegador, en otra
  * pestana.
+ *
+ * En las tarjetas de /documentos (`verEnElSitio`) van los tres en una fila:
+ * compactos y con el texto corto («Leer»), porque de a tres por fila la
+ * tarjeta no deja sitio para mas. Lo que falta para un lector va en sr-only.
  */
 export function DocumentActions({
   doc,
@@ -32,12 +38,23 @@ export function DocumentActions({
   verEnElSitio?: boolean;
   className?: string;
 }) {
+  // Compactos y un poco mas angostos (px-2.5): a 1280 px la tarjeta deja
+  // 342 px y los tres, con su padding de siempre, pedian 355.
+  const BOTON = verEnElSitio ? cn(BOTON_SECUNDARIO_COMPACTO, "px-2.5") : BOTON_SECUNDARIO;
+  const PRIMARIO = verEnElSitio ? cn(BOTON_PRIMARIO_COMPACTO, "px-2.5") : BOTON_PRIMARIO;
   return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+    <div
+      className={cn(
+        "flex flex-wrap items-center",
+        verEnElSitio ? "gap-1.5" : "gap-2",
+        className,
+      )}
+    >
       {verEnElSitio && (
         <Link href={doc.ruta} className={PRIMARIO}>
           <BookOpen size={14} aria-hidden="true" />
-          Leer en el sitio
+          Leer
+          <span className="sr-only"> {nombre} en el sitio</span>
         </Link>
       )}
       <a href={doc.pdf} target="_blank" rel="noopener noreferrer" className={BOTON}>
@@ -52,7 +69,10 @@ export function DocumentActions({
         Descargar
         <span className="sr-only"> el PDF de {nombre}</span>
         <span
-          className={cn("tabular-nums", verEnElSitio ? "text-muted" : "text-white/90")}
+          className={cn(
+            "tabular-nums",
+            verEnElSitio ? "text-muted text-[12px]" : "text-white/90",
+          )}
         >
           · {peso}
         </span>

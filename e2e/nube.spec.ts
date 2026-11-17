@@ -177,6 +177,9 @@ test.describe("con la nube encendida", () => {
     const antes = await posicion();
     await expect.poll(posicion).not.toBe(antes);
     await primera.focus();
+    // La pausa entra en el cuadro siguiente al foco: leida en el mismo, la
+    // cinta todavia avanza un pixel y la prueba fallaba de vez en cuando.
+    await page.waitForTimeout(100);
     const quieta = await posicion();
     await page.waitForTimeout(300);
     expect(await posicion()).toBe(quieta);

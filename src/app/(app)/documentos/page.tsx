@@ -29,34 +29,10 @@ export default function DocumentosPage() {
         Banlist, cada uno tiene la suya.
       </p>
 
-      {/* Una sobre otra hasta xl, y de a tres desde ahi: todas las tarjetas
-          del mismo ancho, como cuando eran tres documentos. */}
+      {/* Una sobre otra hasta xl, y de a tres desde ahi, todas del mismo
+          ancho: arriba la Banlist de cada formato y debajo el DAR y la Fe de
+          Erratas, que valen para los tres. */}
       <div className="mt-10 grid gap-5 xl:grid-cols-3">
-        <Tarjeta
-          doc={DOCUMENTOS.dar}
-          icono={<BookOpenText size={20} aria-hidden="true" />}
-          titulo="Documento Actualizado de Reglas"
-          descripcion="Cómo se juega, regla por regla: las partes de una carta, las zonas, las habilidades, las fases del turno y los conceptos del juego."
-          cifras={[
-            [reglasDelDar(DAR), "reglas con letra"],
-            [conceptosDelDar(DAR), "conceptos de juego"],
-            [cartasDelDar(DAR).length, "cartas de ejemplo"],
-          ]}
-        />
-        <Tarjeta
-          doc={DOCUMENTOS.feDeErratas}
-          icono={<FileText size={20} aria-hidden="true" />}
-          titulo="Fe de Erratas"
-          descripcion="El texto vigente de cada carta corregida: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado."
-          cifras={[
-            [FE_DE_ERRATAS.entradas.length, "cartas corregidas"],
-            [cambiosDeHabilidad, "de habilidad"],
-            [
-              FE_DE_ERRATAS.entradas.length - cambiosDeHabilidad,
-              "de nombre, raza o frecuencia",
-            ],
-          ]}
-        />
         <Tarjeta
           doc={DOCUMENTOS.banlist}
           icono={<Ban size={20} aria-hidden="true" />}
@@ -88,6 +64,31 @@ export default function DocumentosPage() {
             [BANLISTS.infanteria.prohibidas.length, "prohibidas"],
             [BANLISTS.infanteria.unicas.length, "Únicas"],
             [BANLISTS.infanteria.errantes?.length ?? 0, "Errantes"],
+          ]}
+        />
+        <Tarjeta
+          doc={DOCUMENTOS.dar}
+          icono={<BookOpenText size={20} aria-hidden="true" />}
+          titulo="Documento Actualizado de Reglas"
+          descripcion="Cómo se juega, regla por regla: las partes de una carta, las zonas, las habilidades, las fases del turno y los conceptos del juego."
+          cifras={[
+            [reglasDelDar(DAR), "reglas con letra"],
+            [conceptosDelDar(DAR), "conceptos de juego"],
+            [cartasDelDar(DAR).length, "cartas de ejemplo"],
+          ]}
+        />
+        <Tarjeta
+          doc={DOCUMENTOS.feDeErratas}
+          icono={<FileText size={20} aria-hidden="true" />}
+          titulo="Fe de Erratas"
+          descripcion="El texto vigente de cada carta corregida: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado."
+          cifras={[
+            [FE_DE_ERRATAS.entradas.length, "cartas corregidas"],
+            [cambiosDeHabilidad, "de habilidad"],
+            [
+              FE_DE_ERRATAS.entradas.length - cambiosDeHabilidad,
+              "de nombre, raza o frecuencia",
+            ],
           ]}
         />
       </div>
