@@ -24,6 +24,11 @@
  * (Leviatan de Furia, Mandoble de la extension de Furia y Nothung de
  * Midgard). Quien las tenia en una baraja o en la coleccion pasa a la
  * impresion de la misma carta que ya estaba.
+ *
+ * 17-11-2026: salen las ocho impresiones con estrella tras el nombre (Thor,
+ * Arturo de Camelot, Belerofonte, Encantamiento, Ereskigal, Enki, Ninurta e
+ * Incendiar el Mundo): son los remakes de 2020 del Bloque Furia, otra carta
+ * con otro coste. Van a su impresion de ContraAtaque.
  * Ver CLAUDE.md.
  */
 export const ID_ANTERIORES: Readonly<Record<string, string>> = {
@@ -125,6 +130,14 @@ export const ID_ANTERIORES: Readonly<Record<string, string>> = {
   "aa-265": "am-066",
   "aa-390": "do-102",
   "aa-415": "do-170",
+  "aa-266": "ca-012",
+  "aa-331": "ca-050",
+  "aa-369": "ca-011",
+  "aa-370": "ca-080",
+  "aa-371": "ca-112",
+  "aa-391": "ca-079",
+  "aa-416": "ca-007",
+  "aa-417": "ca-045",
 };
 
 /** El id de hoy de una carta, o el mismo si nunca cambio. */

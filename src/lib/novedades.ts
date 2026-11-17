@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-17",
+    version: "6.3.1",
+    tipo: "Arreglo",
+    titulo: "Fuera las impresiones con estrella",
+    texto: [
+      "Thor, Arturo de Camelot, Belerofonte, Encantamiento, Ereskigal, Enki, Ninurta e Incendiar el Mundo ofrecían entre sus artes la versión con estrella tras el nombre, que es otra carta con otro coste. Se quitaron; si alguna estaba en tus barajas o en tu colección, pasa a su impresión de ContraAtaque.",
+    ],
+  },
+  {
+    fecha: "2026-11-17",
     version: "6.3.0",
     tipo: "Mejora",
     titulo: "Arte de Leyendas - Bloque Furia para cuatro cartas de VCR",

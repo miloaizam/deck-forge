@@ -1701,8 +1701,8 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
 que no son ediciones del juego (ver abajo): **Adicionales** (83, en
-`data-src/extras.json`) y **Arte Alternativo** (424, en
-`data-src/arte-alternativo.json`). **2666** en total.
+`data-src/extras.json`) y **Arte Alternativo** (416, en
+`data-src/arte-alternativo.json`). **2658** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1720,7 +1720,7 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   y las **nueve de fuera del bloque que admite la Banlist VCR**
   (`ad-075`…`ad-083`, 17-11-2026), que solo valen en VCR.
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte: 424, de veintidós ediciones
+  cargadas, para que el jugador elija el arte: 416, de veintidós ediciones
   y productos del juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
   copias. La edición se ordena por **`origen`** —la edición del juego de donde
   sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
@@ -1749,6 +1749,16 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   `ids-anteriores.ts` hacia la impresión que ya estaba (DO-170, DO-102 y
   AM-066), así que una baraja o una colección que las llevaba no pierde la
   carta, y sus WebP se borraron.
+  **Y después salieron las ocho con estrella tras el nombre** (17-11-2026,
+  decisión del proyecto): Thor★, Arturo de Camelot★, Belerofonte★,
+  Encantamiento★, Ereskigal★, Enki★, Ninurta★ e Incendiar el Mundo★
+  (`aa-417`, `416`, `391`, `371`, `370`, `369`, `331` y `266`). Son los
+  *remakes* de 2020 del Bloque Furia: otra carta, con otro coste y a veces
+  otro texto, aunque se llamen igual. Sus ids van a su impresión de
+  ContraAtaque. **La API los marca en el slug**: `_bf` en la edición de
+  origen (`thor_bf`, y lleva un espacio al final del nombre) y `_e` en
+  *Leyendas - Bloque Furia*. Al buscar artes alternativos, descartar esos
+  slugs.
 - **Detalles de la carga**:
   - La API rotula **«Viriato» a la 280 de Tierra Austral, que es Venatio**.
   - **Mariamman del Kit Eterno** (`aa-420`, 18-10-2026) es la primera de los
