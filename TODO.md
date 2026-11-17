@@ -16,17 +16,17 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ## Datos
 
-### Las cartas de fuera del bloque que admite VCR
+### El arte de Leyendas - Bloque Furia para tres cartas de VCR
 
-- **Qué:** la Banlist VCR admite trece cartas de fuera del bloque EE y nueve
-  no están en el catálogo: **Nixe** (Templarios), **Yudhishthira** (Dharma),
-  **Nefertari** y **Helios** (Kemet), **Tormod Kark** y **Reina Aesir**
-  (Asgard), **Serpopardo** (Camelot), **Sacerdotisa de Odín** (Midgard) y
-  **Hadas** (Furia). La Banlist las nombra, pero no se pueden agregar.
-- **Por dónde:** cargarlas en `data-src/extras.json` (Adicionales) como las
-  nueve de observación de la Estándar, revisadas contra el arte
-  (`pnpm run data:card <edicion> <numero>`), y borrarlas de
-  `FALTAN_EN_EL_CATALOGO` (`src/lib/documentos.ts`): el test exige que
-  sigan faltando mientras estén ahí. Ojo con «Hadas»: que sea la de Furia.
-- **Terminado cuando:** las nueve salen en el catálogo con `?formato=vcr` y
-  `FALTAN_EN_EL_CATALOGO` queda vacía.
+- **Qué:** Helios, Tormod Kark y Reina Aesir tienen impresión en *Leyendas -
+  Bloque Furia* (2023, `LBF-083`, `LBF-248` y `LBF-269`), que se podría sumar
+  como Arte Alternativo. La API no tiene esa edición, el fandom no tiene esas
+  tres imágenes y La Guarida tampoco.
+- **Por dónde:** con una imagen limpia de cada una, cargarlas en
+  `data-src/arte-alternativo.json` como `aa-424`… con origen
+  `leyendas-bloque-furia` (nuevo en `ORIGENES` de `editions.ts`, primero de
+  la lista: es de 2023). Texto y datos, los de la carta ya cargada; la
+  frecuencia y el ilustrador, los de esa impresión (el fandom da Real para
+  Helios, Vasallo para las otras dos).
+- **Terminado cuando:** el selector de impresiones del modal ofrece el arte
+  de Leyendas en las tres.

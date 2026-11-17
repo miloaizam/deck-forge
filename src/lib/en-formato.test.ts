@@ -22,9 +22,31 @@ const porId = (id: string) => CATALOGO.find((c) => c.id === id)!;
 const motivo = (id: string, f: Formato) =>
   motivoFueraDeFormato(porId(id), f, FRECUENCIAS);
 
-test("en Estandar entra todo lo del bloque", () => {
+/** Las nueve de fuera del bloque que solo admite la Banlist VCR. */
+const SOLO_VCR = [
+  "Nixe",
+  "Yudhishthira",
+  "Nefertari",
+  "Helios",
+  "Tormod Kark",
+  "Serpopardo",
+  "Sacerdotisa de Odín",
+  "Reina Aesir",
+  "Hadas",
+];
+
+test("en Estandar entra todo menos lo que solo admite VCR", () => {
   assert.equal(motivo("bu-001", "estandar"), null); // Kirin, Ultra Real
-  assert.equal(cartasEnFormato(CATALOGO, "estandar").length, CATALOGO.length);
+  const fuera = CATALOGO.filter(
+    (c) => motivoFueraDeFormato(c, "estandar", FRECUENCIAS) !== null,
+  );
+  assert.deepEqual([...new Set(fuera.map((c) => c.nombre))].sort(), [...SOLO_VCR].sort());
+  for (const c of fuera)
+    assert.equal(motivoFueraDeFormato(c, "estandar", FRECUENCIAS), "fuera-del-bloque");
+  assert.equal(
+    cartasEnFormato(CATALOGO, "estandar").length,
+    CATALOGO.length - fuera.length,
+  );
 });
 
 test("la frecuencia se mira por carta, en las diez ediciones", () => {
@@ -65,6 +87,22 @@ test("las de fuera del bloque, segun cada Banlist", () => {
   assert.equal(motivo("ad-032", "infanteria"), "fuera-del-bloque");
   assert.equal(motivo("ad-039", "vcr"), "fuera-del-bloque"); // Wotan
   assert.equal(motivo("ad-039", "estandar"), null);
+  // Las nueve de VCR, con todas sus impresiones: entran en VCR y en ningun otro.
+  for (const nombre of SOLO_VCR) {
+    const impresiones = CATALOGO.filter((c) => c.nombre === nombre);
+    assert.ok(impresiones.length > 0, nombre);
+    for (const c of impresiones) {
+      assert.equal(motivoFueraDeFormato(c, "vcr", FRECUENCIAS), null, c.id);
+      assert.equal(
+        motivoFueraDeFormato(c, "infanteria", FRECUENCIAS),
+        "fuera-del-bloque",
+      );
+    }
+  }
+  // Helios entra en VCR por su impresion Real de Furia (aa-423): la de Kemet
+  // que nombra la Banlist es Promocional.
+  assert.equal(porId("ad-078").frecuencia, "Promocional");
+  assert.equal(porId("aa-423").frecuencia, "Real");
 });
 
 test("VCR e Infanteria se van acotando", () => {

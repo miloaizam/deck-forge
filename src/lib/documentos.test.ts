@@ -43,10 +43,9 @@ for (const c of CATALOGO) {
 }
 
 /**
- * Cartas que alguna Banlist nombra y que el catalogo no tiene: las nueve de
- * fuera del bloque de VCR (`FALTAN_EN_EL_CATALOGO`).
- * Las nueve "en observacion" de la Estandar estan en Adicionales desde que
- * llegaron Wotan y Jarnvid.
+ * Cartas que alguna Banlist nombra y que el catalogo no tiene
+ * (`FALTAN_EN_EL_CATALOGO`, hoy ninguna). Las de observacion de la Estandar y
+ * las de fuera del bloque de VCR estan en Adicionales.
  */
 const FUERA_DEL_FORMATO: string[] = [...FALTAN_EN_EL_CATALOGO];
 

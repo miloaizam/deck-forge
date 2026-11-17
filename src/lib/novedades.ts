@@ -33,6 +33,15 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-11-17",
+    version: "6.2.0",
+    tipo: "Novedad",
+    titulo: "Las cartas de otros bloques que admite VCR",
+    texto: [
+      "Ya se pueden agregar a una baraja VCR las nueve cartas de fuera del bloque que admite su Banlist: Nixe, Yudhishthira, Nefertari, Helios, Tormod Kark, Serpopardo, Sacerdotisa de Odín, Reina Aesir y Hadas. Están en Adicionales y salen en el catálogo con el formato VCR elegido; Nixe y Helios traen además sus otras impresiones para elegir el arte.",
+    ],
+  },
+  {
     fecha: "2026-11-16",
     version: "6.1.0",
     tipo: "Mejora",

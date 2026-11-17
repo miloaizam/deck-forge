@@ -1700,9 +1700,9 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
-que no son ediciones del juego (ver abajo): **Adicionales** (74, en
-`data-src/extras.json`) y **Arte Alternativo** (417, en
-`data-src/arte-alternativo.json`). **2650** en total.
+que no son ediciones del juego (ver abajo): **Adicionales** (83, en
+`data-src/extras.json`) y **Arte Alternativo** (420, en
+`data-src/arte-alternativo.json`). **2662** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1716,9 +1716,11 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   (SD1, `ad-020`…`ad-030`); **Árbol del Grito** de Dominio de Tótems
   (`ad-031`); las **nueve en observación de la Banlist** (`ad-032`…`ad-040`,
   Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
-  de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`).
+  de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`);
+  y las **nueve de fuera del bloque que admite la Banlist VCR**
+  (`ad-075`…`ad-083`, 17-11-2026), que solo valen en VCR.
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte: 417, de veintiuna ediciones
+  cargadas, para que el jugador elija el arte: 420, de veintiuna ediciones
   y productos del juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
   copias. La edición se ordena por **`origen`** —la edición del juego de donde
   sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
@@ -1817,6 +1819,18 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   proyecto decidió no cargarlos.
 - **Wotan y Járnvid** traían errores de la API corregidos contra el arte:
   «Unica» sin tilde y pegada al texto, y «un aliado» en minúscula.
+- **Las nueve de fuera del bloque de VCR** (`ad-075`…`ad-083`, 17-11-2026)
+  salen de la API (`templarios`, `dharma`, `kemet`, `asgard`, `camelot`,
+  `midgard`, `furia`), con el arte de la edición que nombra la Banlist.
+  Helios de Kemet es la impresión de mazo `SD3-13-36` (Promocional, arte de
+  Genzo; la API trae el ilustrador de relleno), y sus otras dos van en Arte
+  Alternativo: el preestreno `PE-33` de Dharma (Gabriel Rodríguez, `aa-422`)
+  y la Real de Furia (`aa-423`), **que es la que la deja entrar en VCR**. Nixe
+  es la Vasallo de Templarios y su Milenaria va en `aa-421`. Corregidas contra
+  el arte: «Controles» con mayúscula en Sacerdotisa de Odín, «aliado» en
+  Serpopardo, «fase» en Hadas y «Talisman» sin tilde en Helios. **Las
+  impresiones de *Leyendas - Bloque Furia*** (2023, `LBF-`: Helios, Tormod
+  Kark, Reina Aesir) no están en la API ni en el fandom: quedan en TODO.md.
 - **Las cartas en observación se cargan sin aplicar la Banlist**: con su texto
   impreso y sin la condición (Única, Errante, libre por tres) ni la errata que
   la Banlist les pone. Ráksasa lleva tilde, como la imprime el arte (la Banlist
@@ -2504,8 +2518,10 @@ de Erratas; **cada uno tiene su Banlist** (`documentos/fuente/banlist-<formato>.
 - **Las cartas de fuera del bloque EE** (las de observación de Adicionales)
   valen solo en el formato cuya Banlist las nombra: en VCR, Wyvern Dorado,
   Járnvid, Bibi Dalair Kaur y Mut sí, Wotan, Melusina y compañía no; en
-  Infantería, ninguna. Las nueve de VCR que no están en el catálogo (Nixe,
-  Helios…) van en `FALTAN_EN_EL_CATALOGO` (`documentos.ts`) y en TODO.md.
+  Infantería, ninguna. Las nueve que solo admite VCR (Nixe, Helios…) están
+  en Adicionales desde el 17-11-2026, así que con Estándar no salen en el
+  catálogo. Una carta que una Banlist nombre y falte va en
+  `FALTAN_EN_EL_CATALOGO` (`documentos.ts`, hoy vacía) hasta cargarla.
 - **La sección «erratas» de la Banlist Estándar es solo de Estándar**
   (decisión del proyecto): VCR e Infantería aplican sus Únicas, Errantes y
   Prohibidas y nada más. En `TEXTOS_ERRATADOS` lo que sale solo de la Banlist

@@ -292,22 +292,12 @@ export function cartasFueraDelBloque(b: Banlist): string[] {
 }
 
 /**
- * Las cartas que nombra una Banlist y no estan en el catalogo: las nueve de
- * fuera del bloque de VCR, pendientes de cargar en Adicionales (TODO.md). Los
- * tests las dejan pasar y exigen que sigan faltando: al cargar una, se borra
- * de aqui.
+ * Las cartas que nombra una Banlist y no estan en el catalogo. Vacia desde que
+ * se cargaron en Adicionales las nueve de fuera del bloque de VCR (17-11-2026).
+ * Si una Banlist nueva nombra una carta que falta, va aqui hasta cargarla: los
+ * tests la dejan pasar y exigen que siga faltando, y al cargarla se borra.
  */
-export const FALTAN_EN_EL_CATALOGO = [
-  "Nixe",
-  "Yudhishthira",
-  "Nefertari",
-  "Helios",
-  "Tormod Kark",
-  "Serpopardo",
-  "Sacerdotisa de Odín",
-  "Reina Aesir",
-  "Hadas",
-] as const;
+export const FALTAN_EN_EL_CATALOGO: readonly string[] = [];
 
 /**
  * Un nombre de carta para comparar: sin mayusculas, sin tildes y sin
