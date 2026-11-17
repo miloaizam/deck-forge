@@ -11,8 +11,6 @@ interface AbilityTextProps {
    * frase entre corchetes pinta solo esa parte; el resto la ubica.
    */
   resaltes?: readonly string[];
-  /** Algo fuera del texto tambien cambio (la raza): la leyenda va igual. */
-  conLeyenda?: boolean;
 }
 
 /** Lo que cambio una errata, en el cuerpo: fondo de marcador y texto dorado. */
@@ -83,18 +81,15 @@ const declaraciones = (frase: string) =>
  * son de la carta y no de la regla: el coste de `Traición` y a que se es
  * inmune.
  *
- * Lo que puso una errata va en dorado, con una linea al pie que lo explica: el
- * color nunca es la unica pista (fondo de marcador, `<ins>` y su titulo).
+ * Lo que puso una errata va en dorado, y el color nunca es la unica pista:
+ * fondo de marcador, `<ins>` y su titulo. Sin leyenda al pie (decision del
+ * proyecto, 17-11-2026): el lazo «Errata» de la imagen ya avisa.
  *
  * Todo se construye como nodos de React a partir del texto: nunca HTML crudo,
  * porque el texto viene de una fuente externa (ver la seccion de seguridad de
  * CLAUDE.md).
  */
-export function AbilityText({
-  text,
-  resaltes = [],
-  conLeyenda = false,
-}: AbilityTextProps) {
+export function AbilityText({ text, resaltes = [] }: AbilityTextProps) {
   const { keywords, cuerpo } = splitAbility(text);
 
   // Una frase que solo declara keywords de la carta se pinta en su fila y no
@@ -122,9 +117,6 @@ export function AbilityText({
     cursor = m.hasta;
   });
   nodos.push(...conKeywords(cuerpo.slice(cursor), "fin", false));
-
-  const hayErrata =
-    conLeyenda || marcas.length > 0 || keywords.some((k) => enFila.has(k.keyword));
 
   return (
     <div className="flex flex-col gap-3">
@@ -154,16 +146,6 @@ export function AbilityText({
       {cuerpo && (
         <p className="text-ink text-[15px] leading-relaxed whitespace-pre-line">
           {nodos}
-        </p>
-      )}
-
-      {hayErrata && (
-        <p className="text-muted flex items-center gap-2 text-[12px]">
-          <span
-            aria-hidden="true"
-            className="bg-errata-soft border-errata/60 inline-block size-3 shrink-0 rounded-[3px] border"
-          />
-          En dorado, lo que cambió una errata.
         </p>
       )}
     </div>

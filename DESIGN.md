@@ -111,8 +111,9 @@ token `warning-soft`.
 
 En el detalle de una carta, lo que puso una errata —una palabra, una
 condición, una keyword o la raza— va en **dorado** sobre un fondo de
-marcador (`AbilityText`, `<ins>` con título «Cambió con una errata»), y una
-línea al pie lo explica: «En dorado, lo que cambió una errata.». El violeta
+marcador (`AbilityText`, `<ins>` con título «Cambió con una errata»). No
+lleva leyenda al pie (decisión del proyecto, 17-11-2026): el lazo «Errata» de
+la imagen ya dice que la carta cambió. El violeta
 ya es la marca y el resaltado de las keywords, así que hacía falta otro tono:
 el dorado es el **complementario dividido cálido** del violeta (~263°), el que
 más resalta a su lado sin confundirse con el verde ni el rojo de los estados,

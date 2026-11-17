@@ -255,7 +255,6 @@ export function CardModal({
                       <AbilityText
                         text={mostrada.habilidad}
                         resaltes={resaltesDe(mostrada)}
-                        conLeyenda={razaErratada(mostrada)}
                       />
                     </div>
                   </div>
