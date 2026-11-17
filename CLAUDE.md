@@ -1701,8 +1701,8 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
 que no son ediciones del juego (ver abajo): **Adicionales** (83, en
-`data-src/extras.json`) y **Arte Alternativo** (420, en
-`data-src/arte-alternativo.json`). **2662** en total.
+`data-src/extras.json`) y **Arte Alternativo** (424, en
+`data-src/arte-alternativo.json`). **2666** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1720,7 +1720,7 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   y las **nueve de fuera del bloque que admite la Banlist VCR**
   (`ad-075`…`ad-083`, 17-11-2026), que solo valen en VCR.
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**
-  cargadas, para que el jugador elija el arte: 420, de veintiuna ediciones
+  cargadas, para que el jugador elija el arte: 424, de veintidós ediciones
   y productos del juego. Comparten `identidad` con su carta y cuentan como ella en el tope de
   copias. La edición se ordena por **`origen`** —la edición del juego de donde
   sale la impresión—, de la más nueva a la más vieja (`ORIGENES` en
@@ -1828,9 +1828,18 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   y la Real de Furia (`aa-423`), **que es la que la deja entrar en VCR**. Nixe
   es la Vasallo de Templarios y su Milenaria va en `aa-421`. Corregidas contra
   el arte: «Controles» con mayúscula en Sacerdotisa de Odín, «aliado» en
-  Serpopardo, «fase» en Hadas y «Talisman» sin tilde en Helios. **Las
-  impresiones de *Leyendas - Bloque Furia*** (2023, `LBF-`: Helios, Tormod
-  Kark, Reina Aesir) no están en la API ni en el fandom: quedan en TODO.md.
+  Serpopardo, «fase» en Hadas y «Talisman» sin tilde en Helios.
+- **Leyendas - Bloque Furia** (2023, `LBF-`) es la impresión más nueva de
+  Helios, Tormod Kark, Reina Aesir y Hadas, y va en Arte Alternativo
+  (`aa-424`…`aa-427`, origen `leyendas-bloque-furia`). Ojo: **la API la
+  tiene con guion bajo**, `leyendas_bloque_furia` (id 87), igual que
+  `escuelas_elementales`; con guion da `EDITION_NOT_FOUND`, y se la dio por
+  inexistente un día. Su arte entra a 709×1016 y el ilustrador llega de
+  relleno: se leyó del pie. **Su texto manda en todas las impresiones**
+  (decisión del proyecto, 17-11-2026), en la forma larga del catálogo:
+  Tormod Kark ya no elige («un Tótem oponente pierde su habilidad por el
+  turno»), Reina Aesir «puede poner» en vez de «elegir», y Hadas es
+  `Exhumar` a secas, sin la Fase de Vigilia.
 - **Las cartas en observación se cargan sin aplicar la Banlist**: con su texto
   impreso y sin la condición (Única, Errante, libre por tres) ni la errata que
   la Banlist les pone. Ráksasa lleva tilde, como la imprime el arte (la Banlist

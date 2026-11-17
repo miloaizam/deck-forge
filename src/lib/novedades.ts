@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-17",
+    version: "6.3.0",
+    tipo: "Mejora",
+    titulo: "Arte de Leyendas - Bloque Furia para cuatro cartas de VCR",
+    texto: [
+      "Helios, Tormod Kark, Reina Aesir y Hadas suman su impresión de Leyendas - Bloque Furia para elegir el arte.",
+      "Y llevan el texto de esa edición, que es el vigente: Tormod Kark ya no elige el Tótem que pierde su habilidad, Reina Aesir pone el Aliado Eterno sobre tu Mazo Castillo sin elegirlo, y Hadas es Exhumar.",
+    ],
+  },
+  {
+    fecha: "2026-11-17",
     version: "6.2.0",
     tipo: "Novedad",
     titulo: "Las cartas de otros bloques que admite VCR",

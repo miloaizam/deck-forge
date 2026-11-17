@@ -1529,7 +1529,7 @@
     "coste": 1,
     "fuerza": 2,
     "frecuencia": "Vasallo",
-    "habilidad": "En tu Fase de Vigilia, una vez por turno, puedes elegir un Tótem oponente para que pierda su habilidad hasta la Fase Final.",
+    "habilidad": "En tu Fase de Vigilia, una vez por turno, un Tótem oponente pierde su habilidad por el turno.",
     "ilustrador": "Francisco Ruiz",
     "imagen": "/cards/ad-079.webp",
     "thumb": "/cards/thumb/ad-079.webp",
@@ -1588,7 +1588,7 @@
     "coste": 2,
     "fuerza": 1,
     "frecuencia": "Vasallo",
-    "habilidad": "Cuando este Aliado entra en juego, puedes elegir un Aliado de Raza Eterno de tu Cementerio y ponerlo en la parte superior de tu Mazo Castillo.",
+    "habilidad": "Cuando este Aliado entra en juego, puedes poner un Aliado de Raza Eterno de tu Cementerio en la parte superior de tu Mazo Castillo.",
     "ilustrador": "Genzo",
     "imagen": "/cards/ad-082.webp",
     "thumb": "/cards/thumb/ad-082.webp",
@@ -1607,11 +1607,13 @@
     "coste": 1,
     "fuerza": 1,
     "frecuencia": "Vasallo",
-    "habilidad": "En tu Fase de Vigilia, puedes jugar este Aliado desde tu Cementerio pagando su coste.",
+    "habilidad": "Exhumar.",
     "ilustrador": "Daniel Bernal",
     "imagen": "/cards/ad-083.webp",
     "thumb": "/cards/thumb/ad-083.webp",
     "legalidad": "libre",
-    "keywords": []
+    "keywords": [
+      "Exhumar"
+    ]
   }
 ]

@@ -88,6 +88,7 @@ export const LOADED_EDITIONS = EDITIONS.filter(
  * `EDITIONS`.
  */
 export const ORIGENES = [
+  { slug: "leyendas-bloque-furia", titulo: "Leyendas - Bloque Furia" },
   { slug: "colecciones-raciales-2021", titulo: "Colecciones Raciales 2021" },
   { slug: "conjuros", titulo: "Conjuros" },
   { slug: "tierra-austral", titulo: "Tierra Austral" },
