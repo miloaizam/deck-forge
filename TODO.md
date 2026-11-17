@@ -14,29 +14,6 @@ Cada entrada lleva qué es, por dónde empezar y cuándo se da por terminada.
 
 ---
 
-## Orden sugerido
-
-1. **Pegar el esquema en Supabase** (la cinta de la portada y el filtro de
-   formato de la Comunidad).
-2. **Cargar las cartas de fuera del bloque de VCR.**
-
-## Base de datos
-
-### Pegar el esquema nuevo en Supabase
-
-- **Qué:** la cinta de cartas de la portada pide `cartas_destacadas()`, que
-  no existe hasta pegar el esquema (con las tablas `destacadas` y
-  `destacadas_estado`). Mientras tanto la portada recibe un 404 y se queda
-  con el grupo fijo de cartas; nada se rompe. Y el filtro de formato de la
-  Comunidad pide la columna `barajas.formato` y el parámetro `formato` de
-  `listar_publicas` (27-10-2026): sin ellos, la lista sin filtro sigue
-  saliendo, pero con «VCR» o «Infantería» puesto da error.
-- **Por dónde:** Supabase → SQL Editor → pegar `supabase/esquema.sql` entero
-  → Run.
-- **Terminado cuando:** con 10 barajas públicas o más, la portada dice «Las
-  más usadas en la Comunidad» bajo la cinta, y en `/comunidad` el filtro
-  «VCR» lista sin error.
-
 ## Datos
 
 ### Las cartas de fuera del bloque que admite VCR
