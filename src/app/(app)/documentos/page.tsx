@@ -6,7 +6,6 @@ import { DocumentActions } from "@/components/documentos/DocumentActions";
 import { DOCUMENTOS, type Documento } from "@/lib/documentos";
 import { cartasDelDar, conceptosDelDar, reglasDelDar } from "@/lib/dar";
 import { BANLISTS, DAR, FE_DE_ERRATAS, pesoDelPdf } from "@/lib/documentos-data";
-import { DESCRIPCION_FORMATO } from "@/lib/formatos";
 
 export const metadata: Metadata = {
   title: "Documentos",
@@ -37,7 +36,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.banlist}
           icono={<Ban size={20} aria-hidden="true" />}
           titulo="Banlist Estándar"
-          descripcion="Las cartas prohibidas, las que van con una sola copia y las erratas que aplica al formato."
+          descripcion="Todas las frecuencias: prohibidas, Únicas y erratas del formato."
           cifras={[
             [BANLISTS.estandar.prohibidas.length, "prohibidas"],
             [BANLISTS.estandar.unicas.length, "Únicas"],
@@ -48,7 +47,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.banlistVcr}
           icono={<Ban size={20} aria-hidden="true" />}
           titulo="Banlist VCR"
-          descripcion={`${DESCRIPCION_FORMATO.vcr} Las prohibidas, las Únicas, las Errantes y las cartas de fuera del bloque que se admiten.`}
+          descripcion="Solo Vasallos, Cortesanos y Reales: prohibidas, Únicas y Errantes."
           cifras={[
             [BANLISTS.vcr.prohibidas.length, "prohibidas"],
             [BANLISTS.vcr.unicas.length, "Únicas"],
@@ -59,7 +58,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.banlistInfanteria}
           icono={<Ban size={20} aria-hidden="true" />}
           titulo="Banlist Infantería"
-          descripcion={`${DESCRIPCION_FORMATO.infanteria} Las prohibidas, las Únicas y las Errantes.`}
+          descripcion="Solo Vasallos y Cortesanos: prohibidas, Únicas y Errantes."
           cifras={[
             [BANLISTS.infanteria.prohibidas.length, "prohibidas"],
             [BANLISTS.infanteria.unicas.length, "Únicas"],
@@ -70,7 +69,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.dar}
           icono={<BookOpenText size={20} aria-hidden="true" />}
           titulo="Documento Actualizado de Reglas"
-          descripcion="Cómo se juega, regla por regla: las partes de una carta, las zonas, las habilidades, las fases del turno y los conceptos del juego."
+          descripcion="Cómo se juega, regla por regla: cartas, zonas, fases y conceptos."
           cifras={[
             [reglasDelDar(DAR), "reglas con letra"],
             [conceptosDelDar(DAR), "conceptos de juego"],
@@ -81,7 +80,7 @@ export default function DocumentosPage() {
           doc={DOCUMENTOS.feDeErratas}
           icono={<FileText size={20} aria-hidden="true" />}
           titulo="Fe de Erratas"
-          descripcion="El texto vigente de cada carta corregida: lo que dice la carta impresa y lo que debe decir, con el cambio resaltado."
+          descripcion="El texto vigente de cada carta corregida, con el cambio resaltado."
           cifras={[
             [FE_DE_ERRATAS.entradas.length, "cartas corregidas"],
             [cambiosDeHabilidad, "de habilidad"],
@@ -124,7 +123,9 @@ function Tarjeta({
           {titulo}
         </h2>
       </div>
-      <p className="text-muted mt-3 leading-relaxed">{descripcion}</p>
+      {/* Dos lineas en todas: el texto se escribe para que quepa, y el alto
+          fijo deja las cifras y los botones a la misma altura en cada fila. */}
+      <p className="text-muted mt-3 min-h-[3.25rem] leading-relaxed">{descripcion}</p>
 
       <dl className="mt-5 grid grid-cols-3 gap-2">
         {cifras.map(([n, texto]) => (
