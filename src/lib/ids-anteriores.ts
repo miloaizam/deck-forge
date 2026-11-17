@@ -28,7 +28,9 @@
  * 17-11-2026: salen las ocho impresiones con estrella tras el nombre (Thor,
  * Arturo de Camelot, Belerofonte, Encantamiento, Ereskigal, Enki, Ninurta e
  * Incendiar el Mundo): son los remakes de 2020 del Bloque Furia, otra carta
- * con otro coste. Van a su impresion de ContraAtaque.
+ * con otro coste. Van a su impresion de ContraAtaque. Sale tambien el Oro
+ * Inicial de Dinastia del Dragon (`ad-041`), sin entrada: no hay otra
+ * impresion de esa carta a la que mandarlo.
  * Ver CLAUDE.md.
  */
 export const ID_ANTERIORES: Readonly<Record<string, string>> = {

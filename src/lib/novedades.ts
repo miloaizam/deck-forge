@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-17",
+    version: "6.4.2",
+    tipo: "Arreglo",
+    titulo: "Sale el Oro Inicial de Dinastía del Dragón",
+    texto: [
+      "El oro inicial de la edición Dinastía del Dragón deja el catálogo. Los oros iniciales de raza de esa edición siguen en Adicionales, en «Oro inicial» del filtro Tipo. Si una baraja lo llevaba, hay que elegir otro oro inicial.",
+    ],
+  },
+  {
+    fecha: "2026-11-17",
     version: "6.4.1",
     tipo: "Arreglo",
     titulo: "Todas las erratas se ven en la carta",

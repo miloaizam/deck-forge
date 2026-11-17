@@ -16,11 +16,11 @@ const oros = CATALOGO.filter((c) => c.tipo === "Oro");
 const deClase = (k: string) => oros.filter((c) => claseDeOro(c) === k);
 
 test("cada Oro cae en una sola clase, y ninguna otra carta tiene clase", () => {
-  assert.equal(oros.length, 282);
+  assert.equal(oros.length, 281);
   assert.equal(deClase("con-habilidad").length, 128);
   assert.equal(deClase("sin-habilidad").length, 111);
-  // Diez de edicion y 33 de raza (Dinastia del Dragon, tres por raza).
-  assert.equal(deClase("inicial").length, 43);
+  // Nueve de edicion y 33 de raza (Dinastia del Dragon, tres por raza).
+  assert.equal(deClase("inicial").length, 42);
   assert.ok(
     CATALOGO.filter((c) => c.tipo !== "Oro").every((c) => claseDeOro(c) === null),
   );
@@ -56,10 +56,10 @@ test("el filtro Tipo ofrece los tres tipos de Oro bajo Oro, y devuelve cada uno"
   ]);
   const indice = buildSearchIndex(CATALOGO);
   for (const [k, n] of [
-    ["Oro", 282],
+    ["Oro", 281],
     ["con-habilidad", 128],
     ["sin-habilidad", 111],
-    ["inicial", 43],
+    ["inicial", 42],
   ] as const) {
     assert.equal(
       applyFilters(CATALOGO, { ...EMPTY_FILTERS, tipo: k }, indice).length,

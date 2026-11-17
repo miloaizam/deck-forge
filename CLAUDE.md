@@ -1494,16 +1494,16 @@ no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
 y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro
 aparte: para el jugador son tipos de carta. La lista es `OPCIONES_DE_TIPO`
 (`oros.ts`): los tipos en orden alfabético y, justo bajo «Oro» (que sigue
-dando los 258), sus tres clases; `coincideTipo()` resuelve las dos clases de
+dando los 281), sus tres clases; `coincideTipo()` resuelve las dos clases de
 opción. Una clase que la edición no tiene no se ofrece: Escuelas Elementales
 solo trae Oros **con** habilidad (34), así que en su página no salen «Oro sin
 habilidad» ni «Oro inicial».
 
 **Los Oros son de tres tipos** (`src/lib/oros.ts`), y cada uno cae en uno
-solo: **con habilidad** (104: cartas como cualquier otra, tope de 3 o 1 si es
+solo: **con habilidad** (128: cartas como cualquier otra, tope de 3 o 1 si es
 Única), **sin habilidad** (111: sin tope, y cualquiera puede ser el oro
-inicial de la baraja) y **Oro inicial** (43: las cartas a arte completo «Oro
-Inicial <edición>», 10, y «Oro Inicial <raza>», 33 de Dinastía del Dragón en
+inicial de la baraja) y **Oro inicial** (42: las cartas a arte completo «Oro
+Inicial <edición>», 9, y «Oro Inicial <raza>», 33 de Dinastía del Dragón en
 Adicionales, que reconoce `esOroInicial()`). Por decisión del proyecto
 (04-10-2026) los de edición y los de raza van **juntos en una sola clase**.
 Funcionan exactamente como los sin habilidad; se separan para filtrarlos y
@@ -1700,9 +1700,9 @@ Cargadas: **las diez ediciones, 2159 cartas** — Bushido (246), Sol Naciente
 (141), Dominio (256), ContraAtaque (150), Águila Imperial (261), Steampunk (71),
 Axis Mundi (189), Hijos del Sol (261), Legado Gótico (258) y Escuelas
 Elementales (326, con las 11 de su extensión)—, más dos ediciones del catálogo
-que no son ediciones del juego (ver abajo): **Adicionales** (83, en
+que no son ediciones del juego (ver abajo): **Adicionales** (82, en
 `data-src/extras.json`) y **Arte Alternativo** (416, en
-`data-src/arte-alternativo.json`). **2658** en total.
+`data-src/arte-alternativo.json`). **2657** en total.
 
 **Adicionales y Arte Alternativo** (decisión del proyecto, 04-10-2026). Son
 las dos `parcial` con `paginaPropia` de `editions.ts`: salen tras las diez, en
@@ -1716,7 +1716,9 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
   (SD1, `ad-020`…`ad-030`); **Árbol del Grito** de Dominio de Tótems
   (`ad-031`); las **nueve en observación de la Banlist** (`ad-032`…`ad-040`,
   Wotan de Midgard y Járnvid de Asgard incluidos); y los **oros iniciales**
-  de Dinastía del Dragón: el de la edición y los 33 de raza (`ad-041`…`ad-074`);
+  de raza de Dinastía del Dragón, 33 (`ad-042`…`ad-074`; el de la edición,
+  `ad-041`, se quitó el 17-11-2026 por decisión del proyecto y su id no se
+  reutiliza);
   y las **nueve de fuera del bloque que admite la Banlist VCR**
   (`ad-075`…`ad-083`, 17-11-2026), que solo valen en VCR.
 - **Arte Alternativo** (`aa-`) son **otras impresiones de cartas que ya están**

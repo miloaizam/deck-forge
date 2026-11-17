@@ -476,7 +476,7 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
 
 **Fase 1 — Catálogo completo del formato** — hecha.
 - Las diez ediciones cargadas y revisadas contra el arte (2159 cartas), más
-  dos ediciones del catálogo: **Adicionales** (83: packs del formato, cartas
+  dos ediciones del catálogo: **Adicionales** (82: packs del formato, cartas
   de fuera del formato y oros iniciales de raza) y **Arte Alternativo** (416
   otras impresiones de cartas ya cargadas, para elegir el arte).
 - Filtros: edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.

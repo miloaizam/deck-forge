@@ -796,25 +796,6 @@
     "keywords": []
   },
   {
-    "id": "ad-041",
-    "codigo": "AD-041",
-    "nombre": "Oro Inicial Dinastía del Dragón",
-    "edicion": "adicionales",
-    "tipo": "Oro",
-    "raza": null,
-    "escuela": null,
-    "atributo": null,
-    "coste": null,
-    "fuerza": null,
-    "frecuencia": "Oro",
-    "habilidad": "",
-    "ilustrador": "Mitos y Leyendas",
-    "imagen": "/cards/ad-041.webp",
-    "thumb": "/cards/thumb/ad-041.webp",
-    "legalidad": "libre",
-    "keywords": []
-  },
-  {
     "id": "ad-042",
     "codigo": "AD-042",
     "nombre": "Oro Inicial Ancestral",

@@ -32,7 +32,7 @@ Gratis, sin cuenta y sin instalar nada. Abres el sitio y armas.
 ## Qué encuentras
 
 **El catálogo completo del formato.** Las 2159 cartas de las diez ediciones, las
-83 de **Adicionales** (packs especiales, cartas de fuera del formato y oros
+82 de **Adicionales** (packs especiales, cartas de fuera del formato y oros
 iniciales de raza) y los 416 de **Arte Alternativo**, con su arte y su
 texto. Buscas por nombre o por lo que dice la carta, y filtras por
 edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
