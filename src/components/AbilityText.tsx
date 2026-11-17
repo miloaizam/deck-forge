@@ -11,6 +11,12 @@ interface AbilityTextProps {
    * frase entre corchetes pinta solo esa parte; el resto la ubica.
    */
   resaltes?: readonly string[];
+  /**
+   * Lo que la Banlist le pone a la carta y no es texto de carta (la regla de
+   * Shingas y Karna, "Libre por tres copias"): va al pie, aparte, en el mismo
+   * dorado (`notasDeErrata`).
+   */
+  notas?: readonly string[];
 }
 
 /** Lo que cambio una errata, en el cuerpo: fondo de marcador y texto dorado. */
@@ -89,7 +95,7 @@ const declaraciones = (frase: string) =>
  * porque el texto viene de una fuente externa (ver la seccion de seguridad de
  * CLAUDE.md).
  */
-export function AbilityText({ text, resaltes = [] }: AbilityTextProps) {
+export function AbilityText({ text, resaltes = [], notas = [] }: AbilityTextProps) {
   const { keywords, cuerpo } = splitAbility(text);
 
   // Una frase que solo declara keywords de la carta se pinta en su fila y no
@@ -148,6 +154,15 @@ export function AbilityText({ text, resaltes = [] }: AbilityTextProps) {
           {nodos}
         </p>
       )}
+
+      {notas.map((nota) => (
+        <p
+          key={nota}
+          className="bg-errata-soft text-errata rounded-card px-3 py-2 text-[13px] leading-relaxed"
+        >
+          {nota}
+        </p>
+      ))}
     </div>
   );
 }

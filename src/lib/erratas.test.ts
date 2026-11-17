@@ -14,12 +14,16 @@ import {
   estaBaneada,
   fueraDelBloque,
   nombresConErrata,
+  frecuenciaErratada,
+  nombreErratado,
+  notasDeErrata,
   razaErratada,
   resaltesDe,
   tieneErrata,
 } from "./erratas";
 import { keywordsPropias } from "./ability";
 import { RESALTES_IMPRESOS, TEXTOS_ERRATADOS, sinCorchetes } from "./erratas-aplicadas";
+import { frecuenciasPorIdentidad, motivoFueraDeFormato } from "./en-formato";
 import { FORMATOS, catalogSchema, type Card, type Formato } from "./types";
 
 /** La Fe de Erratas y la Banlist aplicadas, contra el catalogo real. */
@@ -349,4 +353,61 @@ test("la errata de raza marca la raza", () => {
     for (const c of impresiones(nombre)) assert.ok(razaErratada(conErratas(c)), c.id);
   }
   assert.equal(razaErratada(conErratas(porNombre("Kirin"))), false);
+});
+
+test("Shingas y Karna muestran su regla de construccion, solo en Estandar", () => {
+  for (const nombre of ["Shingas", "Karna"]) {
+    const c = porNombre(nombre);
+    assert.match(notasDeErrata(c, "estandar").join(" "), /Karna es Única/);
+    assert.deepEqual(notasDeErrata(c, "vcr"), []);
+    assert.deepEqual(notasDeErrata(c, "infanteria"), []);
+  }
+  assert.deepEqual(notasDeErrata(porNombre("Kirin")), []);
+  // Las condiciones que no van en el texto: "Libre por tres copias".
+  assert.deepEqual(notasDeErrata(porNombre("Mut")), ["Libre por tres copias."]);
+  assert.deepEqual(notasDeErrata(porNombre("Hadas"), "vcr"), ["Libre por tres copias."]);
+});
+
+test("la errata de frecuencia corrige la impresion y saca a Takiyasha de Infanteria", () => {
+  const lg = conErratas(
+    CATALOGO.find((c) => c.id === "lg-183")!,
+    "infanteria",
+  );
+  assert.equal(lg.frecuencia, "Real");
+  assert.ok(frecuenciaErratada(lg));
+  const ee = conErratas(CATALOGO.find((c) => c.id === "ee-144")!);
+  assert.equal(ee.frecuencia, "Real");
+  assert.ok(frecuenciaErratada(ee));
+  const vigentes = CATALOGO.map((c) => conErratas(c, "infanteria"));
+  const fuera = motivoFueraDeFormato(
+    vigentes.find((c) => c.id === "lg-183")!,
+    "infanteria",
+    frecuenciasPorIdentidad(vigentes),
+  );
+  assert.equal(fuera, "frecuencia");
+});
+
+test("la errata de nombre marca el nombre", () => {
+  const caida = conErratas(porNombre("Caída del Sol"));
+  assert.equal(caida.nombre, "Caída de Sol");
+  assert.ok(nombreErratado(caida));
+  assert.ok(nombreErratado(conErratas(porNombre("Contrabando de Seda"))));
+  assert.equal(nombreErratado(conErratas(porNombre("Kirin"))), false);
+});
+
+test("toda carta con lazo Errata tiene algo en dorado", () => {
+  for (const f of FORMATOS) {
+    for (const c of CATALOGO) {
+      if (!tieneErrata(c, f)) continue;
+      const v = conErratas(c, f);
+      assert.ok(
+        resaltesDe(v).length > 0 ||
+          razaErratada(v) ||
+          nombreErratado(v) ||
+          frecuenciaErratada(v) ||
+          notasDeErrata(c, f).length > 0,
+        `${c.id} (${f}): lazo Errata sin nada marcado`,
+      );
+    }
+  }
 });

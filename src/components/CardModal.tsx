@@ -9,7 +9,13 @@ import { CartaInclinable } from "./CartaInclinable";
 import { CardRibbons } from "./CardRibbons";
 import { marcarCargada } from "./CardTile";
 import { editionTitle, origenTitle } from "@/lib/editions";
-import { razaErratada, resaltesDe } from "@/lib/erratas";
+import {
+  frecuenciaErratada,
+  nombreErratado,
+  notasDeErrata,
+  razaErratada,
+  resaltesDe,
+} from "@/lib/erratas";
 import { tipoDeCarta } from "@/lib/oros";
 import type { Card, Formato } from "@/lib/types";
 import {
@@ -60,12 +66,32 @@ interface CardModalProps {
 const MARCA_HISTORIAL = "deckforgeCarta";
 
 /** Dato con etiqueta. No se renderiza si el valor viene vacio. */
-function Stat({ label, value }: { label: string; value: string | number | null }) {
+/** Lo que cambio una errata fuera del texto (nombre, raza, frecuencia). */
+const MARCA_ERRATA = "bg-errata-soft text-errata rounded-[3px] px-0.5 no-underline";
+const TITULO_ERRATA = "Cambió con una errata";
+
+function Stat({
+  label,
+  value,
+  errata = false,
+}: {
+  label: string;
+  value: string | number | null;
+  errata?: boolean;
+}) {
   if (value === null || value === "") return null;
   return (
     <div>
       <dt className="text-muted text-[11px] tracking-[0.18em] uppercase">{label}</dt>
-      <dd className="text-ink mt-1 text-[15px] tabular-nums">{value}</dd>
+      <dd className="text-ink mt-1 text-[15px] tabular-nums">
+        {errata ? (
+          <ins className={MARCA_ERRATA} title={TITULO_ERRATA}>
+            {value}
+          </ins>
+        ) : (
+          value
+        )}
+      </dd>
     </div>
   );
 }
@@ -207,7 +233,13 @@ export function CardModal({
                   {mostrada.origen && ` · Arte de ${origenTitle(mostrada.origen)}`}
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-[-0.01em] sm:text-3xl">
-                  {mostrada.nombre}
+                  {nombreErratado(mostrada) ? (
+                    <ins className={MARCA_ERRATA} title={TITULO_ERRATA}>
+                      {mostrada.nombre}
+                    </ins>
+                  ) : (
+                    mostrada.nombre
+                  )}
                 </h2>
 
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -243,7 +275,11 @@ export function CardModal({
                       coste a la derecha. */}
                   <Stat label="Fuerza" value={mostrada.fuerza} />
                   <Stat label="Coste" value={mostrada.coste} />
-                  <Stat label="Frecuencia" value={mostrada.frecuencia} />
+                  <Stat
+                    label="Frecuencia"
+                    value={mostrada.frecuencia}
+                    errata={frecuenciaErratada(mostrada)}
+                  />
                 </dl>
 
                 {mostrada.habilidad && (
@@ -255,6 +291,7 @@ export function CardModal({
                       <AbilityText
                         text={mostrada.habilidad}
                         resaltes={resaltesDe(mostrada)}
+                        notas={notasDeErrata(mostrada, formato)}
                       />
                     </div>
                   </div>

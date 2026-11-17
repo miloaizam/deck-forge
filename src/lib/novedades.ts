@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-17",
+    version: "6.4.1",
+    tipo: "Arreglo",
+    titulo: "Todas las erratas se ven en la carta",
+    texto: [
+      "Shingas y Karna muestran en dorado su regla de la Banlist Estándar: con Shingas en la baraja, Karna es Única. También van en dorado el nombre corregido (Caída de Sol), la frecuencia corregida y la condición «Libre por tres copias».",
+      "Y Takiyasha Hime de Legado Gótico pasa a Real, como dice la Fe de Erratas: ya no entra en Infantería.",
+    ],
+  },
+  {
+    fecha: "2026-11-17",
     version: "6.4.0",
     tipo: "Mejora",
     titulo: "Lo que cambió una errata, en dorado",

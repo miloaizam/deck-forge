@@ -14,10 +14,12 @@ import {
 import {
   ATRIBUTOS,
   FORMATOS,
+  FRECUENCIAS,
   RAZAS,
   type Atributo,
   type Card,
   type Formato,
+  type Frecuencia,
   type Raza,
 } from "./types";
 import { wordDiff } from "./word-diff";
@@ -162,10 +164,16 @@ for (const e of FE.entradas) {
 
 /**
  * Las entradas de la Banlist Estandar que no nombran una carta sino una regla
- * de construccion, con las cartas a las que se le muestran.
+ * de construccion: las cartas a las que se le muestran y la regla en la voz
+ * de la carta, que el detalle pinta en dorado bajo la habilidad
+ * (`notasDeErrata`). La aplica el validador (`deck-rules.ts`).
  */
-const REGLAS_DE_CONSTRUCCION: Record<string, string[]> = {
-  "Mazo Desafiante y/o Guerrero": ["Shingas", "Karna"],
+const REGLAS_DE_CONSTRUCCION: Record<string, { cartas: string[]; texto: string }> = {
+  "Mazo Desafiante y/o Guerrero": {
+    cartas: ["Shingas", "Karna"],
+    texto:
+      "Con Shingas en la baraja, Karna es Única; sin Shingas, Karna va hasta tres copias.",
+  },
 };
 
 /**
@@ -204,7 +212,7 @@ function tablasDeBanlist(ban: Banlist): Tablas {
   }
   for (const e of ban.erratas) {
     const errata = nota(e.texto);
-    const destinos = REGLAS_DE_CONSTRUCCION[e.carta];
+    const destinos = REGLAS_DE_CONSTRUCCION[e.carta]?.cartas;
     if (destinos) {
       for (const d of destinos) agregar(t, d, { ...errata, nota: e.carta });
     } else {
@@ -361,6 +369,10 @@ export type CartaVigente = Card & {
   resaltes?: string[];
   /** La errata le cambio la raza (Devastador, Nanna). */
   razaErratada?: true;
+  /** El nombre es el de una errata de nombre (Caída de Sol). */
+  nombreErratado?: true;
+  /** La frecuencia es la de una errata de frecuencia (Takiyasha Hime). */
+  frecuenciaErratada?: true;
 };
 
 /** Los resaltes de una carta del catalogo; ninguno si no los trae. */
@@ -369,9 +381,49 @@ export function resaltesDe(card: Card): string[] {
   return card.resaltes.filter((r): r is string => typeof r === "string");
 }
 
+/**
+ * Lo que la Banlist del formato le pone a la carta y no es texto de carta,
+ * para que el detalle lo muestre aparte, en dorado: la regla de construccion
+ * ("Mazo Desafiante y/o Guerrero" a Shingas y Karna) y las condiciones que no
+ * se escriben en la habilidad ("Libre por tres copias"; Unica y Errante si se
+ * escriben, y se resaltan ahi).
+ */
+export function notasDeErrata(
+  card: Pick<Card, "nombre">,
+  formato: Formato = "estandar",
+): string[] {
+  const k = claveDeNombre(card.nombre);
+  const ban = BANLISTS[formato];
+  const notas: string[] = [];
+  for (const e of ban.erratas) {
+    const regla = REGLAS_DE_CONSTRUCCION[e.carta];
+    if (regla?.cartas.some((c) => claveDeNombre(c) === k)) notas.push(regla.texto);
+  }
+  const condiciones = [
+    ...(ban.observacion?.condiciones ?? []),
+    ...(ban.fueraDelBloque ?? []),
+  ];
+  for (const c of condiciones) {
+    if (claveDeNombre(c.carta) !== k || !c.condicion) continue;
+    if (c.condicion === "Carta Única" || c.condicion === "Carta Errante") continue;
+    notas.push(/[.]$/.test(c.condicion) ? c.condicion : `${c.condicion}.`);
+  }
+  return notas;
+}
+
 /** Si la errata le cambio la raza a la carta. */
 export function razaErratada(card: Card): boolean {
   return "razaErratada" in card && card.razaErratada === true;
+}
+
+/** Si el nombre de la carta es el de una errata de nombre. */
+export function nombreErratado(card: Card): boolean {
+  return "nombreErratado" in card && card.nombreErratado === true;
+}
+
+/** Si la frecuencia de la carta es la de una errata de frecuencia. */
+export function frecuenciaErratada(card: Card): boolean {
+  return "frecuenciaErratada" in card && card.frecuenciaErratada === true;
 }
 
 /**
@@ -415,15 +467,29 @@ export function conErratas(card: Card, formato: Formato = "estandar"): CartaVige
   const escrito = TEXTOS_ERRATADOS[card.nombre];
   const texto = escrito?.soloEstandar && formato !== "estandar" ? undefined : escrito;
   const efecto = efectoEnReglas(card, formato);
-  const deRaza = erratasDe(card, formato).some((e) => e.cambio === "raza");
+  const erratas = erratasDe(card, formato);
+  const deRaza = erratas.some((e) => e.cambio === "raza");
+  const deNombre = erratas.find((e) => e.cambio === "nombre");
+  const deFrecuencia = erratas.find((e) => e.cambio === "frecuencia");
   if (
     !texto &&
     Object.keys(efecto).length === 0 &&
     !RESALTES_IMPRESOS[card.nombre] &&
-    !deRaza
+    !deRaza &&
+    !deNombre &&
+    !deFrecuencia
   ) {
     return card;
   }
+  // La errata de frecuencia corrige la impresion que salio mal (Takiyasha Hime
+  // de Legado Gotico es Real, no Vasallo); la que ya dice lo correcto se marca
+  // igual, porque es la frecuencia de la carta.
+  const frecuencia =
+    deFrecuencia &&
+    card.frecuencia === deFrecuencia.antes &&
+    (FRECUENCIAS as readonly string[]).includes(deFrecuencia.despues)
+      ? (deFrecuencia.despues as Frecuencia) // validado justo arriba
+      : card.frecuencia;
 
   let habilidad = card.habilidad;
   for (const [antes, despues] of texto?.cambia ?? []) {
@@ -447,15 +513,24 @@ export function conErratas(card: Card, formato: Formato = "estandar"): CartaVige
   const keywords = [...new Set([...keywordsPropias(habilidad), ...condicionales])];
   const resaltes = resaltar(card.habilidad, habilidad, card.nombre, formato);
 
+  const nombre = texto?.nombre ?? card.nombre;
+
   return {
     ...card,
-    nombre: texto?.nombre ?? card.nombre,
+    nombre,
     habilidad,
     keywords,
     raza: efecto.raza ?? card.raza,
     atributo: efecto.atributo ?? card.atributo,
     coste: efecto.coste ?? card.coste,
+    frecuencia,
     ...(resaltes.length > 0 ? { resaltes } : {}),
     ...(deRaza ? { razaErratada: true as const } : {}),
+    ...(deNombre && claveDeNombre(nombre) === claveDeNombre(deNombre.despues)
+      ? { nombreErratado: true as const }
+      : {}),
+    ...(deFrecuencia && frecuencia === deFrecuencia.despues
+      ? { frecuenciaErratada: true as const }
+      : {}),
   };
 }

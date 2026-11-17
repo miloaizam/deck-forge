@@ -2641,7 +2641,18 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
   Banlist del formato quede sin resaltar**, en los tres formatos. Al revisarlo
   salió que Constantino XI no era Errante en Infantería aunque lo dice la Fe
   de Erratas (su entrada estaba marcada solo para Estándar): ahora lo es en
-  los tres.
+  los tres. Lo que la errata cambia **fuera del texto** también va en
+  dorado: la raza (pastilla), el **nombre** (`nombreErratado`: Caída de Sol,
+  Contrabando de Seda) y la **frecuencia** (`frecuenciaErratada`). Y lo que
+  la Banlist le pone a la carta sin ser texto de carta va como nota dorada
+  al pie de la habilidad (`notasDeErrata`): la regla «Mazo Desafiante y/o
+  Guerrero» en Shingas y Karna, y «Libre por tres copias». Un test exige
+  que **toda carta con lazo «Errata» tenga algo en dorado** en su formato.
+  Con él salió que **la errata de frecuencia no se aplicaba**: Takiyasha
+  Hime de Legado Gótico (LG-183) imprime Vasallo y la Fe de Erratas la hace
+  Real, así que entraba en Infantería. `conErratas` corrige ahora la
+  frecuencia de la impresión que dice la de antes, y con eso
+  `frecuenciasPorIdentidad` la deja fuera de Infantería.
 - **Las reglas juegan con lo erratado.** `toRuleCard` (`deck-rules.ts`) toma
   de `efectoEnReglas()` la Única, la raza, el atributo y el coste: las **31
   Únicas de la Banlist** y las de observación topan en una copia, Tsukuyomi
