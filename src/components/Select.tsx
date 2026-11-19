@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 
 import { BOTON_ICONO_LIBRE_COMPACTO, TEXT_FIELD } from "@/lib/ui";
@@ -20,6 +20,27 @@ interface SelectProps {
   format?: (value: string) => string;
   /** La etiqueta solo para lectores, cuando el selector va en una fila sin titulos. */
   etiquetaOculta?: boolean;
+  /**
+   * Un control que siempre tiene valor (la zona del constructor, el formato,
+   * la visibilidad): sin opcion vacia, sin X para limpiar y sin el violeta de
+   * "filtro puesto", porque elegir una opcion no es filtrar.
+   */
+  requerido?: boolean;
+  /** Texto secundario de cada opcion, a la derecha: la cuenta de cartas. */
+  detalle?: (value: string) => string | null;
+  /**
+   * Clases del detalle en el boton (en la lista siempre se ve): la zona del
+   * constructor lo esconde cuando la fila del buscador es angosta.
+   */
+  detalleEnBoton?: string;
+  /** Icono antes del texto de cada opcion. */
+  icono?: (value: string) => ReactNode;
+  /** El motivo por el que una opcion no se puede elegir; `null` si se puede. */
+  deshabilitada?: (value: string) => string | null;
+  /** Todo el control, mientras se hace lo que se eligio. */
+  disabled?: boolean;
+  /** Clases del contenedor: el ancho, en una fila de botones. */
+  className?: string;
 }
 
 /**
@@ -61,6 +82,13 @@ export function Select({
   placeholder = "Todos",
   format = (v) => v,
   etiquetaOculta = false,
+  requerido = false,
+  detalle,
+  detalleEnBoton,
+  icono,
+  deshabilitada,
+  disabled = false,
+  className,
 }: SelectProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -78,7 +106,9 @@ export function Select({
   // no se este buscando: entre los resultados de una busqueda no pinta nada.
   const items = consulta
     ? options.filter((o) => normalizar(format(o)).includes(consulta))
-    : ["", ...options];
+    : requerido
+      ? options
+      : ["", ...options];
   const selectedIndex = Math.max(0, items.indexOf(value));
 
   const close = (devolverFoco = true) => {
@@ -90,6 +120,8 @@ export function Select({
   const pick = (index: number) => {
     // Sin coincidencias no hay nada que elegir: Enter no tiene que romper.
     if (index < 0 || index >= items.length) return;
+    // Una opcion deshabilitada se puede recorrer, no elegir.
+    if (items[index] && deshabilitada?.(items[index])) return;
     onChange(items[index]);
     close();
   };
@@ -173,13 +205,19 @@ export function Select({
   // Un filtro sin opciones no aporta nada: no se muestra.
   if (options.length === 0) return null;
 
-  const activo = value !== "";
+  const activo = !requerido && value !== "";
+  const detalleDelValor = value ? (detalle?.(value) ?? null) : null;
   const listId = `${id}-list`;
   // Sin coincidencias no hay opcion activa que anunciar.
   const activeId = items.length > 0 ? `${id}-opt-${active}` : undefined;
 
   return (
-    <div ref={rootRef} className="relative flex min-w-0 flex-col gap-1.5">
+    // `justify-end`: si una etiqueta se parte en dos lineas, los botones de la
+    // fila siguen alineados abajo.
+    <div
+      ref={rootRef}
+      className={cn("relative flex min-w-0 flex-col justify-end gap-1.5", className)}
+    >
       <span
         id={`${id}-label`}
         className={cn(
@@ -197,19 +235,45 @@ export function Select({
           ref={buttonRef}
           type="button"
           onClick={toggle}
+          disabled={disabled}
           aria-haspopup="listbox"
           aria-expanded={open}
-          aria-labelledby={`${id}-label ${id}-value`}
+          // La cuenta que se ve tambien va en el nombre (axe:
+          // label-content-name-mismatch).
+          aria-labelledby={
+            detalleDelValor
+              ? `${id}-label ${id}-value ${id}-detalle`
+              : `${id}-label ${id}-value`
+          }
           className={cn(
             "focus-visible:outline-brand-500 rounded-chip flex h-11 w-full items-center gap-2 border pr-10 pl-3 text-sm transition-colors",
             activo
               ? "border-brand-600 bg-accent-soft text-ink"
-              : "border-line bg-panel text-muted hover:outline-brand-500 hover:text-ink hover:outline-2 hover:outline-offset-2",
+              : cn(
+                  "border-line bg-panel hover:outline-brand-500 hover:text-ink hover:outline-2 hover:outline-offset-2",
+                  requerido ? "text-ink" : "text-muted",
+                ),
+            disabled && "cursor-wait opacity-60",
           )}
         >
+          {value && icono && <span className="text-muted shrink-0">{icono(value)}</span>}
           <span id={`${id}-value`} className="truncate">
             {value ? format(value) : placeholder}
           </span>
+          {/* El espacio no se pinta (es flex) pero separa en el texto del
+              boton: sin el, axe lee «Tengo0» y no lo halla en el nombre. */}
+          {detalleDelValor && " "}
+          {detalleDelValor && (
+            <span
+              id={`${id}-detalle`}
+              className={cn(
+                "text-muted ml-auto shrink-0 text-[12px] tabular-nums",
+                detalleEnBoton,
+              )}
+            >
+              {detalleDelValor}
+            </span>
+          )}
         </button>
 
         {activo ? (
@@ -291,6 +355,8 @@ export function Select({
         >
           {items.map((item, i) => {
             const seleccionada = item === value;
+            const motivo = item ? (deshabilitada?.(item) ?? null) : null;
+            const extra = item ? (detalle?.(item) ?? null) : null;
             return (
               <li
                 key={item || "__todos"}
@@ -298,6 +364,8 @@ export function Select({
                 data-index={i}
                 role="option"
                 aria-selected={seleccionada}
+                aria-disabled={motivo ? true : undefined}
+                title={motivo ?? undefined}
                 onClick={() => pick(i)}
                 onMouseEnter={() => setActive(i)}
                 className={cn(
@@ -305,12 +373,22 @@ export function Select({
                   i === active && "bg-surface",
                   seleccionada ? "text-accent" : "text-ink",
                   !item && "text-muted",
+                  motivo && "text-muted cursor-not-allowed opacity-60",
                 )}
               >
-                <span className="truncate">{item ? format(item) : placeholder}</span>
-                {seleccionada && (
-                  <Check size={14} aria-hidden="true" className="shrink-0" />
-                )}
+                <span className="flex min-w-0 items-center gap-2">
+                  {item && icono && (
+                    <span className="text-muted shrink-0">{icono(item)}</span>
+                  )}
+                  <span className="truncate">{item ? format(item) : placeholder}</span>
+                </span>
+                {extra && " "}
+                <span className="flex shrink-0 items-center gap-2">
+                  {extra && (
+                    <span className="text-muted text-[12px] tabular-nums">{extra}</span>
+                  )}
+                  {seleccionada && <Check size={14} aria-hidden="true" />}
+                </span>
               </li>
             );
           })}

@@ -79,12 +79,11 @@ const INICIAL: Consulta = {
 const etiquetaDeFormato = (f: string) => (esFormato(f) ? NOMBRE_FORMATO[f] : f);
 
 /**
- * El orden va en un selector como los otros dos filtros. «Más likes» es el
- * de siempre y hace de opcion vacia (como Estandar en el formato del
- * catalogo): quitar el filtro vuelve a el, y no cuenta en la insignia.
+ * El orden va en un selector junto a los otros dos filtros, pero siempre
+ * tiene valor (`requerido`). «Más likes» es el de siempre: limpiar los
+ * filtros vuelve a el, y no cuenta en la insignia.
  */
 const ORDEN_POR_DEFECTO: OrdenComunidad = "likes";
-const OTROS_ORDENES = ORDENES_COMUNIDAD.filter((o) => o !== ORDEN_POR_DEFECTO);
 const etiquetaDeOrden = (o: string) =>
   esOrdenComunidad(o) ? ETIQUETA_ORDEN_COMUNIDAD[o] : o;
 
@@ -340,12 +339,12 @@ export function ComunidadView() {
               />
               <Select
                 label="Ordenar por"
-                value={consulta.orden === ORDEN_POR_DEFECTO ? "" : consulta.orden}
-                options={OTROS_ORDENES}
+                requerido
+                value={consulta.orden}
+                options={[...ORDENES_COMUNIDAD]}
                 onChange={(v) =>
                   cambiar({ orden: esOrdenComunidad(v) ? v : ORDEN_POR_DEFECTO })
                 }
-                placeholder={ETIQUETA_ORDEN_COMUNIDAD[ORDEN_POR_DEFECTO]}
                 format={etiquetaDeOrden}
               />
             </div>

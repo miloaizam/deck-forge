@@ -277,16 +277,16 @@ test.describe("con la nube encendida", () => {
     await conSesion(page, USUARIO_A);
 
     await page.goto(`/baraja/?m=${deck.id}`);
-    await page.getByRole("button", { name: "Pública" }).click();
+    await page.getByRole("button", { name: /^Visibilidad de la baraja/ }).click();
+    await page.getByRole("option", { name: "Pública" }).click();
     await page.getByLabel("Alias", { exact: true }).fill("Milo_ñandú");
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
     await expect(
       page.getByText(`"Para publicar" publicada en la Comunidad.`).last(),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Pública" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    await expect(
+      page.getByRole("button", { name: "Visibilidad de la baraja Pública" }),
+    ).toBeVisible();
     expect(s.perfiles.get(USUARIO_A)).toBe("Milo_ñandú");
 
     await page.goto("/comunidad/");
@@ -305,7 +305,11 @@ test.describe("con la nube encendida", () => {
     await conBarajas(page, [incompleta]);
     await conSesion(page, USUARIO_A);
     await page.goto(`/baraja/?m=${incompleta.id}`);
-    await expect(page.getByRole("button", { name: "Pública" })).toBeDisabled();
+    await page.getByRole("button", { name: /^Visibilidad de la baraja/ }).click();
+    await expect(page.getByRole("option", { name: "Pública" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await expect(
       page.getByText("Para publicarla, la baraja tiene que ser legal."),
     ).toBeVisible();

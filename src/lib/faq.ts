@@ -206,7 +206,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo armo el side deck?",
         respuesta: [
-          "Junto al botón **«Filtros»** del constructor están **«Baraja»** y **«Side deck»**. Elige **Side deck** y las cartas que agregues irán ahí. El side comparte con la baraja el tope de copias y las cartas Únicas.",
+          "Junto al botón **«Filtros»** del constructor hay un selector que dice **«Baraja»**. Ábrelo, elige **«Side deck»** y las cartas que agregues irán ahí. El side comparte con la baraja el tope de copias y las cartas Únicas.",
         ],
       },
     ],
@@ -279,7 +279,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo agrego cartas?",
         respuesta: [
-          "En la pestaña **«Agregar»** está todo el catálogo, con el buscador y los filtros. En cada carta:",
+          "En **«Agregar»** (el selector junto a los filtros, que empieza en «Tengo») está todo el catálogo, con el buscador y los filtros. En cada carta:",
         ],
         lista: [
           "**«Tengo»** la pasa a tus cartas. Ahí, el **+** y el **−** cambian las copias.",
@@ -356,7 +356,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo publico una baraja?",
         respuesta: [
-          "Abre la baraja desde **Mis barajas** y elige **«Pública»**. La primera vez te pide un **alias**. Solo se pueden publicar barajas **legales**; si la editas y deja de serlo, se quita de la Comunidad.",
+          "Abre la baraja desde **Mis barajas** y, en el selector que dice **«Privada»**, elige **«Pública»**. La primera vez te pide un **alias**. Solo se pueden publicar barajas **legales**; si la editas y deja de serlo, se quita de la Comunidad.",
           "Para quitarla, elige **«Privada»**. En Mis barajas, las públicas llevan la etiqueta **«Pública»** con sus likes.",
         ],
       },

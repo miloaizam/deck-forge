@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Copy, EyeOff, Globe, Heart, Lock } from "lucide-react";
 
+import { Select } from "../Select";
 import { toast } from "../toast";
 import { mensajeDeError } from "./api";
 import { AliasForm } from "./AliasForm";
@@ -11,14 +12,7 @@ import { cambiarPublica, revisarPublica } from "./comunidad-api";
 import { useNube } from "./nube";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import type { Deck } from "@/lib/types";
-import {
-  ENLACE,
-  PASTILLA,
-  SEGMENTO,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
-  SEGMENTOS,
-} from "@/lib/ui";
+import { ENLACE, PASTILLA } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 interface Publicar {
@@ -106,42 +100,32 @@ function usePublicar(
   };
 
   const control = (
-    <div
-      role="group"
-      aria-label="Visibilidad de la baraja"
-      className={cn(SEGMENTOS, "h-11")}
-    >
-      <button
-        type="button"
-        aria-pressed={!esPublica}
-        disabled={ocupado}
-        onClick={() => cambiar(false)}
-        className={cn(
-          SEGMENTO,
-          "h-full",
-          !esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-        )}
-      >
-        <Lock size={14} aria-hidden="true" />
-        Privada
-      </button>
-      <button
-        type="button"
-        aria-pressed={esPublica}
-        disabled={ocupado || (!esPublica && !legal)}
-        onClick={() => cambiar(true)}
-        title={!legal ? "Para publicarla, la baraja tiene que ser legal" : undefined}
-        className={cn(
-          SEGMENTO,
-          "h-full",
-          esPublica ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-          !esPublica && !legal && "cursor-not-allowed opacity-50",
-        )}
-      >
-        <Globe size={14} aria-hidden="true" />
-        Pública
-      </button>
-    </div>
+    <Select
+      label="Visibilidad de la baraja"
+      etiquetaOculta
+      requerido
+      value={esPublica ? "publica" : "privada"}
+      options={["privada", "publica"]}
+      onChange={(v) => {
+        const publicar = v === "publica";
+        if (publicar !== esPublica) cambiar(publicar);
+      }}
+      format={(v) => (v === "publica" ? "Pública" : "Privada")}
+      icono={(v) =>
+        v === "publica" ? (
+          <Globe size={14} aria-hidden="true" />
+        ) : (
+          <Lock size={14} aria-hidden="true" />
+        )
+      }
+      deshabilitada={(v) =>
+        v === "publica" && !esPublica && !legal
+          ? "Para publicarla, la baraja tiene que ser legal"
+          : null
+      }
+      disabled={ocupado}
+      className="w-36 shrink-0"
+    />
   );
 
   const hayDetalle = (!esPublica && !legal) || (esPublica && publico) || pidiendoAlias;

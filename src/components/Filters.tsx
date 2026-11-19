@@ -202,15 +202,19 @@ export function Filters({
       <div id={panelId} inert={!open} className={cn("pliegue -mt-4", open && "abierto")}>
         <div>
           <div className="pt-4">
-            <div className="border-line bg-surface rounded-panel border p-4 sm:p-5">
+            {/* Las columnas miran el ancho de esta caja (`@container`) y no el
+                de la pantalla: en el constructor el panel de la baraja se
+                lleva 24rem, y con `lg:grid-cols-5` quedaban columnas de 100 px
+                con «Escuela elemental» en dos lineas. El contenedor crea un
+                contexto de apilamiento: `relative z-10` deja los desplegables
+                por encima de la grilla de cartas. */}
+            <div className="border-line bg-surface rounded-panel @container relative z-10 border p-4 sm:p-5">
               <div
                 className={cn(
-                  "grid grid-cols-2 gap-3 sm:grid-cols-3",
+                  "grid grid-cols-2 gap-3 @xl:grid-cols-3 @3xl:grid-cols-4",
                   // De a cinco desde nueve selectores (con el formato o la
                   // edicion), para que no quede uno solo en una tercera fila.
-                  conFormato || facets.ediciones.length > 0
-                    ? "lg:grid-cols-5"
-                    : "lg:grid-cols-4",
+                  (conFormato || facets.ediciones.length > 0) && "@5xl:grid-cols-5",
                 )}
               >
                 {/* Dos filas en pantalla ancha, en el orden en que se

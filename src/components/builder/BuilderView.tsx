@@ -15,6 +15,7 @@ import { AutoHeight } from "../AutoHeight";
 import { CardGrid } from "../CardGrid";
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
+import { Select } from "../Select";
 import { Pagination } from "../Pagination";
 import { CardGridSkeleton, Skeleton } from "../Skeleton";
 import { toast } from "../toast";
@@ -86,10 +87,6 @@ import {
   DECK_NAME_FIELD,
   DECK_NOTE_FIELD,
   ENLACE,
-  SEGMENTO,
-  SEGMENTOS,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
   VACIO,
 } from "@/lib/ui";
 import { irArriba } from "@/lib/scroll";
@@ -151,50 +148,29 @@ function ZonaSwitch({
   enPrincipal: number;
   enElSide: number;
 }) {
-  const opciones: { z: DeckZone; texto: string; resto: string; cuenta: string }[] = [
-    {
-      z: "principal",
-      texto: "Baraja",
-      resto: "",
-      cuenta: `${enPrincipal}/${DECK_TOTAL}`,
-    },
-    { z: "side", texto: "Side", resto: " deck", cuenta: `${enElSide}/${SIDE_TOTAL}` },
-  ];
-
   // Va en la fila del buscador, a la derecha de «Filtros» (`acciones` de
-  // Filters). Las medidas miran esa fila (`@container`): angosta, solo
-  // «Baraja» / «Side»; con sitio, «Side deck» y la cuenta de cada una.
+  // Filters), con la cuenta de cada zona a la derecha del nombre.
   return (
-    <div role="group" aria-label="Agregar a" className={cn(SEGMENTOS, "h-11 shrink-0")}>
-      {opciones.map(({ z, texto, resto, cuenta }) => (
-        <button
-          key={z}
-          type="button"
-          onClick={() => onZona(z)}
-          aria-pressed={zona === z}
-          className={cn(
-            SEGMENTO,
-            "h-full px-3",
-            zona === z ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-          )}
-        >
-          <span>
-            {texto}
-            {resto && <span className="hidden @xl:inline">{resto}</span>}
-          </span>
-          <span
-            className={cn(
-              "hidden text-[12px] tabular-nums @lg:inline",
-              zona === z ? "text-white/90" : "text-muted",
-            )}
-          >
-            {cuenta}
-          </span>
-        </button>
-      ))}
-    </div>
+    <Select
+      label="Agregar a"
+      etiquetaOculta
+      requerido
+      value={zona}
+      options={ZONAS}
+      onChange={(z) => onZona(z === "side" ? "side" : "principal")}
+      format={(z) => (z === "side" ? "Side deck" : "Baraja")}
+      detalle={(z) =>
+        z === "side" ? `${enElSide}/${SIDE_TOTAL}` : `${enPrincipal}/${DECK_TOTAL}`
+      }
+      // Las medidas miran la fila del buscador (`@container`): angosta, sin
+      // la cuenta en el boton, para no quitarle sitio al campo.
+      detalleEnBoton="hidden @xl:inline"
+      className="w-32 shrink-0 @xl:w-40"
+    />
   );
 }
+
+const ZONAS: DeckZone[] = ["principal", "side"];
 
 export function BuilderView({
   inicial,
@@ -683,11 +659,7 @@ export function BuilderView({
                 rows={2}
                 className={cn(DECK_NOTE_FIELD, "bg-surface")}
               />
-              <FormatoSwitch
-                id="formato-panel"
-                formato={deck.formato}
-                onFormato={cambiarFormato}
-              />
+              <FormatoSwitch formato={deck.formato} onFormato={cambiarFormato} />
               {panel}
               <div className="border-line flex flex-wrap gap-2 border-t pt-4">
                 <GuardarButton guardado={guardado} onGuardar={guardar} />
@@ -738,11 +710,7 @@ export function BuilderView({
           className={cn(DECK_NOTE_FIELD, "mt-2 mb-4")}
         />
         <div className="mb-4">
-          <FormatoSwitch
-            id="formato-hoja"
-            formato={deck.formato}
-            onFormato={cambiarFormato}
-          />
+          <FormatoSwitch formato={deck.formato} onFormato={cambiarFormato} />
         </div>
         {panel}
       </DeckSheet>

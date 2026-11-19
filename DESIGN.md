@@ -377,15 +377,18 @@ una carta.
 | Estrella de portada | cartas de `/baraja` | 28 visibles y 44 de área (`after:-inset-2`); en reposo oculta salvo en pantallas táctiles |
 | Pie de la carta (`− n +`) | catálogo del constructor | **excepción**: sin anillo, porque es parte de la carta (que ya lo lleva) y el `overflow-hidden` lo cortaría; el `+` se llena de violeta y el foco va hacia adentro |
 
-### Segmentos y pestañas
+### Selectores de valor fijo
 
-`SEGMENTOS` (la cinta, `bg-panel`, `role="group"`) y `SEGMENTO` con
-`SEGMENTO_ACTIVO` / `SEGMENTO_INACTIVO` (cada opción, `aria-pressed`). La
-activa va en violeta lleno con su contador al 90 % de blanco. El anillo va
-**hacia adentro**, porque la cinta puede scrollear y su `overflow` cortaría uno
-hacia afuera. Son cuatro: «Baraja / Side deck» del constructor, «Tengo /
-Faltan / Agregar» de la colección, el orden de la Comunidad y «Privada /
-Pública».
+Lo que antes era una cinta de segmentos es ahora un `Select` con
+`requerido`: «Baraja / Side deck» del constructor, el formato de la baraja,
+«Tengo / Faltan / Agregar» de la colección, el orden de la Comunidad y
+«Privada / Pública». Tiene la misma caja que un filtro (`h-11`,
+`rounded-chip`, `bg-panel`) pero **no** se pinta violeta al tener valor, porque
+siempre lo tiene, y no lleva X: solo el chevrón. La cuenta de cartas va a la
+derecha en `text-muted` y `tabular-nums`, en el botón y en cada opción; el
+icono, si lo hay, a la izquierda. Una opción que no se puede elegir va
+atenuada con su motivo en el `title`. En una fila de botones lleva ancho fijo
+(`w-36`, `w-40`) para no saltar al cambiar de valor.
 
 **La fila del buscador** (`Filters.tsx`) es la misma en el catálogo, el
 constructor, la colección y la Comunidad: el campo con el orden dentro y, a la
@@ -445,16 +448,16 @@ un campo subrayado.
   final. «Iniciar sesión con Google» es un `BOTON_SECUNDARIO` con el logotipo de Google
   **en sus colores** (lo pide su guía de marca): es el único color ajeno que
   entra a la interfaz.
-- **«Privada / Pública»** son `SEGMENTOS`, con candado y globo, al final de la
-  fila de botones del detalle y a su misma altura (`h-11`). Deshabilitado
+- **«Privada / Pública»** es un selector de valor fijo, con candado y globo, al final de la
+  fila de botones del detalle y a su misma altura (`h-11`). Deshabilitada la opción
   «Pública» si la baraja no cumple, con la razón debajo en `text-muted`.
 - **El like** es un `BOTON_SECUNDARIO` con corazón y el número; dado, el
   corazón se rellena y el botón toma `bg-accent-soft` y borde violeta
   (`aria-pressed`). Responde en el acto y vuelve atrás si la nube lo rechaza.
   **Reportar** es un `BOTON_ICONO` con bandera y `HOVER_AVISO`: ámbar, no
   rojo, porque no borra nada.
-- **Los órdenes de la Comunidad** son `SEGMENTOS` (cuatro opciones a la vista)
-  y la afinidad un `Select`, como los filtros del catálogo.
+- **El orden de la Comunidad** es un selector de valor fijo, «Ordenar por»,
+  plegado tras «Filtros» junto al formato y la afinidad, que son filtros.
 
 ### Contenedores
 

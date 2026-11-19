@@ -1176,7 +1176,8 @@ sobre las 2649 y el proyecto lo descartó (nadie colecciona todo). La lógica es
   filtros en la URL como el catálogo, más `?ver=faltan` o `?ver=agregar`.
   Sus acciones (imagen, enlace, lista y vaciar) son iconos sin texto en la
   fila del buscador, a la derecha de «Filtros» (`acciones` de `Filters`), y
-  tras ellas las pestañas «Tengo / Faltan / Agregar».
+  tras ellas el selector «Tengo / Faltan / Agregar» (un `Select` `requerido`,
+  con la cuenta de cada lista).
 - **«Imagen»** baja un JPEG de la pestaña que se ve, con sus filtros y su
   orden (`card-sheet-image.ts`, el mismo dibujo que la imagen de una baraja).
   Bajo cada carta va su **nombre, edición y frecuencia** (`pie` de
@@ -1475,6 +1476,15 @@ mismo componente vive en sitios de distinto ancho:
   debajo de la grilla. Bajo 28rem de fila (el teléfono) limpiar filtros y el
   contador de «Filtros» dejan de reservar su sitio (`@max-md:hidden`): esos
   ~64 px cortaban el texto del campo en «Nombre o habilid…».
+- **La grilla del panel de filtros** (19-11-2026): sus columnas miran la caja
+  del panel (`@container`), no la pantalla. Con `lg:grid-cols-5`, en el
+  constructor entre 1024 y 1280 px quedaban columnas de ~100 px y «Escuela
+  elemental» se partía en dos líneas, bajando su selector. Ahora son 2, 3
+  desde `@xl`, 4 desde `@3xl` y 5 desde `@5xl` (solo con formato o
+  edición). Esa caja **sí** es contenedor, y para que sus desplegables no
+  queden bajo la grilla lleva `relative z-10`. Y la raíz de `Select` lleva
+  `justify-end`: si una etiqueta se parte igual, los botones siguen
+  alineados.
 - **La tarjeta de Mis barajas** (y la de la Comunidad, igual): la portada se
   achica bajo 24rem de tarjeta y la pastilla de estado baja bajo 20rem de
   **columna de texto** (sin la portada), que reemplazó a un `flex-wrap` con
@@ -1594,6 +1604,17 @@ contra el texto que se **ve** (`format`, o sea el título de la edición y no su
 slug) y **sin tildes**, para que "samurai" encuentre Samurái; y mientras se
 busca desaparece la opción vacía "Todos", que entre resultados no pinta nada
 —para limpiar está la X del propio selector—.
+
+**`Select` también hace de selector de valor fijo** (`requerido`, 19-11-2026,
+decisión del proyecto): «Baraja / Side deck» y el formato del constructor,
+«Privada / Pública» del detalle, «Tengo / Faltan / Agregar» de la colección
+y el orden de la Comunidad. Eran cintas de segmentos (`SEGMENTOS`, que se
+borraron). Sin opción vacía ni X y con el estilo neutro: elegir no es
+filtrar, así que no se pinta violeta. Lo acompañan `detalle` (la cuenta,
+gris y a la derecha, en las opciones y en el botón), `icono`,
+`deshabilitada` (una opción que se recorre pero no se elige, con
+`aria-disabled` y el motivo en su `title`: «Pública» de una baraja que no
+cumple), `disabled` y `className` para el ancho en una fila de botones.
 
 **El atributo no tiene faceta propia, a propósito.** Luz y Oscuridad son
 keywords impresas como cualquier otra, así que se filtran desde *habilidad*,
@@ -1988,8 +2009,10 @@ quien toca el código.
   antes de juntar nada (`sincronizar.ts`); sin recuerdo, lo del navegador es
   de antes de tener cuenta y se suma. Borrar la cuenta también lo borra.
 - **Publicar** (`PublicarControl.tsx`, en el detalle de una baraja propia):
-  «Privada / Pública» al final de la fila de botones (Editar, imagen,
-  enlace, Duplicar, Eliminar) y a su altura, `h-11`; debajo, «Ver en la
+  el selector «Privada / Pública» (un `Select` `requerido`, con candado y
+  globo; «Pública» deshabilitada mientras la baraja no cumple) al final de la
+  fila de botones (Editar, imagen, enlace, Duplicar, Eliminar) y a su
+  altura, `h-11`; debajo, «Ver en la
   Comunidad», likes y copias. Son dos piezas en sitios distintos que
   comparten estado, así que `PublicarControl` entrega las dos a un
   render-prop (`{ control, detalle }`). Solo si la baraja **cumple** (`validateDeck`); la
@@ -2005,8 +2028,8 @@ quien toca el código.
   Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
   copiadas) en el selector «Ordenar por», que va con Formato y Afinidad
   plegado tras el botón «Filtros» como en el catálogo (19-11-2026; antes
-  eran segmentos sueltos en la fila). «Más likes» hace de opción vacía y no
-  cuenta en la insignia; dentro del buscador, el mismo botón
+  eran segmentos sueltos en la fila). «Ordenar por» es `requerido` y «Más
+  likes», el de siempre, no cuenta en la insignia; dentro del buscador, el mismo botón
   A-Z / Z-A del catálogo (`por_nombre` de `listar_publicas`, que manda sobre
   el orden elegido y ordena con la intercalación `es-x-icu`, no la de la
   base); filtro por afinidad, todo en la URL. Se ve sin
@@ -2361,8 +2384,7 @@ scroll del modal y uno que empieza en horizontal la inclina.
 **Los botones, los controles y los contenedores salen de constantes de
 `src/lib/ui.ts`** (16-10-2026), documentadas en DESIGN.md §6 («Componentes»):
 `BOTON_PRIMARIO`, `BOTON_SECUNDARIO`, `BOTON_SUAVE`, `BOTON_ICONO`,
-`BOTON_ICONO_LIBRE`, sus cuatro versiones `_COMPACTO`, `SEGMENTOS` /
-`SEGMENTO`, `ENLACE`, `AVISO_EN_LINEA`, `VACIO`, `PASTILLA` y `CONTADOR`.
+`BOTON_ICONO_LIBRE`, sus cuatro versiones `_COMPACTO`, `ENLACE`, `AVISO_EN_LINEA`, `VACIO`, `PASTILLA` y `CONTADOR`.
 Antes cada componente tenía su `BOTON` local y la revisión encontró ocho
 versiones del botón violeta. Tres cosas que no son obvias:
 
@@ -2413,7 +2435,7 @@ descarga en iOS. Se reprodujo en Chromium con un teléfono emulado, red lenta
 y fallos inyectados: 12 huecos antes, cero después.
 
 El modal de una carta, abierto desde el constructor, suma y **quita** copias.
-Quitar sale de la zona elegida («Baraja / Side deck», junto a «Filtros») si la carta está ahí y, si no,
+Quitar sale de la zona elegida (el selector «Baraja / Side deck», junto a «Filtros») si la carta está ahí y, si no,
 de la otra: el modal cuenta las dos juntas.
 
 **El constructor guarda solo un borrador** (`src/lib/deck-draft.ts`) para
@@ -2598,7 +2620,8 @@ de Erratas; **cada uno tiene su Banlist** (`documentos/fuente/banlist-<formato>.
   una baneada (rojo, «Fuera de formato» en la pastilla), pero **`canAdd` la
   frena**: la grilla del constructor ni la ofrece. Una baneada se sigue
   pudiendo agregar con aviso.
-- **Dónde se elige.** En el constructor, `FormatoSwitch` bajo la descripción
+- **Dónde se elige.** En el constructor, `FormatoSwitch` (un `Select`
+  `requerido`) bajo la descripción
   (panel y hoja del teléfono); cambiarlo no saca cartas: lo que no entra lo
   marca el estado. En el catálogo y la colección, el `Select` «Formato» de
   `Filters` (`conFormato`), en la URL como `?formato=vcr`: cambia las cartas,

@@ -5,6 +5,7 @@ import { Share2 } from "lucide-react";
 
 import { CardModal } from "../CardModal";
 import { Filters } from "../Filters";
+import { Select } from "../Select";
 import { useHydrated } from "../decks/use-decks";
 import { toast } from "../toast";
 import { ColeccionAcciones } from "./ColeccionAcciones";
@@ -44,15 +45,7 @@ import {
 import { decodeColeccion } from "@/lib/coleccion-code";
 import { editionTitle, origenTitle } from "@/lib/editions";
 import type { Card, Formato } from "@/lib/types";
-import {
-  AVISO_EN_LINEA,
-  ENLACE,
-  SEGMENTO,
-  SEGMENTOS,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
-  VACIO,
-} from "@/lib/ui";
+import { AVISO_EN_LINEA, ENLACE, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const VISTAS: { valor: VistaColeccion; titulo: string }[] = [
@@ -308,37 +301,21 @@ function Coleccion({
               soloLectura={compartida !== null}
             />
             {/* Tras el boton de vaciar: que pestana de la coleccion se ve. */}
-            <div
-              role="group"
-              aria-label="Qué cartas mostrar"
-              className={cn(SEGMENTOS, "h-11 shrink-0")}
-            >
-              {vistas.map(({ valor, titulo }) => (
-                <button
-                  key={valor}
-                  type="button"
-                  onClick={() => setVista(valor)}
-                  aria-pressed={vistaReal === valor}
-                  className={cn(
-                    SEGMENTO,
-                    "h-full px-3",
-                    vistaReal === valor ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-                  )}
-                >
-                  {titulo}
-                  {cuenta[valor] !== null && (
-                    <span
-                      className={cn(
-                        "text-[12px] tabular-nums",
-                        vistaReal === valor ? "text-white/90" : "text-muted",
-                      )}
-                    >
-                      {cuenta[valor]}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            <Select
+              label="Qué cartas mostrar"
+              etiquetaOculta
+              requerido
+              value={vistaReal}
+              options={vistas.map((v) => v.valor)}
+              onChange={(v) => {
+                if (esVista(v)) setVista(v);
+              }}
+              format={(v) => VISTAS.find((x) => x.valor === v)?.titulo ?? v}
+              detalle={(v) =>
+                esVista(v) && cuenta[v] !== null ? String(cuenta[v]) : null
+              }
+              className="w-36 shrink-0"
+            />
           </>
         }
       />

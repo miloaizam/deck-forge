@@ -171,22 +171,6 @@ export const BOTON_ICONO_LIBRE_COMPACTO = `${CAJA} ${AREA_TACTIL} size-9 text-mu
 /** Un control bloqueado con `aria-disabled`: atenuado y con el cursor que lo dice. */
 export const BLOQUEADO = "text-muted/40 cursor-not-allowed hover:text-muted/40";
 
-/**
- * Dos o mas opciones excluyentes en una cinta: «Agregar a: Baraja / Side
- * deck» y las pestanas de la coleccion. El grupo lleva `role="group"` y cada
- * opcion `aria-pressed`.
- *
- * El anillo va HACIA ADENTRO (`-outline-offset-2`): la cinta puede scrollear
- * en el telefono, y su `overflow` recortaria uno hacia afuera. La cinta mide
- * 44 de alto con su padding, asi que cada opcion de 36 ya tiene su area.
- */
-export const SEGMENTOS =
-  "border-line bg-panel rounded-card inline-flex max-w-full gap-1 overflow-x-auto border p-1";
-export const SEGMENTO =
-  "inline-flex h-9 shrink-0 items-center gap-2 rounded-chip px-3.5 text-[13px] whitespace-nowrap transition-colors hover:outline-2 hover:-outline-offset-2 hover:outline-brand-500 focus-visible:-outline-offset-2 focus-visible:outline-brand-500";
-export const SEGMENTO_ACTIVO = "bg-brand-600 font-medium text-white";
-export const SEGMENTO_INACTIVO = "text-muted hover:text-ink";
-
 /** Un enlace de texto que hace de accion: «Limpiar los filtros», «Ver mis barajas». */
 export const ENLACE =
   "text-accent focus-visible:outline-brand-500 rounded underline underline-offset-4 transition-opacity hover:opacity-75";

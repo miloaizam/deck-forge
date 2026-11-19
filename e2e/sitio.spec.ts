@@ -88,12 +88,18 @@ test.describe("constructor", () => {
   });
 });
 
+/** Cambia de lista en la coleccion, con el selector «Qué cartas mostrar». */
+async function verLista(page: Page, lista: "Tengo" | "Faltan" | "Agregar") {
+  await page.getByRole("button", { name: /^Qué cartas mostrar/ }).click();
+  await page.getByRole("option", { name: new RegExp(`^${lista}`) }).click();
+}
+
 test("en «Me faltan» se anotan mas de tres copias", async ({ page }) => {
   await page.goto("/coleccion/?ver=agregar");
   const corazon = page.getByRole("button", { name: / me falta$/ }).first();
   const nombre = (await corazon.getAttribute("aria-label"))!.replace(/ me falta$/, "");
   await corazon.click();
-  await page.getByRole("button", { name: /^Faltan/ }).click();
+  await verLista(page, "Faltan");
   const sumar = page.getByRole("button", {
     name: `Sumar una copia que falta de ${nombre}`,
   });
@@ -115,7 +121,7 @@ test("una carta puede estar en «Tengo» y en «Me faltan» a la vez", async ({ 
   await expect(corazon).toHaveAttribute("aria-pressed", "true");
 
   // En las dos listas solo esta esa carta: su fila es la unica.
-  await page.getByRole("button", { name: /^Faltan/ }).click();
+  await verLista(page, "Faltan");
   const fila = page.locator(".fila-coleccion");
   await expect(fila).toHaveCount(1);
   await fila.getByRole("button", { name: /^Sumar una copia que falta/ }).click();
@@ -127,10 +133,7 @@ test("una carta puede estar en «Tengo» y en «Me faltan» a la vez", async ({ 
   await expect(fila).toContainText("tienes 2");
   await expect(fila.getByLabel("1 copia", { exact: true })).toBeVisible();
 
-  await page
-    .getByRole("button", { name: /^Tengo/ })
-    .first()
-    .click();
+  await verLista(page, "Tengo");
   await expect(fila).toHaveCount(1);
   await expect(fila).toContainText(nombre);
   await expect(fila).toContainText("te falta 1");
@@ -195,7 +198,7 @@ test.describe("el catalogo llega aparte del HTML", () => {
     await expect(page.getByText("No se pudo cargar el catálogo.")).toBeVisible();
     fallar = false;
     await page.getByRole("button", { name: "Reintentar" }).click();
-    await expect(page.getByRole("group", { name: "Qué cartas mostrar" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Qué cartas mostrar/ })).toBeVisible();
     await expect(page.getByText("No se pudo cargar el catálogo.")).toHaveCount(0);
   });
 
@@ -391,11 +394,9 @@ test.describe("formatos", () => {
     ).toBeVisible();
 
     const panel = await abrirPanel(page);
-    await panel.getByRole("button", { name: "VCR", exact: true }).click();
-    await expect(panel.getByRole("button", { name: "VCR", exact: true })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    await panel.getByRole("button", { name: /^Formato/ }).click();
+    await panel.getByRole("option", { name: "VCR", exact: true }).click();
+    await expect(panel.getByRole("button", { name: "Formato VCR" })).toBeVisible();
     if (page.viewportSize()!.width < 1024) await page.keyboard.press("Escape");
     // La busqueda es difusa y trae otras: lo que importa es que Kirin no.
     await expect(page.getByRole("button", { name: /^Ver detalle de Kirin/ })).toHaveCount(

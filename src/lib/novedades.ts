@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-19",
+    version: "6.8.0",
+    tipo: "Mejora",
+    titulo: "Selectores en vez de botones, y filtros que caben",
+    texto: [
+      "Baraja o side deck en el constructor, el formato de la baraja, Privada o Pública en su detalle y Tengo, Faltan o Agregar en la colección se eligen ahora en un selector desplegable, como los filtros. La baraja y el side siguen diciendo cuántas cartas llevan.",
+      "Los filtros se acomodan al espacio que tienen: en el constructor, con el panel de la baraja al lado, van en menos columnas y ningún título se parte en dos líneas.",
+    ],
+  },
+  {
+    fecha: "2026-11-19",
     version: "6.7.0",
     tipo: "Mejora",
     titulo: "Filtros plegados en la Comunidad y avisos con su tiempo",
