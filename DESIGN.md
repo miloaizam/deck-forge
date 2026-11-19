@@ -116,7 +116,10 @@ lleva leyenda al pie (decisión del proyecto, 17-11-2026): el lazo «Errata» de
 la imagen ya dice que la carta cambió. Fuera del texto se marca igual el
 nombre, la raza y la frecuencia, y lo que la Banlist le pone a la carta sin
 ser texto (la regla de Shingas y Karna, «Libre por tres copias») va como una
-nota dorada al pie de la habilidad. El violeta
+nota dorada al pie de la habilidad, con borde dorado, filete izquierdo e
+icono de advertencia, como un aviso `warning`. El lazo «Errata» de la imagen
+va en el mismo amarillo (`#FACC15`, letra oscura), fijo en los dos temas, y
+«Baneada» en rojo con letra blanca. El violeta
 ya es la marca y el resaltado de las keywords, así que hacía falta otro tono:
 el dorado es el **complementario dividido cálido** del violeta (~263°), el que
 más resalta a su lado sin confundirse con el verde ni el rojo de los estados,
@@ -462,7 +465,7 @@ un campo subrayado.
 | Tarjeta pública | la de baraja, con alias en `text-accent`, afinidad y fecha, y likes y copias con icono | la Comunidad; sin portada, un hueco `bg-surface` del mismo tamaño |
 | Aviso en línea | `AVISO_EN_LINEA` | algo que espera una decisión: el borrador, la colección compartida |
 | Estado de la baraja | `DeckIssues` | caja, barra, título y lista del mismo tono |
-| Aviso flotante | `Toaster` | `bg-panel/95`, filete izquierdo del tono e icono; se va solo |
+| Aviso flotante | `Toaster` | `bg-panel/95`, filete izquierdo del tono e icono; se va solo, con una barra de 3 px del tono al pie que se llena en lo que le queda y se detiene con el cursor o el foco encima. Se apilan hasta tres |
 | Vacío | `VACIO` | caja punteada, título `ink`, salida con `ENLACE` |
 | Modal | `<dialog>` `bg-surface rounded-panel shadow-panel` | detalle de carta, confirmar, ayuda (lateral), hoja de la baraja (abajo) |
 | Popover | `bg-panel rounded-card shadow-panel` | lista de un `Select` |
@@ -476,15 +479,16 @@ barrido `imagen-carga` mientras baja.
 | Vista | Tamaño | Radio | Al apuntar | Encima | Por qué |
 |---|---|---|---|---|---|
 | Catálogo y constructor (`CardTile`) | hasta 200 px, grilla | `card` | `CONTORNO_CARTA`: anillo y sube 4 px; el nombre pasa a `accent` | lazos Errata / Baneada, pastilla «Oro inicial», pie `− n +` en el constructor | es la vista de elegir: lleva todo lo que decide |
-| Mesa de `/baraja` (`DeckSections`) | 10 por fila, copias apiladas (4 a la vista como mucho; con más, «×34» sobre la de adelante) | `card`, con `shadow-panel` | `CONTORNO_CARTA_GRUPO`: el anillo rodea la pila entera | moneda del oro inicial, estrella de portada, total de copias | se lee como un mazo sobre la mesa; la sombra separa las copias |
+| Mesa de `/baraja` (`DeckSections`) | 10 por fila, copias apiladas (4 a la vista como mucho; con más, «×34» sobre la de adelante) | `card`, con `shadow-panel` | `CONTORNO_CARTA_GRUPO`: el anillo rodea la pila entera | lazos Errata / Baneada en chico (`.lazos-chico`), moneda del oro inicial, estrella de portada, total de copias | se lee como un mazo sobre la mesa; la sombra separa las copias |
 | Mano de prueba | hasta 88 px | `card` | `CONTORNO_CARTA` | nada | es un vistazo: sin lazos ni insignias |
 | Detalle (`CardModal`) | 420 px | `card` | — | lazos grandes, selector de impresiones (56 px, borde violeta en la elegida) | aquí se lee la carta |
 | Fila de la colección | 36 px | 4 px (`rounded`) | la fila lleva el anillo | gris y atenuada en «Me faltan» | se recorren cientos: importa el nombre |
 | Fila del panel | 28 px | 4 px | el nombre pasa a `accent` | — | la lista de la baraja, no su arte |
 | Portada de Mis barajas | 92 × 131 fijo, arriba (nunca se estira con la tarjeta) | 4 px | la tarjeta lleva el anillo | — | identifica la baraja |
 
-Los lazos solo van donde la carta se elige o se lee (grilla y detalle): en la
-mesa, la mano y las filas, el estado de la baraja ya avisa de una baneada.
+Los lazos van donde la carta se elige o se lee (grilla y detalle) y en la mesa
+de una baraja, para ver de un vistazo cuáles cambian o no se pueden jugar; en
+la mano y las filas, no: ahí el estado de la baraja ya avisa de una baneada.
 
 ---
 

@@ -34,6 +34,16 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-19",
+    version: "6.7.0",
+    tipo: "Mejora",
+    titulo: "Filtros plegados en la Comunidad y avisos con su tiempo",
+    texto: [
+      "En la Comunidad, el formato, la afinidad y el orden (más likes, tendencia, más recientes o más copiadas) van ahora tras el botón Filtros, como en el catálogo, con su número y un botón para limpiarlos.",
+      "Los avisos llevan abajo una barra que se va llenando con el tiempo que les queda, y se detiene si pasas el cursor encima. El listón «Errata» de las cartas es amarillo, la nota de la Banlist en una carta lleva el icono de advertencia, y el detalle de una baraja dice el total y el desglose en una sola línea.",
+    ],
+  },
+  {
+    fecha: "2026-11-19",
     version: "6.6.1",
     tipo: "Arreglo",
     titulo: "El buscador ya no se llena de cartas que no son",

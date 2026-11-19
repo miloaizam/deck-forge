@@ -363,7 +363,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo funciona la Comunidad?",
         respuesta: [
-          "Ahí están las barajas que publicaron otros jugadores. Puedes ordenarlas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**, o por **nombre** con el botón de las flechas dentro del buscador, y filtrarlas por **formato** y por raza, escuela o atributo.",
+          "Ahí están las barajas que publicaron otros jugadores. Con el botón **Filtros** (el embudo) las filtras por **formato** y por raza, escuela o atributo, y las ordenas por **más likes**, **tendencia** (likes de los últimos 7 días), **más recientes** o **más copiadas**. También por **nombre**, con el botón de las flechas dentro del buscador.",
           "Con tu cuenta puedes darles **like**, **guardarlas en tus barajas** o **reportarlas** con la bandera si tienen algo ofensivo (también la foto de quien la publicó) o son spam.",
         ],
       },

@@ -183,6 +183,15 @@
       scroll-behavior: auto !important;
     }
   }
+  /* Salvo la barra de tiempo de los avisos (`Toaster.tsx`): es un relleno
+     lento y lineal, no algo que se desplace, y con la regla de arriba se
+     veria llena en el acto. Va en esta misma capa: un !important de una
+     capa posterior pierde contra el de esta. */
+  @media (prefers-reduced-motion: reduce) {
+    .aviso-tiempo {
+      animation-duration: var(--ms, 4000ms) !important;
+    }
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -546,6 +555,20 @@ html[data-barajas="0"] .solo-con-barajas {
   .aviso > * {
     min-height: 0;
   }
+  /* La barra al pie de un aviso, que se llena en lo que le queda a la vista
+     (`Toaster.tsx`). Se detiene con el cursor o el foco encima. */
+  .aviso-tiempo {
+    transform-origin: left;
+    animation: aviso-tiempo var(--ms, 4000ms) linear forwards;
+  }
+  @keyframes aviso-tiempo {
+    from {
+      scale: 0 1;
+    }
+    to {
+      scale: 1 1;
+    }
+  }
   .aviso-saliendo {
     opacity: 0;
     grid-template-rows: 0fr;
@@ -655,8 +678,12 @@ html[data-barajas="0"] .solo-con-barajas {
     color: #fff;
     box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
   }
+  /* Amarillo, como el dorado de lo que cambio una errata en el texto, con
+     letra oscura: el blanco sobre amarillo no llega al contraste. */
   .lazo-errata {
-    background: #6d28d9;
+    background: #facc15;
+    color: #1c1400;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
   }
   .lazo-baneada {
     background: #b91c1c;

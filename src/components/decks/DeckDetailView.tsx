@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
+  ArrowRight,
   Copy,
   Hammer,
   ImageDown,
@@ -282,24 +283,33 @@ function DeckDetail({ deFormato }: DeckDetailViewProps) {
               {/* El conteo va bajo el titulo, que es lo que describe: el total y
                   cuantas de cada tipo, en el orden de la mesa. Solo la baraja,
                   como los contadores del constructor: el side va aparte. */}
-              <p className="text-muted mt-1.5 text-[14px] tabular-nums">
-                {stats.totalPrincipal}/{DECK_TOTAL} cartas
-                {stats.totalSide > 0 && ` · side ${stats.totalSide}`}
-              </p>
-              {stats.totalPrincipal > 0 && (
-                <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[14px] tabular-nums">
-                  {SECCIONES_DE_LA_BARAJA.filter(
-                    ({ tipo }) => stats.porTipo[tipo] > 0,
-                  ).map(({ tipo, titulo }) => (
-                    <li key={tipo} className="text-muted">
-                      <span className="text-ink font-semibold">
-                        {stats.porTipo[tipo]}
-                      </span>{" "}
-                      {stats.porTipo[tipo] === 1 ? tipo : titulo}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] tabular-nums">
+                <p className="text-ink font-semibold">
+                  {stats.totalPrincipal}/{DECK_TOTAL} cartas
+                  {stats.totalSide > 0 && (
+                    <span className="text-muted font-normal">
+                      {` · side ${stats.totalSide}`}
+                    </span>
+                  )}
+                </p>
+                {stats.totalPrincipal > 0 && (
+                  <ArrowRight size={14} aria-hidden="true" className="text-muted" />
+                )}
+                {stats.totalPrincipal > 0 && (
+                  <ul className="flex flex-wrap gap-x-3 gap-y-1">
+                    {SECCIONES_DE_LA_BARAJA.filter(
+                      ({ tipo }) => stats.porTipo[tipo] > 0,
+                    ).map(({ tipo, titulo }) => (
+                      <li key={tipo} className="text-muted">
+                        <span className="text-ink font-semibold">
+                          {stats.porTipo[tipo]}
+                        </span>{" "}
+                        {stats.porTipo[tipo] === 1 ? tipo : titulo}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
             {/* La descripcion es opcional: si esta vacia no deja hueco. */}
             {deck.descripcion.trim() !== "" && (

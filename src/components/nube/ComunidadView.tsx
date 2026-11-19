@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   ArrowDownAZ,
   ArrowDownZA,
   ArrowUpDown,
   Copy,
+  Funnel,
+  FunnelX,
   Heart,
   Search,
   Users,
@@ -40,12 +42,11 @@ import { FORMATOS, type Formato } from "@/lib/types";
 import { irArriba } from "@/lib/scroll";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import {
+  BOTON_ICONO,
   BOTON_ICONO_LIBRE_COMPACTO,
+  BOTON_SECUNDARIO,
+  CONTADOR,
   ENLACE,
-  SEGMENTO,
-  SEGMENTO_ACTIVO,
-  SEGMENTO_INACTIVO,
-  SEGMENTOS,
   TEXT_FIELD,
   VACIO,
 } from "@/lib/ui";
@@ -76,6 +77,16 @@ const INICIAL: Consulta = {
 };
 
 const etiquetaDeFormato = (f: string) => (esFormato(f) ? NOMBRE_FORMATO[f] : f);
+
+/**
+ * El orden va en un selector como los otros dos filtros. «Más likes» es el
+ * de siempre y hace de opcion vacia (como Estandar en el formato del
+ * catalogo): quitar el filtro vuelve a el, y no cuenta en la insignia.
+ */
+const ORDEN_POR_DEFECTO: OrdenComunidad = "likes";
+const OTROS_ORDENES = ORDENES_COMUNIDAD.filter((o) => o !== ORDEN_POR_DEFECTO);
+const etiquetaDeOrden = (o: string) =>
+  esOrdenComunidad(o) ? ETIQUETA_ORDEN_COMUNIDAD[o] : o;
 
 /** Sin orden por nombre, A-Z, Z-A y de vuelta: el ciclo del catalogo. */
 const SIGUIENTE: Record<PorNombre, PorNombre> = { "": "asc", asc: "desc", desc: "" };
@@ -137,6 +148,8 @@ export function ComunidadView() {
   );
 
   const [consulta, setConsulta] = useState<Consulta>(INICIAL);
+  const [abierto, setAbierto] = useState(false);
+  const panelId = useId();
   const [leidaUrl, setLeidaUrl] = useState(false);
   /** Lo tecleado en el buscador; la consulta lo toma tras una pausa. */
   const [texto, setTexto] = useState("");
@@ -209,6 +222,16 @@ export function ComunidadView() {
   const cambiar = (cambios: Partial<Consulta>) =>
     setConsulta((c) => ({ ...c, pagina: 1, ...cambios }));
   const totalPaginas = r.fase === "ok" ? Math.max(1, Math.ceil(r.total / POR_PAGINA)) : 1;
+  const activos = [
+    consulta.formato !== "",
+    consulta.afinidad !== "",
+    consulta.orden !== ORDEN_POR_DEFECTO,
+  ].filter(Boolean).length;
+  const hayQueLimpiar = activos > 0 || texto !== "" || consulta.nombre !== "";
+  const limpiar = () => {
+    setTexto("");
+    setConsulta(INICIAL);
+  };
 
   return (
     <div className="mt-10 flex flex-col gap-5">
@@ -251,57 +274,81 @@ export function ComunidadView() {
             )}
           </button>
         </div>
-        {/* A la derecha, la afinidad y el orden, en la misma fila. En el
-            telefono (fila bajo 28rem) bajan bajo el buscador y el orden pasa a
-            una grilla de 2 x 2 a todo el ancho: en una tira, «Más recientes»
-            quedaba cortada y «Más copiadas» fuera, sin nada que dijera que se
-            podia deslizar. */}
-        <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
-          <div className="w-full @md:w-44">
-            <Select
-              label="Formato"
-              etiquetaOculta
-              value={consulta.formato}
-              options={[...FORMATOS]}
-              onChange={(v) => cambiar({ formato: esFormato(v) ? v : "" })}
-              placeholder="Todos los formatos"
-              format={etiquetaDeFormato}
-            />
-          </div>
-          <div className="w-full @md:w-60">
-            <Select
-              label="Afinidad"
-              etiquetaOculta
-              value={consulta.afinidad}
-              options={[...AFINIDADES]}
-              onChange={(v) => cambiar({ afinidad: v })}
-              placeholder="Todas las afinidades"
-              format={etiquetaAfinidad}
-            />
-          </div>
-          <div
-            role="group"
-            aria-label="Ordenar"
+        {/* A la derecha, limpiar y el boton que despliega los filtros, como
+            en el catalogo (Filters.tsx): mismas clases y misma insignia. */}
+        <div className="ml-auto flex items-center gap-2 @md:gap-3">
+          <button
+            type="button"
+            onClick={limpiar}
+            aria-label="Limpiar filtros"
+            title="Limpiar filtros"
+            disabled={!hayQueLimpiar}
+            className={cn(BOTON_ICONO, !hayQueLimpiar && "invisible @max-md:hidden")}
+          >
+            <FunnelX size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setAbierto((v) => !v)}
+            aria-expanded={abierto}
+            aria-controls={panelId}
             className={cn(
-              SEGMENTOS,
-              "h-11 @max-md:grid @max-md:h-auto @max-md:w-full @max-md:grid-cols-2",
+              BOTON_SECUNDARIO,
+              "relative min-w-11 px-3 whitespace-nowrap @md:px-4",
+              (abierto || activos > 0) && "border-brand-600 bg-accent-soft text-ink",
             )}
           >
-            {ORDENES_COMUNIDAD.map((o) => (
-              <button
-                key={o}
-                type="button"
-                aria-pressed={consulta.orden === o}
-                onClick={() => cambiar({ orden: o })}
-                className={cn(
-                  SEGMENTO,
-                  "h-full @max-md:h-9 @max-md:justify-center",
-                  consulta.orden === o ? SEGMENTO_ACTIVO : SEGMENTO_INACTIVO,
-                )}
+            <Funnel size={14} aria-hidden="true" />
+            <span className="sr-only @md:not-sr-only">Filtros</span>
+            {activos > 0 && (
+              <span
+                aria-label={`${activos} filtros aplicados`}
+                className={cn(CONTADOR, "ring-bg absolute -top-2 -right-2 ring-2")}
               >
-                {ETIQUETA_ORDEN_COMUNIDAD[o]}
-              </button>
-            ))}
+                {activos}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* El panel, montado siempre y plegado (`.pliegue`), como el del
+          catalogo: se despliega empujando la lista y cerrado queda inerte. */}
+      <div
+        id={panelId}
+        inert={!abierto}
+        className={cn("pliegue -mt-5", abierto && "abierto")}
+      >
+        <div>
+          <div className="pt-5">
+            <div className="border-line bg-surface rounded-panel grid gap-3 border p-4 sm:grid-cols-3 sm:p-5">
+              <Select
+                label="Formato"
+                value={consulta.formato}
+                options={[...FORMATOS]}
+                onChange={(v) => cambiar({ formato: esFormato(v) ? v : "" })}
+                placeholder="Todos"
+                format={etiquetaDeFormato}
+              />
+              <Select
+                label="Afinidad"
+                value={consulta.afinidad}
+                options={[...AFINIDADES]}
+                onChange={(v) => cambiar({ afinidad: v })}
+                placeholder="Todas"
+                format={etiquetaAfinidad}
+              />
+              <Select
+                label="Ordenar por"
+                value={consulta.orden === ORDEN_POR_DEFECTO ? "" : consulta.orden}
+                options={OTROS_ORDENES}
+                onChange={(v) =>
+                  cambiar({ orden: esOrdenComunidad(v) ? v : ORDEN_POR_DEFECTO })
+                }
+                placeholder={ETIQUETA_ORDEN_COMUNIDAD[ORDEN_POR_DEFECTO]}
+                format={etiquetaDeOrden}
+              />
+            </div>
           </div>
         </div>
       </div>

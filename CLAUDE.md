@@ -1255,6 +1255,12 @@ tres acciones sin aviso. Cuatro cosas que no son obvias:
   a la vista. La lista visible vive en el popover, que está oculto mientras no
   hay avisos, y una región que aparece junto con su texto no siempre se
   anuncia.
+- **Una barra al pie dice cuánto le queda** (19-11-2026): 3 px del color del
+  tono que se llenan en lo que dura el aviso (`.aviso-tiempo`). El
+  temporizador cuenta lo que **queda** y no vuelve a empezar al sacar el
+  cursor, para que la barra no mienta. Con «reducir movimiento» la barra se
+  llena igual: su excepción va en la misma capa `base` que la regla global,
+  porque un `!important` de una capa posterior pierde contra el de esa.
 - El mismo texto repetido **no se apila**: reinicia su tiempo. Pulsar cinco
   veces un "+" bloqueado deja un aviso, no cinco. Y el tiempo se detiene con
   el cursor o el foco encima (WCAG 2.2.1).
@@ -1996,7 +2002,10 @@ quien toca el código.
   sincronización, y retiraba dos veces.
 - **La Comunidad** (`/comunidad`, `ComunidadView.tsx`): tarjetas como las de
   Mis barajas, cuatro órdenes (más likes, tendencia de 7 días, recientes, más
-  copiadas) en segmentos bajo el buscador; dentro del buscador, el mismo botón
+  copiadas) en el selector «Ordenar por», que va con Formato y Afinidad
+  plegado tras el botón «Filtros» como en el catálogo (19-11-2026; antes
+  eran segmentos sueltos en la fila). «Más likes» hace de opción vacía y no
+  cuenta en la insignia; dentro del buscador, el mismo botón
   A-Z / Z-A del catálogo (`por_nombre` de `listar_publicas`, que manda sobre
   el orden elegido y ordena con la intercalación `es-x-icu`, no la de la
   base); filtro por afinidad, todo en la URL. Se ve sin

@@ -244,7 +244,8 @@ programó) junte todo. De las lápidas borra solo las que viajaron.
   cartas de la baraja (solo ids y copias).
 - **`/comunidad`**: cuatro órdenes (más likes, tendencia = likes de los
   últimos 7 días, más recientes, más copiadas), filtros por formato y por
-  afinidad, y buscador; todo en la URL. Se ve sin cuenta.
+  afinidad —los tres plegados tras el botón «Filtros»—, y buscador; todo en
+  la URL. Se ve sin cuenta.
 - **El formato** (Estándar, VCR o Infantería) es la columna generada
   `barajas.formato`, que sale del jsonb como el nombre (27-10-2026): sin
   `formato` en los datos, `estandar`. No la escribe el sitio, así que publicar

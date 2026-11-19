@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TriangleAlert } from "lucide-react";
 
 import { KEYWORD_EN_PROSA, splitAbility } from "@/lib/ability";
 import { sinCorchetes } from "@/lib/erratas-aplicadas";
@@ -155,12 +156,18 @@ export function AbilityText({ text, resaltes = [], notas = [] }: AbilityTextProp
         </p>
       )}
 
+      {/* Con borde y el icono de advertencia, como un aviso `warning`, pero
+          en el dorado de las erratas. El icono va en una caja del alto de una
+          linea, para quedar a la altura de la primera. */}
       {notas.map((nota) => (
         <p
           key={nota}
-          className="bg-errata-soft text-errata rounded-card px-3 py-2 text-[13px] leading-relaxed"
+          className="bg-errata-soft text-errata border-errata/40 border-l-errata rounded-card flex items-start gap-2.5 border border-l-[3px] px-3 py-2 text-[13px] leading-relaxed"
         >
-          {nota}
+          <span aria-hidden="true" className="flex h-[1lh] shrink-0 items-center">
+            <TriangleAlert size={15} />
+          </span>
+          <span className="min-w-0">{nota}</span>
         </p>
       ))}
     </div>

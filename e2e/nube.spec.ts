@@ -550,8 +550,15 @@ test.describe("con la nube encendida", () => {
     await page.getByRole("button", { name: /^Ordenar: Nombre, de la A a la Z/ }).click();
     await expect(page).toHaveURL(/nombre=desc/);
     await expect(nombres).toHaveText(["Zorros", "Águilas"]);
-    // Los otros ordenes siguen en su fila, como antes.
-    await expect(page.getByRole("button", { name: "Más likes" })).toBeVisible();
+    // Los otros ordenes van plegados en «Filtros», en un selector; el de
+    // siempre es «Más likes» y no cuenta en la insignia.
+    await page.getByRole("button", { name: /Filtros/ }).click();
+    await page.getByRole("button", { name: /^Ordenar por/ }).click();
+    await page.getByRole("option", { name: "Más recientes" }).click();
+    await expect(page).toHaveURL(/orden=recientes/);
+    await expect(page.getByLabel("1 filtros aplicados")).toBeVisible();
+    await page.getByRole("button", { name: "Limpiar filtros" }).click();
+    await expect(page).not.toHaveURL(/orden=/);
   });
 
   test("la Comunidad filtra por formato", async ({ page }) => {
