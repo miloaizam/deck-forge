@@ -206,14 +206,14 @@ export function Filters({
               <div
                 className={cn(
                   "grid grid-cols-2 gap-3 sm:grid-cols-3",
-                  // Con el formato y la edicion son nueve: de a cinco, para que
-                  // no quede uno solo en una tercera fila.
-                  conFormato && facets.ediciones.length > 0
+                  // De a cinco desde nueve selectores (con el formato o la
+                  // edicion), para que no quede uno solo en una tercera fila.
+                  conFormato || facets.ediciones.length > 0
                     ? "lg:grid-cols-5"
                     : "lg:grid-cols-4",
                 )}
               >
-                {/* Dos filas de cuatro en pantalla ancha, en el orden en que se
+                {/* Dos filas en pantalla ancha, en el orden en que se
                 suele filtrar. Los tres tipos de Oro van dentro de Tipo. La
                 edicion solo aparece en /catalogo: en la
                 pagina de una edicion la faceta viene vacia y el Select no se
@@ -268,6 +268,13 @@ export function Filters({
                   options={facets.habilidades}
                   onChange={set("habilidad")}
                   placeholder="Todas"
+                />
+                {/* Lo que la carta HACE (efectos.ts); Habilidad es lo que ES. */}
+                <Select
+                  label="Efecto"
+                  value={filters.efecto}
+                  options={facets.efectos}
+                  onChange={set("efecto")}
                 />
                 <Select
                   label="Fuerza"

@@ -3,6 +3,7 @@ import MiniSearch from "minisearch";
 import { compareEditions, esOrden } from "./card-order";
 import { esFormato } from "./formatos";
 import { EDITIONS } from "./editions";
+import { efectosDe, NOMBRES_DE_EFECTOS, tieneEfecto } from "./efectos";
 import { coincideTipo, esClaseDeOro, OPCIONES_DE_TIPO } from "./oros";
 import { ESCUELAS, FRECUENCIAS, KEYWORDS_IMPRESAS, RAZAS, type Card } from "./types";
 
@@ -20,6 +21,8 @@ export interface CatalogFilters {
   query: string;
   edicion: string;
   habilidad: string;
+  /** Lo que la carta hace ("Desterrar", "Robar"...): `efectos.ts`. */
+  efecto: string;
   tipo: string;
   raza: string;
   escuela: string;
@@ -40,6 +43,7 @@ export const EMPTY_FILTERS: CatalogFilters = {
   query: "",
   edicion: "",
   habilidad: "",
+  efecto: "",
   tipo: "",
   raza: "",
   escuela: "",
@@ -85,6 +89,8 @@ export function countActiveFilters(f: CatalogFilters): number {
 export interface Facets {
   ediciones: string[];
   habilidades: string[];
+  /** Lo que las cartas hacen, en el orden de `EFECTOS` (efectos.ts). */
+  efectos: string[];
   tipos: string[];
   razas: string[];
   escuelas: string[];
@@ -128,6 +134,7 @@ export function buildFacets(cards: Card[]): Facets {
   return {
     ediciones: ediciones.length > 1 ? ediciones : [],
     habilidades: alfabetico(KEYWORDS_IMPRESAS.filter((k) => declaradas.has(k))),
+    efectos: NOMBRES_DE_EFECTOS.filter((e) => cards.some((c) => efectosDe(c).has(e))),
     // Los tipos y, bajo "Oro", sus tres clases (`oros.ts`). Las clases solo si
     // hay cartas: en Escuelas Elementales no hay Oro inicial de edicion.
     tipos: OPCIONES_DE_TIPO.filter(
@@ -262,6 +269,7 @@ export function applyFilters(
     (c) =>
       matches(c.edicion, filters.edicion) &&
       (filters.habilidad === "" || c.keywords.includes(filters.habilidad)) &&
+      tieneEfecto(c, filters.efecto) &&
       coincideTipo(c, filters.tipo) &&
       matches(c.raza, filters.raza) &&
       matches(c.escuela, filters.escuela) &&
@@ -303,6 +311,7 @@ const CLAVES_URL: Record<
 > = {
   edicion: ["ed", "ediciones"],
   habilidad: ["hab", "habilidades"],
+  efecto: ["efecto", "efectos"],
   tipo: ["tipo", "tipos"],
   raza: ["raza", "razas"],
   escuela: ["esc", "escuelas"],

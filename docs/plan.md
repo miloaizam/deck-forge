@@ -479,7 +479,7 @@ El estado de cada punto, al día. Lo pendiente vive en [TODO.md](../TODO.md).
   dos ediciones del catálogo: **Adicionales** (82: packs del formato, cartas
   de fuera del formato y oros iniciales de raza) y **Arte Alternativo** (416
   otras impresiones de cartas ya cargadas, para elegir el arte).
-- Filtros: edición, habilidad, tipo, raza, escuela, frecuencia, coste y fuerza.
+- Filtros: edición, habilidad, efecto, tipo, raza, escuela, frecuencia, coste y fuerza.
   El atributo se filtra desde habilidad; la **legalidad** espera a la banlist.
 - Buscador por nombre y habilidad (MiniSearch).
 

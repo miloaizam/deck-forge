@@ -33,6 +33,16 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    fecha: "2026-11-19",
+    version: "6.5.0",
+    tipo: "Mejora",
+    titulo: "Filtro por efecto",
+    texto: [
+      "Los filtros del catálogo, del constructor y de la colección suman «Efecto», para buscar las cartas por lo que hacen: destruir, desterrar, anular, robar, buscar, descartar o botar, recuperar del Cementerio, cambiar la Fuerza, tomar el control, jugar sin pagar o más barato, y dar Indestructible, Indesterrable o Imbloqueable a otras cartas.",
+      "«Habilidad» sigue siendo lo que la carta es: las keywords que declara, como Única o Furia.",
+    ],
+  },
+  {
     fecha: "2026-11-17",
     version: "6.4.2",
     tipo: "Arreglo",

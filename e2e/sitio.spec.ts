@@ -162,6 +162,29 @@ test.describe("el catalogo llega aparte del HTML", () => {
     ).toBeVisible();
   });
 
+  test("el filtro de efecto va en la URL y filtra por lo que la carta hace", async ({
+    page,
+  }) => {
+    // Kaidan hace Indestructibles a tus Oros; Espartacus solo lo es.
+    await page.goto("/catalogo/?q=Kaidan&efecto=Dar%20Indestructible");
+    await expect(
+      page.getByRole("button", { name: /^Ver detalle de Kaidan/ }).first(),
+    ).toBeVisible();
+    await page.goto("/catalogo/?q=Espartacus&efecto=Dar%20Indestructible");
+    await expect(
+      page.getByText("Ninguna carta coincide con esa búsqueda."),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /^Ver detalle de Espartacus/ }),
+    ).toHaveCount(0);
+
+    await page.goto("/catalogo/");
+    await page.getByRole("button", { name: /Filtros/ }).click();
+    await page.getByRole("button", { name: /^Efecto/ }).click();
+    await page.getByRole("option", { name: "Desterrar" }).click();
+    await expect(page).toHaveURL(/efecto=Desterrar/);
+  });
+
   test("si el catalogo no baja, se puede reintentar", async ({ page }) => {
     let fallar = true;
     await page.route("**/data/cards.json", (route) =>

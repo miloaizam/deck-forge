@@ -67,7 +67,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo encuentro una carta?",
         respuesta: [
-          "Escribe en el **buscador** el nombre o parte de lo que dice la carta. Con el **botón del embudo** abres los filtros: edición, habilidad, tipo, raza, escuela elemental, frecuencia, coste y fuerza. El número del botón te dice cuántos filtros tienes puestos.",
+          "Escribe en el **buscador** el nombre o parte de lo que dice la carta. Con el **botón del embudo** abres los filtros: edición, habilidad, **efecto**, tipo, raza, escuela elemental, frecuencia, coste y fuerza. **Habilidad** es lo que la carta es (Única, Furia, Guardián…) y **efecto**, lo que hace: destruir, desterrar, robar, buscar, recuperar del Cementerio, dar Indestructible a otras… El número del botón te dice cuántos filtros tienes puestos.",
           "**Toca una carta** para verla en grande, con su texto completo y el nombre de quien la ilustró.",
         ],
       },

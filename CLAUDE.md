@@ -1489,9 +1489,9 @@ páginas usan el mismo `<main>` de 1480 px.
 Los filtros del catálogo van plegados detrás de un botón con embudo, que lleva
 el número de filtros puestos como insignia en su esquina (23-10-2026; antes
 iba dentro y sin filtros dejaba su hueco vacío); solo el buscador queda siempre a la vista. Hay
-ocho facetas: edición (solo en `/catalogo`, porque en la página de una edición
-no tendría nada que elegir), habilidad, tipo, raza, escuela, frecuencia, coste
-y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro
+nueve facetas: edición (solo en `/catalogo`, porque en la página de una edición
+no tendría nada que elegir), habilidad, **efecto**, tipo, raza, escuela,
+frecuencia, coste y fuerza. **Los tres tipos de Oro van dentro de Tipo**, no en un filtro
 aparte: para el jugador son tipos de carta. La lista es `OPCIONES_DE_TIPO`
 (`oros.ts`): los tipos en orden alfabético y, justo bajo «Oro» (que sigue
 dando los 281), sus tres clases; `coincideTipo()` resuelve las dos clases de
@@ -1654,9 +1654,25 @@ propiedades, y `Honor` ni siquiera es keyword sino un contador ("pon un contador
 de Honor") —que además salía resaltado en violeta dentro de esa frase—. Como
 faceta respondían a otra pregunta, qué **hace** la carta y no qué **es**, y un
 filtro donde unas opciones significan una cosa y otras la contraria no se puede
-leer. Quedan donde ya estaban `Destruir` y `que controles`. Si algún día se
-quieren de vuelta, que sea como faceta aparte de *mecánica*, no mezcladas con
-las keywords.
+leer. Quedan donde ya estaban `Destruir` y `que controles`.
+
+**Lo que la carta HACE tiene su faceta aparte, «Efecto»** (18-11-2026,
+decisión del proyecto), que es lo que esta sección pedía para traerlas de
+vuelta: Destruir, Desterrar, Anular, Robar, Buscar, Descartar o botar,
+Recuperar del Cementerio, Cambiar la Fuerza, Tomar el control, Jugar sin
+pagar o más barato, y Dar Indestructible / Indesterrable / Imbloqueable
+(«Regresar a la mano» se ofreció y no se quiso). Vive en
+`src/lib/efectos.ts`: un patrón por efecto sobre la habilidad erratada, en
+minúsculas, sin tildes y **sin los recordatorios** (`splitAbility`), para
+que «Indestructible (no puede ser Destruido)» no cuente como destruir; las
+declaraciones con coste («Traición - Destierra…») sí cuentan. «Dar X» es la
+keyword nombrada en el **cuerpo**, no declarada: Kaidan, Petasos y Trajano
+entran, Espartacus no. Los patrones se ajustaron mirando aciertos y dudosos
+contra el catálogo; `efectos.test.ts` fija los casos que costaron (desterrar
+del Cementerio «para» buscar no es recuperar, «entra en juego bajo tu
+control» no es tomar el control). No se resalta nada en el texto: solo
+filtra. Va en la URL como `?efecto=` y en el catálogo, la edición, el
+constructor y la colección, que comparten `Filters`.
 
 **Cada edición declara la keyword a su manera, y eso rompió el resaltado.**
 Bushido y Sol Naciente la imprimen a secas ("Única. Furia."), pero Dominio y
