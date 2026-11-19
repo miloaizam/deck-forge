@@ -46,7 +46,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Framework | Next.js 16 · App Router · `output: "export"` |
 | UI | React 19 + TypeScript (`strict`) |
 | Estilos | Tailwind CSS v4 (config CSS-first en `globals.css`, **no** hay `tailwind.config.js`) |
-| Tipografía | Space Grotesk vía `next/font/google` (auto-hospedada en build) |
+| Tipografía | Space Grotesk vía `next/font/local`, con el archivo en `src/fonts/` (subconjunto latin, variable, con su licencia OFL). Hasta el 19-11-2026 iba por `next/font/google`, que la baja en cada build: ese día Google no respondió y el build de Cloudflare se cayó con un «Module not found» de Turbopack |
 | Iconos | `lucide-react` |
 | Búsqueda | `minisearch` (buscador del catálogo, en `src/lib/catalog.ts`) |
 | Compartir baraja | codificación binaria propia en `deck-code.ts` · `lz-string` solo para **leer** los enlaces del formato 1 |
@@ -149,6 +149,7 @@ public/        se sirve tal cual
   cards/       WebP de las cartas + thumb/  (GENERADO — no editar a mano)
   _headers     cabeceras de seguridad de Cloudflare
 src/app/       rutas (App Router), layout y globals.css
+src/fonts/     Space Grotesk (woff2) y su licencia OFL: el build no baja nada
 src/components/ componentes de React
 src/lib/       lógica pura: tipos, esquemas, utilidades
 e2e/           pruebas de Playwright (playwright.config.ts en la raíz):

@@ -212,8 +212,9 @@ superficies, no de la sombra.
 
 ## 3. Tipografía
 
-**Space Grotesk** (SIL OFL), pesos 400 / 500 / 600 / 700. Auto-hospedada por
-`next/font` — no se carga nada desde Google en producción.
+**Space Grotesk** (SIL OFL), pesos 400 / 500 / 600 / 700. Auto-hospedada con
+`next/font/local` desde `src/fonts/` (un archivo variable, subconjunto latin):
+no se carga nada desde Google, ni en producción ni al construir el sitio.
 
 | Rol | Tamaño | Peso | Detalle |
 |---|---|---|---|
