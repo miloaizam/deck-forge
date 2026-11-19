@@ -86,6 +86,18 @@ test("el buscador completa la palabra que se esta escribiendo, sin tildes", () =
   assert.ok(nombres("Thor el Pode").includes("Thor el Poderoso"));
 });
 
+test("una letra de margen solo cuando la busqueda exacta no encuentra nada", () => {
+  // Con el margen siempre puesto, "karma" traia cada carta que dijera "arma"
+  // (198) y "carpa", cada una que dijera "carta" o "carga" (985).
+  assert.deepEqual(nombres("karma"), ["Karma"]);
+  assert.deepEqual(nombres("karna"), ["Karna"]);
+  assert.deepEqual(nombres("carpa dragón"), ["Carpa Dragón"]);
+  assert.deepEqual(nombres("carpa"), ["Carpa Dragón"]);
+  // Y sin resultado exacto, sigue perdonando una letra en el nombre.
+  assert.deepEqual(nombres("kiyu hime"), ["Kiyo Hime"]);
+  assert.deepEqual(nombres("tezcatlipka"), ["Tezcatlipoca"]);
+});
+
 test("los filtros van y vuelven por la URL, y lo que no es opcion se descarta", () => {
   const f = buildFacets(CATALOGO);
   const filtros = {

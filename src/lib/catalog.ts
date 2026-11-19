@@ -163,9 +163,15 @@ function normalizeTerm(term: string): string {
  * palabra de "Thor el Poderoso" sumaba sus propias cartas y la busqueda
  * devolvia media coleccion. `prefix` solo va en la ULTIMA palabra, la que se
  * esta escribiendo, para que "kyu" encuentre Kyubi sin que "el" encuentre
- * "elegir". Y `fuzzy` (una letra mal escrita, que con nombres japoneses
- * transliterados pasa seguido) solo desde cuatro letras: en una palabra corta
- * una letra de diferencia ya es otra palabra.
+ * "elegir".
+ *
+ * La tolerancia a una letra mal escrita (`fuzzy`, que con nombres japoneses
+ * transliterados hace falta seguido) va SOLO cuando la busqueda exacta no
+ * encuentra nada, y primero sobre el nombre (`buscarEnCascada`). Aplicada
+ * siempre y sobre la habilidad, "karma" encontraba "arma" y "carpa", "carta"
+ * y "carga": palabras que estan en cientos de cartas, y la busqueda devolvia
+ * 198 y 985 resultados. Y solo desde cuatro letras: en una palabra corta una
+ * letra de diferencia ya es otra palabra.
  */
 export function buildSearchIndex(cards: Card[]): SearchIndex {
   return indiceDiferido(cards);
@@ -185,7 +191,6 @@ const nuevoIndice = () =>
     searchOptions: {
       combineWith: "AND",
       prefix: (_term, i, terms) => i === terms.length - 1,
-      fuzzy: (term) => (term.length >= 4 ? 0.2 : false),
       boost: { nombre: 3, codigo: 2 },
     },
   });
@@ -241,9 +246,24 @@ function indiceDiferido(cards: Card[]): SearchIndex {
   return {
     search(query) {
       avanzar(cards.length);
-      return indice.search(query);
+      return buscarEnCascada(indice, query);
     },
   };
+}
+
+const UNA_LETRA = (term: string) => (term.length >= 4 ? 0.2 : false);
+
+/**
+ * Exacta primero; si no hay nada, con una letra de margen en el nombre; y
+ * solo si tampoco, con ese margen en todo. Asi "kiyu hime" sigue encontrando
+ * a Kiyo Hime, pero "karma" da las Karma y no cada carta que diga "arma".
+ */
+function buscarEnCascada(indice: MiniSearch<Card>, query: string) {
+  const exacta = indice.search(query);
+  if (exacta.length > 0) return exacta;
+  const enNombre = indice.search(query, { fields: ["nombre"], fuzzy: UNA_LETRA });
+  if (enNombre.length > 0) return enNombre;
+  return indice.search(query, { fuzzy: UNA_LETRA });
 }
 
 export function applyFilters(

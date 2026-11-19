@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-19",
+    version: "6.6.1",
+    tipo: "Arreglo",
+    titulo: "El buscador ya no se llena de cartas que no son",
+    texto: [
+      "Buscar «karma» o «carpa dragón» traía cientos de cartas, porque el buscador perdonaba una letra mal escrita en todo el texto y daba por buenas «arma», «carta» o «carga». Ahora busca primero lo que se escribió tal cual, y solo si no encuentra nada perdona una letra, empezando por el nombre: «kiyu hime» sigue encontrando a Kiyo Hime.",
+    ],
+  },
+  {
+    fecha: "2026-11-19",
     version: "6.6.0",
     tipo: "Mejora",
     titulo: "Errata y Baneada en el detalle de la baraja",

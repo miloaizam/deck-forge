@@ -1361,6 +1361,11 @@ al catálogo y al constructor, con ~1 s de hilo principal bloqueado. Ahora:
   barajas **vacía** no espera: no tiene cartas que mostrar.
 - Si el catálogo no baja, se dice y se ofrece **«Reintentar»**; las barajas y
   la colección siguen guardadas.
+- **El buscador perdona una letra mal escrita solo si la búsqueda exacta no
+  encuentra nada** (19-11-2026, `buscarEnCascada` de `catalog.ts`): exacta,
+  después con ese margen en el nombre y por último en todo. Con el margen
+  siempre puesto y sobre la habilidad, «karma» encontraba «arma» y «carpa»,
+  «carta» y «carga»: 198 y 985 resultados. `catalog.test.ts` lo fija.
 - **El índice de búsqueda se arma de fondo** (`buildSearchIndex` de
   `catalog.ts`): de a 25 cartas, encadenadas mientras `requestIdleCallback`
   dé tiempo libre (Safari, sin esa API, va con `setTimeout`). Indexar de una
