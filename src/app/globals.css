@@ -672,6 +672,19 @@ html[data-barajas="0"] .solo-con-barajas {
     font-size: 12px;
     padding-block: 3px;
   }
+  /* Las pilas de la mesa del detalle de una baraja: cartas de ~75 px en el
+     telefono y ~130 en escritorio. Mismo texto de 11 px, banda mas corta. */
+  .lazos-chico {
+    width: 4rem;
+    height: 4rem;
+  }
+  .lazos-chico .lazo {
+    top: calc(0.7rem + var(--paso, 0) * 1.15rem);
+    right: calc(-2.05rem - var(--paso, 0) * 1.15rem);
+    width: 7rem;
+    padding-block: 1px;
+    letter-spacing: 0.02em;
+  }
 
   /* Las preguntas de la ayuda: la respuesta se abre y se cierra en vez de
      saltar. `::details-content` e `interpolate-size` son recientes; donde no

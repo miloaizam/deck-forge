@@ -34,6 +34,15 @@ export interface Novedad {
 export const NOVEDADES: Novedad[] = [
   {
     fecha: "2026-11-19",
+    version: "6.6.0",
+    tipo: "Mejora",
+    titulo: "Errata y Baneada en el detalle de la baraja",
+    texto: [
+      "Las cartas del detalle de una baraja llevan en la esquina los mismos listones que en el catálogo: «Errata» si la Fe de Erratas o la Banlist la corrigen y «Baneada» si la Banlist de su formato la prohíbe. Así se ve de un vistazo qué cartas de la baraja cambian o no se pueden jugar.",
+    ],
+  },
+  {
+    fecha: "2026-11-19",
     version: "6.5.0",
     tipo: "Mejora",
     titulo: "Filtro por efecto",

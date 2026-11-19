@@ -1,9 +1,10 @@
 import Image from "next/image";
 import { Coins, Star } from "lucide-react";
 
+import { CardRibbons } from "../CardRibbons";
 import { marcarCargada } from "../CardTile";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/deck-rules";
-import { SECCIONES_DE_LA_BARAJA, type Tipo } from "@/lib/types";
+import { SECCIONES_DE_LA_BARAJA, type Formato, type Tipo } from "@/lib/types";
 import { CARD_RATIO, CONTORNO_CARTA_GRUPO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -146,12 +147,14 @@ function Encabezado({ titulo, total }: { titulo: string; total: number }) {
  */
 function Pila({
   fila,
+  formato,
   oroInicial,
   esPortada,
   onPortada,
   onVer,
 }: {
   fila: ResolvedEntry;
+  formato: Formato;
   oroInicial: boolean;
   esPortada: boolean;
   onPortada?: (cardId: string | null) => void;
@@ -174,7 +177,7 @@ function Pila({
             ancho, y en translate contra el alto propio: de ahi los dos factores. */}
         <div
           // Al apuntar, el contorno de color rodea la pila entera.
-          className={cn("relative w-full", CONTORNO_CARTA_GRUPO)}
+          className={cn("rounded-card relative w-full", CONTORNO_CARTA_GRUPO)}
           style={{ paddingBottom: `${ALTO * (1 + (dibujadas - 1) * ASOMO) * 100}%` }}
         >
           {Array.from({ length: dibujadas }, (_, i) => (
@@ -206,6 +209,10 @@ function Pila({
               ×{fila.n}
             </span>
           )}
+          {/* Despues de las copias, para quedar encima de todas: en la esquina
+              de la pila, que es la de la copia del fondo. Los mismos lazos de
+              la grilla, en chico (las cartas de la mesa son mas angostas). */}
+          <CardRibbons card={fila.card} formato={formato} chico />
         </div>
       </button>
 
@@ -242,11 +249,13 @@ function Pila({
  */
 function Mesa({
   items,
+  formato,
   portada,
   onPortada,
   onVer,
 }: {
   items: PilaItem[];
+  formato: Formato;
   portada: string | null;
   onPortada?: (cardId: string | null) => void;
   onVer: (cardId: string) => void;
@@ -257,6 +266,7 @@ function Mesa({
         <Pila
           key={it.key}
           fila={it.fila}
+          formato={formato}
           oroInicial={it.esOroInicial}
           esPortada={it.fila.card.id === portada}
           onPortada={onPortada}
@@ -275,12 +285,15 @@ function Mesa({
  */
 export function DeckSections({
   res,
+  formato,
   oroInicial,
   portada,
   onPortada,
   onVer,
 }: {
   res: ResolvedDeck;
+  /** El de la baraja: los lazos son los de su Banlist. */
+  formato: Formato;
   oroInicial: string | null;
   /** Que carta hace de portada en /barajas. */
   portada: string | null;
@@ -293,6 +306,7 @@ export function DeckSections({
     <div className="flex flex-col gap-9">
       <Mesa
         items={ordenarPilas(res.principal, oroInicial)}
+        formato={formato}
         portada={portada}
         onPortada={onPortada}
         onVer={onVer}
@@ -305,6 +319,7 @@ export function DeckSections({
           <Encabezado titulo="Side deck" total={res.side.reduce((s, f) => s + f.n, 0)} />
           <Mesa
             items={ordenarPilas(res.side, null)}
+            formato={formato}
             portada={portada}
             onPortada={onPortada}
             onVer={onVer}

@@ -408,6 +408,7 @@ function DeckDetail({ deFormato }: DeckDetailViewProps) {
 
       <DeckSections
         res={res}
+        formato={deck.formato}
         oroInicial={deck.oroInicial}
         portada={deck.portada}
         onPortada={compartido ? undefined : elegirPortada}

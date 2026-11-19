@@ -2626,7 +2626,11 @@ pone el atributo `type: "json"` que Node exige). El diff resaltado de
   contra el arte—: `getCards()` le aplica `conErratas()` de `erratas.ts`, así
   que el modal, el buscador, los filtros y las reglas ven el texto vigente.
   La imagen conserva el lazo «Errata» o «Baneada» (`CardRibbons.tsx`), y es
-  lo único que se ve de una baneada: su texto no cambia. Nada dice «según la
+  lo único que se ve de una baneada: su texto no cambia. Los lazos van en
+  la grilla, en el modal y, desde el 19-11-2026, en las pilas de la mesa del
+  detalle de una baraja (`DeckSections`, con el formato de la baraja), en
+  su variante `chico` (`.lazos-chico`): esas cartas miden ~75 px en el
+  teléfono. Nada dice «según la
   Fe de Erratas» o «según la Banlist».
   `conErratas` suma las declaraciones que salen de `efectoEnReglas()` (las
   Únicas, el atributo) y aplica `TEXTOS_ERRATADOS`

@@ -443,6 +443,20 @@ test.describe("formatos", () => {
     }
   });
 
+  test("la mesa del detalle lleva los lazos de errata y baneada", async ({ page }) => {
+    // Shingas tiene errata y Traer el Horror esta baneada en Estandar.
+    await page.goto("/baraja/#d=AgVMYXpvcxDA_k2gB_FFSJ-BKGrIaQH83YKQfwJA");
+    const pila = (nombre: string) =>
+      page
+        .getByRole("listitem")
+        .filter({ has: page.getByRole("button", { name: nombre }) });
+    await expect(pila("Ver Shingas · 2 copias").getByText("Errata")).toBeVisible();
+    await expect(
+      pila("Ver Traer el Horror · 2 copias").getByText("Baneada"),
+    ).toBeVisible();
+    await expect(pila("Ver Lararium · 3 copias").locator(".lazo")).toHaveCount(0);
+  });
+
   test("cada Banlist se abre desde Documentos", async ({ page }) => {
     await page.goto("/documentos/");
     await page

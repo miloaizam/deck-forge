@@ -17,10 +17,14 @@ export function CardRibbons({
   card,
   formato = "estandar",
   grande = false,
+  chico = false,
 }: {
-  card: Card;
+  /** Basta el nombre: las listas de la Fe de Erratas y la Banlist van por nombre. */
+  card: Pick<Card, "nombre">;
   formato?: Formato;
   grande?: boolean;
+  /** Para las cartas angostas de la mesa del detalle de una baraja. */
+  chico?: boolean;
 }) {
   const lazos = [
     estaBaneada(card, formato) && { texto: "Baneada", clase: "lazo-baneada" },
@@ -28,7 +32,10 @@ export function CardRibbons({
   ].filter((l) => l !== false);
   if (lazos.length === 0) return null;
   return (
-    <span aria-hidden="true" className={cn("lazos", grande && "lazos-grande")}>
+    <span
+      aria-hidden="true"
+      className={cn("lazos", grande && "lazos-grande", chico && "lazos-chico")}
+    >
       {lazos.map((l, i) => (
         <span
           key={l.texto}
