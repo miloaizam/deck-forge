@@ -71,6 +71,20 @@ inicio del teléfono como una app.
 - **Terminado cuando:** Chrome del teléfono ofrece instalarlo y la auditoría
   pasa.
 
+### El side deck no sigue el DAR
+
+Según el anexo 1 del DAR, el Mazo de Soporte lleva **0 o exactamente 10
+cartas** («no puede contener una cantidad mayor que 0 y menor que 10»). El
+constructor admite de 0 a 10, y CLAUDE.md dice que «no hay mínimo ni tamaño
+exacto».
+
+- **Por dónde empezar:** decidir si se aplica la regla del DAR. Si se
+  aplica, `validateDeck` (`src/lib/deck-rules.ts`) marca como incompleto un
+  side de 1 a 9 cartas. Hay que actualizar también `deck-rules.test.ts`, el
+  FAQ y CLAUDE.md.
+- **Terminado cuando:** el proyecto lo decida y, si corresponde, el estado
+  de la baraja lo diga.
+
 ## Técnico
 
 ### Los enlaces viejos `/mazo/?d=…` dan 404
@@ -151,6 +165,77 @@ Es lo delicado, porque hay dos casos y se ven distinto:
   El registro dice cuál fue.
 - Serían dos acciones distintas («Buscar» y «Buscar y mostrar»), y al
   terminar se baraja el Castillo.
+
+**Lo que pide el DAR** (`documentos/fuente/dar.json`)
+
+- **Zonas (§3), las nueve por jugador:**
+  - Castillo y Mano son privadas.
+  - Reserva de Oro, Zona de Oro Pagado y las Líneas de Defensa, Ataque y
+    Apoyo son públicas, dentro del juego.
+  - Cementerio y Destierro son públicas, fuera del juego: cualquiera de los
+    dos puede abrirlas y revisarlas.
+  - El conteo del Castillo y de la mano se ve siempre, para los dos.
+- **Preparar cada juego:**
+  - el oro inicial empieza en la Reserva (§3.2);
+  - mano de 8, con mulligan (devolver, barajar y robar una menos);
+  - un sorteo (moneda o dado) para ver quién comienza;
+  - en el primer turno del juego no se roba (§9, Fase de Robar).
+- **Atajos manuales, no automatismos.** Nada ocurre solo: todo lo pulsa el
+  jugador.
+  - **«Agrupar»** hace en un clic lo de la Fase de Agrupación (§9): los
+    Aliados de Ataque vuelven a Defensa y los Oros pagados, a la Reserva.
+  - Pagar es mover Oros de la Reserva a Oro Pagado.
+  - Un **marcador de turno y fase** a la vista, que mueve el jugador activo:
+    Agrupación, Vigilia, Batalla Mitológica (ataque, bloqueo, Guerra de
+    Talismanes, daño), Final y Robar. En la Guerra de Talismanes, también de
+    quién es la prioridad. No obliga a nada, pero ordena la conversación.
+  - Al robar con más de 8 en la mano, la mesa avisa y el dueño descarta a
+    mano.
+- **Acciones sobre el Castillo, cada una con su visibilidad:**
+  - **Robar** (§10.45): del tope a la mano, una a una.
+  - **Botar N** (§10.7): del tope al Cementerio. Es el daño, y lo puede
+    pedir el rival.
+  - **Mirar N** (§10.34): solo las ve quien controla el efecto, que las
+    devuelve arriba en el orden que quiera. Hay efectos que miran el
+    Castillo **o la mano del rival**: la mano se muestra solo a quien mira,
+    por pedido del efecto y con el consentimiento del dueño.
+  - **Mostrar N** (§10.35): las ven los dos, y quien controla el efecto las
+    devuelve arriba en el orden que elija.
+  - **Buscar** (§10.8): en el Castillo, el Cementerio o el Mazo de Soporte.
+    - Si la carta tiene características específicas, se muestra.
+    - Se puede fallar a propósito.
+    - **El Castillo se baraja siempre al terminar**, se haya encontrado o no.
+  - **Barajar desde el Cementerio** (§10.5): esas cartas se muestran al rival
+    antes de entrar al Castillo.
+  - **Poner debajo** del Castillo, y **desterrar** desde cualquier zona.
+- **Dueño y controlador (§5):** una carta puede pasar al lado del rival
+  («tomar el control») y sigue siendo de su dueño.
+  - Al salir del juego vuelve a las zonas **de su dueño** (§10.5, §10.47).
+  - Cada carta guarda su dueño y lo muestra con un borde o una marca.
+- **Cartas unidas:**
+  - **Portar** (§10.39): el Arma va anexada al Aliado y se mueve con él.
+    Se puede cambiar de portador.
+  - **Poner debajo** (§10.38): cartas detrás de otra, que se note que están.
+    Si la de encima sale del juego, las de abajo van al Cementerio de su
+    dueño.
+- **Marcas sobre las cartas:**
+  - contadores (§10.12) de **Honor**, **Conquista** y **Alimento**, más uno
+    genérico; se van cuando la carta sale del juego;
+  - un modificador de Fuerza temporal («+2 hasta la Fase Final»);
+  - una nota libre para lo que cambia la carta: Convertir (§2.6, §10.15),
+    Copia (§10.13), el atributo;
+  - un botón que borra las marcas temporales al final del turno.
+- **Entre juegos de la serie: Mazo de Soporte (anexo 1).**
+  - El primer juego va con la baraja tal como está guardada.
+  - Después de cada juego, cada uno puede cambiar de 0 a 10 cartas con el
+    side, una por una y siempre con 50 en el Castillo. El rival puede pedir
+    el conteo del side para comprobarlo.
+  - En torneos competitivos hay 2 minutos para hacerlo: la mesa puede
+    mostrar ese tiempo.
+  - Al terminar la serie, la baraja guardada no cambia.
+- **Fin de un juego:** pierde quien se queda sin cartas en el Castillo
+  (§3.1). La mesa lo **avisa**, pero no lo declara sola: el resultado se
+  confirma como en «La sala y la serie».
 
 **Técnica**
 
