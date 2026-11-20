@@ -96,36 +96,86 @@ Desde que `/mazo` pasó a `/baraja`, los enlaces compartidos antes no abren
 
 Una mesa al estilo Tabletop Simulator para jugar entre dos cuentas, **sin
 nada automatizado**: ni reglas, ni turnos, ni efectos. Solo manipular cartas
-sobre una mesa compartida. Los efectos se conversan por fuera (Discord, por
-ejemplo) y cada jugador los aplica a mano. Por ahora es una lluvia de ideas.
+sobre una mesa compartida, como en la vida real. Los efectos se conversan por
+fuera (Discord, por ejemplo) y cada jugador los aplica a mano. Por ahora es
+una lluvia de ideas. **Al principio, solo escritorio.**
 
-- **Qué es:** una sala 1v1 entre dos usuarios con sesión iniciada. Cada uno
-  entra con una de sus barajas guardadas. En la mesa se puede:
+**La sala y la serie**
+
+- Sala 1v1 entre dos usuarios con sesión iniciada. Cada uno entra con una de
+  sus barajas guardadas. Ruta `/mesa`, con sala por código o enlace
+  (estática, como `/baraja?p=`).
+- Al crearla se elige **al mejor de 3 o al mejor de 5**. La mesa lleva el
+  marcador de la serie.
+- **Cada juego termina con un estado de mesa: ganador o empate.**
+  - Propuesta a definir: un jugador declara el resultado y el otro lo
+    confirma, para que nadie se lo adjudique solo.
+  - Rendirse es inmediato.
+  - Entre juego y juego, cada uno vuelve a armar su lado (barajar, oro
+    inicial, mano nueva).
+- **Desconexión:** hay un tiempo para volver a la mesa (cuánto, a definir;
+  algunos minutos). Si se cumple sin que vuelva, **la serie entera es para el
+  que siguió conectado** y la mesa se cierra.
+  - Para eso el estado de la partida se guarda en la base, no solo se
+    transmite: quien recarga la página vuelve a la mesa tal como estaba.
+
+**Qué puede mover cada uno**
+
+- **Todo lo que está sobre la mesa lo mueven los dos**, como en la vida
+  real:
   - arrastrar a cualquier sitio;
   - apilar;
   - voltear boca abajo y boca arriba;
-  - barajar el Castillo y robar;
   - mandar a Cementerio o Destierro;
   - ver una carta en grande (el `CardModal`).
-- **Piezas:**
-  - una ruta `/mesa` con sala por código o enlace, estática como
-    `/baraja?p=`;
-  - zonas dibujadas como guía, pero libres;
-  - la mano propia abajo, y la del rival solo como dorsos y su cantidad;
-  - un registro de acciones a un costado («X robó una carta», «Y mandó Z al
-    Cementerio») para que ninguno se pierda.
+- **La mano es la excepción:** siempre oculta para el rival, que ve solo los
+  dorsos y la cantidad. Su dueño la ve con un clic. **Solo el dueño la
+  toca**:
+  - roba él mismo, del Castillo a la mano;
+  - si se pasa de cartas, él mismo arrastra la que descarta al Cementerio.
+- El Castillo está en la mesa, pero su orden es oculto. Queda por decidir
+  qué puede hacer el rival con él: por ejemplo, botar las cartas de arriba
+  porque un efecto lo dice.
+- Un registro de acciones a un costado («X robó una carta», «Y mandó Z al
+  Cementerio») para que ninguno se pierda.
+
+**Buscar en el Castillo**
+
+Es lo delicado, porque hay dos casos y se ven distinto:
+
+- **«Busca una carta» (cualquiera):** el dueño ve su Castillo, elige y la
+  carta va a su mano **sin revelarse**. El rival solo ve en el registro «X
+  buscó una carta en su Castillo» y que el Castillo tiene una menos.
+- **«Busca una carta específica o de un tipo»:** la elegida **se muestra a
+  los dos** antes de ir a la mano, para que el rival compruebe que cumple.
+  El registro dice cuál fue.
+- Serían dos acciones distintas («Buscar» y «Buscar y mostrar»), y al
+  terminar se baraja el Castillo.
+
+**Técnica**
+
 - **Sincronización:** Supabase Realtime (broadcast y presencia por
-  websocket). Hoy el sitio usa solo `auth-js` y `fetch` (CLAUDE.md §7), así
-  que esto pide dos decisiones:
+  websocket; la presencia también sirve para contar el tiempo de
+  reconexión), más una tabla de mesas con RLS para los dos jugadores, que
+  guarde el estado y el marcador. Hoy el sitio usa solo `auth-js` y `fetch`
+  (CLAUDE.md §7), así que esto pide decidir:
   - el cliente: `@supabase/realtime-js` o un websocket propio;
   - la CSP: `wss://` al host de Supabase en `connect-src`, con su línea en
     la auditoría.
 - **Información oculta sin servidor propio:** la mano y el orden del
   Castillo viven **solo en el navegador de su dueño**. Al rival le llegan la
   cantidad y las cartas que se revelan, así que no puede espiarlas.
-  - El límite: barajar lo hace el dueño, que podría hacer trampa. Para
-    jugar entre amigos alcanza; para torneos, habría que barajar en la base.
+  - Lo que el rival haga sobre el Castillo ajeno (botar, por ejemplo) va como
+    pedido al navegador del dueño, que lo resuelve y publica lo revelado.
+  - El límite: barajar lo hace el dueño, que podría hacer trampa. Para jugar
+    entre amigos alcanza; para torneos, habría que barajar en la base.
 - **Derechos:** es un uso del arte distinto de consultar y armar barajas.
   Conviene preguntarle a la editorial antes de publicarlo.
-- **Terminado cuando:** dos cuentas, en dos navegadores, juegan una partida
-  completa moviendo cartas, y ninguna ve la mano del otro.
+
+**Terminado cuando** dos cuentas, en dos navegadores de escritorio, juegan
+una serie completa al mejor de 3 moviendo cartas:
+
+- ninguna ve la mano del otro;
+- una búsqueda oculta no revela la carta;
+- recargar la página devuelve a la mesa;
+- quien se desconecta y no vuelve a tiempo pierde la serie.
