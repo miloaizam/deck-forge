@@ -2186,6 +2186,12 @@ principal el máximo de copias, las Únicas y la afinidad. Por eso
 `deckStats` deduce la afinidad sobre las 60 cartas, mientras que los contadores
 por tipo siguen siendo del principal, que es lo que se juega de salida.
 
+**El DAR pide otra cosa, y es a propósito** (decisión del proyecto,
+20-11-2026). Su anexo 1 dice que el Mazo de Soporte lleva **0 o exactamente
+10 cartas**; DeckForge admite **cualquier cantidad de 0 a 10**, para que armar
+sea más sencillo. El DAR **no se toca**: se transcribe tal cual. Una revisión
+que compare el validador con el anexo lo va a marcar: no es un error.
+
 **Una baraja se arma de una de tres formas, y son alternativas**: por raza, por
 escuela elemental (sus dos razas exactas) o **por atributo** —todos sus Aliados
 Luz, o todos Oscuridad—. Basta con cumplir **una**. La tercera llega con

@@ -71,20 +71,6 @@ inicio del teléfono como una app.
 - **Terminado cuando:** Chrome del teléfono ofrece instalarlo y la auditoría
   pasa.
 
-### El side deck no sigue el DAR
-
-Según el anexo 1 del DAR, el Mazo de Soporte lleva **0 o exactamente 10
-cartas** («no puede contener una cantidad mayor que 0 y menor que 10»). El
-constructor admite de 0 a 10, y CLAUDE.md dice que «no hay mínimo ni tamaño
-exacto».
-
-- **Por dónde empezar:** decidir si se aplica la regla del DAR. Si se
-  aplica, `validateDeck` (`src/lib/deck-rules.ts`) marca como incompleto un
-  side de 1 a 9 cartas. Hay que actualizar también `deck-rules.test.ts`, el
-  FAQ y CLAUDE.md.
-- **Terminado cuando:** el proyecto lo decida y, si corresponde, el estado
-  de la baraja lo diga.
-
 ## Técnico
 
 ### Los enlaces viejos `/mazo/?d=…` dan 404
