@@ -31,6 +31,9 @@ Plan completo: [`docs/plan.md`](docs/plan.md). Marca: [`docs/brand.html`](docs/b
 lo grande…). Hubo una segunda lista, `ISSUES.md`, para los errores;
 se fundió con esta para trabajar de a un grupo.
 
+La **mesa de juego 1v1** (estilo Tabletop Simulator) tiene su propio plan,
+por sesiones, en [`GAME.md`](GAME.md).
+
 Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
 arreglar algo de la lista, su entrada se borra en el mismo commit** (no se
 tacha: lo hecho queda en git). Si queda a medias, se reescribe con lo que
@@ -129,6 +132,7 @@ curl -sSL https://bootstrap.pypa.io/get-pip.py | .venv/bin/python -
 
 ```
 TODO.md        todo lo pendiente, por grupos (se borra la entrada al hacerla)
+GAME.md        el plan por sesiones de la mesa de juego 1v1
 documentos/    FUENTE del DAR, la Fe de Erratas y la Banlist: sus datos
                en fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
