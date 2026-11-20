@@ -89,3 +89,43 @@ Desde que `/mazo` pasó a `/baraja`, los enlaces compartidos antes no abren
   `src/app/data/portada.json/route.ts`. El sitemap lleva las rutas públicas
   y una por edición; `/baraja` y la 404 ya van con `noindex`.
 - **Terminado cuando:** los dos salen en `out/` y la auditoría pasa.
+
+## Lo grande
+
+### Mesa de juego 1v1 (idea en borrador)
+
+Una mesa al estilo Tabletop Simulator para jugar entre dos cuentas, **sin
+nada automatizado**: ni reglas, ni turnos, ni efectos. Solo manipular cartas
+sobre una mesa compartida. Los efectos se conversan por fuera (Discord, por
+ejemplo) y cada jugador los aplica a mano. Por ahora es una lluvia de ideas.
+
+- **Qué es:** una sala 1v1 entre dos usuarios con sesión iniciada. Cada uno
+  entra con una de sus barajas guardadas. En la mesa se puede:
+  - arrastrar a cualquier sitio;
+  - apilar;
+  - voltear boca abajo y boca arriba;
+  - barajar el Castillo y robar;
+  - mandar a Cementerio o Destierro;
+  - ver una carta en grande (el `CardModal`).
+- **Piezas:**
+  - una ruta `/mesa` con sala por código o enlace, estática como
+    `/baraja?p=`;
+  - zonas dibujadas como guía, pero libres;
+  - la mano propia abajo, y la del rival solo como dorsos y su cantidad;
+  - un registro de acciones a un costado («X robó una carta», «Y mandó Z al
+    Cementerio») para que ninguno se pierda.
+- **Sincronización:** Supabase Realtime (broadcast y presencia por
+  websocket). Hoy el sitio usa solo `auth-js` y `fetch` (CLAUDE.md §7), así
+  que esto pide dos decisiones:
+  - el cliente: `@supabase/realtime-js` o un websocket propio;
+  - la CSP: `wss://` al host de Supabase en `connect-src`, con su línea en
+    la auditoría.
+- **Información oculta sin servidor propio:** la mano y el orden del
+  Castillo viven **solo en el navegador de su dueño**. Al rival le llegan la
+  cantidad y las cartas que se revelan, así que no puede espiarlas.
+  - El límite: barajar lo hace el dueño, que podría hacer trampa. Para
+    jugar entre amigos alcanza; para torneos, habría que barajar en la base.
+- **Derechos:** es un uso del arte distinto de consultar y armar barajas.
+  Conviene preguntarle a la editorial antes de publicarlo.
+- **Terminado cuando:** dos cuentas, en dos navegadores, juegan una partida
+  completa moviendo cartas, y ninguna ve la mano del otro.
