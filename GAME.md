@@ -33,9 +33,27 @@ que se cierra pasa a «Decisiones tomadas».
 - **Serie al mejor de 3 o al mejor de 5**, que se elige al crear la sala. La
   mesa lleva el marcador. Cada juego termina con un **estado de mesa**:
   ganador o empate.
-- **Desconexión:** hay un tiempo para volver a la mesa. Si se cumple sin que
-  el jugador vuelva, **la serie entera es para el que siguió conectado** y la
-  mesa se cierra. Recargar la página devuelve a la mesa tal como estaba.
+- **El resultado se declara y se confirma** (21-11-2026). Un jugador declara
+  (gané, perdí o empate) y el otro confirma. **Si no se ponen de acuerdo,
+  el juego se anula y se juega de nuevo**, sin sumar al marcador.
+  **Rendirse** es inmediato y no pide confirmación.
+- **Desconexión: 2 minutos** (21-11-2026). Si pasan sin que el jugador
+  vuelva, **la serie entera es para el que siguió conectado** y la mesa se
+  cierra. Recargar la página devuelve a la mesa tal como estaba.
+- **La sala tiene formato** (Estándar, VCR o Infantería), que se elige al
+  crearla, y **solo entran barajas que cumplen en él** (`validateDeck`, con
+  el índice de ese formato) (21-11-2026).
+- **Lo que un efecto le da al rival sobre tu Castillo** (botar, mirar las de
+  arriba) **se ejecuta solo**: tu navegador lo hace al instante, sin pedirte
+  permiso, y queda en el registro (21-11-2026).
+- **Barajar lo hace el navegador del dueño** (21-11-2026). En teoría el dueño
+  podría hacer trampa; para jugar entre amigos alcanza.
+- **Sin historial** (21-11-2026): la mesa se borra al terminar la serie.
+  Mientras dura, la partida vive en la base (para poder reconectar), y eso es
+  lo único que suma `/privacidad`.
+- **La consulta a la editorial la hace el proyecto en paralelo**
+  (21-11-2026). La mesa se construye apagada (`MESA_ACTIVA`) y se enciende
+  con la respuesta.
 - **Qué mueve cada uno:**
   - **todo lo que está sobre la mesa lo mueven los dos**, como en la vida
     real;
@@ -56,27 +74,13 @@ que se cierra pasa a «Decisiones tomadas».
 - **Un registro de acciones** a un costado («X robó una carta», «Y mandó Z
   al Cementerio») para que ninguno se pierda.
 
-## 3. Decisiones abiertas (se cierran en la sesión 0)
+## 3. Decisiones abiertas
 
-1. **Cuánto dura el tiempo de reconexión.** Algunos minutos; falta la cifra.
-2. **Cómo se declara el resultado de un juego.** Propuesta: un jugador
-   declara (gané, perdí o empate), el otro confirma, y rendirse es
-   inmediato. ¿Qué pasa si no se ponen de acuerdo?
-3. **Qué puede hacer el rival con el Castillo ajeno.** Por ejemplo, botar
-   las cartas de arriba porque un efecto lo dice. Propuesta: lo pide, y el
-   navegador del dueño lo resuelve (§5).
-4. **El cliente de Realtime**: `@supabase/realtime-js` o un websocket propio
+Las demás se cerraron el 21-11-2026 y están en §2.
+
+1. **El cliente de Realtime**: `@supabase/realtime-js` o un websocket propio
    sobre su protocolo. CLAUDE.md §7 pide no sumar el cliente completo de
-   Supabase.
-5. **Si las dos barajas tienen que ser del mismo formato** (Estándar, VCR o
-   Infantería), y si tienen que ser legales para entrar.
-6. **Si se guarda un historial de partidas** (quién jugó con quién, resultado
-   y fecha) o la mesa se borra al terminar. Cambia lo que cuenta
-   `/privacidad`.
-7. **La consulta a la editorial**, antes de encender la mesa.
-8. **Si barajar en el navegador del dueño basta.** El dueño podría hacer
-   trampa: para jugar entre amigos alcanza; para torneos habría que barajar
-   en la base.
+   Supabase. Lo decide la prueba técnica de la sesión 0.
 
 ## 4. Lo que pide el DAR
 
@@ -109,7 +113,8 @@ estas reglas: las **hace posibles** a mano.
 - **Acciones sobre el Castillo, cada una con su visibilidad:**
   - **Robar** (§10.45): del tope a la mano, una a una.
   - **Botar N** (§10.7): del tope al Cementerio. Es el daño, y lo puede
-    pedir el rival.
+    hacer el rival sobre tu Castillo: se ejecuta solo y queda en el
+    registro.
   - **Mirar N** (§10.34): solo las ve quien controla el efecto, que las
     devuelve arriba en el orden que quiera. Hay efectos que miran el
     Castillo **o la mano del rival**: la mano se muestra solo a quien mira,
@@ -197,9 +202,9 @@ funciones `security definer`, ver `docs/cuentas.md`):
 - Cada acción lleva la versión de la carta que toca. Si llega una acción
   sobre una versión vieja (los dos movieron la misma carta a la vez), se
   descarta y se vuelve a pedir la foto pública.
-- Lo que el rival hace sobre zonas privadas ajenas (botar del Castillo) viaja
-  como **pedido**: el navegador del dueño lo resuelve y publica lo que se
-  revela.
+- Lo que el rival hace sobre zonas privadas ajenas (botar o mirar del
+  Castillo) viaja como **pedido**: el navegador del dueño lo resuelve **al
+  instante y sin preguntar** (§2) y publica lo que se revela.
 - Requiere:
   - `wss://` al host de Supabase en `connect-src`, en `csp-hashes.mjs` y en
     la auditoría (`audit_build.py`);
@@ -219,7 +224,8 @@ funciones `security definer`, ver `docs/cuentas.md`):
 
 **Rutas** (todas estáticas, dentro de `RequiereCuenta`):
 
-- `/mesa`: crear una sala o unirse por código, y elegir baraja.
+- `/mesa`: crear una sala (formato y mejor de 3 o 5) o unirse por código, y
+  elegir una baraja que cumpla en el formato de la sala.
 - `/mesa/?s=<id>`: la sala.
 - `/mesa/practica`: la mesa en solitario, sin red.
 
@@ -237,8 +243,8 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 
 - **Objetivo:** cerrar lo abierto (§3) y comprobar que el tiempo real cabe
   en el sitio.
-- **Tareas:**
-  - cerrar las ocho decisiones abiertas y pasarlas a §2;
+- **Hecho (21-11-2026):** siete de las ocho decisiones, pasadas a §2.
+- **Tareas pendientes:**
   - una prueba descartable: el cliente de Realtime en el build estático, con
     la CSP de `_headers`, dos pestañas mandándose mensajes por un canal;
   - medir el peso del cliente con gzip y decidir entre `realtime-js` y un
@@ -297,8 +303,10 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   - las tablas `mesas`, `mesas_publico` y `mesas_privado`, con RLS y
     funciones, probadas contra Postgres local como el resto del esquema
     (`docs/cuentas.md`);
-  - `/mesa`: crear una sala (mejor de 3 o 5) y compartir su código o enlace;
-    unirse; elegir baraja;
+  - `/mesa`: crear una sala (formato y mejor de 3 o 5) y compartir su código
+    o enlace; unirse; elegir una baraja, que tiene que cumplir en el formato
+    de la sala (`validateDeck`; la base guarda el formato y la mesa lo
+    revisa al entrar);
   - todo lo que responde la base, validado con Zod (CLAUDE.md, seguridad #4).
 - **Terminado cuando:** dos cuentas entran a la misma sala y el rival **no**
   puede leer la fila privada del otro (probado por SQL).
@@ -325,7 +333,7 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   - guardar la foto pública y la privada de cada uno, cada cierta cantidad
     de acciones y al quedar quieta la mesa;
   - el latido y la cuenta regresiva a la vista;
-  - reclamar por abandono: pasado el tiempo de gracia, la serie para quien
+  - reclamar por abandono: pasados los 2 minutos de gracia, la serie para quien
     siguió conectado;
   - volver a la mesa tal como estaba al recargar.
 - **Terminado cuando:** un e2e recarga a un jugador en medio de un juego y
@@ -336,7 +344,8 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 
 - **Objetivo:** jugar una serie completa.
 - **Tareas:**
-  - declarar y confirmar el resultado de cada juego, y rendirse;
+  - declarar y confirmar el resultado de cada juego, y rendirse; si no hay
+    acuerdo, el juego se anula y se repite sin sumar al marcador;
   - el marcador y el fin de la serie;
   - entre juegos, el cambio con el side (0 a 10, siempre 50 en el
     Castillo), con su cuenta de 2 minutos si se quiere y el conteo que
