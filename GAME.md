@@ -54,6 +54,18 @@ que se cierra pasa a «Decisiones tomadas».
 - **La consulta a la editorial la hace el proyecto en paralelo**
   (21-11-2026). La mesa se construye apagada (`MESA_ACTIVA`) y se enciende
   con la respuesta.
+- **El tiempo real va con `@supabase/realtime-js`** (22-11-2026), y no con
+  un websocket propio. Ya resuelve el protocolo de canales, los latidos, la
+  reconexión, la presencia y la renovación del token. Es de la misma familia
+  que `auth-js` y no es el cliente completo que CLAUDE.md §7 prohíbe. Trae
+  dos dependencias (`tslib` y `@supabase/phoenix`) y ningún script de
+  instalación.
+  - Va con versión exacta, como las demás, y se carga diferido y solo en
+    `/mesa`.
+  - **Canales privados**, con políticas RLS sobre `realtime.messages`, para
+    que solo los dos jugadores de la mesa puedan entrar. Por defecto,
+    cualquiera con la clave pública que conozca el nombre de un canal podría
+    escucharlo.
 - **Qué mueve cada uno:**
   - **todo lo que está sobre la mesa lo mueven los dos**, como en la vida
     real;
@@ -76,11 +88,8 @@ que se cierra pasa a «Decisiones tomadas».
 
 ## 3. Decisiones abiertas
 
-Las demás se cerraron el 21-11-2026 y están en §2.
-
-1. **El cliente de Realtime**: `@supabase/realtime-js` o un websocket propio
-   sobre su protocolo. CLAUDE.md §7 pide no sumar el cliente completo de
-   Supabase. Lo decide la prueba técnica de la sesión 0.
+Ninguna: todas se cerraron entre el 21 y el 22-11-2026 y están en §2. Lo que
+se descubra en el camino y haya que decidir se anota aquí.
 
 ## 4. Lo que pide el DAR
 
@@ -196,9 +205,11 @@ funciones `security definer`, ver `docs/cuentas.md`):
 
 **Tiempo real:**
 
-- Un canal de Supabase Realtime por mesa: **broadcast** para las acciones y
+- Un canal **privado** de Supabase Realtime por mesa, con
+  `@supabase/realtime-js` (§2): **broadcast** para las acciones y
   **presencia** para saber quién está conectado (y mostrar la cuenta
-  regresiva de la reconexión).
+  regresiva de la reconexión). Las políticas RLS sobre `realtime.messages`
+  dejan entrar solo a los dos jugadores de esa mesa.
 - Cada acción lleva la versión de la carta que toca. Si llega una acción
   sobre una versión vieja (los dos movieron la misma carta a la vez), se
   descarta y se vuelve a pedir la foto pública.
@@ -243,14 +254,16 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 
 - **Objetivo:** cerrar lo abierto (§3) y comprobar que el tiempo real cabe
   en el sitio.
-- **Hecho (21-11-2026):** siete de las ocho decisiones, pasadas a §2.
+- **Hecho (21 y 22-11-2026):** las ocho decisiones, pasadas a §2.
 - **Tareas pendientes:**
-  - una prueba descartable: el cliente de Realtime en el build estático, con
-    la CSP de `_headers`, dos pestañas mandándose mensajes por un canal;
-  - medir el peso del cliente con gzip y decidir entre `realtime-js` y un
-    websocket propio.
-- **Terminado cuando:** §3 está vacía y la prueba confirma el cliente, la CSP
-  y el peso. La prueba no se commitea.
+  - una prueba descartable con `@supabase/realtime-js` que **confirma** la
+    decisión de §2:
+    - que dos pestañas se mandan mensajes por un canal privado en el build
+      estático, con la CSP de `_headers` (`wss://` en `connect-src`);
+    - que una tercera cuenta **no** puede entrar a ese canal;
+    - el peso real del cliente con gzip.
+- **Terminado cuando:** la prueba confirma las tres cosas. La prueba no se
+  commitea.
 
 ### Sesión 1: modelo y reductor
 
