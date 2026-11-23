@@ -218,7 +218,8 @@ funciones `security definer`, ver `docs/cuentas.md`):
   instante y sin preguntar** (§2) y publica lo que se revela.
 - Requiere:
   - `wss://` al host de Supabase en `connect-src`, en `csp-hashes.mjs` y en
-    la auditoría (`audit_build.py`);
+    la auditoría (`audit_build.py`): el `https://` que ya está no lo cubre
+    (comprobado en la sesión 0);
   - que el cliente se cargue **diferido y solo en `/mesa`**, como `auth-js`,
     para no sumar peso al resto del sitio.
 
@@ -255,15 +256,26 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 - **Objetivo:** cerrar lo abierto (§3) y comprobar que el tiempo real cabe
   en el sitio.
 - **Hecho (21 y 22-11-2026):** las ocho decisiones, pasadas a §2.
-- **Tareas pendientes:**
-  - una prueba descartable con `@supabase/realtime-js` que **confirma** la
-    decisión de §2:
-    - que dos pestañas se mandan mensajes por un canal privado en el build
-      estático, con la CSP de `_headers` (`wss://` en `connect-src`);
-    - que una tercera cuenta **no** puede entrar a ese canal;
-    - el peso real del cliente con gzip.
-- **Terminado cuando:** la prueba confirma las tres cosas. La prueba no se
-  commitea.
+- **Hecho (23-11-2026): la prueba técnica**, en la consola del navegador y
+  contra el proyecto real, con dos políticas temporales sobre
+  `realtime.messages` que ya se borraron. Resultados:
+  - **La CSP publicada bloquea `wss://`.** `connect-src` lleva
+    `https://<host>.supabase.co` y Chrome no lo da por bueno para el
+    websocket: hay que agregar `wss://<host>.supabase.co` (sesión 4). Con la
+    CSP fuera, la conexión abre.
+  - **El canal privado funciona como se quiere.** Dos cuentas con política
+    entran, se ven en la presencia y se mandan broadcast en los dos sentidos.
+    Una tercera cuenta es **rechazada** al unirse.
+  - **Un broadcast no se guarda**: quien entra después no recibe lo que se
+    mandó antes. La mesa tiene que pedir la foto pública al (re)conectarse,
+    que es lo que ya dice §5.
+  - **Las particiones diarias de `realtime.messages` las crea Realtime solo**,
+    pero no antes del primer uso. El primer intento falló con
+    `MissingPartition` y, minutos después, ya estaban las de cinco días. No
+    hay que crearlas a mano, pero sí reintentar la unión si falla.
+  - **Peso:** `@supabase/realtime-js` 2.119.2 con broadcast y presencia son
+    **60 KB minificados y 17,5 KB con gzip** (34 KB del cliente y 26 KB de
+    `@supabase/phoenix`). Solo en `/mesa`.
 
 ### Sesión 1: modelo y reductor
 
