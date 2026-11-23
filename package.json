@@ -12,7 +12,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --import ./scripts/ts-imports.mjs --test src/lib/*.test.ts",
+    "test": "node --import ./scripts/ts-imports.mjs --test src/lib/*.test.ts src/lib/mesa/*.test.ts",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check && pnpm run test",
     "prepare": "node scripts/install-hooks.mjs",
     "audit": ".venv/bin/python scripts/audit_build.py",

@@ -280,18 +280,32 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 1: modelo y reductor
 
 - **Objetivo:** la mesa entera como datos, sin interfaz.
-- **Tareas:**
-  - tipos de la carta en mesa, las zonas y el estado público y privado;
-  - la unión de acciones y `aplicar()`;
-  - preparar un juego desde una baraja guardada: oro inicial a la Reserva,
-    Castillo barajado, mano de 8;
-  - mulligan, robar, botar, barajar, agrupar;
-  - anexar (Portar), poner debajo, y contadores;
-  - devolver a las zonas **del dueño** lo que sale del juego.
-- **Archivos:** `src/lib/mesa/*.ts` y sus `*.test.ts`.
-- **Terminado cuando:** los tests cubren cada acción, y una partida de
-  ejemplo (preparar, robar, mover, agrupar, mandar al Cementerio) da el
-  estado esperado.
+- **Hecha (23-11-2026)**, en `src/lib/mesa/`:
+  - `table.ts`: la ficha (uid, carta, dueño, controlador, boca abajo, a qué
+    va anexada o debajo de qué, contadores, Fuerza temporal y nota), las
+    diez zonas (las nueve del DAR y el Mazo de Soporte) y ayudas para
+    ubicar fichas;
+  - `setup.ts`: `newTable()` prepara el juego desde barajas guardadas, con
+    el oro inicial en la Reserva (una sola copia), el Castillo barajado, la
+    mano de 8 y el side en el Soporte;
+  - `apply.ts`: la unión `Accion` y `apply(mesa, accion, azar)`: mover,
+    voltear, robar, botar, barajar, mulligan, agrupar, portar, poner
+    debajo, contadores, Fuerza, nota y limpiar temporales;
+  - `mesa.test.ts`: cada acción y una partida de ejemplo. `pnpm run test`
+    corre ahora también `src/lib/mesa/*.test.ts`.
+- **Decisiones del modelo:**
+  - las zonas son listas de uids en orden; en el Castillo el índice 0 es el
+    tope, y en las demás lo último que llega va al final;
+  - una ficha anexada o puesta debajo **no está en ninguna lista**: cuelga
+    de su anfitriona y se mueve con ella, controlador incluido;
+  - `apply` es puro (trabaja sobre una copia) y recibe el azar, como
+    `hand-test.ts`. Una acción imposible devuelve la misma mesa sin lanzar;
+  - lo único que la mesa hace sola es lo que el DAR fija: lo que sale del
+    juego va a las zonas de su dueño y pierde sus marcas, y lo que llevaba
+    anexado o debajo va al Cementerio de su dueño.
+- **Pasa a la sesión 3:** separar lo público de lo privado (qué ve cada uno)
+  y quién puede tocar la mano. El modelo ya guarda lo necesario, pero
+  todavía no tiene la función que arme la vista de cada jugador.
 
 ### Sesión 2: mesa de práctica en solitario
 
