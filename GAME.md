@@ -310,15 +310,38 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 2: mesa de práctica en solitario
 
 - **Objetivo:** jugar solo contra la mesa, en `/mesa/practica`.
-- **Tareas:**
-  - elegir una baraja guardada y preparar el juego;
-  - dibujar las nueve zonas y escalar la mesa a la ventana;
-  - arrastrar y soltar, apilar, voltear;
-  - la mano abajo; el Castillo con robar y barajar;
-  - menú contextual, y `CardModal` para ver una carta en grande;
-  - el aviso de «solo escritorio» bajo `lg`.
-- **Terminado cuando:** se puede jugar un turno completo moviendo cartas, y un
-  e2e lo recorre.
+- **Hecha (23-11-2026):**
+  - `MESA_ACTIVA` (`src/lib/mesa/activa.ts`): apagada, la ruta solo dice
+    que todavía no está disponible. `NEXT_PUBLIC_MESA_ACTIVA=1` la enciende
+    en un build, y `pnpm run e2e:mesa` construye así y corre
+    `e2e/mesa.spec.ts`;
+  - `/mesa/practica` (`MesaPracticaView.tsx`): pide cuenta, espera el
+    catálogo, dice «La mesa es para escritorio» bajo `lg` sin cargarla, y
+    deja elegir una baraja guardada con cartas;
+  - la mesa (`MesaPractica.tsx`): un lienzo lógico de 1600 × 790 escalado a
+    la ventana, las diez zonas (las Líneas y los Oros en fila; Castillo,
+    Cementerio, Destierro y Soporte en pila) y la mano abajo, a lo ancho;
+  - arrastrar con eventos de puntero, sin librería. Soltar sobre una carta
+    en juego pregunta «Portar», «Poner debajo» o «Dejar al lado»; lo
+    anexado asoma detrás de su anfitriona;
+  - el menú de cada carta (clic, Enter o clic derecho, en `MenuMesa.tsx`):
+    ver en grande con `CardModal`, voltear, soltar, mandar a cualquier zona
+    (arriba o debajo del Castillo) y abrir lo que lleva anexado. El del
+    Castillo roba, bota y baraja. Cementerio, Destierro y Soporte se abren
+    en una ventana con todas sus cartas;
+  - la barra de arriba: Robar, Barajar, Mulligan, Empezar de nuevo y
+    Cambiar de baraja;
+  - el e2e juega un turno: robar, pagar con el oro inicial, jugar un Aliado
+    arrastrando, atacar desde el menú, voltear, mandar al Cementerio,
+    devolver el oro y barajar.
+- **Decisiones de la sesión:**
+  - dentro de una fila **no hay posición libre**: la carta cae en el lugar
+    de la fila que le toca según dónde se suelta (las zonas son listas
+    ordenadas, como en el modelo). Basta para ordenar la mesa y es lo que
+    después viaja por la red sin coordenadas;
+  - la práctica **no se guarda**: recargar vuelve a elegir baraja.
+- **Pasa a la sesión 8:** la revisión de accesibilidad de la mesa con
+  `pnpm run a11y` (hoy la ruta está apagada en el build de siempre).
 
 ### Sesión 3: acciones con visibilidad y ayudas
 

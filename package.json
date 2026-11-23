@@ -22,6 +22,7 @@
     "data:card": ".venv/bin/python scripts/fetch_card.py",
     "data:cards": ".venv/bin/python scripts/build_cards.py",
     "data:images": ".venv/bin/python scripts/convert_images.py",
+    "e2e:mesa": "NEXT_PUBLIC_MESA_ACTIVA=1 pnpm run build && E2E_MESA=1 playwright test e2e/mesa.spec.ts",
     "e2e:nube": "NEXT_PUBLIC_SUPABASE_URL=https://prueba.supabase.co NEXT_PUBLIC_SUPABASE_KEY=sb_publishable_prueba pnpm run build && E2E_NUBE=1 playwright test e2e/nube.spec.ts"
   },
   "dependencies": {

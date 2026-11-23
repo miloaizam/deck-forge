@@ -77,6 +77,7 @@ pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`
 pnpm run e2e         # recorridos en Chromium, escritorio y teléfono (tras `pnpm run build`)
 pnpm run a11y        # axe-core en todas las páginas, los dos temas (tras `pnpm run build`)
 pnpm run e2e:nube    # build con un Supabase simulado + e2e/nube.spec.ts (deja out/ con ese build)
+pnpm run e2e:mesa    # build con la mesa encendida + e2e/mesa.spec.ts (deja out/ con ese build)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
 pnpm run data:images         # images-src/*    -> public/cards/*.webp

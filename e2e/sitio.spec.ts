@@ -247,6 +247,7 @@ const RUTAS = [
   "/cuenta/",
   "/comunidad/",
   "/privacidad/",
+  "/mesa/practica/",
   "/no-existe/",
 ];
 
