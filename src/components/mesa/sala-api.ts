@@ -93,3 +93,78 @@ export function mensajeDeSala(e: unknown): string {
   }
   return "No se pudo completar. Inténtalo de nuevo.";
 }
+
+/**
+ * Lo privado de este jugador en la sala: la baraja con que entro y la
+ * semilla de su barajado, con la que se rearma la misma mitad al volver
+ * (sesion 6). Solo el lo lee (RLS).
+ */
+export async function guardarPrivado(
+  mesa: string,
+  uid: string,
+  estado: { baraja: Deck; semilla: number },
+): Promise<void> {
+  const t = await token();
+  if (!t) throw new ErrorNube(401, "MS002", "Sin sesión.");
+  await api("mesas_privado?on_conflict=mesa,jugador", {
+    metodo: "POST",
+    cuerpo: { mesa, jugador: uid, estado },
+    token: t,
+    prefer: "resolution=merge-duplicates,return=minimal",
+  });
+}
+
+/** La fila privada propia, tal cual vino: la valida quien la usa. */
+export async function leerPrivado(mesa: string, uid: string): Promise<unknown> {
+  const t = await token();
+  if (!t) throw new ErrorNube(401, "MS002", "Sin sesión.");
+  const filas = await api(
+    `mesas_privado?select=estado&mesa=eq.${mesa}&jugador=eq.${uid}`,
+    {
+      token: t,
+    },
+  );
+  const fila: unknown = Array.isArray(filas) ? filas[0] : null;
+  return typeof fila === "object" && fila !== null && "estado" in fila
+    ? fila.estado
+    : null;
+}
+
+/** La foto publica guardada, tal cual vino: la valida quien la usa. */
+export async function leerMesaPublica(
+  mesa: string,
+): Promise<{ version: unknown; estado: unknown } | null> {
+  const t = await token();
+  if (!t) throw new ErrorNube(401, "MS002", "Sin sesión.");
+  const filas = await api(`mesas_publico?select=version,estado&mesa=eq.${mesa}`, {
+    token: t,
+  });
+  const fila: unknown = Array.isArray(filas) ? filas[0] : null;
+  if (
+    typeof fila !== "object" ||
+    fila === null ||
+    !("version" in fila) ||
+    !("estado" in fila)
+  ) {
+    return null;
+  }
+  return { version: fila.version, estado: fila.estado };
+}
+
+/** Guarda la foto publica; la base descarta una version que no sea mas nueva. */
+export async function guardarMesaPublica(
+  mesa: string,
+  version: number,
+  estado: unknown,
+): Promise<void> {
+  await rpc("guardar_mesa_publico", {
+    p_mesa: mesa,
+    p_version: version,
+    p_estado: estado,
+  });
+}
+
+/** Pasados los dos minutos de gracia, la serie para quien siguio conectado. */
+export async function reclamarAbandono(mesa: string): Promise<void> {
+  await rpc("reclamar_abandono", { p_mesa: mesa });
+}

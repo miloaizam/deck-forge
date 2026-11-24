@@ -67,13 +67,21 @@ interface FilaSala {
   jugador_b: string | null;
   listo_a: boolean;
   listo_b: boolean;
+  ganador: string | null;
+  motivo: string | null;
+  /** La ultima senal de vida de cada jugador, en ms (sesion 6). */
+  senal: Record<string, number>;
 }
 
 /** Lo que guarda la base imitada, compartido por los tres navegadores. */
 interface Base {
   salas: FilaSala[];
   privado: { mesa: string; jugador: string; estado: unknown }[];
+  /** La foto publica de cada sala (sesion 6). */
+  publico: Map<string, { version: number; estado: unknown }>;
 }
+
+const baseNueva = (): Base => ({ salas: [], privado: [], publico: new Map() });
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -90,16 +98,17 @@ const responder = (route: Route, cuerpo: unknown, status = 200) =>
   });
 
 /** Como devuelve `ver_mesa()` una fila. */
-const vista = (s: FilaSala) => ({
+const fecha = (ms: number | undefined) => (ms ? new Date(ms).toISOString() : null);
+const vista = ({ senal, ...s }: FilaSala) => ({
   ...s,
   alias_a: null,
   alias_b: null,
   victorias_a: 0,
   victorias_b: 0,
-  ganador: null,
-  senal_a: null,
-  senal_b: null,
+  senal_a: fecha(senal[s.jugador_a]),
+  senal_b: s.jugador_b ? fecha(senal[s.jugador_b]) : null,
   creada: null,
+  ahora: new Date().toISOString(),
 });
 
 let siguiente = 0;
@@ -109,14 +118,17 @@ async function imitarMesa(page: Page, base: Base) {
     const req = route.request();
     const ruta = new URL(req.url()).pathname.replace("/rest/v1/", "");
     const esMesa =
-      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa)$/.test(
+      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa|guardar_mesa_publico|reclamar_abandono)$/.test(
         ruta,
       );
-    if (!esMesa && !ruta.startsWith("mesas_privado")) return route.fallback();
+    if (!esMesa && !/^mesas_(privado|publico)/.test(ruta)) return route.fallback();
     if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
     const uid = (req.headers().authorization ?? "").match(/^Bearer token-(.+)$/)?.[1];
     if (!uid) return responder(route, { code: "MS002" }, 401);
-    const cuerpo = (req.postDataJSON() ?? {}) as Record<string, string | boolean>; // la escribe el sitio
+    const cuerpo = (req.postDataJSON() ?? {}) as Record<
+      string,
+      string | boolean | number
+    >; // la escribe el sitio
     const sala = base.salas.find((s) => s.id === cuerpo.p_mesa);
     const juega = sala && [sala.jugador_a, sala.jugador_b].includes(uid);
 
@@ -136,6 +148,9 @@ async function imitarMesa(page: Page, base: Base) {
           jugador_b: null,
           listo_a: false,
           listo_b: false,
+          ganador: null,
+          motivo: null,
+          senal: { [uid]: Date.now() },
         });
         return responder(route, { id, codigo });
       }
@@ -146,6 +161,7 @@ async function imitarMesa(page: Page, base: Base) {
           return responder(route, { code: "MS001" }, 400);
         }
         s.jugador_b = uid;
+        s.senal[uid] = Date.now();
         return responder(route, s.id);
       }
       case "rpc/ver_mesa":
@@ -156,7 +172,43 @@ async function imitarMesa(page: Page, base: Base) {
           base.salas.filter((s) => [s.jugador_a, s.jugador_b].includes(uid)).map(vista),
         );
       case "rpc/latido_mesa":
+        if (sala && juega && sala.estado !== "terminada") sala.senal[uid] = Date.now();
         return responder(route, undefined, 204);
+      case "rpc/guardar_mesa_publico": {
+        if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
+        if (sala.estado !== "jugando") return responder(route, false);
+        const antes = base.publico.get(sala.id)?.version ?? 0;
+        if (Number(cuerpo.p_version) <= antes) return responder(route, false);
+        base.publico.set(sala.id, {
+          version: Number(cuerpo.p_version),
+          estado: cuerpo.p_estado,
+        });
+        return responder(route, true);
+      }
+      case "rpc/reclamar_abandono": {
+        if (!sala || !juega || !sala.jugador_b) {
+          return responder(route, { code: "MS004" }, 400);
+        }
+        if (sala.estado !== "jugando") return responder(route, { code: "MS005" }, 400);
+        const otro = uid === sala.jugador_a ? sala.jugador_b : sala.jugador_a;
+        if (Date.now() - (sala.senal[otro] ?? 0) < 120_000) {
+          return responder(route, { code: "MS007" }, 400);
+        }
+        sala.estado = "terminada";
+        sala.ganador = uid;
+        sala.motivo = "abandono";
+        base.publico.set(sala.id, { version: 0, estado: {} });
+        base.privado = base.privado.filter((p) => p.mesa !== sala.id);
+        return responder(route, undefined, 204);
+      }
+      case "mesas_publico": {
+        // Lo leen los dos jugadores de la sala, como la politica de la base.
+        const mesa = new URL(req.url()).searchParams.get("mesa")?.replace("eq.", "");
+        const s = base.salas.find((x) => x.id === mesa);
+        const foto =
+          s && [s.jugador_a, s.jugador_b].includes(uid) && base.publico.get(s.id);
+        return responder(route, foto ? [foto] : []);
+      }
       case "rpc/marcar_lista": {
         if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
         const tiene = base.privado.some((p) => p.mesa === sala.id && p.jugador === uid);
@@ -209,7 +261,7 @@ interface Socket {
 
 interface TiempoReal {
   sockets: Set<Socket>;
-  presentes: Map<string, Map<string, string>>; // tema -> (lado -> uid)
+  presentes: Map<string, Map<string, Socket>>; // tema -> (lado -> quien)
   broadcasts: unknown[];
 }
 
@@ -292,8 +344,8 @@ async function imitarTiempoReal(page: Page, uid: string, rt: TiempoReal, base: B
       if (m.event === "presence" && m.payload.type === "presence") {
         responder(m);
         const lado = (m.payload.payload as { lado: string }).lado; // lo manda el sitio
-        const lados = rt.presentes.get(m.topic) ?? new Map<string, string>();
-        lados.set(lado, uid);
+        const lados = rt.presentes.get(m.topic) ?? new Map<string, Socket>();
+        lados.set(lado, yo);
         rt.presentes.set(m.topic, lados);
         aTodos(m.topic, {
           topic: m.topic,
@@ -308,7 +360,27 @@ async function imitarTiempoReal(page: Page, uid: string, rt: TiempoReal, base: B
       }
       responder(m);
     });
-    ws.onClose(() => rt.sockets.delete(yo));
+    ws.onClose(() => {
+      rt.sockets.delete(yo);
+      // Quien se va deja la presencia de sus canales, como Realtime.
+      for (const tema of yo.temas) {
+        const lados = rt.presentes.get(tema);
+        for (const [lado, quien] of lados ?? []) {
+          // Al recargar, el socket nuevo puede llegar antes de que cierre el viejo.
+          if (quien !== yo) continue;
+          lados?.delete(lado);
+          aTodos(tema, {
+            topic: tema,
+            event: "presence_diff",
+            payload: {
+              joins: {},
+              leaves: { [lado]: { metas: [{ phx_ref: lado, lado }] } },
+            },
+            ref: null,
+          });
+        }
+      }
+    });
   });
 }
 
@@ -346,19 +418,16 @@ async function elegirBarajaYListo(page: Page, segundo = false) {
   ).toBeVisible();
 }
 
-test("apagada, la sala dice que todavia no esta disponible", async ({ page }) => {
-  test.skip(MESA, "este build la tiene encendida");
-  await page.goto("/mesa/");
-  await expect(page.getByText("Todavía no está disponible.")).toBeVisible();
-});
+/** Una zona de la mesa por su nombre, sea cual sea su cuenta. */
+const zona = (p: Page, nombre: string) =>
+  p.getByRole("region", { name: new RegExp(`^${nombre}, \\d+ cartas?$`) });
 
-test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entra", async ({
-  browser,
-}, info) => {
-  test.skip(!MESA, "solo con la mesa encendida");
-  test.skip(info.project.name !== "escritorio", "una vez basta");
-  test.setTimeout(60_000);
-  const base: Base = { salas: [], privado: [] };
+/**
+ * A crea una sala, B entra con el enlace, los dos eligen baraja y la mesa
+ * arranca con 8 cartas en cada mano.
+ */
+async function empezarPartida(browser: Browser) {
+  const base = baseNueva();
   const rt = tiempoReal();
 
   // A crea la sala.
@@ -391,12 +460,40 @@ test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entr
   );
 
   // La mesa (sesion 5): cada uno su mitad abajo y la del rival arriba.
-  const zona = (p: Page, nombre: string) =>
-    p.getByRole("region", { name: new RegExp(`^${nombre}, \\d+ cartas?$`) });
   await expect(zona(a, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas", {
     timeout: 15_000,
   });
   await expect(zona(b, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas");
+  return { a, b, base, rt, codigo };
+}
+
+/** A juega la primera carta de su mano en su Linea de Defensa; devuelve su nombre. */
+async function jugarADefensa(a: Page, b: Page, enDefensa: number): Promise<string> {
+  const jugada = zona(a, "Mano").getByRole("button").first();
+  const nombre = (await jugada.getAttribute("aria-label")) ?? "";
+  await jugada.click();
+  await a.getByRole("menuitem", { name: "Línea de Defensa" }).click();
+  const total = `${enDefensa} carta${enDefensa === 1 ? "" : "s"}`;
+  await expect(zona(b, "Línea de Defensa de Anfitrión")).toHaveAttribute(
+    "aria-label",
+    `Línea de Defensa de Anfitrión, ${total}`,
+  );
+  return nombre;
+}
+
+test("apagada, la sala dice que todavia no esta disponible", async ({ page }) => {
+  test.skip(MESA, "este build la tiene encendida");
+  await page.goto("/mesa/");
+  await expect(page.getByText("Todavía no está disponible.")).toBeVisible();
+});
+
+test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entra", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  const { a, b, base, rt, codigo } = await empezarPartida(browser);
   await expect(zona(a, "Mano de Invitado")).toHaveAttribute(
     "aria-label",
     "Mano de Invitado, 8 cartas",
@@ -485,4 +582,91 @@ test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entr
   ).toBeVisible();
   await c.goto(a.url());
   await expect(c.getByText("Esta sala no existe o no eres parte de ella.")).toBeVisible();
+});
+
+test("al recargar en medio de un juego, la mesa vuelve igual y se sigue jugando", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  const { a, b, base } = await empezarPartida(browser);
+  const sala = base.salas[0];
+
+  const jugada = await jugarADefensa(a, b, 1);
+  // La foto se guarda al quedar quieta la mesa: la version 1 es el reparto.
+  await expect
+    .poll(() => base.publico.get(sala.id)?.version ?? 0, { timeout: 10_000 })
+    .toBeGreaterThanOrEqual(2);
+
+  await a.reload();
+  await expect(zona(a, "Mano")).toHaveAttribute("aria-label", "Mano, 7 cartas", {
+    timeout: 15_000,
+  });
+  const defensa = zona(a, "Línea de Defensa");
+  await expect(defensa).toHaveAttribute("aria-label", "Línea de Defensa, 1 carta");
+  await expect(defensa.getByRole("button").first()).toHaveAttribute("aria-label", jugada);
+  await expect(zona(a, "Mano de Invitado")).toHaveAttribute(
+    "aria-label",
+    "Mano de Invitado, 8 cartas",
+  );
+  await expect(a.getByText("Invitado está conectado")).toBeVisible();
+
+  // Y la partida sigue: A juega otra y B la ve.
+  await jugarADefensa(a, b, 2);
+  await expect(zona(a, "Línea de Defensa")).toHaveAttribute(
+    "aria-label",
+    "Línea de Defensa, 2 cartas",
+  );
+});
+
+test("si el rival no vuelve en dos minutos, la serie es de quien siguio conectado", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  const { a, b, base } = await empezarPartida(browser);
+  const sala = base.salas[0];
+  await jugarADefensa(a, b, 1);
+
+  // B cierra su navegador: A ve la cuenta regresiva.
+  await b.context().close();
+  await expect(
+    a.getByText(/^Invitado se desconectó\. Si no vuelve en \d:\d\d, la serie es tuya\.$/),
+  ).toBeVisible({ timeout: 10_000 });
+  expect(sala.estado).toBe("jugando");
+
+  // Sin rival que le conteste, A recarga y la mesa sale de la foto guardada.
+  await expect
+    .poll(() => base.publico.get(sala.id)?.version ?? 0, { timeout: 10_000 })
+    .toBeGreaterThanOrEqual(2);
+  await a.reload();
+  await expect(zona(a, "Mano")).toHaveAttribute("aria-label", "Mano, 7 cartas", {
+    timeout: 15_000,
+  });
+  await expect(zona(a, "Línea de Defensa")).toHaveAttribute(
+    "aria-label",
+    "Línea de Defensa, 1 carta",
+  );
+  await expect(a.getByText(/^Invitado se desconectó\./)).toBeVisible();
+
+  // Para no esperar dos minutos de verdad, la base da por vieja la senal de B.
+  sala.senal[USUARIO_B] = Date.now() - 125_000;
+  await expect(
+    a.getByRole("heading", { name: "Ganaste la serie: Invitado abandonó" }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(sala.estado).toBe("terminada");
+  expect(sala.ganador).toBe(USUARIO_A);
+  expect(sala.motivo).toBe("abandono");
+  // Sin historial: la partida se borro.
+  expect(base.publico.get(sala.id)?.estado).toEqual({});
+  expect(base.privado.filter((p) => p.mesa === sala.id)).toEqual([]);
+
+  // Si B vuelve, ve que perdio.
+  const b2 = await jugador(browser, USUARIO_B, base);
+  await b2.goto(a.url());
+  await expect(
+    b2.getByRole("heading", { name: "Perdiste la serie por abandono" }),
+  ).toBeVisible();
 });

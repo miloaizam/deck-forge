@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Copy, DoorOpen, Hourglass, LogOut, Undo2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  DoorOpen,
+  Flag,
+  Hourglass,
+  LogOut,
+  Trophy,
+  Undo2,
+} from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
@@ -50,10 +59,14 @@ const PANEL = "border-line bg-panel rounded-panel border p-5 sm:p-6";
 export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
   const [sala, setSala] = useState<Sala | null | "cargando">("cargando");
   const [error, setError] = useState<string | null>(null);
+  /** Cuando llego la ultima respuesta, en el reloj de este navegador (sesion 6). */
+  const [recibida, setRecibida] = useState(0);
 
   const refrescar = useCallback(async () => {
     try {
-      setSala(await verSala(id));
+      const nueva = await verSala(id);
+      setRecibida(Date.now());
+      setSala(nueva);
       setError(null);
     } catch (e) {
       setError(mensajeDeSala(e));
@@ -90,7 +103,9 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
   return (
     <ConCatalogo esqueleto={<DeckListSkeleton />}>
       {(_, deFormato) =>
-        // Con los dos listos, la sala es la mesa (sesion 5).
+        sala.estado === "terminada" ? (
+          <SalaTerminada sala={sala} uid={uid} />
+        ) : // Con los dos listos, la sala es la mesa (sesion 5).
         sala.estado === "jugando" && miLado(sala, uid) ? (
           <MesaEnLinea
             mesa={sala.id}
@@ -100,6 +115,8 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
             formato={sala.formato}
             nombres={{ a: nombreEnSala(sala, "a"), b: nombreEnSala(sala, "b") }}
             cards={deFormato(sala.formato)}
+            sala={sala}
+            recibida={recibida}
           />
         ) : (
           <SalaAbierta
@@ -112,6 +129,51 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
         )
       }
     </ConCatalogo>
+  );
+}
+
+/**
+ * La serie termino (sesion 6: por abandono). La partida ya se borro de la
+ * base; queda solo quien gano y por que.
+ */
+function SalaTerminada({ sala, uid }: { sala: Sala; uid: string }) {
+  const lado = miLado(sala, uid);
+  const gane = sala.ganador === uid;
+  const rival = lado === "a" ? nombreEnSala(sala, "b") : nombreEnSala(sala, "a");
+  const titulo = gane
+    ? "Ganaste la serie"
+    : sala.ganador
+      ? "Perdiste la serie"
+      : "Serie terminada";
+  const abandono = sala.motivo === "abandono";
+  const porque = abandono
+    ? gane
+      ? `${rival} se desconectó y no volvió en dos minutos.`
+      : "Te desconectaste y no volviste en dos minutos."
+    : null;
+  return (
+    <section
+      aria-labelledby="sala-titulo"
+      className="mx-auto flex max-w-xl flex-col items-center gap-4 py-10 text-center"
+    >
+      {gane ? (
+        <Trophy size={40} aria-hidden="true" className="text-accent" />
+      ) : (
+        <Flag size={40} aria-hidden="true" className="text-muted" />
+      )}
+      <h1 id="sala-titulo" className="text-ink text-2xl font-bold">
+        {titulo}
+        {abandono && (gane ? `: ${rival} abandonó` : " por abandono")}
+      </h1>
+      {porque && <p className="text-muted text-[15px]">{porque}</p>}
+      <p className="text-muted text-[14px]">
+        Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span> ·{" "}
+        {NOMBRE_FORMATO[sala.formato]} · al mejor de {sala.mejor_de}
+      </p>
+      <Link href="/mesa/" className={cn(BOTON_PRIMARIO, "mt-2")}>
+        Volver a la mesa
+      </Link>
+    </section>
   );
 }
 

@@ -21,6 +21,7 @@
 --   MS004  no eres jugador de esa sala
 --   MS005  la sala ya empezo: no se puede salir asi
 --   MS006  falta elegir la baraja
+--   MS007  todavia no pasan los dos minutos de gracia
 -- =====================================================================
 
 create table if not exists public.mesas (
@@ -46,6 +47,11 @@ create table if not exists public.mesas (
   creada timestamptz not null default now(),
   check (jugador_b is null or jugador_b <> jugador_a)
 );
+
+-- Por que termino la serie (sesiones 6 y 7). Se agrega aparte para que
+-- volver a pegar el archivo sobre una base que ya tiene la tabla la sume.
+alter table public.mesas add column if not exists motivo text
+  check (motivo in ('abandono', 'rendicion', 'partidas'));
 
 create index if not exists mesas_jugador_a on public.mesas (jugador_a);
 create index if not exists mesas_jugador_b on public.mesas (jugador_b);
@@ -141,7 +147,10 @@ as $$
     'ganador', m.ganador,
     'senal_a', m.senal_a,
     'senal_b', m.senal_b,
-    'creada', m.creada
+    'creada', m.creada,
+    'motivo', m.motivo,
+    -- La hora de la base: la cuenta regresiva no depende del reloj de cada uno.
+    'ahora', now()
   )
   from public.mesas m
   left join public.perfiles pa on pa.user_id = m.jugador_a
@@ -301,7 +310,7 @@ as $$
   update public.mesas
   set senal_a = case when jugador_a = auth.uid() then now() else senal_a end,
       senal_b = case when jugador_b = auth.uid() then now() else senal_b end
-  where id = p_mesa and auth.uid() in (jugador_a, jugador_b);
+  where id = p_mesa and auth.uid() in (jugador_a, jugador_b) and estado <> 'terminada';
 $$;
 
 -- ---------------------------------------------------------------------
@@ -373,13 +382,90 @@ begin
   end if;
 end $$;
 
+-- ---------------------------------------------------------------------
+-- Guardar la foto publica (sesion 6), para volver a la mesa al recargar o
+-- si se van los dos. Solo sube de version: dos guardados que se cruzan no
+-- la hacen retroceder. Lo privado de cada uno (su baraja y la semilla de su
+-- barajado) ya esta en su fila de mesas_privado.
+-- ---------------------------------------------------------------------
+create or replace function public.guardar_mesa_publico(
+  p_mesa uuid,
+  p_version bigint,
+  p_estado jsonb
+)
+returns boolean
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  m public.mesas;
+begin
+  select * into m from public.mesas where id = p_mesa;
+  if not found or auth.uid() is null or auth.uid() not in (m.jugador_a, coalesce(m.jugador_b, m.jugador_a)) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if m.estado not in ('jugando', 'entre_juegos') then
+    return false;
+  end if;
+  if octet_length(p_estado::text) > 524288 then
+    raise exception 'demasiado grande' using errcode = '22023';
+  end if;
+  update public.mesas_publico
+  set version = p_version, estado = p_estado, actualizada = now()
+  where mesa = p_mesa and version < p_version;
+  return found;
+end;
+$$;
+
+-- ---------------------------------------------------------------------
+-- Reclamar por abandono (GAME.md §2): si el otro no da senales hace mas de
+-- dos minutos, la serie entera es para quien reclama y la mesa se cierra.
+-- Lo comprueba la base con su hora, no el navegador. Y como no hay
+-- historial, lo de la partida se borra en el acto.
+-- ---------------------------------------------------------------------
+create or replace function public.reclamar_abandono(p_mesa uuid)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  yo uuid := auth.uid();
+  m public.mesas;
+  senal_otro timestamptz;
+begin
+  select * into m from public.mesas where id = p_mesa for update;
+  if not found or yo is null or m.jugador_b is null or yo not in (m.jugador_a, m.jugador_b) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if m.estado not in ('jugando', 'entre_juegos') then
+    raise exception 'no se esta jugando' using errcode = 'MS005';
+  end if;
+  senal_otro := case when yo = m.jugador_a then m.senal_b else m.senal_a end;
+  if senal_otro is not null and senal_otro > now() - interval '2 minutes' then
+    raise exception 'todavia no' using errcode = 'MS007';
+  end if;
+  update public.mesas
+  set estado = 'terminada', ganador = yo, motivo = 'abandono'
+  where id = p_mesa;
+  update public.mesas_publico set estado = '{}'::jsonb, actualizada = now()
+  where mesa = p_mesa;
+  delete from public.mesas_privado where mesa = p_mesa;
+end;
+$$;
+
 revoke all on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
-  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text)
+  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
+  public.guardar_mesa_publico(uuid, bigint, jsonb), public.reclamar_abandono(uuid)
   from public, anon;
 grant execute on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
-  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text)
+  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
+  public.guardar_mesa_publico(uuid, bigint, jsonb), public.reclamar_abandono(uuid)
   to authenticated;

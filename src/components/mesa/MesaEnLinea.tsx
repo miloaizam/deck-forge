@@ -2,20 +2,42 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Monitor, Wifi, WifiOff } from "lucide-react";
+import * as z from "zod/mini";
+import { Hourglass, Monitor, Wifi, WifiOff } from "lucide-react";
 
-import { api } from "../nube/api";
 import { token } from "../nube/nube";
 import { DeckListSkeleton } from "../Skeleton";
+import {
+  guardarMesaPublica,
+  guardarPrivado,
+  leerMesaPublica,
+  leerPrivado,
+  reclamarAbandono,
+} from "./sala-api";
 import { TableroMesa } from "./TableroMesa";
 import { useEscritorio } from "./use-escritorio";
 import { NOMBRE_FORMATO } from "@/lib/formatos";
 import type { Accion } from "@/lib/mesa/apply";
-import { leerMensaje, type Lado, type Mensaje } from "@/lib/mesa/red";
+import {
+  esCoherente,
+  leerMensaje,
+  mesaVistaSchema,
+  type Lado,
+  type Mensaje,
+} from "@/lib/mesa/red";
+import { restanteDeGracia, type Sala } from "@/lib/mesa/sala";
 import { newTable } from "@/lib/mesa/setup";
-import { accionLocal, iniciar, mesaDe, recibir, type Red } from "@/lib/mesa/sincronia";
+import {
+  accionLocal,
+  iniciar,
+  mesaDe,
+  reconectar,
+  recibir,
+  type Red,
+} from "@/lib/mesa/sincronia";
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase-config";
 import { deckSchema, type Card, type Formato } from "@/lib/types";
+import type { MesaVista } from "@/lib/mesa/vista";
 import { AVISO_EN_LINEA, ENLACE, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -37,26 +59,21 @@ function azarDe(semilla: number): () => number {
   };
 }
 
-/**
- * La semilla con que esta pestana baraja su mitad. Se guarda para que
- * recargar arme la misma mitad, con las mismas cartas en los mismos uids, y
- * no otra que choque con la mesa que ya se esta jugando.
- */
-function semillaDe(mesa: string): number {
-  const clave = `deckforge-mesa-${mesa}`;
-  try {
-    const guardada = Number(sessionStorage.getItem(clave));
-    if (Number.isInteger(guardada) && guardada > 0) return guardada;
-  } catch {
-    // Sin sessionStorage: una semilla nueva, que solo vale para esta carga.
-  }
-  const nueva = 1 + Math.floor(Math.random() * 2 ** 31);
-  try {
-    sessionStorage.setItem(clave, String(nueva));
-  } catch {
-    // Igual se juega; recargar armaria otra mitad.
-  }
-  return nueva;
+/** Lo privado de cada jugador en la sala: su baraja y la semilla de su barajado. */
+const privadoSchema = z.object({
+  baraja: deckSchema,
+  semilla: z.optional(z.int().check(z.minimum(1), z.maximum(2 ** 31))),
+});
+
+/** Cuanto se espera, quieta la mesa, para guardar la foto (sesion 6). */
+const GUARDAR_QUIETA_MS = 2000;
+/** Cada cuantas versiones se guarda igual, aunque no se quede quieta. */
+const GUARDAR_CADA = 10;
+
+/** Los minutos y segundos que quedan, «1:43». */
+function reloj(ms: number): string {
+  const s = Math.ceil(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
 type Fase =
@@ -71,6 +88,10 @@ interface MesaEnLineaProps {
   nombres: Record<Lado, string>;
   /** El catalogo con las erratas del formato de la sala. */
   cards: Card[];
+  /** La sala de la ultima consulta (cada 3 s): las senales de vida y la hora de la base. */
+  sala: Sala;
+  /** Cuando llego esa consulta, en ms del reloj de este navegador. */
+  recibida: number;
 }
 
 /**
@@ -104,23 +125,63 @@ function Conectada({
   formato,
   nombres,
   cards,
+  sala,
+  recibida,
 }: MesaEnLineaProps) {
   const cartas = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   const [estado, setEstado] = useState<Fase>({ fase: "preparando" });
   const [red, setRed] = useState<Red | null>(null);
-  const [rivalConectado, setRivalConectado] = useState(false);
+  /** `null` hasta la primera lista de presencia: no se sabe todavia. */
+  const [rivalConectado, setRivalConectado] = useState<boolean | null>(null);
   const redRef = useRef<Red | null>(null);
   const canalRef = useRef<Canal | null>(null);
   const azar = useRef<() => number>(Math.random);
+  /** La ultima version guardada en la base, y el guardado en espera. */
+  const guardadaV = useRef(0);
+  const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ahora, setAhora] = useState(() => Date.now());
+  const reclamando = useRef(false);
+  const [intento, setIntento] = useState(0);
+
+  /**
+   * Guarda la foto publica de la mesa: al quedar quieta, o enseguida cada
+   * pocas versiones. La guarda quien publico el cambio; la base descarta una
+   * version que no sea mas nueva.
+   */
+  const programarGuardado = useCallback(
+    (r: Red) => {
+      if (!r.publica) return;
+      const guardar = () => {
+        const actual = redRef.current;
+        if (!actual?.publica || actual.v <= guardadaV.current) return;
+        const v = actual.v;
+        guardarMesaPublica(mesa, v, actual.publica)
+          .then(() => {
+            guardadaV.current = Math.max(guardadaV.current, v);
+          })
+          .catch(() => {});
+      };
+      if (espera.current) clearTimeout(espera.current);
+      if (r.v - guardadaV.current >= GUARDAR_CADA) guardar();
+      else espera.current = setTimeout(guardar, GUARDAR_QUIETA_MS);
+    },
+    [mesa],
+  );
 
   /** Aplica un paso de la sincronia: guarda el estado y manda lo que toque. */
-  const avanzar = useCallback((paso: { red: Red; enviar: Mensaje[] }) => {
-    redRef.current = paso.red;
-    setRed(paso.red);
-    for (const m of paso.enviar) {
-      void canalRef.current?.send({ type: "broadcast", event: "m", payload: m });
-    }
-  }, []);
+  const avanzar = useCallback(
+    (paso: { red: Red; enviar: Mensaje[] }) => {
+      redRef.current = paso.red;
+      setRed(paso.red);
+      for (const m of paso.enviar) {
+        void canalRef.current?.send({ type: "broadcast", event: "m", payload: m });
+      }
+      if (paso.enviar.some((m) => m.t === "estado" && m.v === paso.red.v)) {
+        programarGuardado(paso.red);
+      }
+    },
+    [programarGuardado],
+  );
 
   useEffect(() => {
     let vivo = true;
@@ -132,27 +193,36 @@ function Conectada({
       const t = await token();
       if (!t) throw new Error("Inicia sesión para jugar.");
 
-      // La baraja elegida, de la fila privada propia (la de nadie mas se lee).
-      const filas = await api(
-        `mesas_privado?select=estado&mesa=eq.${mesa}&jugador=eq.${uid}`,
-        { token: t },
-      );
-      const fila: unknown = Array.isArray(filas) ? filas[0] : null;
-      const datos =
-        typeof fila === "object" &&
-        fila &&
-        "estado" in fila &&
-        typeof fila.estado === "object"
-          ? fila.estado
-          : null;
-      const baraja = deckSchema.safeParse(
-        datos && "baraja" in datos ? datos.baraja : null,
-      );
-      if (!baraja.success) throw new Error("No se encontró tu baraja para esta sala.");
-
-      const semilla = semillaDe(mesa);
-      const miMitad = newTable([{ id: lado, deck: baraja.data }], azarDe(semilla));
+      // La baraja elegida y la semilla del barajado, de la fila privada
+      // propia (la de nadie mas se lee). La misma semilla arma la misma
+      // mitad, con las mismas cartas en los mismos uids, en cualquier pestana.
+      const privado = privadoSchema.safeParse(await leerPrivado(mesa, uid));
+      if (!privado.success) throw new Error("No se encontró tu baraja para esta sala.");
+      const { baraja } = privado.data;
+      let semilla = privado.data.semilla;
+      if (!semilla) {
+        semilla = 1 + Math.floor(Math.random() * (2 ** 31 - 1));
+        await guardarPrivado(mesa, uid, { baraja, semilla });
+      }
+      const miMitad = newTable([{ id: lado, deck: baraja }], azarDe(semilla));
       azar.current = azarDe(semilla ^ 0x5bd1e995);
+
+      // La foto guardada, si ya se estaba jugando (se recargo, o se fueron
+      // los dos): se arranca desde ella.
+      let guardada: { v: number; publica: MesaVista } | null = null;
+      const foto = await leerMesaPublica(mesa);
+      const leida = foto ? mesaVistaSchema.safeParse(foto.estado) : null;
+      const version = foto?.version;
+      if (
+        leida?.success &&
+        esCoherente(leida.data) &&
+        typeof version === "number" &&
+        Number.isInteger(version) &&
+        version > 0
+      ) {
+        guardada = { v: version, publica: leida.data };
+        guardadaV.current = version;
+      }
 
       const { RealtimeClient } = await import("@supabase/realtime-js");
       if (!vivo) return;
@@ -178,13 +248,20 @@ function Conectada({
         const estados = ch.presenceState();
         setRivalConectado(Object.keys(estados).some((k) => k !== lado));
       });
+      let primera = true;
       ch.subscribe((status) => {
         if (!vivo) return;
         if (status === "SUBSCRIBED") {
           canalRef.current = ch;
           void ch.track({ lado });
           setEstado({ fase: "lista" });
-          avanzar(iniciar(lado, miMitad));
+          if (primera) {
+            primera = false;
+            avanzar(iniciar(lado, miMitad, guardada));
+          } else if (redRef.current) {
+            // Volvio la conexion (Realtime reintenta solo): ponerse al dia.
+            avanzar(reconectar(redRef.current));
+          }
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           setEstado({ fase: "error", mensaje: "No se pudo conectar a la mesa." });
         }
@@ -200,6 +277,7 @@ function Conectada({
 
     return () => {
       vivo = false;
+      if (espera.current) clearTimeout(espera.current);
       canalRef.current = null;
       void canal?.unsubscribe();
       cliente?.disconnect();
@@ -216,6 +294,30 @@ function Conectada({
 
   const rival: Lado = lado === "a" ? "b" : "a";
   const tablero = red ? mesaDe(red) : null;
+  const jugando = tablero !== null && rivalConectado === false;
+
+  // Con el rival desconectado, la cuenta regresiva avanza cada segundo.
+  useEffect(() => {
+    if (!jugando) return;
+    const t = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [jugando]);
+
+  const restante = jugando ? restanteDeGracia(sala, rival, recibida, ahora) : null;
+
+  // Se acabo el tiempo: la serie para quien siguio conectado. Lo decide la
+  // base con su hora; si todavia no, se vuelve a intentar en un rato.
+  useEffect(() => {
+    if (restante !== 0 || reclamando.current) return;
+    reclamando.current = true;
+    reclamarAbandono(mesa).catch(() => {
+      setTimeout(() => {
+        reclamando.current = false;
+        setIntento((n) => n + 1);
+      }, 5000);
+    });
+  }, [restante, mesa, intento]);
+
   const conexion = (
     <p
       className={cn(
@@ -246,6 +348,22 @@ function Conectada({
     </div>
   );
 
+  const cuenta =
+    restante !== null ? (
+      <p
+        role="status"
+        className={cn(
+          AVISO_EN_LINEA,
+          "border-warning/60 bg-warning-soft text-ink items-center",
+        )}
+      >
+        <Hourglass size={16} aria-hidden="true" className="text-warning" />
+        {restante > 0
+          ? `${nombres[rival]} se desconectó. Si no vuelve en ${reloj(restante)}, la serie es tuya.`
+          : `${nombres[rival]} no volvió: la serie es tuya.`}
+      </p>
+    ) : null;
+
   if (estado.fase === "error") {
     return (
       <div className={VACIO}>
@@ -275,6 +393,7 @@ function Conectada({
       cartas={cartas}
       formato={formato}
       cabecera={cabecera}
+      aviso={cuenta}
       nombreJugador={(id) => (id === lado ? "Tú" : nombres[rival])}
     />
   );

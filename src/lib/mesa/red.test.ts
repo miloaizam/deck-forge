@@ -6,7 +6,7 @@ import type { Deck } from "../types";
 import type { Accion } from "./apply";
 import { completar, leerMensaje, publicar, type Lado, type Mensaje } from "./red";
 import { newTable } from "./setup";
-import { accionLocal, iniciar, mesaDe, recibir, type Red } from "./sincronia";
+import { accionLocal, iniciar, mesaDe, reconectar, recibir, type Red } from "./sincronia";
 import { ubicar } from "./table";
 
 function semilla(s: number): () => number {
@@ -239,4 +239,80 @@ test("publicar no cambia lo que ya es publico y vacia lo oculto", () => {
   const manoA = m.jugadores[0].zonas.mano;
   assert.ok(manoA.every((u) => pub.fichas[u].cartaId === null));
   assert.deepEqual(publicar(completar(pub, {})), pub);
+});
+
+test("volver con una foto vieja de la base trae la mas nueva del rival", () => {
+  let p = empezar();
+  const uid = mesaDe(p.a)!.jugadores[0].zonas.mano[0];
+  p = hacer(p, "a", { tipo: "mover", uid, jugador: "a", zona: "defensa" });
+  const guardada = { v: p.a.v, publica: p.a.publica! };
+  // Despues de guardar, A juega otra; luego recarga y vuelve con la foto vieja.
+  const otra = mesaDe(p.a)!.jugadores[0].zonas.mano[0];
+  p = hacer(p, "a", { tipo: "mover", uid: otra, jugador: "a", zona: "apoyo" });
+  const ultima = p.b.v;
+
+  const vuelta = iniciar(
+    "a",
+    newTable([{ id: "a", deck: baraja("a") }], semilla(1)),
+    guardada,
+  );
+  assert.deepEqual(
+    vuelta.enviar.map((m) => m.t),
+    ["hola"],
+    "con foto guardada solo saluda",
+  );
+  p = entregar({ ...p, a: vuelta.red }, vuelta.enviar);
+  assert.equal(p.a.v, ultima);
+  assert.deepEqual(p.a.publica, p.b.publica);
+  // Y conoce sus cartas igual que antes: la misma semilla arma la misma mitad.
+  assert.equal(mesaDe(p.a)!.fichas[otra].cartaId, mesaDe(p.b)!.fichas[otra].cartaId);
+  assert.notEqual(
+    mesaDe(p.a)!
+      .jugadores[0].zonas.mano.map((u) => mesaDe(p.a)!.fichas[u].cartaId)
+      .join(),
+    "",
+  );
+});
+
+test("si se van los dos y vuelven desde la base, quedan con la misma mesa", () => {
+  let p = empezar();
+  p = hacer(p, "b", { tipo: "robar", jugador: "b" });
+  const guardada = { v: p.b.v, publica: p.b.publica! };
+  const va = iniciar(
+    "a",
+    newTable([{ id: "a", deck: baraja("a") }], semilla(1)),
+    guardada,
+  );
+  const vb = iniciar(
+    "b",
+    newTable([{ id: "b", deck: baraja("b") }], semilla(2)),
+    guardada,
+  );
+  const q = entregar({ a: va.red, b: vb.red, enviados: [] }, [
+    ...va.enviar,
+    ...vb.enviar,
+  ]);
+  assert.equal(q.a.v, guardada.v);
+  assert.deepEqual(q.a.publica, q.b.publica);
+  // Y se sigue jugando.
+  const r = hacer(q, "a", { tipo: "robar", jugador: "a" });
+  assert.equal(r.b.v, guardada.v + 1);
+});
+
+test("lo que se jugo sin conexion llega al volver, y si los dos jugaron, quedan iguales", () => {
+  const p = empezar();
+  const v0 = p.a.v;
+  // B se queda sin conexion: su robo no llega a nadie.
+  const sola = accionLocal(p.b, { tipo: "robar", jugador: "b" }, semilla(5)).red;
+  // Mientras, A tambien juega, con la misma version.
+  const r = hacer({ ...p, b: sola }, "a", { tipo: "robar", jugador: "a" });
+  assert.notDeepEqual(r.a.publica, sola.publica);
+  // Vuelve la conexion de B: gana lo de A y B rehace su robo encima.
+  const q = entregar({ ...r, b: sola }, reconectar(sola).enviar);
+  assert.deepEqual(q.a.publica, q.b.publica);
+  assert.equal(q.a.v, v0 + 2);
+  const mano = (red: Red, lado: Lado) =>
+    mesaDe(red)!.jugadores.find((j) => j.id === lado)!.zonas.mano.length;
+  assert.equal(mano(q.a, "a"), mano(p.a, "a") + 1);
+  assert.equal(mano(q.a, "b"), mano(p.a, "b") + 1);
 });

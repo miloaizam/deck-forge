@@ -58,6 +58,10 @@ export const salaSchema = z.object({
   senal_a: fecha,
   senal_b: fecha,
   creada: fecha,
+  /** Por que termino la serie (sesiones 6 y 7). */
+  motivo: z._default(z.nullable(z.enum(["abandono", "rendicion", "partidas"])), null),
+  /** La hora de la base cuando respondio. */
+  ahora: z._default(fecha, null),
 });
 
 export type Sala = z.infer<typeof salaSchema>;
@@ -103,6 +107,7 @@ export const MENSAJE_ERROR_SALA: Record<string, string> = {
   MS004: "No eres parte de esa sala.",
   MS005: "La sala ya empezó.",
   MS006: "Elige una baraja antes de marcarte listo.",
+  MS007: "Tu rival todavía puede volver: espera a que se acabe su tiempo.",
 };
 
 export const NOMBRE_ESTADO_SALA: Record<EstadoSala, string> = {
@@ -114,4 +119,32 @@ export const NOMBRE_ESTADO_SALA: Record<EstadoSala, string> = {
 
 export function esFormato(v: string): v is Formato {
   return (FORMATOS as readonly string[]).includes(v);
+}
+
+/** El tiempo de gracia de quien se desconecta (GAME.md §2). El mismo que `mesa.sql`. */
+export const GRACIA_MS = 120_000;
+
+const msDe = (fecha: string | null): number | null => {
+  const t = fecha ? Date.parse(fecha) : Number.NaN;
+  return Number.isFinite(t) ? t : null;
+};
+
+/**
+ * Cuantos ms le quedan al jugador `lado` para volver, desde su ultima senal
+ * en la base. Se cuenta con la hora de la base (`ahora`), corrida por lo que
+ * paso en este navegador desde que llego la respuesta (`recibida`, en ms del
+ * reloj local): asi un reloj adelantado o atrasado no cambia la cuenta.
+ * `null` si no hay con que contar.
+ */
+export function restanteDeGracia(
+  sala: Sala,
+  lado: "a" | "b",
+  recibida: number,
+  ahoraLocal: number,
+): number | null {
+  const senal = msDe(lado === "a" ? sala.senal_a : sala.senal_b);
+  const base = msDe(sala.ahora);
+  if (senal === null || base === null) return null;
+  const ahoraEnLaBase = base + Math.max(0, ahoraLocal - recibida);
+  return Math.max(0, GRACIA_MS - (ahoraEnLaBase - senal));
 }

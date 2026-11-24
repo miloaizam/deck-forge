@@ -503,16 +503,51 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 6: guardar y reconectar
 
 - **Objetivo:** recargar o perder la red no rompe la partida.
-- **Tareas:**
-  - guardar la foto pública y la privada de cada uno, cada cierta cantidad
-    de acciones y al quedar quieta la mesa;
-  - el latido y la cuenta regresiva a la vista;
-  - reclamar por abandono: pasados los 2 minutos de gracia, la serie para quien
-    siguió conectado;
-  - volver a la mesa tal como estaba al recargar.
-- **Terminado cuando:** un e2e recarga a un jugador en medio de un juego y
-  sigue, y otro lo desconecta del todo y la serie se cierra a favor del
-  conectado.
+- **Hecha (24-11-2026).**
+- **La foto pública se guarda en la base** (`mesas_publico`, con
+  `guardar_mesa_publico`): 2 s después del último cambio y enseguida cada 10
+  versiones. La guarda quien publicó el cambio, y **la base solo acepta una
+  versión más alta** que la guardada, así que dos guardados cruzados no
+  retroceden.
+- **Lo privado de cada uno es su baraja y la semilla de su barajado**
+  (`mesas_privado`, `{ baraja, semilla }`), y no la mesa entera: con la
+  misma semilla se rearma la misma mitad, con las mismas cartas en los
+  mismos uids, en cualquier pestaña o equipo. Antes la semilla vivía en
+  `sessionStorage`.
+- **Volver:** al entrar se lee la foto (validada y revisada como lo que
+  llega por el canal) y se arranca desde ella; se saluda, y cada uno se
+  queda con la versión más alta. Al volver la conexión (Realtime reintenta
+  solo) se saluda y **se manda la mesa propia**, por si se jugó algo
+  mientras no llegaba nada: el desempate de siempre deja a los dos iguales
+  (`reconectar()` de `sincronia.ts`).
+- **La cuenta regresiva:** con el rival fuera de la presencia, la mesa dice
+  «Invitado se desconectó. Si no vuelve en 1:43, la serie es tuya». Cuenta
+  desde la última señal del rival en la base y con la **hora de la base**
+  (`ver_mesa` devuelve `ahora`), corrida por lo que pasó en el navegador
+  desde la respuesta, para que un reloj desfasado no cambie nada
+  (`restanteDeGracia` de `sala.ts`).
+- **Reclamar por abandono** (`reclamar_abandono`): al llegar a cero, el
+  navegador lo pide y **la base decide** con su hora; antes de tiempo
+  responde `MS007` y se reintenta. Deja la sala `terminada`, con ganador y
+  `motivo: abandono` (columna nueva de `mesas`), y **borra la partida** en el
+  acto: la foto queda vacía y las filas privadas, borradas (sin historial,
+  §2). `latido_mesa` no revive una sala terminada.
+- **La sala terminada** dice «Ganaste la serie: Invitado abandonó» o
+  «Perdiste la serie por abandono», con la vuelta a `/mesa`.
+- **Hay que volver a pegar `supabase/mesa.sql` entero en el SQL Editor**
+  (columna `motivo` y dos funciones nuevas). `mesa.prueba.sql` lo comprueba
+  en local: guardar sube y nunca baja, una tercera cuenta no guarda,
+  reclamar antes de tiempo falla, después se gana y se borra la partida.
+- **`e2e/sala.spec.ts`** suma a su imitación la foto pública, las dos
+  funciones y la salida de la presencia al cerrar un navegador, y dos
+  pruebas: **recargar** a mitad de juego (la mesa vuelve igual y se sigue
+  jugando) y **abandono** (A recarga sin rival y la mesa sale de la foto;
+  con la señal de B envejecida a mano, A gana la serie, la partida se borra
+  y B, al volver, ve que perdió).
+- **Sabido:** si los dos se van a menos de 2 s de una jugada, esa jugada
+  no llegó a guardarse y se pierde.
+- **Pasa a la sesión 7:** declarar, confirmar y rendirse, que usan
+  `motivo` (`rendicion`, `partidas`).
 
 ### Sesión 7: la serie
 

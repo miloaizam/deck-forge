@@ -47,12 +47,21 @@ export interface Paso {
 
 const quieto = (red: Red): Paso => ({ red, enviar: [] });
 
-/** Al entrar a la mesa: saludar y mandar lo que se ve de la mitad propia. */
-export function iniciar(yo: Lado, miMitad: Mesa): Paso {
+/**
+ * Al entrar a la mesa: saludar y mandar lo que se ve de la mitad propia. Con
+ * una mesa guardada (sesion 6: se recargo, o se habian ido los dos), se
+ * arranca desde ella y solo se saluda: el otro responde con la suya, y cada
+ * uno se queda con la version mas alta.
+ */
+export function iniciar(
+  yo: Lado,
+  miMitad: Mesa,
+  guardada?: { v: number; publica: MesaVista } | null,
+): Paso {
   const red: Red = {
     yo,
-    v: 0,
-    publica: null,
+    v: guardada?.v ?? 0,
+    publica: guardada?.publica ?? null,
     mias: cartasDe(miMitad),
     conocidas: {},
     miMitad,
@@ -60,11 +69,24 @@ export function iniciar(yo: Lado, miMitad: Mesa): Paso {
   };
   return {
     red,
-    enviar: [
-      { t: "hola", de: yo },
-      { t: "mitad", de: yo, mesa: mitadParaElRival(miMitad, otroLado(yo)) },
-    ],
+    enviar: guardada
+      ? [{ t: "hola", de: yo }]
+      : [
+          { t: "hola", de: yo },
+          { t: "mitad", de: yo, mesa: mitadParaElRival(miMitad, otroLado(yo)) },
+        ],
   };
+}
+
+/**
+ * Al volver la conexion (sesion 6): saludar para que el otro mande lo suyo, y
+ * mandarle lo propio, por si se jugo algo mientras no llegaba nada. Cada uno
+ * se queda con la version mas alta; con la misma, gana "a" como siempre.
+ */
+export function reconectar(red: Red): Paso {
+  const enviar: Mensaje[] = [{ t: "hola", de: red.yo }];
+  if (red.publica) enviar.push({ t: "estado", de: red.yo, v: red.v, mesa: red.publica });
+  return { red, enviar };
 }
 
 /** La mesa tal como la conoce este navegador, o `null` si todavia no empieza. */

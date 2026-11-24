@@ -175,6 +175,77 @@ do $$ begin
   if (select count(*) from public.mesas) <> 0 then raise exception 'el anfitrion no la borro'; end if;
 end $$;
 
+-- Guardar la foto publica (sesion 6): solo sube de version, y solo un jugador.
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+do $$ begin
+  if not guardar_mesa_publico(current_setting('prueba.sala')::uuid, 5, '{"v": 5}') then
+    raise exception 'A no pudo guardar la foto';
+  end if;
+  if guardar_mesa_publico(current_setting('prueba.sala')::uuid, 3, '{"v": 3}') then
+    raise exception 'la foto retrocedio de version';
+  end if;
+  if (select version from public.mesas_publico where mesa = current_setting('prueba.sala')::uuid) <> 5 then raise exception 'version mal guardada'; end if;
+end $$;
+select set_config('request.jwt.claim.sub', :'C', false);
+do $$ begin
+  perform guardar_mesa_publico(current_setting('prueba.sala')::uuid, 9, '{}');
+  raise exception 'C guardo la foto de una sala ajena';
+exception when sqlstate 'MS004' then null; end $$;
+
+-- Reclamar por abandono: antes de los dos minutos, no.
+select set_config('request.jwt.claim.sub', :'A', false);
+do $$ begin
+  perform reclamar_abandono(current_setting('prueba.sala')::uuid);
+  raise exception 'A reclamo antes de tiempo';
+exception when sqlstate 'MS007' then null; end $$;
+
+-- B lleva tres minutos sin senales (se envejece a mano): A gana la serie.
+reset role;
+update public.mesas set senal_b = now() - interval '3 minutes' where id = :'sala';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select reclamar_abandono(:'sala');
+do $$ begin
+  if (select estado || ' ' || motivo from public.mesas where id = current_setting('prueba.sala')::uuid)
+     <> 'terminada abandono' then
+    raise exception 'la sala no termino por abandono';
+  end if;
+  if (select ganador from public.mesas where id = current_setting('prueba.sala')::uuid) <> auth.uid() then
+    raise exception 'el ganador no es quien reclamo';
+  end if;
+  if (select estado from public.mesas_publico where mesa = current_setting('prueba.sala')::uuid) <> '{}'::jsonb then
+    raise exception 'la foto publica no se borro';
+  end if;
+  if (select count(*) from public.mesas_privado where mesa = current_setting('prueba.sala')::uuid) <> 0 then
+    raise exception 'quedo la fila privada';
+  end if;
+  if (select ver_mesa(current_setting('prueba.sala')::uuid) ->> 'ahora') is null then
+    raise exception 'ver_mesa no trae la hora de la base';
+  end if;
+end $$;
+reset role;
+do $$ begin
+  if (select count(*) from public.mesas_privado where mesa = current_setting('prueba.sala')::uuid) <> 0 then
+    raise exception 'quedaron filas privadas de la partida';
+  end if;
+end $$;
+
+-- B vuelve tarde: ni reclama ni su latido cambia nada.
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'B', false);
+do $$ begin
+  perform reclamar_abandono(current_setting('prueba.sala')::uuid);
+  raise exception 'B reclamo una sala terminada';
+exception when sqlstate 'MS005' then null; end $$;
+select latido_mesa(:'sala');
+do $$ begin
+  if (select senal_b from public.mesas where id = current_setting('prueba.sala')::uuid)
+     > now() - interval '2 minutes' then
+    raise exception 'el latido revivio una sala terminada';
+  end if;
+end $$;
+
 -- El canal privado de la sala (sesion 5), si la base tiene Realtime (o su
 -- imitacion: ver el comienzo de este archivo).
 reset role;

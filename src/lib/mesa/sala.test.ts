@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   CODIGO_SALA,
+  GRACIA_MS,
+  restanteDeGracia,
   leerMisSalas,
   leerSala,
   miLado,
@@ -95,4 +97,33 @@ test("mi lado y el nombre de cada jugador", () => {
   assert.equal(miLado(sala, "otro"), null);
   assert.equal(nombreEnSala(sala, "a"), "Anfitrion");
   assert.equal(nombreEnSala(sala, "b"), "Invitado");
+});
+
+test("la sala trae por que termino y la hora de la base; sin ellos, null", () => {
+  const vieja = leerSala(fila())!;
+  assert.equal(vieja.motivo, null);
+  assert.equal(vieja.ahora, null);
+  const terminada = leerSala(
+    fila({ estado: "terminada", motivo: "abandono", ahora: "2026-11-24T00:05:00Z" }),
+  )!;
+  assert.equal(terminada.motivo, "abandono");
+  assert.equal(leerSala(fila({ motivo: "otro" })), null);
+});
+
+test("la gracia se cuenta con la hora de la base, no con el reloj del navegador", () => {
+  const sala = leerSala(
+    fila({
+      jugador_b: B,
+      senal_b: "2026-11-24T00:00:00Z",
+      ahora: "2026-11-24T00:01:00Z",
+    }),
+  )!;
+  // Un reloj local adelantado una hora no cambia nada: cuenta lo que paso aqui.
+  const recibida = Date.parse("2026-11-24T01:00:00Z");
+  assert.equal(restanteDeGracia(sala, "b", recibida, recibida), 60_000);
+  assert.equal(restanteDeGracia(sala, "b", recibida, recibida + 45_000), 15_000);
+  assert.equal(restanteDeGracia(sala, "b", recibida, recibida + 90_000), 0);
+  assert.equal(GRACIA_MS, 120_000);
+  // Sin senal o sin hora de la base, no hay cuenta.
+  assert.equal(restanteDeGracia(leerSala(fila({ jugador_b: B }))!, "b", 0, 0), null);
 });
