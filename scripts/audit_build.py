@@ -300,13 +300,24 @@ def revisar_nube() -> None:
         "connect-src": f"connect-src 'self'{extra}",
         "img-src": f"img-src 'self' data:{extra}",
     }
+    # La mesa 1v1 (GAME.md, sesion 5): con la mesa encendida, y solo en sus
+    # paginas, connect-src suma el wss:// del mismo host (su tiempo real).
+    # Apagada, ninguna pagina lo lleva.
+    mesa_activa = activa and os.environ.get("NEXT_PUBLIC_MESA_ACTIVA") == "1"
+    tiempo_real = f" {url.replace('https://', 'wss://', 1)}" if mesa_activa else ""
     headers = OUT / "_headers"
     if not headers.exists():
         return  # ya lo reporta revisar_headers
+    ruta = ""
     for linea in headers.read_text(encoding="utf-8").splitlines():
+        if linea.startswith("/"):
+            ruta = linea.strip()
         if "Content-Security-Policy:" not in linea:
             continue
+        de_la_mesa = ruta.startswith("/mesa/")
         for directiva, esperado in esperados.items():
+            if directiva == "connect-src" and de_la_mesa:
+                esperado += tiempo_real
             m = re.search(rf"{directiva}[^;]*", linea)
             if not m or m.group(0).strip() != esperado:
                 fallo(f"{directiva} deberia ser `{esperado}` y es `{m.group(0) if m else 'nada'}`")
@@ -314,7 +325,8 @@ def revisar_nube() -> None:
     print(
         "Cuentas "
         + (
-            f"encendidas: connect-src e img-src solo a {url}."
+            f"encendidas: connect-src e img-src solo a {url}"
+            + (", y wss:// solo en /mesa." if mesa_activa else ".")
             if activa
             else "apagadas: connect-src e img-src sin hosts de afuera."
         )

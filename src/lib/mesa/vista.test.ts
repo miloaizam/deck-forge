@@ -391,6 +391,11 @@ test("el texto de cada linea, impersonal y sin nombrar lo oculto", () => {
     textoDeEntrada(ultima(botar), nombre, quien),
     /^Beto: Botó «.+» del Castillo de Ana\.$/,
   );
+  // Leido por quien sufre el botar: su Castillo es «tu Castillo».
+  assert.match(
+    textoDeEntrada(ultima(botar), nombre, quien, "a"),
+    /^Beto: Botó «.+» de tu Castillo\.$/,
+  );
   // Ninguna frase deja un «de el» sin contraer.
   assert.ok(solo.every((t) => !/\bde el\b|\ba el\b/.test(t)));
 });

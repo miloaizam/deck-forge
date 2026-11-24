@@ -117,10 +117,22 @@ const nubeActiva =
 const conectar = nubeActiva ? `${CONNECT_SRC} ${urlNube}` : CONNECT_SRC;
 const imagenes = nubeActiva ? `${IMG_SRC} ${urlNube}` : IMG_SRC;
 
-const politica = (lista) =>
+// La mesa 1v1 (GAME.md, sesion 5): su tiempo real va por wss:// al mismo
+// host, que el https:// de arriba no cubre (probado en la sesion 0). Solo en
+// las paginas de /mesa y solo en un build con la mesa encendida
+// (NEXT_PUBLIC_MESA_ACTIVA=1, como src/lib/mesa/activa.ts): apagada, la CSP
+// de todo el sitio sale igual que antes, byte por byte.
+const mesaActiva = nubeActiva && process.env.NEXT_PUBLIC_MESA_ACTIVA === "1";
+const tiempoReal = mesaActiva ? urlNube.replace(/^https:/, "wss:") : null;
+const esDeLaMesa = (ruta) => ruta === "/mesa/" || ruta.startsWith("/mesa/");
+
+const politica = (lista, ruta = "") =>
   base
     .replace(SCRIPT_SRC, `script-src 'self' ${lista.join(" ")}`)
-    .replace(CONNECT_SRC, conectar)
+    .replace(
+      CONNECT_SRC,
+      tiempoReal && esDeLaMesa(ruta) ? `${conectar} ${tiempoReal}` : conectar,
+    )
     .replace(IMG_SRC, imagenes);
 
 const hashes404 = hashes(readFileSync(path.join(OUT, "404.html"), "utf8"));
@@ -143,7 +155,7 @@ salida += [
   ...reglas.flatMap(({ ruta, lista }) => [
     ruta,
     "  ! Content-Security-Policy",
-    `  Content-Security-Policy: ${politica(lista)}`,
+    `  Content-Security-Policy: ${politica(lista, ruta)}`,
   ]),
   "",
 ].join("\n");
@@ -161,5 +173,6 @@ writeFileSync(path.join(OUT, "_headers"), salida);
 const total = new Set(reglas.flatMap((r) => r.lista)).size;
 console.log(
   `csp-hashes: ${reglas.length} paginas, ${total} hashes distintos, ${totalReglas} reglas en _headers` +
-    (nubeActiva ? `, cuentas en ${urlNube}` : ", cuentas apagadas"),
+    (nubeActiva ? `, cuentas en ${urlNube}` : ", cuentas apagadas") +
+    (tiempoReal ? `, tiempo real de la mesa en ${tiempoReal}` : ""),
 );

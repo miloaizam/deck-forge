@@ -5,6 +5,18 @@
 --
 --   psql -v ON_ERROR_STOP=1 -f supabase/mesa.prueba.sql
 --
+-- Para probar tambien el canal de Realtime, antes de correr mesa.sql:
+--
+--   create schema realtime;
+--   create table realtime.messages (id bigserial primary key, topic text,
+--     extension text, payload jsonb);
+--   alter table realtime.messages enable row level security;
+--   create function realtime.topic() returns text language sql stable as
+--     $$ select current_setting('realtime.topic', true) $$;
+--   grant usage on schema realtime to authenticated;
+--   grant select, insert, delete on realtime.messages to authenticated;
+--   grant usage, select on sequence realtime.messages_id_seq to authenticated;
+--
 -- Cada comprobacion falla con un error si no se cumple. Lo que tiene que
 -- quedar claro: dos cuentas entran a la misma sala, una tercera no, y el
 -- rival NO puede leer la fila privada del otro.
@@ -162,6 +174,31 @@ select salir_mesa(:'sala_c');
 do $$ begin
   if (select count(*) from public.mesas) <> 0 then raise exception 'el anfitrion no la borro'; end if;
 end $$;
+
+-- El canal privado de la sala (sesion 5), si la base tiene Realtime (o su
+-- imitacion: ver el comienzo de este archivo).
+reset role;
+select to_regclass('realtime.messages') is not null as hay_realtime \gset
+\if :hay_realtime
+  set role authenticated;
+  select set_config('request.jwt.claim.sub', :'A', false);
+  select set_config('realtime.topic', 'mesa:' || :'sala', false);
+  insert into realtime.messages (topic, extension) values ('mesa:' || :'sala', 'broadcast');
+  do $$ begin
+    if (select count(*) from realtime.messages) <> 1 then raise exception 'A no lee su canal'; end if;
+  end $$;
+  select set_config('request.jwt.claim.sub', :'C', false);
+  do $$ begin
+    if (select count(*) from realtime.messages) <> 0 then raise exception 'C lee el canal ajeno'; end if;
+    insert into realtime.messages (topic, extension)
+    values (current_setting('realtime.topic'), 'broadcast');
+    raise exception 'C escribio en el canal ajeno';
+  exception when insufficient_privilege then null; end $$;
+  reset role;
+  delete from realtime.messages;
+\else
+  \echo 'sin Realtime: el canal se prueba en Supabase'
+\endif
 
 reset role;
 \echo 'mesa.sql: todas las comprobaciones pasan'

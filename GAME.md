@@ -448,21 +448,57 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 5: tiempo real
 
 - **Objetivo:** los dos ven la misma mesa al instante.
-- **Tareas:**
-  - la mitad del rival arriba: el mismo tablero de la sesión 2 girado 180°,
-    con su Línea de Ataque frente a la nuestra;
-  - el canal por mesa, con broadcast y presencia;
-  - mandar y aplicar acciones, con versiones y la vuelta a la foto si hay
-    conflicto;
-  - lo que viaja sale de `vista()` y del registro de la sesión 3: nada que
-    el rival no vea lleva su carta;
-  - separar lo público de lo privado en lo que viaja; los pedidos sobre el
-    Castillo ajeno;
-  - la CSP con `wss://`, `csp-hashes.mjs` y la auditoría;
-  - el simulador de Supabase de e2e (`e2e/supabase-simulado.ts`) con un canal
-    de mentira.
-- **Terminado cuando:** un e2e con dos contextos de navegador mueve cartas en
-  uno y las ve en el otro, y **ningún mensaje lleva una carta oculta**.
+- **Hecha (24-11-2026).**
+- **Cómo viaja la mesa** (`src/lib/mesa/red.ts` y `sincronia.ts`, lógica
+  pura con su test):
+  - cada navegador prepara **su mitad** con la baraja de su fila privada y
+    le manda al otro solo lo que se ve de ella; "a" junta las dos y publica
+    la primera versión;
+  - cada navegador sabe lo público y **las cartas de su baraja**, nada más:
+    las del rival que no ve quedan con `cartaId: ""`;
+  - lo que se publica sale de `publicar()`: una carta va con su id solo si
+    la ven los dos. **Nunca viaja una carta oculta**;
+  - lo que necesita una carta que este navegador no conoce (botar, mirar o
+    mostrar el Castillo ajeno, mover una oculta del rival) va como
+    **pedido**: lo hace el navegador del dueño, al instante, y publica el
+    resultado. Lo que el rival mira se le manda **solo a él**
+    (`privado`), y lo olvida al cerrar;
+  - cada cambio sube la versión; si los dos publican la misma a la vez, gana
+    la de "a" y "b" rehace su última acción encima;
+  - todo lo que llega se valida con Zod y se revisa que la mesa sea
+    coherente (cada carta en un solo lugar) antes de usarla.
+- **El canal** es privado, `mesa:<id>`, con `@supabase/realtime-js`
+  (2.119.2, cargado diferido solo en la mesa) y el protocolo JSON (`vsn
+  1.0.0`, el probado en la sesión 0). La presencia dice si el rival está
+  conectado.
+- **`supabase/mesa.sql` suma las políticas del canal** sobre
+  `realtime.messages` (solo los dos jugadores leen y escriben en
+  `mesa:<id>`). **Hay que volver a pegarlo entero en el SQL Editor.** La
+  prueba local las comprueba sobre una imitación de `realtime`.
+- **La CSP:** `wss://` al host de Supabase **solo en las páginas de `/mesa`
+  y solo en un build con la mesa encendida** (decisión del proyecto,
+  24-11-2026). Con la mesa apagada, la CSP de todo el sitio sale igual que
+  antes (comprobado: solo cambian los hashes de los scripts, como en cada
+  publicación). `csp-hashes.mjs` lo escribe y `audit_build.py` lo exige.
+- **El tablero es uno** (`TableroMesa.tsx`): lo usan la práctica y el 1v1.
+  Con rival, su mitad va arriba en espejo (su Línea de Ataque frente a la
+  propia), sus cartas giradas 180° y su mano en una franja de dorsos; la
+  mesa llena el ancho y se recorre con el scroll. Su Castillo ofrece Botar,
+  Mirar y Mostrar; su Cementerio y su Destierro se abren; su Soporte no. El
+  registro nombra a cada jugador y dice «tu Castillo» al que lo sufre.
+- **La sala, con los dos listos, es la mesa** (`MesaEnLinea.tsx`).
+- **`e2e/sala.spec.ts`** imita Supabase Realtime (unirse, latidos,
+  broadcast, presencia, y solo los dos jugadores entran al canal) sin tocar
+  el simulador de siempre: dos navegadores ven la misma mesa, una carta
+  jugada llega con su nombre, el rival bota y mira el Castillo ajeno, y
+  **ningún estado que viajó lleva una carta oculta**.
+- **Pasa a la sesión 6:** recargar ya arma la misma mitad (la semilla del
+  barajado queda en `sessionStorage`) y recibe la mesa del rival si está
+  conectado; falta guardarla en la base para que sobreviva aunque los dos
+  se vayan.
+- **Sabido, como el barajado:** un navegador modificado podría guardarse lo
+  que miró del Castillo ajeno en vez de olvidarlo. Para jugar entre amigos
+  alcanza (GAME.md §2).
 
 ### Sesión 6: guardar y reconectar
 

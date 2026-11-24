@@ -6,7 +6,8 @@
 -- 24-11-2026): no toca ninguna tabla, politica ni funcion de las cuentas y
 -- la Comunidad. Solo LEE `perfiles` para mostrar el alias del rival. Se
 -- pega en el SQL Editor de Supabase despues de esquema.sql, y se puede
--- volver a correr entero sin romper nada.
+-- volver a correr entero sin romper nada (con cada sesion que lo cambie,
+-- se vuelve a pegar entero).
 --
 -- Las reglas son las mismas que en esquema.sql: cada jugador lee lo suyo
 -- por RLS, y todo lo que cambia una sala pasa por funciones security
@@ -337,13 +338,48 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------
+-- Tiempo real (sesion 5): cada sala tiene su canal privado de Supabase
+-- Realtime, `mesa:<id>`, y solo entran sus dos jugadores (GAME.md §2). Sin
+-- estas politicas, cualquiera con la clave publica que supiera el nombre
+-- del canal podria escucharlo. Van sobre `realtime.messages`, que existe en
+-- Supabase; en un Postgres sin Realtime (la prueba local) se saltan.
+-- ---------------------------------------------------------------------
+create or replace function public.es_canal_de_mi_mesa(p_topic text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.mesas m
+    where p_topic = 'mesa:' || m.id::text
+      and auth.uid() in (m.jugador_a, m.jugador_b)
+  );
+$$;
+
+do $$
+begin
+  if to_regclass('realtime.messages') is not null then
+    execute 'drop policy if exists mesa_canal_leer on realtime.messages';
+    execute 'create policy mesa_canal_leer on realtime.messages
+      for select to authenticated
+      using (public.es_canal_de_mi_mesa(realtime.topic()))';
+    execute 'drop policy if exists mesa_canal_escribir on realtime.messages';
+    execute 'create policy mesa_canal_escribir on realtime.messages
+      for insert to authenticated
+      with check (public.es_canal_de_mi_mesa(realtime.topic()))';
+  end if;
+end $$;
+
 revoke all on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
-  public.salir_mesa(uuid)
+  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text)
   from public, anon;
 grant execute on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
-  public.salir_mesa(uuid)
+  public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text)
   to authenticated;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState } from "react";
 import { Monitor, Swords } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
@@ -9,29 +9,12 @@ import { useDecks, useHydrated } from "../decks/use-decks";
 import { RequiereCuenta } from "../nube/RequiereCuenta";
 import { DeckListSkeleton } from "../Skeleton";
 import { MesaPractica } from "./MesaPractica";
+import { useEscritorio } from "./use-escritorio";
 import { deckTitle, totalCards } from "@/lib/deck";
 import { NOMBRE_FORMATO } from "@/lib/formatos";
 import type { Card, Deck } from "@/lib/types";
 import { BOTON_SECUNDARIO, ENLACE, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
-
-/** Desde `lg`: bajo eso la mesa no se carga (GAME.md §1). */
-const ESCRITORIO = "(min-width: 1024px)";
-
-function suscribirAncho(avisar: () => void): () => void {
-  const mq = window.matchMedia(ESCRITORIO);
-  mq.addEventListener("change", avisar);
-  return () => mq.removeEventListener("change", avisar);
-}
-
-/** Si la pantalla es de escritorio. En el servidor, todavia no se sabe. */
-function useEscritorio(): boolean | null {
-  return useSyncExternalStore(
-    suscribirAncho,
-    () => window.matchMedia(ESCRITORIO).matches,
-    () => null,
-  );
-}
 
 /**
  * La mesa de practica: elegir una baraja guardada y jugarla en solitario.

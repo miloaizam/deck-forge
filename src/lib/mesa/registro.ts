@@ -45,6 +45,8 @@ export function textoDeEntrada(
   e: EntradaRegistro,
   nombreDe: (cartaId: string) => string,
   jugadorDe?: (id: string) => string,
+  /** Quien lee el registro: su Castillo es «tu Castillo». */
+  yo?: string,
 ): string {
   const carta = (i = 0): string => {
     const id = e.cartas[i];
@@ -52,11 +54,15 @@ export function textoDeEntrada(
   };
   const nombres = e.cartas.map((id) => (id ? nombreDe(id) : "una carta"));
   // El Castillo de otro se nombra con su dueno; el propio, a secas.
-  const castillo =
-    jugadorDe && e.objetivo && e.objetivo !== e.por
-      ? `el Castillo de ${jugadorDe(e.objetivo)}`
-      : "el Castillo";
-  const delCastillo = castillo.replace(/^el /, "del ");
+  const ajeno = jugadorDe && e.objetivo && e.objetivo !== e.por;
+  const castillo = !ajeno
+    ? "el Castillo"
+    : e.objetivo === yo
+      ? "tu Castillo"
+      : `el Castillo de ${jugadorDe(e.objetivo ?? "")}`;
+  const delCastillo = castillo.startsWith("el ")
+    ? castillo.replace(/^el /, "del ")
+    : `de ${castillo}`;
 
   let frase: string;
   switch (e.tipo) {

@@ -7,6 +7,7 @@ import { Check, Copy, DoorOpen, Hourglass, LogOut, Undo2 } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { MesaEnLinea } from "./MesaEnLinea";
 import { useDecks } from "../decks/use-decks";
 import { DeckListSkeleton } from "../Skeleton";
 import { Select } from "../Select";
@@ -88,15 +89,28 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
   }
   return (
     <ConCatalogo esqueleto={<DeckListSkeleton />}>
-      {(_, deFormato) => (
-        <SalaAbierta
-          sala={sala}
-          uid={uid}
-          error={error}
-          deFormato={deFormato}
-          refrescar={refrescar}
-        />
-      )}
+      {(_, deFormato) =>
+        // Con los dos listos, la sala es la mesa (sesion 5).
+        sala.estado === "jugando" && miLado(sala, uid) ? (
+          <MesaEnLinea
+            mesa={sala.id}
+            codigo={sala.codigo}
+            lado={miLado(sala, uid) ?? "a"}
+            uid={uid}
+            formato={sala.formato}
+            nombres={{ a: nombreEnSala(sala, "a"), b: nombreEnSala(sala, "b") }}
+            cards={deFormato(sala.formato)}
+          />
+        ) : (
+          <SalaAbierta
+            sala={sala}
+            uid={uid}
+            error={error}
+            deFormato={deFormato}
+            refrescar={refrescar}
+          />
+        )
+      }
     </ConCatalogo>
   );
 }
