@@ -68,20 +68,22 @@ interface Caja {
 }
 
 /**
- * Donde va cada zona, en coordenadas logicas. Tres columnas: a la izquierda
- * los Oros y el Soporte, al centro las tres Lineas, a la derecha el
- * Castillo, el Cementerio y el Destierro. La mano, abajo y a lo ancho.
+ * Donde va cada zona, en coordenadas logicas, en el orden que pidio el
+ * proyecto: tres columnas por tres filas y la mano abajo, a lo ancho.
+ * Izquierda: Soporte, Cementerio y Destierro. Al medio: Oro Pagado, Castillo
+ * y Reserva. A la derecha, ancha: las Lineas de Ataque, Defensa y Apoyo. La
+ * de Ataque va arriba porque en el 1v1 queda frente a la del rival.
  */
 const CAJAS: Record<Zona, Caja> = {
-  reserva: { x: 16, y: 16, w: 230, h: 178, forma: "fila" },
-  oroPagado: { x: 16, y: 204, w: 230, h: 178, forma: "fila" },
-  soporte: { x: 16, y: 392, w: 230, h: 178, forma: "pila" },
-  ataque: { x: 256, y: 16, w: 1088, h: 178, forma: "fila" },
-  defensa: { x: 256, y: 204, w: 1088, h: 178, forma: "fila" },
-  apoyo: { x: 256, y: 392, w: 1088, h: 178, forma: "fila" },
-  castillo: { x: 1354, y: 16, w: 230, h: 178, forma: "pila" },
-  cementerio: { x: 1354, y: 204, w: 230, h: 178, forma: "pila" },
-  destierro: { x: 1354, y: 392, w: 230, h: 178, forma: "pila" },
+  soporte: { x: 16, y: 16, w: 230, h: 178, forma: "pila" },
+  cementerio: { x: 16, y: 204, w: 230, h: 178, forma: "pila" },
+  destierro: { x: 16, y: 392, w: 230, h: 178, forma: "pila" },
+  oroPagado: { x: 256, y: 16, w: 230, h: 178, forma: "fila" },
+  castillo: { x: 256, y: 204, w: 230, h: 178, forma: "pila" },
+  reserva: { x: 256, y: 392, w: 230, h: 178, forma: "fila" },
+  ataque: { x: 496, y: 16, w: 1088, h: 178, forma: "fila" },
+  defensa: { x: 496, y: 204, w: 1088, h: 178, forma: "fila" },
+  apoyo: { x: 496, y: 392, w: 1088, h: 178, forma: "fila" },
   mano: { x: 16, y: 580, w: 1568, h: 194, forma: "fila" },
 };
 

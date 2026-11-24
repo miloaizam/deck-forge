@@ -319,8 +319,11 @@ Cada sesión termina con algo que funciona y se puede probar, y con
     catálogo, dice «La mesa es para escritorio» bajo `lg` sin cargarla, y
     deja elegir una baraja guardada con cartas;
   - la mesa (`MesaPractica.tsx`): un lienzo lógico de 1600 × 790 escalado a
-    la ventana, las diez zonas (las Líneas y los Oros en fila; Castillo,
-    Cementerio, Destierro y Soporte en pila) y la mano abajo, a lo ancho;
+    la ventana, con las zonas en tres columnas por tres filas (orden del
+    proyecto, 24-11-2026): a la izquierda Soporte, Cementerio y Destierro,
+    en pila; al medio Oro Pagado, Castillo (en pila) y Reserva de Oro; a la
+    derecha, anchas, las Líneas de Ataque, Defensa y Apoyo. La mano va
+    abajo, a lo ancho;
   - arrastrar con eventos de puntero, sin librería. Soltar sobre una carta
     en juego pregunta «Portar», «Poner debajo» o «Dejar al lado»; lo
     anexado asoma detrás de su anfitriona;
@@ -377,6 +380,8 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 
 - **Objetivo:** los dos ven la misma mesa al instante.
 - **Tareas:**
+  - la mitad del rival arriba: el mismo tablero de la sesión 2 girado 180°,
+    con su Línea de Ataque frente a la nuestra;
   - el canal por mesa, con broadcast y presencia;
   - mandar y aplicar acciones, con versiones y la vuelta a la foto si hay
     conflicto;
