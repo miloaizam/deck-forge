@@ -419,6 +419,51 @@ begin
   end if;
 end $$;
 
+-- Una serie que se dejo a medias (sesion 8): con las dos senales de hace mas
+-- de un dia, crear otra sala la borra, con su foto y sus filas privadas.
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select (r->>'id') as vieja, (r->>'codigo') as codigo_v from (select crear_mesa('estandar', 3) as r) x \gset
+insert into public.mesas_privado (mesa, jugador, estado) values (:'vieja', :'A', '{"baraja": {}}');
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_v');
+insert into public.mesas_privado (mesa, jugador, estado) values (:'vieja', :'B', '{"baraja": {}}');
+select marcar_lista(:'vieja', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'vieja', true);
+-- Otra en juego, con senales recientes: esa se queda.
+select (r->>'id') as viva, (r->>'codigo') as codigo_viva from (select crear_mesa('vcr', 3) as r) x \gset
+insert into public.mesas_privado (mesa, jugador, estado) values (:'viva', :'A', '{"baraja": {}}');
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_viva');
+insert into public.mesas_privado (mesa, jugador, estado) values (:'viva', :'B', '{"baraja": {}}');
+select marcar_lista(:'viva', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'viva', true);
+reset role;
+select set_config('prueba.vieja', :'vieja', false);
+select set_config('prueba.viva', :'viva', false);
+update public.mesas
+set senal_a = now() - interval '25 hours', senal_b = now() - interval '26 hours'
+where id = :'vieja';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'C', false);
+select crear_mesa('estandar', 3);
+reset role;
+do $$ begin
+  if exists (select 1 from public.mesas where id = current_setting('prueba.vieja')::uuid) then
+    raise exception 'la serie abandonada no se borro';
+  end if;
+  if exists (select 1 from public.mesas_privado where mesa = current_setting('prueba.vieja')::uuid)
+     or exists (select 1 from public.mesas_publico where mesa = current_setting('prueba.vieja')::uuid) then
+    raise exception 'quedaron la foto o las filas privadas de la serie abandonada';
+  end if;
+  if (select estado from public.mesas where id = current_setting('prueba.viva')::uuid)
+     is distinct from 'jugando' then
+    raise exception 'se borro una serie que se esta jugando';
+  end if;
+end $$;
+
 -- El canal privado de la sala (sesion 5), si la base tiene Realtime (o su
 -- imitacion: ver el comienzo de este archivo).
 reset role;

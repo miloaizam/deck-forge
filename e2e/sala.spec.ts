@@ -7,18 +7,20 @@ import { createDeck, setQuantity, setStartingGold } from "../src/lib/deck";
 import { buildCardIndex, isLegal, validateDeck } from "../src/lib/deck-rules";
 import { conErratas } from "../src/lib/erratas";
 import { cardSchema, type Deck } from "../src/lib/types";
+import { sinViolaciones } from "./axe";
+import { mesaActiva } from "./mesa-activa";
 import { entrarSimulado, USUARIO_A, USUARIO_B } from "./supabase-simulado";
 
 /**
- * Las salas del 1v1 (GAME.md, sesion 4), con la mesa encendida
- * (`pnpm run e2e:mesa`). Las funciones de `supabase/mesa.sql` se imitan
+ * Las salas del 1v1 (GAME.md, sesiones 4 a 8), con la mesa encendida (el
+ * build de siempre; apagada, `pnpm run e2e:mesa-apagada`). Las funciones de `supabase/mesa.sql` se imitan
  * aqui, en memoria y compartidas entre los navegadores de la prueba, por
  * encima del Supabase simulado de siempre (que no se toca): las rutas de
  * Playwright que se registran despues mandan. Que el rival no lea la fila
  * privada del otro lo prueba la SQL (`supabase/mesa.prueba.sql`); aqui, que
  * dos cuentas se encuentran, eligen baraja y una tercera no entra.
  */
-const MESA = process.env.E2E_MESA === "1";
+const MESA = mesaActiva();
 const USUARIO_C = "00000000-0000-4000-8000-00000000000c";
 
 const cartas = (
@@ -235,7 +237,9 @@ async function imitarMesa(page: Page, base: Base) {
         if (!sala || !juega || !sala.jugador_b) {
           return responder(route, { code: "MS004" }, 400);
         }
-        if (sala.estado !== "jugando") return responder(route, { code: "MS005" }, 400);
+        if (!["jugando", "entre_juegos"].includes(sala.estado)) {
+          return responder(route, { code: "MS005" }, 400);
+        }
         const otro = uid === sala.jugador_a ? sala.jugador_b : sala.jugador_a;
         if (Date.now() - (sala.senal[otro] ?? 0) < 120_000) {
           return responder(route, { code: "MS007" }, 400);
@@ -486,10 +490,20 @@ async function jugador(
   uid: string,
   base: Base,
   rt: TiempoReal = tiempoReal(),
+  tema?: "dark" | "light",
 ): Promise<Page> {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
   await entrarSimulado(page, uid);
+  if (tema) {
+    await page.addInitScript((t) => {
+      try {
+        localStorage.setItem("deckforge-theme", t);
+      } catch {
+        // sin almacenamiento: queda el tema por defecto
+      }
+    }, tema);
+  }
   await page.addInitScript(
     (sobre) => {
       if (!localStorage.getItem("deckforge-decks"))
@@ -522,12 +536,16 @@ const zona = (p: Page, nombre: string) =>
  * A crea una sala, B entra con el enlace, los dos eligen baraja y la mesa
  * arranca con 8 cartas en cada mano.
  */
-async function empezarPartida(browser: Browser) {
+async function empezarPartida(
+  browser: Browser,
+  tema?: "dark" | "light",
+  alAbrirLaSala?: (a: Page) => Promise<void>,
+) {
   const base = baseNueva();
   const rt = tiempoReal();
 
   // A crea la sala.
-  const a = await jugador(browser, USUARIO_A, base, rt);
+  const a = await jugador(browser, USUARIO_A, base, rt, tema);
   await a.goto("/mesa/");
   await a.getByRole("button", { name: "Crear sala" }).click();
   await a.waitForURL(/\/mesa\/\?s=/);
@@ -535,9 +553,10 @@ async function empezarPartida(browser: Browser) {
   const codigo = titulo?.match(/Sala\s*([A-Z0-9]{6})/)?.[1] ?? "";
   expect(codigo).toMatch(/^[A-HJ-KM-NP-Z2-9]{6}$/);
   await expect(a.getByText("Esperando rival…")).toBeVisible();
+  await alAbrirLaSala?.(a);
 
   // B entra con el enlace: el codigo llega escrito.
-  const b = await jugador(browser, USUARIO_B, base, rt);
+  const b = await jugador(browser, USUARIO_B, base, rt, tema);
   await b.goto(`/mesa/?c=${codigo}`);
   await expect(b.getByRole("textbox", { name: "Código de la sala" })).toHaveValue(codigo);
   await b.getByRole("button", { name: "Unirse" }).click();
@@ -645,6 +664,23 @@ test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entr
   await mirando.getByRole("button", { name: "Dejar como estaban" }).click();
   await expect(a.getByText(/está mirando/)).toBeHidden();
 
+  // A busca en su Castillo sin mostrar: B solo sabe que busco.
+  await a.getByRole("button", { name: /^Castillo, 39 cartas/ }).click();
+  await a.getByRole("menuitem", { name: "Buscar", exact: true }).click();
+  const buscando = a.getByRole("dialog", { name: "Buscar en el Castillo" });
+  await buscando.getByRole("listitem").first().getByRole("button").click();
+  await buscando.getByRole("button", { name: "Tomar", exact: true }).click();
+  await expect(zona(b, "Mano de Anfitrión")).toHaveAttribute(
+    "aria-label",
+    "Mano de Anfitrión, 8 cartas",
+  );
+  const registroB = b
+    .getByRole("complementary", { name: "Registro" })
+    .getByRole("listitem");
+  await expect(registroB.first()).toContainText(
+    /Anfitrión: Buscó una carta en .*Castillo\. Barajó el Castillo\.$/,
+  );
+
   // Ningun estado que viajo lleva una carta que no ven los dos.
   for (const msg of rt.broadcasts as {
     t: string;
@@ -652,10 +688,20 @@ test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entr
       fichas: Record<string, { cartaId: string | null; bocaAbajo: boolean }>;
       jugadores: { zonas: Record<string, string[]> }[];
       revelado: { para: string; uids: string[] } | null;
+      registro: { tipo: string; detalle?: string; cartas: (string | null)[] }[];
     };
   }[]) {
     if ((msg.t !== "estado" && msg.t !== "mitad") || !msg.mesa) continue;
-    const { fichas, jugadores, revelado } = msg.mesa;
+    const { fichas, jugadores, revelado, registro } = msg.mesa;
+    // La busqueda sin mostrar tampoco nombra la carta en el registro.
+    for (const e of registro.filter(
+      (x) => x.tipo === "buscar" && x.detalle !== "mostrar",
+    )) {
+      expect(
+        e.cartas.every((c) => !c),
+        "una busqueda oculta nombro su carta",
+      ).toBe(true);
+    }
     const mostradas = revelado?.para === "todos" ? revelado.uids : [];
     for (const j of jugadores) {
       for (const z of ["mano", "castillo", "soporte"]) {
@@ -885,3 +931,81 @@ test("una serie al mejor de 3 de principio a fin: declarar, anular, side y rendi
   // Sin historial: la partida se borro.
   expect(base.privado.filter((p) => p.mesa === sala.id)).toEqual([]);
 });
+
+test("entre juegos, si el rival no vuelve en dos minutos, la serie es del que se quedo", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  const { a, b, base } = await empezarPartida(browser);
+  const sala = base.salas[0];
+
+  // Juego 1: B se rinde. Quedan entre juegos.
+  await terminarJuego(b, "Rendirme");
+  await expect(a.getByRole("heading", { name: "Tú 1 – 0 Invitado" })).toBeVisible({
+    timeout: 10_000,
+  });
+
+  // B cierra su navegador. Aqui no hay canal: cuenta su ultima senal, que la
+  // base imitada envejece para no esperar de verdad.
+  await b.context().close();
+  sala.senal[USUARIO_B] = Date.now() - 100_000;
+  await expect(
+    a.getByText(/^Invitado se desconectó\. Si no vuelve en \d:\d\d, la serie es tuya\.$/),
+  ).toBeVisible({ timeout: 10_000 });
+  expect(sala.estado).toBe("entre_juegos");
+
+  sala.senal[USUARIO_B] = Date.now() - 125_000;
+  await expect(
+    a.getByRole("heading", { name: "Ganaste la serie: Invitado abandonó" }),
+  ).toBeVisible({ timeout: 15_000 });
+  expect(sala.motivo).toBe("abandono");
+  expect(base.privado.filter((p) => p.mesa === sala.id)).toEqual([]);
+});
+
+for (const tema of ["dark", "light"] as const) {
+  test(`@a11y la sala, la mesa en linea, el resultado, entre juegos y el final, tema ${tema === "dark" ? "oscuro" : "claro"}`, async ({
+    browser,
+  }, info) => {
+    test.skip(!MESA, "solo con la mesa encendida");
+    test.skip(info.project.name !== "escritorio", "una vez basta");
+    test.setTimeout(120_000);
+    const { a, b } = await empezarPartida(browser, tema, (a) =>
+      sinViolaciones(a, "la sala abierta"),
+    );
+
+    await jugarADefensa(a, b, 1);
+    await sinViolaciones(a, "la mesa en linea");
+
+    await a.getByRole("button", { name: "Terminar juego" }).click();
+    await expect(a.getByRole("dialog", { name: "Terminar el juego" })).toBeVisible();
+    await sinViolaciones(a, "terminar el juego");
+    await a
+      .getByRole("dialog", { name: "Terminar el juego" })
+      .getByRole("button", { name: "Gané" })
+      .click();
+
+    const pregunta = b.getByRole("alert").filter({ hasText: "¿Estás de acuerdo?" });
+    await expect(pregunta).toBeVisible({ timeout: 10_000 });
+    await sinViolaciones(b, "el resultado declarado");
+    await pregunta.getByRole("button", { name: "Sí, de acuerdo" }).click();
+
+    await expect(b.getByRole("heading", { name: "Tú 0 – 1 Anfitrión" })).toBeVisible({
+      timeout: 10_000,
+    });
+    await sinViolaciones(b, "entre juegos");
+
+    // Juego 2: B se rinde y A gana la serie.
+    await b.getByRole("button", { name: "Listo para el juego 2" }).click();
+    await a.getByRole("button", { name: "Listo para el juego 2" }).click();
+    await expect(zona(b, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas", {
+      timeout: 15_000,
+    });
+    await terminarJuego(b, "Rendirme");
+    await expect(a.getByRole("heading", { name: "Ganaste la serie 2 – 0" })).toBeVisible({
+      timeout: 10_000,
+    });
+    await sinViolaciones(a, "la serie terminada");
+  });
+}

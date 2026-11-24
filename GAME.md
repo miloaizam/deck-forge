@@ -54,6 +54,10 @@ que se cierra pasa a «Decisiones tomadas».
 - **La consulta a la editorial la hace el proyecto en paralelo**
   (21-11-2026). La mesa se construye apagada (`MESA_ACTIVA`) y se enciende
   con la respuesta.
+- **La mesa se encendió el 24-11-2026**, con el acuerdo de la editorial
+  (`src/lib/mesa/activa.json`). Lo que suma al resto del sitio (la navbar,
+  la ayuda, `/privacidad` y su Novedad) sale solo con ella encendida:
+  apagarla deja el sitio como antes.
 - **El tiempo real va con `@supabase/realtime-js`** (22-11-2026), y no con
   un websocket propio. Ya resuelve el protocolo de canales, los latidos, la
   reconexión, la presencia y la renovación del token. Es de la misma familia
@@ -608,17 +612,40 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 8: pulido y publicación
 
 - **Objetivo:** dejarla lista para encender.
-- **Tareas:**
-  - a11y: alternativas de teclado al arrastre (el menú contextual alcanza
-    para todo), y `pnpm run a11y` en la mesa;
-  - e2e de los recorridos principales;
-  - `faq.ts` con su sección de la mesa; `/privacidad` con lo que se guarda
-    de las partidas, en el mismo commit; Novedad; CLAUDE.md y
-    `docs/cuentas.md`;
-  - encender `MESA_ACTIVA` si la editorial está de acuerdo.
-- **Terminado cuando:** dos cuentas, en dos navegadores de escritorio, juegan
-  una serie completa al mejor de 3 moviendo cartas:
-  - ninguna ve la mano del otro;
-  - una búsqueda oculta no revela la carta;
-  - recargar la página devuelve a la mesa;
-  - quien se desconecta y no vuelve a tiempo pierde la serie.
+- **Hecha (24-11-2026), y encendida.**
+- **El interruptor está en el repo:** `src/lib/mesa/activa.json`, que leen
+  `activa.ts`, `csp-hashes.mjs`, `audit_build.py` y las pruebas
+  (`e2e/mesa-activa.ts`). `NEXT_PUBLIC_MESA_ACTIVA` lo pisa en un build de
+  pruebas. `pnpm run e2e` corre ahora las pruebas de la mesa;
+  `pnpm run e2e:mesa-apagada` construye y prueba con ella apagada.
+- **Lo que suma al sitio, solo con la mesa encendida:**
+  - el enlace **Mesa** en la navbar (pide cuenta). Con ocho enlaces no
+    cabían a 1024 px (la cuenta se salía 25 px de la pantalla): se pliegan
+    hasta `xl` y van sin icono hasta `2xl`;
+  - la sección **«La mesa de juego»** de la ayuda;
+  - lo que guarda y quién ve qué en `/privacidad`;
+  - la Novedad 7.0.0.
+- **Accesibilidad:** axe sin violaciones en los dos temas en `/mesa/`, la
+  práctica con un menú abierto, la sala abierta, la mesa en línea,
+  «Terminar el juego», el resultado declarado, entre juegos y la serie
+  terminada (`@a11y` en `mesa.spec.ts` y `sala.spec.ts`; `/mesa/` y
+  `/mesa/practica/` también en `accesibilidad.spec.ts`). No hubo nada que
+  corregir.
+- **Teclado:** una prueba juega la práctica sin ratón: Tab hasta una carta,
+  Enter, flechas y Enter para mandarla a la Línea de Defensa; robar desde el
+  menú del Castillo; mandar una carta al Cementerio y abrirlo; pasar de
+  fase. Todo lo del arrastre está en los menús.
+- **Las pruebas de lo que pedía el «terminado cuando»:**
+  - la mano oculta (sesión 5);
+  - **la búsqueda oculta en el 1v1**: el rival solo ve «Buscó una carta en
+    su Castillo», y la entrada del registro tampoco viaja con la carta;
+  - recargar (sesión 6);
+  - el abandono, en juego (sesión 6) y **entre juegos**;
+  - la serie completa al mejor de 3 (sesión 7).
+- **Base:** `crear_mesa` borra también las series que se dejaron a medias,
+  con las dos señales de hace más de un día (y su foto y sus filas
+  privadas), para que «sin historial» valga aunque los dos se vayan para
+  siempre. **Hay que volver a pegar `supabase/mesa.sql`.**
+- **Documentación:** CLAUDE.md («La mesa de juego» en §9, la CSP, la
+  auditoría, las rutas y la navbar) y `docs/cuentas.md` (las tablas, las
+  funciones, cómo pegarlo, cómo moderar y cómo probarlo).

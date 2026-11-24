@@ -32,7 +32,8 @@ lo grande…). Hubo una segunda lista, `ISSUES.md`, para los errores;
 se fundió con esta para trabajar de a un grupo.
 
 La **mesa de juego 1v1** (estilo Tabletop Simulator) tiene su propio plan,
-por sesiones, en [`GAME.md`](GAME.md).
+por sesiones, en [`GAME.md`](GAME.md). **Encendida desde el 24-11-2026**
+(`src/lib/mesa/activa.json`); ver «La mesa de juego» (§9).
 
 Antes de empezar un cambio, mirar si ya está anotado. **Al implementar o
 arreglar algo de la lista, su entrada se borra en el mismo commit** (no se
@@ -56,6 +57,7 @@ falta. Y lo que se descubra roto y no se arregle en el momento, se anota en
 | Pruebas en navegador | `@playwright/test` (solo desarrollo; `e2e/` contra el sitio construido) |
 | Accesibilidad | `axe-core` (solo desarrollo; lo inyecta `e2e/accesibilidad.spec.ts`) |
 | Cuentas y Comunidad | **Supabase** (Postgres + Auth con Google; plan gratuito). Solo `@supabase/auth-js` para la sesión; las tablas, por la API REST con `fetch` |
+| Tiempo real de la mesa | `@supabase/realtime-js` (versión exacta, cargado diferido y solo en `/mesa`): canal privado por sala, broadcast y presencia (`GAME.md` §2) |
 | Validación | `zod` (la variante `zod/mini`, ver «El catálogo no va dentro del HTML») |
 | Datos e imágenes | Python 3 + Pydantic + Pillow (`scripts/`) |
 | Fuente del catálogo | **API oficial `api.myl.cl`** (pública, sin auth) |
@@ -77,7 +79,7 @@ pnpm run audit       # auditoría de seguridad sobre out/ (tras `pnpm run build`
 pnpm run e2e         # recorridos en Chromium, escritorio y teléfono (tras `pnpm run build`)
 pnpm run a11y        # axe-core en todas las páginas, los dos temas (tras `pnpm run build`)
 pnpm run e2e:nube    # build con un Supabase simulado + e2e/nube.spec.ts (deja out/ con ese build)
-pnpm run e2e:mesa    # build con la mesa encendida + e2e/mesa.spec.ts (deja out/ con ese build)
+pnpm run e2e:mesa-apagada  # build con la mesa apagada + las pruebas de la mesa (deja out/ con ese build)
 pnpm run data:fetch bushido   # api.myl.cl -> data-src/bushido.json + images-src/
 pnpm run data:card helenica 042  # UNA carta suelta -> data-src/extras.json
 pnpm run data:images         # images-src/*    -> public/cards/*.webp
@@ -138,7 +140,8 @@ documentos/    FUENTE del DAR, la Fe de Erratas y la Banlist: sus datos
                en fuente/*.json y el generador de los PDF (que quedan en
                public/reglas/). Ver documentos/README.md
 docs/          plan, guía de marca y todo sobre las cuentas (cuentas.md)
-supabase/      esquema.sql (tablas, RLS y funciones; se pega en Supabase) y
+supabase/      esquema.sql (tablas, RLS y funciones; se pega en Supabase),
+               mesa.sql (la mesa 1v1, aparte; se pega despues) y
                proyecto.json (URL y clave PÚBLICA; null = cuentas apagadas)
 data-src/      FUENTE editable del catálogo: un JSON por edición, más
                extras.json (Adicionales) y arte-alternativo.json
@@ -827,7 +830,9 @@ pero eso no se deja al azar:
    origen. `connect-src` es `'self'` e `img-src` `'self' data:` y, con las
    cuentas encendidas, los dos suman **solo** el host de Supabase de
    `supabase/proyecto.json` (la API y las fotos de perfil de su Storage): lo
-   agrega `csp-hashes.mjs` y la auditoría falla si lleva otro.
+   agrega `csp-hashes.mjs` y la auditoría falla si lleva otro. Con la mesa
+   encendida, `connect-src` suma además el `wss://` del mismo host, **solo
+   en las páginas de `/mesa`** (su tiempo real; el `https://` no lo cubre).
    **`script-src` no lleva `'unsafe-inline'`: autoriza por hash**, página por
    página. Ver "La CSP por hashes", más abajo.
    `style-src` sí lo conserva: React escribe atributos `style="…"` y esos no
@@ -877,6 +882,8 @@ pero eso no se deja al azar:
    (`rpc/cartas_destacadas`, la cinta de cartas, que no lleva nada del
    visitante): `@supabase/auth-js` se carga solo si hay una sesión guardada,
    al volver de Google o al pulsar «Entrar» (`e2e/nube.spec.ts` lo vigila).
+   El websocket de la mesa (`@supabase/realtime-js`) se abre solo dentro de
+   una sala, y la mesa pide cuenta.
 
 6. **Cadena de suministro.** `pnpm-lock.yaml` commiteado; dependencias mínimas y
    justificadas; `pnpm audit` antes de publicar; revisar qué instala un
@@ -945,8 +952,9 @@ pero eso no se deja al azar:
     source map, una ruta absoluta de la máquina de build, un recurso externo,
     una imagen rota, una cabecera de seguridad ausente, un script inline sin
     su hash en la CSP, los dos esquemas desincronizados, un `connect-src` o
-    un `img-src` con otro host que el de Supabase, o una clave secreta de
-    Supabase. Correr siempre
+    un `img-src` con otro host que el de Supabase, un `wss://` fuera de las
+    páginas de `/mesa` (o que falte en ellas con la mesa encendida), o una
+    clave secreta de Supabase. Correr siempre
     antes de publicar.
 
 ### La CSP por hashes
@@ -1042,7 +1050,8 @@ debajo «Iniciar sesión con Google» y «¿No tienes cuenta? Crea una aquí», 
 `/documentos/fe-de-erratas`, `/documentos/banlist` (Estándar),
 `/documentos/banlist/vcr` y `/documentos/banlist/infanteria` para leerlos · `/novedades` la línea de tiempo de cambios ·
 `/cuenta` entrar y la cuenta · `/comunidad` las barajas públicas · `/privacidad`
-qué se guarda.
+qué se guarda · `/mesa` las salas del 1v1 y la sala misma (`?s=<id>`) ·
+`/mesa/practica` la mesa en solitario.
 Las páginas internas viven en el grupo `(app)`, cuyo layout aporta la navbar;
 la portada queda fuera a propósito.
 
@@ -1127,8 +1136,12 @@ regenerarla. Dos límites a saber:
   compartió antes del cambio puede seguir saliendo sin imagen hasta que
   caduque.
 
-La navbar es una fila plana de siete enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Colección, Comunidad, Documentos y Novedades. **Sin
+La navbar es una fila plana de enlaces (sin desplegable): Catálogo,
+Constructor, Mis barajas, Colección, Comunidad, Mesa, Documentos y
+Novedades. **Con la mesa encendida son ocho y no caben a 1024 px** (la
+cuenta se salía de la pantalla): se pliegan detrás del menú hasta `xl` y van
+sin icono hasta `2xl` (`DESPLEGADA`, `PLEGADA` e `ICONO_ANGOSTA` en
+`Navbar.tsx`). Lo de abajo describe la navbar sin la mesa. **Sin
 cuenta no se muestran Constructor, Mis barajas ni Colección** (`privado` en
 `LINKS`, `useConCuenta()` de `nube/use-con-cuenta.ts`, el mismo criterio que
 `RequiereCuenta`: con una sesión guardada se muestran de una, sin esperar a
@@ -1948,6 +1961,31 @@ a las cartas de pack que se habían repartido en Dominio y ContraAtaque.
 
 Steampunk es la primera edición que imprime Luz y Oscuridad, así que el filtro
 de **habilidad** las ofrece desde ahora.
+
+### La mesa de juego
+
+Todo el plan, las decisiones y lo hecho en cada sesión está en
+[`GAME.md`](GAME.md); aquí, lo que conviene saber al tocar el resto del sitio.
+
+- **Encendida el 24-11-2026**, con el acuerdo de la editorial. Lo decide
+  `src/lib/mesa/activa.json` (`{ "activa": true }`), que leen
+  `activa.ts`, `csp-hashes.mjs`, `audit_build.py` y las pruebas
+  (`e2e/mesa-activa.ts`); `NEXT_PUBLIC_MESA_ACTIVA` (`"1"` o `"0"`) lo pisa
+  en un build de pruebas. Apagarla es poner `false` y hacer commit.
+- **Lo que la mesa suma al resto del sitio sale solo con ella encendida**
+  (decisión del proyecto): el enlace «Mesa» de la navbar, la sección «La
+  mesa de juego» de la ayuda (`faq.ts`), sus párrafos en `/privacidad` y su
+  Novedad. Apagada, esas páginas salen como antes.
+- **La base es `supabase/mesa.sql`, aparte de `esquema.sql`**, que no toca:
+  se pega después y se vuelve a pegar entero con cada cambio. Su prueba es
+  `supabase/mesa.prueba.sql` (`docs/cuentas.md`).
+- **El código vive aparte**: `src/lib/mesa/` (lógica pura, con sus tests),
+  `src/components/mesa/` y `src/app/(app)/mesa/`. Las pruebas en el
+  navegador son `e2e/mesa.spec.ts` y `e2e/sala.spec.ts`, que imitan las
+  funciones de la mesa y Supabase Realtime sin tocar el simulador de
+  siempre; corren con `pnpm run e2e` y sus `@a11y`, con `pnpm run a11y`.
+- **Es para escritorio**: bajo 1024 px dice que es para escritorio y no
+  carga.
 
 ### Cuentas y Comunidad
 

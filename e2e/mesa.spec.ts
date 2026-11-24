@@ -5,15 +5,16 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { createDeck, setQuantity, setStartingGold } from "../src/lib/deck";
 import type { Deck } from "../src/lib/types";
+import { sinViolaciones } from "./axe";
+import { mesaActiva } from "./mesa-activa";
 import { entrarSimulado } from "./supabase-simulado";
 
 /**
- * La mesa de practica (GAME.md, sesion 2). Con la mesa apagada, que es el
- * build de siempre, solo se comprueba que lo diga. Encendida
- * (`pnpm run e2e:mesa`, que construye con `NEXT_PUBLIC_MESA_ACTIVA=1`), se
- * juega un turno moviendo cartas.
+ * La mesa de practica (GAME.md, sesion 2). Encendida, que es el build de
+ * siempre desde la sesion 8, se juega moviendo cartas; apagada
+ * (`pnpm run e2e:mesa-apagada`), solo se comprueba que lo diga.
  */
-const MESA = process.env.E2E_MESA === "1";
+const MESA = mesaActiva();
 
 interface CartaCruda {
   id: string;
@@ -267,3 +268,111 @@ test("mirar, buscar, barajar desde el Cementerio, marcas, turno y registro", asy
   );
   expect(numeros).toEqual(numeros.map((_, i) => numeros.length - i));
 });
+
+/**
+ * Pulsa Tab hasta que el foco quede en un elemento cuyo nombre (o el de su
+ * zona) cumpla `busca`. Sin raton: lo que se alcanza asi se alcanza con el
+ * teclado.
+ */
+async function tabHasta(page: Page, busca: RegExp, max = 400) {
+  for (let i = 0; i < max; i++) {
+    await page.keyboard.press("Tab");
+    const nombre = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el) return "";
+      const zonaDe = el.closest("section[aria-label]")?.getAttribute("aria-label") ?? "";
+      return `${el.getAttribute("aria-label") ?? el.textContent ?? ""} | ${zonaDe}`;
+    });
+    if (busca.test(nombre)) return;
+  }
+  throw new Error(`con Tab no se llego a ${busca}`);
+}
+
+/** Baja con la flecha por el menu abierto hasta la opcion `nombre`. */
+async function bajarHasta(page: Page, nombre: string) {
+  for (let i = 0; i < 30; i++) {
+    const actual = await page.evaluate(() => document.activeElement?.textContent ?? "");
+    if (actual.trim() === nombre) return;
+    await page.keyboard.press("ArrowDown");
+  }
+  throw new Error(`el menu no tiene «${nombre}»`);
+}
+
+test("la mesa de practica se juega con el teclado, sin arrastrar", async ({
+  page,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "la mesa es para escritorio");
+
+  await page.goto("/mesa/practica/");
+  await page.getByRole("button", { name: /Para la mesa/ }).click();
+  await expect(zona(page, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas");
+
+  // Una carta de la mano, a la Linea de Defensa: Tab, Enter y flechas.
+  await tabHasta(page, /\| Mano, 8 cartas$/);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menu")).toBeVisible();
+  await bajarHasta(page, "Línea de Defensa");
+  await page.keyboard.press("Enter");
+  await expect(zona(page, "Línea de Defensa")).toHaveAttribute(
+    "aria-label",
+    "Línea de Defensa, 1 carta",
+  );
+  await expect(page.getByRole("menu")).toBeHidden();
+
+  // Robar desde el menu del Castillo.
+  await tabHasta(page, /^Castillo, 41 cartas/);
+  await page.keyboard.press("Enter");
+  await bajarHasta(page, "Robar una");
+  await page.keyboard.press("Enter");
+  await expect(zona(page, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas");
+
+  // La de la Linea de Defensa, al Cementerio; y el Cementerio se abre.
+  await tabHasta(page, /\| Línea de Defensa, 1 carta$/);
+  await page.keyboard.press("Enter");
+  await bajarHasta(page, "Cementerio");
+  await page.keyboard.press("Enter");
+  await tabHasta(page, /^Ver Cementerio, 1 carta/);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Cementerio (1)" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("heading", { name: "Cementerio (1)" })).toBeHidden();
+
+  // Y la fase avanza desde el marcador de turno.
+  const fase = page
+    .getByRole("navigation", { name: "Turno y fase" })
+    .locator("[aria-current=step]");
+  const antes = await fase.textContent();
+  await tabHasta(page, /^Siguiente fase/);
+  await page.keyboard.press("Enter");
+  await expect(fase).not.toHaveText(antes ?? "");
+});
+
+for (const tema of ["dark", "light"] as const) {
+  test(`@a11y la mesa de practica y la entrada a la mesa, tema ${tema === "dark" ? "oscuro" : "claro"}`, async ({
+    page,
+  }, info) => {
+    test.skip(!MESA, "solo con la mesa encendida");
+    test.skip(info.project.name !== "escritorio", "la mesa es para escritorio");
+    await page.addInitScript((t) => {
+      try {
+        localStorage.setItem("deckforge-theme", t);
+      } catch {
+        // sin almacenamiento: queda el tema por defecto
+      }
+    }, tema);
+
+    await page.goto("/mesa/");
+    await expect(page.getByRole("button", { name: "Crear sala" })).toBeVisible();
+    await sinViolaciones(page, "/mesa/");
+
+    await page.goto("/mesa/practica/");
+    await page.getByRole("button", { name: /Para la mesa/ }).click();
+    await expect(zona(page, "Mano")).toBeVisible();
+    await sinViolaciones(page, "la mesa de practica");
+
+    await zona(page, "Mano").getByRole("button").first().click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await sinViolaciones(page, "el menu de una carta");
+  });
+}

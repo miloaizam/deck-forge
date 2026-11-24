@@ -12,7 +12,12 @@
  * las pinta en negrita violeta. Se marcan con criterio: nombres de botones y
  * secciones que el usuario va a buscar en pantalla, y terminos de reglas. Si
  * todo esta resaltado, nada destaca.
+ *
+ * Lo de la mesa de juego sale solo con la mesa encendida (`MESA_ACTIVA`):
+ * apagada, la ayuda es la de siempre.
  */
+
+import { MESA_ACTIVA } from "./mesa/activa";
 
 export interface FaqItem {
   pregunta: string;
@@ -41,6 +46,60 @@ export function segmentos(texto: string): Segmento[] {
     .map((t, i) => ({ texto: t, destacado: i % 2 === 1 }))
     .filter((s) => s.texto !== "");
 }
+
+/** La mesa de juego (GAME.md): solo con la mesa encendida. */
+const MESA: FaqSection = {
+  titulo: "La mesa de juego",
+  items: [
+    {
+      pregunta: "¿Qué es la Mesa?",
+      respuesta: [
+        "Una mesa para **probar tus barajas contra otra persona**, cada uno desde su computador. Se juega moviendo cartas, como en la mesa de verdad: el sitio **no aplica reglas ni resuelve efectos**. Los efectos se conversan por fuera (en Discord, por ejemplo) y cada uno los hace a mano.",
+        "Es para **escritorio**: hace falta una pantalla de al menos 1024 píxeles de ancho. Y hay que **iniciar sesión**.",
+      ],
+    },
+    {
+      pregunta: "¿Cómo juego con alguien?",
+      respuesta: [
+        "En **Mesa**, elige el **formato** y la **serie** (al mejor de 3 o de 5) y toca **«Crear sala»**. Pásale a tu rival el **código** de seis letras o el enlace de **«Copiar enlace»**; él lo escribe en **«Unirse con un código»**.",
+        "Cada uno elige una de sus barajas, que tiene que **cumplir en el formato de la sala**, y toca **«Estoy listo»**. Con los dos listos aparece la mesa, con la mano de 8 ya robada y el oro inicial en la Reserva.",
+      ],
+    },
+    {
+      pregunta: "¿Cómo muevo las cartas?",
+      respuesta: [
+        "**Arrástralas** de una zona a otra, o toca una carta para abrir su **menú** (mandarla a otra zona, voltearla, ponerle contadores…). Cada zona tiene el suyo: el del **Castillo** roba, bota, mira, muestra, busca y baraja. Todo se puede hacer también con el **teclado**, desde los menús.",
+        "Arriba están **Mulligan**, **Agrupar**, **Lanzar moneda** y el marcador de **turno y fase**, y a un costado el **registro** con todo lo que pasó.",
+      ],
+    },
+    {
+      pregunta: "¿Qué ve mi rival?",
+      respuesta: [
+        "Todo lo que está sobre la mesa, y la cantidad de cartas de tu mano y tu Castillo, **nunca cuáles son**. **«Buscar»** lleva una carta a tu mano sin mostrarla; **«Buscar y mostrar»** se la enseña a los dos antes, para que tu rival compruebe que cumple.",
+        "Si un efecto le deja **botar o mirar tu Castillo**, lo hace él mismo desde su menú: se hace al instante, sin pedirte permiso, y queda en el registro. Lo que mira solo lo ve él.",
+      ],
+    },
+    {
+      pregunta: "¿Cómo termina un juego y la serie?",
+      respuesta: [
+        "Con **«Terminar juego»**, arriba de la mesa: declara si **ganaste, perdiste o fue empate**, y tu rival lo confirma. Si **no está de acuerdo**, el juego se **anula** y se juega de nuevo, sin sumar. **«Rendirme»** le da el juego a tu rival en el acto.",
+        "Entre un juego y otro puedes **cambiar cartas con tu Mazo de Soporte**, una por otra y siempre con 50 en el Castillo. Los cambios siguen para el resto de la serie; tu baraja guardada no cambia. La serie la gana quien llega primero a 2 juegos (o a 3, al mejor de 5).",
+      ],
+    },
+    {
+      pregunta: "¿Y si se me corta internet o recargo la página?",
+      respuesta: [
+        "**Vuelves a la mesa tal como estaba.** Mientras no estés, tu rival ve una cuenta regresiva: si no vuelves en **2 minutos**, **la serie es para él** y la sala se cierra.",
+      ],
+    },
+    {
+      pregunta: "¿Puedo practicar solo?",
+      respuesta: [
+        "Sí: en **Mesa**, con **«O practica en solitario»**. Eliges una de tus barajas y la juegas sin rival, con la misma mesa.",
+      ],
+    },
+  ],
+};
 
 export const FAQ: FaqSection[] = [
   {
@@ -381,13 +440,16 @@ export const FAQ: FaqSection[] = [
       },
     ],
   },
+  ...(MESA_ACTIVA ? [MESA] : []),
   {
     titulo: "Las secciones del sitio",
     items: [
       {
         pregunta: "¿Qué hay en cada sección?",
         respuesta: [
-          "**Constructor**, **Mis barajas** y **Colección** aparecen en la barra de arriba cuando inicias sesión.",
+          MESA_ACTIVA
+            ? "**Constructor**, **Mis barajas**, **Colección** y **Mesa** aparecen en la barra de arriba cuando inicias sesión."
+            : "**Constructor**, **Mis barajas** y **Colección** aparecen en la barra de arriba cuando inicias sesión.",
         ],
         lista: [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
@@ -395,6 +457,11 @@ export const FAQ: FaqSection[] = [
           "**Mis barajas:** las barajas que guardaste.",
           "**Colección:** las cartas que tienes y las que te faltan.",
           "**Comunidad:** las barajas que otros jugadores publicaron.",
+          ...(MESA_ACTIVA
+            ? [
+                "**Mesa:** para jugar una de tus barajas contra otra persona, o practicar en solitario.",
+              ]
+            : []),
           "**Documentos:** el **Documento Actualizado de Reglas**, la **Fe de Erratas** y la **Banlist** de cada formato (Estándar, VCR e Infantería). Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya aplican la Fe de Erratas y las Banlists.",
           "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],

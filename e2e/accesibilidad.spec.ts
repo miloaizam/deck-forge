@@ -58,6 +58,9 @@ const PAGINAS = [
   "/comunidad/",
   "/privacidad/",
   "/no-existe/",
+  // La mesa (GAME.md): encendida, la entrada y la practica; apagada, el aviso.
+  "/mesa/",
+  "/mesa/practica/",
 ];
 
 for (const tema of ["dark", "light"] as const) {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { MESA_ACTIVA } from "@/lib/mesa/activa";
 import { ENLACE } from "@/lib/ui";
 
 export const metadata: Metadata = {
@@ -14,8 +15,9 @@ const TEXTO = "text-muted mt-2 space-y-2 leading-relaxed";
 
 /**
  * Lo que se guarda y quien lo ve, contado para quien juega. Si cambia lo que
- * guarda la cuenta (supabase/esquema.sql) o lo que se muestra en la
- * Comunidad, se cambia aqui en el mismo commit.
+ * guarda la cuenta (supabase/esquema.sql y mesa.sql) o lo que se muestra en
+ * la Comunidad o la mesa, se cambia aqui en el mismo commit. Lo de la mesa
+ * sale solo con la mesa encendida (`MESA_ACTIVA`).
  */
 export default function PrivacidadPage() {
   return (
@@ -75,6 +77,15 @@ export default function PrivacidadPage() {
                 Tus <strong className="text-ink">likes, las barajas que guardaste</strong>{" "}
                 de la Comunidad y tus <strong className="text-ink">reportes</strong>.
               </li>
+              {MESA_ACTIVA && (
+                <li>
+                  Si juegas en la <strong className="text-ink">Mesa</strong>, mientras
+                  dura la serie: la baraja con que entraste (con tus cambios del side), la
+                  semilla con que se barajó y lo que se ve sobre la mesa, para volver a
+                  ella si se corta. Al terminar la serie se borra todo, y una sala que
+                  nadie terminó se borra al día siguiente.
+                </li>
+              )}
             </ul>
             <p>
               Google solo confirma tu identidad al iniciar sesión. DeckForge no le envía
@@ -91,6 +102,12 @@ export default function PrivacidadPage() {
               que publiques. Cualquiera puede ver una baraja pública, con tu alias, tu
               foto de perfil, su nombre, su nota y sus cartas.
             </p>
+            {MESA_ACTIVA && (
+              <p>
+                En la Mesa, tu rival ve tu alias y lo que juegas sobre la mesa. Nunca ve
+                tu mano ni la lista de tu baraja, salvo las cartas que muestres.
+              </p>
+            )}
             <p>
               De los likes y las copias solo se muestra el total. Los reportes solo los ve
               quien administra el sitio.

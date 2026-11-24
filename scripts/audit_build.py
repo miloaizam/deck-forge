@@ -303,7 +303,15 @@ def revisar_nube() -> None:
     # La mesa 1v1 (GAME.md, sesion 5): con la mesa encendida, y solo en sus
     # paginas, connect-src suma el wss:// del mismo host (su tiempo real).
     # Apagada, ninguna pagina lo lleva.
-    mesa_activa = activa and os.environ.get("NEXT_PUBLIC_MESA_ACTIVA") == "1"
+    # Con el mismo criterio que src/lib/mesa/activa.ts: activa.json, y
+    # NEXT_PUBLIC_MESA_ACTIVA ("1" o "0") lo pisa.
+    forzada = os.environ.get("NEXT_PUBLIC_MESA_ACTIVA")
+    if forzada in ("1", "0"):
+        encendida = forzada == "1"
+    else:
+        config = json.loads((ROOT / "src" / "lib" / "mesa" / "activa.json").read_text(encoding="utf-8"))
+        encendida = config.get("activa") is True
+    mesa_activa = activa and encendida
     tiempo_real = f" {url.replace('https://', 'wss://', 1)}" if mesa_activa else ""
     headers = OUT / "_headers"
     if not headers.exists():

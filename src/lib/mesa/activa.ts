@@ -1,12 +1,19 @@
+import config from "./activa.json";
+
 /**
  * Si la mesa de juego esta encendida (GAME.md §5).
  *
- * Se construye APAGADA y se enciende cuando la editorial responda la consulta
- * del proyecto: hasta entonces no sale en la navbar y sus rutas dicen que
- * todavia no esta disponible. `NEXT_PUBLIC_MESA_ACTIVA=1` la enciende en un
- * build de pruebas (`pnpm run e2e:mesa`) sin tocar el repo.
+ * Se encendio el 24-11-2026, con el acuerdo de la editorial. Lo decide
+ * `activa.json`, que leen tambien `scripts/csp-hashes.mjs` y
+ * `scripts/audit_build.py`: apagarla es poner `false` ahi y hacer commit.
+ * Apagada, no sale en la navbar, ni en la ayuda, ni en /privacidad ni en
+ * /novedades, y sus rutas dicen que todavia no esta disponible.
  *
- * El `process.env.NEXT_PUBLIC_*` va escrito entero: Next lo reemplaza por su
- * valor en el build buscando el texto literal.
+ * `NEXT_PUBLIC_MESA_ACTIVA` ("1" o "0") lo pisa en un build de pruebas, sin
+ * tocar el repo, como `NEXT_PUBLIC_SUPABASE_*` con `supabase/proyecto.json`.
+ * Va escrito entero: Next lo reemplaza por su valor buscando el texto literal.
  */
-export const MESA_ACTIVA = process.env.NEXT_PUBLIC_MESA_ACTIVA === "1";
+const forzada = process.env.NEXT_PUBLIC_MESA_ACTIVA;
+
+export const MESA_ACTIVA =
+  forzada === "1" ? true : forzada === "0" ? false : config.activa === true;

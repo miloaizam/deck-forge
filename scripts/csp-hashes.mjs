@@ -119,10 +119,19 @@ const imagenes = nubeActiva ? `${IMG_SRC} ${urlNube}` : IMG_SRC;
 
 // La mesa 1v1 (GAME.md, sesion 5): su tiempo real va por wss:// al mismo
 // host, que el https:// de arriba no cubre (probado en la sesion 0). Solo en
-// las paginas de /mesa y solo en un build con la mesa encendida
-// (NEXT_PUBLIC_MESA_ACTIVA=1, como src/lib/mesa/activa.ts): apagada, la CSP
-// de todo el sitio sale igual que antes, byte por byte.
-const mesaActiva = nubeActiva && process.env.NEXT_PUBLIC_MESA_ACTIVA === "1";
+// las paginas de /mesa y solo con la mesa encendida, con el mismo criterio
+// que src/lib/mesa/activa.ts: `activa.json`, y NEXT_PUBLIC_MESA_ACTIVA ("1"
+// o "0") lo pisa. Apagada, la CSP de todo el sitio sale igual que antes.
+const forzada = process.env.NEXT_PUBLIC_MESA_ACTIVA;
+const mesaEncendida =
+  forzada === "1"
+    ? true
+    : forzada === "0"
+      ? false
+      : JSON.parse(
+          readFileSync(path.join(ROOT, "src", "lib", "mesa", "activa.json"), "utf8"),
+        ).activa === true;
+const mesaActiva = nubeActiva && mesaEncendida;
 const tiempoReal = mesaActiva ? urlNube.replace(/^https:/, "wss:") : null;
 const esDeLaMesa = (ruta) => ruta === "/mesa/" || ruta.startsWith("/mesa/");
 

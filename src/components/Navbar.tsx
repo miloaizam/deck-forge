@@ -12,6 +12,7 @@ import {
   LibraryBig,
   Menu,
   Sparkles,
+  Swords,
   Users,
   X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import { HelpButton } from "./HelpButton";
 import { AccountButton } from "./nube/AccountButton";
 import { useConCuenta } from "./nube/use-con-cuenta";
 import { ThemeToggle } from "./ThemeToggle";
+import { MESA_ACTIVA } from "@/lib/mesa/activa";
 import { NUBE_ACTIVA } from "@/lib/supabase-config";
 import { BOTON_ICONO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -33,13 +35,17 @@ interface NavLink {
   privado?: boolean;
 }
 
-/** La Comunidad solo existe con las cuentas encendidas (`supabase-config.ts`). */
+/**
+ * La Comunidad solo existe con las cuentas encendidas (`supabase-config.ts`),
+ * y la Mesa, con la mesa encendida (`mesa/activa.ts`); pide cuenta.
+ */
 const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
   { href: "/constructor", label: "Constructor", Icon: Hammer, privado: true },
   { href: "/barajas", label: "Mis barajas", Icon: Layers, privado: true },
   { href: "/coleccion", label: "Colección", Icon: Library, privado: true },
   ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
+  ...(MESA_ACTIVA ? [{ href: "/mesa", label: "Mesa", Icon: Swords, privado: true }] : []),
   { href: "/documentos", label: "Documentos", Icon: FileText },
   { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];
@@ -49,8 +55,23 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const LINK =
-  "inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip px-2 xl:px-3 text-sm transition-colors focus-visible:outline-brand-500";
+/**
+ * Con la Mesa son ocho enlaces y no caben a 1024 px junto a la ayuda, el tema
+ * y la cuenta (medido el 24-11-2026: la cuenta se salia 25 px de la
+ * pantalla). Encendida, se pliegan detras del menu hasta `xl` y van sin icono
+ * hasta `2xl`. Apagada, todo queda como siempre: plegados bajo `lg` y sin
+ * icono entre `lg` y `xl`.
+ */
+const DESPLEGADA = MESA_ACTIVA ? "xl:flex" : "lg:flex";
+const PLEGADA = MESA_ACTIVA ? "xl:hidden" : "lg:hidden";
+const ICONO_ANGOSTA = MESA_ACTIVA
+  ? "hidden 2xl:block"
+  : NUBE_ACTIVA
+    ? "hidden xl:block"
+    : undefined;
+const HOLGURA = MESA_ACTIVA ? "px-2 2xl:px-3" : "px-2 xl:px-3";
+
+const LINK = `inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip ${HOLGURA} text-sm transition-colors focus-visible:outline-brand-500`;
 
 /**
  * El tipo de transicion que pide el fundido entre paginas (layout de (app)).
@@ -113,7 +134,7 @@ export function Navbar() {
 
         {/* Los cinco enlaces no caben junto al logotipo en un telefono, asi
             que ahi se pliegan detras del boton de menu. */}
-        <div className="hidden items-center gap-1 lg:flex">
+        <div className={cn("hidden items-center gap-1", DESPLEGADA)}>
           {links.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -134,7 +155,7 @@ export function Navbar() {
               <Icon
                 size={15}
                 aria-hidden="true"
-                className={cn("opacity-70", NUBE_ACTIVA && "hidden xl:block")}
+                className={cn("opacity-70", ICONO_ANGOSTA)}
               />
               {label}
             </Link>
@@ -156,7 +177,7 @@ export function Navbar() {
             aria-expanded={open}
             aria-controls="menu-principal"
             aria-label={open ? "Cerrar el menú" : "Abrir el menú"}
-            className={cn(BOTON_ICONO, "lg:hidden")}
+            className={cn(BOTON_ICONO, PLEGADA)}
           >
             {open ? (
               <X size={16} aria-hidden="true" />
@@ -174,7 +195,8 @@ export function Navbar() {
         id="menu-principal"
         inert={!open}
         className={cn(
-          "grid transition-[grid-template-rows,visibility] duration-200 ease-(--ease-out-soft) lg:hidden",
+          "grid transition-[grid-template-rows,visibility] duration-200 ease-(--ease-out-soft)",
+          PLEGADA,
           open ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]",
         )}
       >

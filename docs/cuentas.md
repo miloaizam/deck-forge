@@ -100,6 +100,23 @@ Una baraja pesa 1–2 KB y una colección unos KB: el plan gratuito (500 MB) da
 para cientos de miles. Todas las tablas cuelgan de `auth.users` con `on
 delete cascade`: borrar la cuenta borra todo lo suyo.
 
+**La mesa 1v1** (`supabase/mesa.sql`, `GAME.md`) suma tres tablas, que solo
+viven mientras dura una serie:
+
+- `mesas`: la sala. Su código, formato, serie (al mejor de 3 o 5), los dos
+  jugadores, el estado, el marcador, el resultado declarado del juego en
+  curso y la última señal de vida de cada uno.
+- `mesas_publico`: la foto de lo que ven los dos, con su versión, para
+  volver a la mesa al recargar.
+- `mesas_privado`: una fila por jugador, que **solo él lee**. Guarda la
+  baraja con que entró, sus cambios del side y la semilla de su barajado.
+
+Al terminar la serie, la foto se vacía y las filas privadas se borran. Una
+sala que nadie terminó se borra al crear otra cualquiera: las que esperan o
+ya terminaron, a las 24 h de creadas; las que se estaban jugando, cuando las
+dos señales tienen más de un día. Las tres tablas cuelgan de `auth.users`:
+borrar la cuenta borra las salas.
+
 ### Las reglas de la base (`supabase/esquema.sql`)
 
 - **Permisos de tabla explícitos**: `authenticated` puede leer, crear y
@@ -130,6 +147,25 @@ delete cascade`: borrar la cuenta borra todo lo suyo.
 - Topes de tamaño en la base: 32 KB por baraja, 256 KB por colección.
 - Se puede volver a correr entero sin romper nada: así se aplica una versión
   nueva.
+
+`supabase/mesa.sql` sigue las mismas reglas y **no toca nada de
+`esquema.sql`**: solo lee `perfiles` para el alias del rival.
+
+- **Lectura:** cada jugador lee su sala y su foto, y solo su propia fila
+  privada.
+- **Escritura:** `mesas` y `mesas_publico` no se escriben desde la API. Lo
+  hacen funciones `security definer`:
+  - `crear_mesa`, `unirse_mesa`, `marcar_lista`, `latido_mesa` y
+    `salir_mesa` (la sala);
+  - `guardar_mesa_publico` (la foto, que solo sube de versión);
+  - `declarar_resultado`, `responder_resultado` y `rendirse` (cada juego);
+  - `reclamar_abandono`, que la base solo acepta si el otro lleva más de 2
+    minutos sin señal.
+
+  `cerrar_juego` suma al marcador y no se puede llamar desde la API.
+- **El canal de Realtime** `mesa:<id>` es privado. Las políticas sobre
+  `realtime.messages` dejan entrar solo a los dos jugadores.
+- Errores propios `MS001`…`MS010`, listados al comienzo del archivo.
 
 ### El código
 
@@ -383,6 +419,12 @@ través de funciones que devuelven lo que se puede ver; pone topes (tamaño,
 base ni infle el ranking; y agrega `borrar_mi_cuenta()`, que borra al usuario
 y todo lo suyo cuando él lo pide.
 
+**La mesa 1v1:** después, igual, con
+[`supabase/mesa.sql`](../supabase/mesa.sql). Tienen que aparecer `mesas`,
+`mesas_publico` y `mesas_privado`, con RLS. **Cada vez que ese archivo
+cambia hay que volver a pegarlo entero, y antes de publicar el sitio que lo
+usa**: si no, el sitio llama a funciones que la base todavía no tiene.
+
 ### 3. Google (~20 min)
 
 1. Entrar a **console.cloud.google.com** con tu cuenta de Google y aceptar los
@@ -473,6 +515,8 @@ Sin programar, desde el panel de Supabase:
   desmarcarla (un trigger lo impide desde el sitio). Para devolverla,
   desmarcar.
 - Si un alias es ofensivo: **Table Editor → `perfiles`** y cambiarlo.
+- **Una sala de la mesa**: **Table Editor → `mesas`**. Borrar la fila la
+  cierra para los dos y se lleva su foto y sus filas privadas.
 - **Si una foto es ofensiva** (llega como reporte con motivo `foto`): **Table
   Editor → `perfiles`**, la fila del dueño de la baraja (`barajas.user_id`), y
   marcar **`avatar_oculto`**. Deja de verse en la Comunidad en el acto y el
@@ -515,6 +559,13 @@ grant select, insert, update, delete on storage.objects to authenticated;
 Luego se corre el esquema (dos veces: tiene que aguantar volver a correrse) y
 se actúa como un usuario con `set role authenticated; select
 set_config('request.jwt.claim.sub', '<uuid>', false);`.
+
+**La mesa** se prueba igual con `supabase/mesa.prueba.sql`, después de
+`esquema.sql` y de `mesa.sql` dos veces. Recorre la sala, una tercera cuenta
+que no entra ni lee, la foto que solo sube de versión, el abandono, dos
+series completas y la limpieza de salas abandonadas. Para probar también las
+políticas del canal hay que crear antes una imitación de `realtime`: viene
+al comienzo de ese archivo.
 
 La interfaz se prueba aparte, contra un Supabase simulado:
 `pnpm run e2e:nube` construye el sitio apuntando a

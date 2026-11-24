@@ -10,7 +10,11 @@
  * Al agregar algo que el usuario note, se suma su entrada en el mismo commit.
  * La fecha es la del commit (git log), de la mas nueva a la mas antigua; lo
  * comprueba novedades.test.ts. Texto plano: nada de HTML.
+ *
+ * La de la mesa de juego sale solo con la mesa encendida (`MESA_ACTIVA`).
  */
+
+import { MESA_ACTIVA } from "./mesa/activa";
 
 export const TIPOS_NOVEDAD = ["Novedad", "Mejora", "Arreglo", "Aviso"] as const;
 export type TipoNovedad = (typeof TIPOS_NOVEDAD)[number];
@@ -31,7 +35,21 @@ export interface Novedad {
   texto: string[];
 }
 
+/** La mesa de juego (GAME.md), que se encendio el 24-11-2026. */
+const MESA: Novedad = {
+  fecha: "2026-11-24",
+  version: "7.0.0",
+  tipo: "Novedad",
+  titulo: "La Mesa: prueba tus barajas contra otra persona",
+  texto: [
+    "En Mesa puedes crear una sala, pasarle el código a otra persona y jugar una de tus barajas contra la suya, cada uno desde su computador. Se juega moviendo cartas, como en la mesa de verdad: los efectos se conversan y cada uno los hace a mano. Es para escritorio y pide iniciar sesión.",
+    "Tu rival nunca ve tu mano ni tu Castillo. Las series son al mejor de 3 o de 5: cada juego se termina declarando el resultado, que el otro confirma, y entre juegos se cambia con el Mazo de Soporte. Si recargas la página vuelves a la mesa tal como estaba, y si alguien se va por más de 2 minutos, la serie es del que se quedó.",
+    "También se puede practicar en solitario con cualquiera de tus barajas.",
+  ],
+};
+
 export const NOVEDADES: Novedad[] = [
+  ...(MESA_ACTIVA ? [MESA] : []),
   {
     fecha: "2026-11-19",
     version: "6.8.0",

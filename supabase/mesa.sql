@@ -199,8 +199,9 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- Crear una sala: devuelve su id y su codigo. Antes barre las salas
--- abandonadas (esperando o terminadas hace mas de un dia) y topa en tres
--- salas abiertas por persona.
+-- abandonadas (esperando o terminadas hace mas de un dia, y las que se
+-- estaban jugando y nadie dio senales en un dia: sin historial, GAME.md §2)
+-- y topa en tres salas abiertas por persona.
 -- ---------------------------------------------------------------------
 create or replace function public.crear_mesa(p_formato text, p_mejor_de int)
 returns json
@@ -225,6 +226,10 @@ begin
   delete from public.mesas
   where (estado = 'esperando' or estado = 'terminada')
     and creada < now() - interval '1 day';
+  -- Su foto y sus filas privadas se van con ella (on delete cascade).
+  delete from public.mesas
+  where estado in ('jugando', 'entre_juegos')
+    and greatest(senal_a, coalesce(senal_b, senal_a)) < now() - interval '1 day';
 
   if (select count(*) from public.mesas
       where yo in (jugador_a, jugador_b) and estado <> 'terminada') >= 3 then
