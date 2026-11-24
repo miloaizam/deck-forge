@@ -101,7 +101,7 @@ test("un turno en la mesa de practica, moviendo cartas", async ({ page }, info) 
   );
 
   // Robar con el boton.
-  await page.getByRole("button", { name: "Robar", exact: true }).click();
+  await page.getByRole("button", { name: "Robar una" }).click();
   await expect(zona(page, "Mano")).toHaveAttribute("aria-label", "Mano, 9 cartas");
 
   // Pagar: el oro inicial, arrastrado de la Reserva al Oro Pagado.
@@ -164,4 +164,106 @@ test("un turno en la mesa de practica, moviendo cartas", async ({ page }, info) 
   expect(await page.getByRole("button", { name: /^Castillo, 40 cartas/ }).count()).toBe(
     1,
   );
+});
+
+test("mirar, buscar, barajar desde el Cementerio, marcas, turno y registro", async ({
+  page,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "la mesa es para escritorio");
+
+  await page.goto("/mesa/practica/");
+  await page.getByRole("button", { name: /Para la mesa/ }).click();
+  const registro = page.getByRole("complementary", { name: "Registro" });
+  const lineas = registro.getByRole("listitem");
+  const castillo = () => page.getByRole("button", { name: /^Castillo, \d+ cartas/ });
+  await expect(lineas.first()).toContainText("Preparó la mesa");
+
+  // Mirar 3 y devolverlas en otro orden.
+  await castillo().click();
+  await page.getByRole("menuitem", { name: "Mirar…" }).click();
+  await page.getByRole("button", { name: "Una más" }).click();
+  await page.getByRole("button", { name: "Una más" }).click();
+  await page.getByRole("button", { name: "Mirar 3" }).click();
+  const mirando = page.getByRole("dialog", { name: "Mirar las 3 de arriba" });
+  await expect(mirando).toBeVisible();
+  await mirando
+    .getByRole("button", { name: /^Bajar / })
+    .first()
+    .click();
+  await mirando.getByRole("button", { name: "Devolver arriba en este orden" }).click();
+  await expect(lineas.first()).toContainText(
+    "Devolvió 3 cartas arriba del Castillo, en el orden elegido.",
+  );
+  await expect(registro).toContainText("Miró las 3 de arriba del Castillo.");
+
+  // Buscar y mostrar: va a la mano, se nombra y el Castillo se baraja.
+  await castillo().click();
+  await page.getByRole("menuitem", { name: "Buscar y mostrar" }).click();
+  const buscando = page.getByRole("dialog", { name: "Buscar y mostrar en el Castillo" });
+  await buscando.getByRole("listitem").first().getByRole("button").click();
+  await buscando.getByRole("button", { name: "Mostrar y tomar" }).click();
+  await expect(lineas.first()).toContainText(
+    /^\d+\.Buscó y mostró .+\. Barajó el Castillo\./,
+  );
+  expect(await cuenta(page, "Mano")).toBe(9);
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Mano de 9 cartas" }),
+  ).toBeVisible();
+
+  // Botar 2 y barajarlas de vuelta desde el Cementerio.
+  await castillo().click();
+  await page.getByRole("menuitem", { name: "Botar…" }).click();
+  await page.getByRole("button", { name: "Una más" }).click();
+  await page.getByRole("button", { name: "Botar 2" }).click();
+  await page.getByRole("button", { name: "Ver Cementerio, 2 cartas" }).click();
+  const cementerio = page.getByRole("dialog", { name: /^Cementerio \(/ });
+  await cementerio
+    .getByRole("button", { name: "Elegir para barajar en el Castillo" })
+    .click();
+  for (const carta of await cementerio.getByRole("listitem").all()) {
+    await carta.getByRole("button").click();
+  }
+  await cementerio.getByRole("button", { name: "Barajar 2 en el Castillo" }).click();
+  await expect(lineas.first()).toContainText(/desde el Cementerio en el Castillo\.$/);
+  await cementerio.getByRole("button", { name: "Cerrar" }).click();
+  expect(await cuenta(page, "Cementerio")).toBe(0);
+
+  // Marcas: un contador de Honor y +2 de Fuerza, y limpiar la Fuerza.
+  await zona(page, "Mano").getByRole("button").first().click();
+  await page.getByRole("menuitem", { name: "Línea de Defensa" }).click();
+  await zona(page, "Línea de Defensa").getByRole("button").first().click();
+  await page.getByRole("menuitem", { name: "Marcas…" }).click();
+  const marcas = page.getByRole("dialog", { name: /^Marcas de / });
+  await marcas.getByRole("button", { name: "Contadores de Honor: uno más" }).click();
+  await marcas
+    .getByRole("button", { name: "Fuerza hasta la Fase Final: uno más" })
+    .click();
+  await marcas
+    .getByRole("button", { name: "Fuerza hasta la Fase Final: uno más" })
+    .click();
+  await marcas.getByRole("button", { name: "Cerrar" }).click();
+  await expect(zona(page, "Línea de Defensa")).toContainText("+2");
+  await expect(registro).toContainText(/Puso un contador de Honor en /);
+  await page.getByRole("button", { name: "Limpiar Fuerza" }).click();
+  await expect(zona(page, "Línea de Defensa")).not.toContainText("+2");
+  await expect(lineas.first()).toContainText("Limpió los modificadores de Fuerza.");
+
+  // Turno y fase.
+  const marcador = page.getByRole("navigation", { name: "Turno y fase" });
+  await marcador.getByRole("button", { name: "Siguiente fase" }).click();
+  await expect(marcador.getByRole("button", { name: "Vigilia" })).toHaveAttribute(
+    "aria-current",
+    "step",
+  );
+  await marcador.getByRole("button", { name: "Pasar turno" }).click();
+  await expect(marcador).toContainText("Turno 2");
+
+  // La moneda, y una linea por accion, numeradas sin huecos.
+  await page.getByRole("button", { name: "Lanzar moneda" }).click();
+  await expect(lineas.first()).toContainText(/Moneda: (cara|sello)\./);
+  const numeros = (await lineas.allTextContents()).map((t) =>
+    Number(t.match(/^(\d+)\./)?.[1]),
+  );
+  expect(numeros).toEqual(numeros.map((_, i) => numeros.length - i));
 });

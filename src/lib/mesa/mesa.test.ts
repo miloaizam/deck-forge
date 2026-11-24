@@ -90,10 +90,10 @@ test("preparar: el mismo azar da la misma mesa, y otro azar otro orden", () => {
   const otra = newTable([{ id: "a", deck: baraja() }], semilla(5));
   const distinta = newTable([{ id: "a", deck: baraja() }], semilla(6));
   assert.deepEqual(una, otra);
-  assert.notDeepEqual(
-    una.jugadores[0].zonas.castillo,
-    distinta.jugadores[0].zonas.castillo,
-  );
+  // Los uids se reparten despues de barajar: lo que cambia es que carta es cada uno.
+  const cartas = (m: Mesa) =>
+    m.jugadores[0].zonas.castillo.map((u) => m.fichas[u].cartaId);
+  assert.notDeepEqual(cartas(una), cartas(distinta));
 });
 
 test("apply no toca la mesa que recibe", () => {

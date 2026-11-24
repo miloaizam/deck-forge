@@ -349,17 +349,50 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 3: acciones con visibilidad y ayudas
 
 - **Objetivo:** todo lo del DAR que depende de quién ve qué, todavía en local.
-- **Tareas:**
-  - mirar N y mostrar N, y devolverlas arriba en el orden elegido;
-  - «Buscar» y «Buscar y mostrar», con barajado al final;
-  - barajar desde el Cementerio, mostrando las cartas;
-  - contadores, modificador de Fuerza, nota y borrar las marcas temporales;
-  - marcador de turno y fase, y botón «Agrupar»;
-  - registro de acciones;
-  - sorteo de quién comienza;
-  - aviso de Castillo vacío y de más de 8 cartas en la mano.
-- **Terminado cuando:** cada acción deja su línea en el registro y sus tests
-  dicen qué es público y qué no.
+- **Hecha (24-11-2026).** El modelo, en `src/lib/mesa/`:
+  - la mesa guarda el **turno** (número, jugador activo, fase y prioridad en
+    la Guerra de Talismanes), lo **revelado** (lo que alguien mira, muestra
+    o recorre para buscar, sin sacarlo de su zona) y el **registro** (las
+    últimas 200 líneas);
+  - `apply(mesa, accion, azar, por)` sabe **quién** hace cada acción y la
+    rechaza si no le toca (`puede`): la mano y el Soporte son de su dueño, y
+    también robar, hacer mulligan, barajar su Castillo y buscar. Lo que está
+    en juego, botar del Castillo ajeno y mirarlo lo puede hacer cualquiera;
+  - acciones nuevas: mirar, mostrar, devolverlas arriba en el orden elegido,
+    abrir una búsqueda y tomar una carta o ninguna (en el Castillo **se
+    baraja siempre**, también al fallar o al abandonar), barajar desde el
+    Cementerio, fases, pasar turno, prioridad y moneda;
+  - `vista.ts`: `vista(mesa, jugador)` deja sin carta lo que ese jugador no
+    ve, y `esPublica` dice si lo ven los dos;
+  - `registro.ts` arma la frase de cada línea; `avisos.ts`, el Castillo
+    vacío y la mano de más de 8;
+  - `vista.test.ts`: permisos, vista, que **el registro nunca nombra una
+    carta oculta**, cada acción nueva, los avisos y el texto de cada línea.
+- **La interfaz:**
+  - el marcador de turno con las ocho fases en fila, «Siguiente fase» y
+    «Pasar turno»;
+  - la barra con Robar una, Barajar, Mulligan, Agrupar, Limpiar Fuerza y
+    Lanzar moneda;
+  - la franja ámbar de los avisos;
+  - el menú del Castillo con Botar…, Mirar…, Mostrar…, Buscar y Buscar y
+    mostrar (los «…» preguntan cuántas);
+  - la ventana de mirar y mostrar, con flechas para reordenar, y la de
+    buscar;
+  - en el Cementerio y el Soporte, Buscar, y en el Cementerio, elegir cartas
+    para barajarlas en el Castillo;
+  - «Marcas…» en el menú de cada carta: contadores, Fuerza temporal y nota;
+  - el **registro a un costado**, con la última línea anunciada para
+    lectores de pantalla.
+- **Decisiones de la sesión:**
+  - los **uids se reparten después de barajar**: en el orden de la baraja,
+    las copias de una carta tenían números seguidos, y en el 1v1 ver una
+    dejaba adivinar las otras;
+  - el registro guarda datos y no frases, y una carta va con su id **solo si
+    los dos la ven**: esa es la regla que tiene que respetar lo que viaja;
+  - un revelado deja de valer solo si sus cartas cambian de sitio (robar
+    mientras se mira, por ejemplo);
+  - el botón de la barra se llama «Robar una», porque la fase «Robar» del
+    marcador también es un botón.
 
 ### Sesión 4: base y sala
 
@@ -385,6 +418,8 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   - el canal por mesa, con broadcast y presencia;
   - mandar y aplicar acciones, con versiones y la vuelta a la foto si hay
     conflicto;
+  - lo que viaja sale de `vista()` y del registro de la sesión 3: nada que
+    el rival no vea lleva su carta;
   - separar lo público de lo privado en lo que viaja; los pedidos sobre el
     Castillo ajeno;
   - la CSP con `wss://`, `csp-hashes.mjs` y la auditoría;

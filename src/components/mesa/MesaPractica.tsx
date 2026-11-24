@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   useCallback,
   useEffect,
@@ -8,26 +7,50 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { ArrowLeftRight, Hand, RotateCcw, Shuffle, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Coins,
+  Eraser,
+  Hand,
+  Layers,
+  RotateCcw,
+  Shuffle,
+  TriangleAlert,
+} from "lucide-react";
 
-import { marcarCargada } from "../CardTile";
 import { CardModal } from "../CardModal";
+import { CaraOdorso } from "./CaraOdorso";
+import { DialogoMarcas } from "./DialogoMarcas";
+import { DialogoNumero } from "./DialogoNumero";
+import { DialogoRevelado } from "./DialogoRevelado";
+import { MarcadorTurno } from "./MarcadorTurno";
 import { MenuMesa, type ItemMenu } from "./MenuMesa";
+import { RegistroMesa } from "./RegistroMesa";
+import { VentanaMesa } from "./VentanaMesa";
 import { deckTitle } from "@/lib/deck";
-import { apply, type Accion } from "@/lib/mesa/apply";
+import { apply, type Accion, type ZonaBuscable } from "@/lib/mesa/apply";
+import { avisos, MANO_MAXIMA } from "@/lib/mesa/avisos";
+import { textoDeEntrada } from "@/lib/mesa/registro";
 import { newTable } from "@/lib/mesa/setup";
 import {
   anfitriona,
   dependientes,
   enJuego,
   ubicar,
+  NOMBRE_ZONA,
+  ZONA_CON_ARTICULO,
   ZONAS,
-  type Ficha,
   type Mesa,
   type Zona,
 } from "@/lib/mesa/table";
+import { vista as vistaDe } from "@/lib/mesa/vista";
 import type { Card, Deck } from "@/lib/types";
-import { BOTON_ICONO_LIBRE, BOTON_SECUNDARIO, CARD_RATIO } from "@/lib/ui";
+import {
+  AVISO_EN_LINEA,
+  BOTON_PRIMARIO_COMPACTO,
+  BOTON_SECUNDARIO,
+  BOTON_SECUNDARIO_COMPACTO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** El unico jugador de la practica. */
@@ -44,19 +67,6 @@ const CARTA_W = 100;
 const CARTA_H = 143;
 /** Alto del rotulo de cada zona, sobre las cartas. */
 const ROTULO = 26;
-
-const NOMBRE_ZONA: Record<Zona, string> = {
-  castillo: "Castillo",
-  mano: "Mano",
-  reserva: "Reserva de Oro",
-  oroPagado: "Oro Pagado",
-  defensa: "Línea de Defensa",
-  ataque: "Línea de Ataque",
-  apoyo: "Línea de Apoyo",
-  cementerio: "Cementerio",
-  destierro: "Destierro",
-  soporte: "Mazo de Soporte",
-};
 
 interface Caja {
   x: number;
@@ -118,6 +128,15 @@ interface MenuAbierto {
   items: ItemMenu[];
 }
 
+/** Lo que pide cuantas cartas antes de hacerse. */
+type Pedido = "botar" | "mirar" | "mostrar";
+
+const PEDIDO: Record<Pedido, { titulo: string; accion: string }> = {
+  botar: { titulo: "¿Cuántas cartas botar?", accion: "Botar" },
+  mirar: { titulo: "¿Cuántas cartas mirar?", accion: "Mirar" },
+  mostrar: { titulo: "¿Cuántas cartas mostrar?", accion: "Mostrar" },
+};
+
 interface Arrastre {
   uid: string;
   pointerId: number;
@@ -146,17 +165,29 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
   const [menu, setMenu] = useState<MenuAbierto | null>(null);
   const [vista, setVista] = useState<Card | null>(null);
   const [revisando, setRevisando] = useState<ZonaRevisable | null>(null);
+  /** Las cartas del Cementerio elegidas para barajar en el Castillo, o `null`. */
+  const [barajando, setBarajando] = useState<string[] | null>(null);
+  const [pedido, setPedido] = useState<Pedido | null>(null);
+  const [marcasDe, setMarcasDe] = useState<string | null>(null);
   const [arrastre, setArrastre] = useState<Arrastre | null>(null);
   const [escala, setEscala] = useState(1);
 
   const marco = useRef<HTMLDivElement>(null);
   const lienzo = useRef<HTMLDivElement>(null);
-  const ventana = useRef<HTMLDialogElement>(null);
   /** El click que sigue a soltar un arrastre no tiene que abrir el menu. */
   const recienSoltada = useRef(false);
 
   const hacer = useCallback((accion: Accion) => setMesa((m) => apply(m, accion)), []);
   const yo = mesa.jugadores[0];
+  /** Lo que este jugador ve: el Castillo y lo que no le toca, sin carta. */
+  const visto = vistaDe(mesa, YO);
+  const cartaDe = (uid: string): Card | undefined => {
+    const id = visto.fichas[uid]?.cartaId;
+    return id ? cartas.get(id) : undefined;
+  };
+  const nombre = (uid: string) => cartaDe(uid)?.nombre ?? "Carta";
+  const texto = (e: Mesa["registro"][number]) =>
+    textoDeEntrada(e, (id) => cartas.get(id)?.nombre ?? "una carta");
 
   // La escala sale del ancho del marco y del alto que queda en la ventana.
   useEffect(() => {
@@ -175,16 +206,6 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
     };
   }, []);
 
-  // La ventana de una pila es un <dialog> modal: se abre y cierra desde aqui.
-  useEffect(() => {
-    const d = ventana.current;
-    if (!d) return;
-    if (revisando && !d.open) d.showModal();
-    if (!revisando && d.open) d.close();
-  }, [revisando]);
-
-  const nombre = (f: Ficha) => cartas.get(f.cartaId)?.nombre ?? "Carta";
-
   /** Las acciones de una carta: lo mismo que el arrastre, y algo mas. */
   function itemsDeCarta(uid: string): ItemMenu[] {
     const f = mesa.fichas[uid];
@@ -192,11 +213,16 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
     const items: ItemMenu[] = [
       {
         etiqueta: "Ver carta",
-        accion: () => setVista(cartas.get(f.cartaId) ?? null),
+        accion: () => setVista(cartaDe(uid) ?? null),
+        deshabilitado: !cartaDe(uid),
       },
       {
         etiqueta: f.bocaAbajo ? "Poner boca arriba" : "Poner boca abajo",
         accion: () => hacer({ tipo: "voltear", uid }),
+      },
+      {
+        etiqueta: "Marcas…",
+        accion: () => setMarcasDe(uid),
       },
     ];
     if (f.portadaPor || f.debajoDe) {
@@ -235,7 +261,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
       items.push({ separador: "Anexadas y debajo" });
       for (const d of colgadas) {
         items.push({
-          etiqueta: `${nombre(d)}…`,
+          etiqueta: `${nombre(d.uid)}…`,
           accion: () => abrirMenuCarta(d.uid, menu?.x ?? 0, menu?.y ?? 0),
           mantiene: true,
         });
@@ -245,8 +271,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
   }
 
   function abrirMenuCarta(uid: string, x: number, y: number) {
-    const f = mesa.fichas[uid];
-    setMenu({ x, y, titulo: nombre(f), items: itemsDeCarta(uid) });
+    setMenu({ x, y, titulo: nombre(uid), items: itemsDeCarta(uid) });
   }
 
   function abrirMenuCastillo(x: number, y: number) {
@@ -262,9 +287,27 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
           deshabilitado: vacio,
         },
         {
-          etiqueta: "Botar una",
-          accion: () => hacer({ tipo: "botar", jugador: YO, n: 1 }),
+          etiqueta: "Botar…",
+          accion: () => setPedido("botar"),
           deshabilitado: vacio,
+        },
+        {
+          etiqueta: "Mirar…",
+          accion: () => setPedido("mirar"),
+          deshabilitado: vacio,
+        },
+        {
+          etiqueta: "Mostrar…",
+          accion: () => setPedido("mostrar"),
+          deshabilitado: vacio,
+        },
+        {
+          etiqueta: "Buscar",
+          accion: () => buscarEn("castillo", false),
+        },
+        {
+          etiqueta: "Buscar y mostrar",
+          accion: () => buscarEn("castillo", true),
         },
         {
           etiqueta: "Barajar",
@@ -273,6 +316,12 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
         },
       ],
     });
+  }
+
+  function buscarEn(zona: ZonaBuscable, mostrar: boolean) {
+    setRevisando(null);
+    setBarajando(null);
+    hacer({ tipo: "abrirBusqueda", zona, mostrar });
   }
 
   /** De la pantalla a la mesa: el lienzo esta escalado. */
@@ -331,7 +380,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
         setMenu({
           x: clientX,
           y: clientY,
-          titulo: `Sobre ${nombre(mesa.fichas[sobreCarta])}`,
+          titulo: `Sobre ${nombre(sobreCarta)}`,
           items: [
             {
               etiqueta: "Portar (anexar)",
@@ -397,7 +446,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
   /** Una carta en la mesa: su cara o su dorso, con lo que lleva colgado. */
   function fichaEnMesa(uid: string, izquierda: number, arriba: number) {
     const f = mesa.fichas[uid];
-    const card = cartas.get(f.cartaId);
+    const card = cartaDe(uid);
     const colgadas = dependientes(mesa, uid).slice(0, 3);
     const arrastrada = arrastre?.uid === uid && arrastre.x !== null;
     const marcas = Object.entries(f.contadores);
@@ -422,7 +471,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
               zIndex: -1 - i,
             }}
           >
-            <CaraOdorso card={cartas.get(d.cartaId)} bocaAbajo={d.bocaAbajo} />
+            <CaraOdorso card={cartaDe(d.uid)} bocaAbajo={d.bocaAbajo} />
           </div>
         ))}
         <button
@@ -518,7 +567,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
     const oculta = zona === "castillo" || zona === "soporte";
     const etiqueta =
       zona === "castillo"
-        ? `Castillo, ${lista.length} cartas: robar, botar o barajar`
+        ? `Castillo, ${lista.length} cartas: robar, botar, mirar, buscar o barajar`
         : `Ver ${NOMBRE_ZONA[zona]}, ${lista.length} ${lista.length === 1 ? "carta" : "cartas"}`;
     return (
       <button
@@ -559,10 +608,7 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
           boxShadow: lista.length > 1 ? "3px 3px 0 var(--color-line)" : undefined,
         }}
       >
-        <CaraOdorso
-          card={cartas.get(tope.cartaId)}
-          bocaAbajo={oculta || tope.bocaAbajo}
-        />
+        <CaraOdorso card={cartaDe(tope.uid)} bocaAbajo={oculta || tope.bocaAbajo} />
       </button>
     );
   }
@@ -570,6 +616,10 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
   const fantasma =
     arrastre && arrastre.x !== null && arrastre.y !== null ? arrastre : null;
   const listaRevisada = revisando ? yo.zonas[revisando] : [];
+  // Lo que esta mirando o buscando este jugador: solo quien lo abrio lo maneja.
+  const revelado = mesa.revelado?.por === YO ? mesa.revelado : null;
+  const fichaMarcas = marcasDe ? mesa.fichas[marcasDe] : null;
+  const alertas = avisos(mesa, YO);
 
   return (
     <div className="flex flex-col gap-3">
@@ -577,36 +627,9 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
         <h1 className="text-ink mr-auto truncate text-lg font-bold">
           Práctica: {deckTitle(deck)}
         </h1>
-        <p className="text-muted text-[13px] tabular-nums" aria-live="polite">
+        <p className="text-muted text-[13px] tabular-nums">
           Mano {yo.zonas.mano.length} · Castillo {yo.zonas.castillo.length}
         </p>
-        <button
-          type="button"
-          onClick={() => hacer({ tipo: "robar", jugador: YO })}
-          disabled={yo.zonas.castillo.length === 0}
-          className={BOTON_SECUNDARIO}
-        >
-          <Hand size={14} aria-hidden="true" />
-          Robar
-        </button>
-        <button
-          type="button"
-          onClick={() => hacer({ tipo: "barajar", jugador: YO })}
-          disabled={yo.zonas.castillo.length === 0}
-          className={BOTON_SECUNDARIO}
-        >
-          <Shuffle size={14} aria-hidden="true" />
-          Barajar
-        </button>
-        <button
-          type="button"
-          onClick={() => hacer({ tipo: "mulligan", jugador: YO })}
-          disabled={yo.zonas.mano.length === 0}
-          className={BOTON_SECUNDARIO}
-        >
-          <Shuffle size={14} aria-hidden="true" />
-          Mulligan
-        </button>
         <button
           type="button"
           onClick={() => setMesa(newTable([{ id: YO, deck }]))}
@@ -621,116 +644,269 @@ export function MesaPractica({ deck, cartas, onCambiarBaraja }: MesaPracticaProp
         </button>
       </div>
 
-      <div ref={marco} className="w-full" style={{ height: ALTO * escala }}>
-        <div
-          ref={lienzo}
-          className="bg-surface border-line rounded-panel relative origin-top-left border"
-          style={{ width: ANCHO, height: ALTO, transform: `scale(${escala})` }}
-        >
-          {ZONAS.map(zonaEnMesa)}
-
-          {fantasma && (
-            <div
-              aria-hidden="true"
-              className="border-brand-500 pointer-events-none absolute z-50 overflow-hidden rounded-[6px] border-2 shadow-2xl"
-              style={{
-                left: (fantasma.x ?? 0) - CARTA_W / 2,
-                top: (fantasma.y ?? 0) - CARTA_H / 2,
-                width: CARTA_W,
-                height: CARTA_H,
-              }}
-            >
-              <CaraOdorso
-                card={cartas.get(mesa.fichas[fantasma.uid].cartaId)}
-                bocaAbajo={
-                  mesa.fichas[fantasma.uid].bocaAbajo ||
-                  ubicar(mesa, fantasma.uid)?.zona === "castillo"
-                }
-              />
-            </div>
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <MarcadorTurno
+          turno={mesa.turno}
+          onFase={(fase) => hacer({ tipo: "fase", fase })}
+          onSiguiente={() => hacer({ tipo: "siguienteFase" })}
+          onPasar={() => hacer({ tipo: "pasarTurno" })}
+        />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "robar", jugador: YO })}
+            disabled={yo.zonas.castillo.length === 0}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Hand size={14} aria-hidden="true" />
+            Robar una
+          </button>
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "barajar", jugador: YO })}
+            disabled={yo.zonas.castillo.length === 0}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Shuffle size={14} aria-hidden="true" />
+            Barajar
+          </button>
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "mulligan", jugador: YO })}
+            disabled={yo.zonas.mano.length === 0}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Shuffle size={14} aria-hidden="true" />
+            Mulligan
+          </button>
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "agrupar", jugador: YO })}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Layers size={14} aria-hidden="true" />
+            Agrupar
+          </button>
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "limpiarTemporales" })}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Eraser size={14} aria-hidden="true" />
+            Limpiar Fuerza
+          </button>
+          <button
+            type="button"
+            onClick={() => hacer({ tipo: "sortear" })}
+            className={BOTON_SECUNDARIO_COMPACTO}
+          >
+            <Coins size={14} aria-hidden="true" />
+            Lanzar moneda
+          </button>
         </div>
       </div>
 
-      <dialog
-        ref={ventana}
-        aria-labelledby="mesa-revisar"
-        onClose={() => setRevisando(null)}
-        className="bg-panel border-line text-ink rounded-panel m-auto max-h-[80vh] w-[min(56rem,90vw)] border p-5 backdrop:bg-black/60"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="mesa-revisar" className="text-lg font-bold">
-            {revisando ? `${NOMBRE_ZONA[revisando]} (${listaRevisada.length})` : ""}
-          </h2>
-          <button
-            type="button"
-            onClick={() => setRevisando(null)}
-            aria-label="Cerrar"
-            className={BOTON_ICONO_LIBRE}
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
+      {alertas.length > 0 && (
+        <div
+          role="alert"
+          className={cn(AVISO_EN_LINEA, "border-warning/60 bg-warning-soft text-ink")}
+        >
+          <TriangleAlert size={16} aria-hidden="true" className="text-warning mt-0.5" />
+          <ul className="flex flex-col gap-1">
+            {alertas.map((a) => (
+              <li key={a.tipo}>
+                {a.tipo === "castillo-vacio"
+                  ? "Castillo vacío: quien se queda sin cartas en el Castillo pierde el juego."
+                  : `Mano de ${a.cartas} cartas: el máximo es ${MANO_MAXIMA}. Descarta las que sobren al Cementerio.`}
+              </li>
+            ))}
+          </ul>
         </div>
-        {listaRevisada.length === 0 ? (
-          <p className="text-muted mt-4 text-[14px]">No hay cartas.</p>
-        ) : (
-          <ul className="mt-4 grid grid-cols-6 gap-2">
-            {listaRevisada.map((uid) => {
-              const card = cartas.get(mesa.fichas[uid].cartaId);
-              return (
-                <li key={uid}>
+      )}
+
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_17rem]">
+        <div ref={marco} className="min-w-0" style={{ height: ALTO * escala }}>
+          <div
+            ref={lienzo}
+            className="bg-surface border-line rounded-panel relative origin-top-left border"
+            style={{ width: ANCHO, height: ALTO, transform: `scale(${escala})` }}
+          >
+            {ZONAS.map(zonaEnMesa)}
+
+            {fantasma && (
+              <div
+                aria-hidden="true"
+                className="border-brand-500 pointer-events-none absolute z-50 overflow-hidden rounded-[6px] border-2 shadow-2xl"
+                style={{
+                  left: (fantasma.x ?? 0) - CARTA_W / 2,
+                  top: (fantasma.y ?? 0) - CARTA_H / 2,
+                  width: CARTA_W,
+                  height: CARTA_H,
+                }}
+              >
+                <CaraOdorso
+                  card={cartaDe(fantasma.uid)}
+                  bocaAbajo={
+                    mesa.fichas[fantasma.uid].bocaAbajo ||
+                    ubicar(mesa, fantasma.uid)?.zona === "castillo"
+                  }
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <RegistroMesa
+          registro={mesa.registro}
+          texto={texto}
+          className="max-h-72 xl:max-h-none"
+        />
+      </div>
+
+      {revisando && (
+        <VentanaMesa
+          titulo={`${NOMBRE_ZONA[revisando]} (${listaRevisada.length})`}
+          onCerrar={() => {
+            setRevisando(null);
+            setBarajando(null);
+            setMenu(null);
+          }}
+        >
+          {revisando !== "destierro" && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => buscarEn(revisando, false)}
+                className={BOTON_SECUNDARIO_COMPACTO}
+              >
+                Buscar
+              </button>
+              <button
+                type="button"
+                onClick={() => buscarEn(revisando, true)}
+                className={BOTON_SECUNDARIO_COMPACTO}
+              >
+                Buscar y mostrar
+              </button>
+              {revisando === "cementerio" &&
+                (barajando === null ? (
                   <button
                     type="button"
-                    aria-haspopup="menu"
-                    onClick={(e) => abrirMenuCarta(uid, e.clientX, e.clientY)}
-                    className="border-line focus-visible:outline-brand-500 hover:outline-brand-500 block w-full overflow-hidden rounded-[6px] border hover:outline-2 hover:outline-offset-2"
+                    onClick={() => setBarajando([])}
+                    disabled={listaRevisada.length === 0}
+                    className={BOTON_SECUNDARIO_COMPACTO}
                   >
-                    <span className="sr-only">{card?.nombre ?? "Carta"}</span>
-                    <CaraOdorso card={card} bocaAbajo={false} />
+                    <Shuffle size={14} aria-hidden="true" />
+                    Elegir para barajar en el Castillo
                   </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {menu && revisando && <MenuMesa {...menu} onCerrar={() => setMenu(null)} />}
-      </dialog>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        hacer({
+                          tipo: "barajarDesdeCementerio",
+                          jugador: YO,
+                          uids: barajando,
+                        });
+                        setBarajando(null);
+                      }}
+                      disabled={barajando.length === 0}
+                      className={BOTON_PRIMARIO_COMPACTO}
+                    >
+                      <Shuffle size={14} aria-hidden="true" />
+                      Barajar {barajando.length} en el Castillo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBarajando(null)}
+                      className={BOTON_SECUNDARIO_COMPACTO}
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ))}
+            </div>
+          )}
+          {listaRevisada.length === 0 ? (
+            <p className="text-muted mt-4 text-[14px]">No hay cartas.</p>
+          ) : (
+            <ul className="mt-4 grid max-h-[60vh] grid-cols-6 gap-2 overflow-y-auto p-1">
+              {listaRevisada.map((uid) => {
+                const card = cartaDe(uid);
+                const elegida = barajando?.includes(uid) ?? false;
+                return (
+                  <li key={uid}>
+                    <button
+                      type="button"
+                      aria-haspopup={barajando === null ? "menu" : undefined}
+                      aria-pressed={barajando === null ? undefined : elegida}
+                      onClick={(e) =>
+                        barajando === null
+                          ? abrirMenuCarta(uid, e.clientX, e.clientY)
+                          : setBarajando(
+                              elegida
+                                ? barajando.filter((u) => u !== uid)
+                                : [...barajando, uid],
+                            )
+                      }
+                      className={cn(
+                        "border-line focus-visible:outline-brand-500 hover:outline-brand-500 block w-full overflow-hidden rounded-[6px] border hover:outline-2 hover:outline-offset-2",
+                        elegida && "outline-brand-500 outline-4 outline-offset-2",
+                      )}
+                    >
+                      <span className="sr-only">{card?.nombre ?? "Carta"}</span>
+                      <CaraOdorso card={card} bocaAbajo={false} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {menu && <MenuMesa {...menu} onCerrar={() => setMenu(null)} />}
+        </VentanaMesa>
+      )}
+
+      {revelado && (
+        <DialogoRevelado
+          key={`${revelado.modo}-${revelado.zona}-${revelado.uids.join(",")}`}
+          modo={revelado.modo}
+          mostrar={revelado.mostrar}
+          donde={ZONA_CON_ARTICULO[revelado.zona]}
+          cartas={revelado.uids.map((uid) => ({ uid, card: cartaDe(uid) }))}
+          onOrdenar={(uids) => hacer({ tipo: "ordenarTope", uids })}
+          onDejar={() => hacer({ tipo: "cerrarRevelado" })}
+          onTomar={(uid) => hacer({ tipo: "buscar", uid })}
+        />
+      )}
+
+      {pedido && (
+        <DialogoNumero
+          titulo={PEDIDO[pedido].titulo}
+          accion={PEDIDO[pedido].accion}
+          maximo={yo.zonas.castillo.length}
+          onAceptar={(n) =>
+            hacer(
+              pedido === "botar"
+                ? { tipo: "botar", jugador: YO, n }
+                : { tipo: pedido, jugador: YO, n },
+            )
+          }
+          onCerrar={() => setPedido(null)}
+        />
+      )}
+
+      {fichaMarcas && marcasDe && (
+        <DialogoMarcas
+          nombre={nombre(marcasDe)}
+          ficha={fichaMarcas}
+          hacer={hacer}
+          onCerrar={() => setMarcasDe(null)}
+        />
+      )}
 
       {menu && !revisando && <MenuMesa {...menu} onCerrar={() => setMenu(null)} />}
 
       <CardModal card={vista} onClose={() => setVista(null)} formato={deck.formato} />
     </div>
-  );
-}
-
-/** La cara de una carta, o su dorso con el isotipo. */
-function CaraOdorso({ card, bocaAbajo }: { card: Card | undefined; bocaAbajo: boolean }) {
-  if (bocaAbajo || !card) {
-    return (
-      <span
-        className="from-brand-600 to-brand-800 flex size-full items-center justify-center bg-linear-to-br"
-        style={{ aspectRatio: CARD_RATIO }}
-      >
-        <Image
-          src="/brand/icon-white.svg"
-          alt=""
-          width={40}
-          height={40}
-          className="opacity-70"
-          draggable={false}
-        />
-      </span>
-    );
-  }
-  return (
-    <Image
-      src={card.thumb}
-      alt=""
-      width={200}
-      height={286}
-      onLoad={marcarCargada}
-      draggable={false}
-      className="imagen-carga pointer-events-none size-full object-cover"
-    />
   );
 }

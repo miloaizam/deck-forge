@@ -74,10 +74,116 @@ export interface Jugador {
   zonas: Record<Zona, string[]>;
 }
 
+/** Como se nombra cada zona en la interfaz (los nombres del DAR). */
+export const NOMBRE_ZONA: Record<Zona, string> = {
+  castillo: "Castillo",
+  mano: "Mano",
+  reserva: "Reserva de Oro",
+  oroPagado: "Oro Pagado",
+  defensa: "Línea de Defensa",
+  ataque: "Línea de Ataque",
+  apoyo: "Línea de Apoyo",
+  cementerio: "Cementerio",
+  destierro: "Destierro",
+  soporte: "Mazo de Soporte",
+};
+
+/** La zona con su articulo, para las frases del registro. */
+export const ZONA_CON_ARTICULO: Record<Zona, string> = {
+  castillo: "el Castillo",
+  mano: "la mano",
+  reserva: "la Reserva de Oro",
+  oroPagado: "el Oro Pagado",
+  defensa: "la Línea de Defensa",
+  ataque: "la Línea de Ataque",
+  apoyo: "la Línea de Apoyo",
+  cementerio: "el Cementerio",
+  destierro: "el Destierro",
+  soporte: "el Mazo de Soporte",
+};
+
+/** Las fases y pasos del turno, en orden (DAR §9). */
+export const FASES = [
+  "agrupacion",
+  "vigilia",
+  "ataque",
+  "bloqueo",
+  "guerraTalismanes",
+  "dano",
+  "final",
+  "robar",
+] as const;
+
+export type Fase = (typeof FASES)[number];
+
+export const NOMBRE_FASE: Record<Fase, string> = {
+  agrupacion: "Agrupación",
+  vigilia: "Vigilia",
+  ataque: "Declaración de Ataque",
+  bloqueo: "Declaración de Bloqueo",
+  guerraTalismanes: "Guerra de Talismanes",
+  dano: "Asignación de Daño",
+  final: "Fase Final",
+  robar: "Robar",
+};
+
+/** El marcador de turno: no obliga a nada, ordena la conversacion. */
+export interface Turno {
+  numero: number;
+  activo: string;
+  fase: Fase;
+  /** Quien tiene la prioridad en la Guerra de Talismanes. */
+  prioridad: string | null;
+}
+
+/**
+ * Cartas que alguien esta viendo sin sacarlas de su zona: mirar o mostrar
+ * las de arriba del Castillo (DAR §10.34, §10.35), o recorrer una zona
+ * entera para buscar (§10.8).
+ */
+export interface Revelado {
+  /** De quien es la zona. */
+  jugador: string;
+  zona: Zona;
+  uids: string[];
+  /** Quien las ve: un jugador, o los dos. */
+  para: string | "todos";
+  /** Quien lo abrio: el unico que lo puede cerrar. */
+  por: string;
+  modo: "mirar" | "mostrar" | "buscar";
+  /** En una busqueda: si la carta elegida se muestra («Buscar y mostrar»). */
+  mostrar: boolean;
+}
+
+/**
+ * Una linea del registro. Guarda datos y no texto: la frase la arma la
+ * vista con los nombres del catalogo (`registro.ts`). Una carta va con su id
+ * SOLO si los dos jugadores la podian ver; si no, `null` («una carta»).
+ */
+export interface EntradaRegistro {
+  n: number;
+  por: string;
+  tipo: string;
+  cartas: (string | null)[];
+  desde?: Zona;
+  hacia?: Zona;
+  cuantas?: number;
+  /** Un dato mas: la fase, la moneda, el contador o la nota. */
+  detalle?: string;
+  /** El otro jugador que nombra la entrada: de quien es el Castillo, quien comienza. */
+  objetivo?: string;
+}
+
+/** Cuantas lineas guarda el registro. */
+export const MAX_REGISTRO = 200;
+
 export interface Mesa {
   fichas: Record<string, Ficha>;
   /** En el orden en que se sentaron. Para practicar basta uno. */
   jugadores: Jugador[];
+  turno: Turno;
+  revelado: Revelado | null;
+  registro: EntradaRegistro[];
 }
 
 export function enJuego(zona: Zona): boolean {

@@ -11,6 +11,10 @@ import { zonasVacias, type Ficha, type Jugador, type Mesa } from "./table";
  * - se roban **8** a la mano;
  * - el side queda en el Mazo de Soporte.
  *
+ * Los uids se reparten DESPUES de barajar: si salieran en el orden de la
+ * baraja, las copias de una carta tendrian numeros seguidos, y en el 1v1
+ * ver una sola dejaria adivinar cuales son las otras.
+ *
  * La mesa no revisa que la baraja cumpla: eso lo decide quien la llama.
  */
 export function newTable(
@@ -41,25 +45,36 @@ export function newTable(
 
     const zonas = zonasVacias();
     const mazo: string[] = [];
+    let oroApartado = false;
     for (const { id: cartaId, n: copias } of deck.principal) {
       for (let i = 0; i < copias; i++) {
-        const uid = crear(cartaId);
-        if (cartaId === deck.oroInicial && zonas.reserva.length === 0) {
-          zonas.reserva.push(uid);
+        if (cartaId === deck.oroInicial && !oroApartado) {
+          oroApartado = true;
+          zonas.reserva.push(crear(cartaId));
         } else {
-          mazo.push(uid);
+          mazo.push(cartaId);
         }
       }
     }
-    for (const { id: cartaId, n: copias } of deck.side) {
-      for (let i = 0; i < copias; i++) zonas.soporte.push(crear(cartaId));
-    }
-
-    const castillo = barajar(mazo, azar);
+    const castillo = barajar(mazo, azar).map(crear);
+    const side = barajar(
+      deck.side.flatMap(({ id: cartaId, n: copias }) =>
+        Array.from({ length: copias }, () => cartaId),
+      ),
+      azar,
+    );
+    zonas.soporte = side.map(crear);
     zonas.mano = castillo.splice(0, MANO_INICIAL);
     zonas.castillo = castillo;
     jugadores.push({ id, zonas });
   }
 
-  return { fichas, jugadores };
+  const primero = jugadores[0]?.id ?? "";
+  return {
+    fichas,
+    jugadores,
+    turno: { numero: 1, activo: primero, fase: "agrupacion", prioridad: null },
+    revelado: null,
+    registro: [{ n: 1, por: primero, tipo: "preparar", cartas: [] }],
+  };
 }
