@@ -188,8 +188,9 @@ estas reglas: las **hace posibles** a mano.
   - el privado de cada jugador es su mano y el orden de su Castillo.
 - Barajar usa Fisher-Yates con el azar inyectado, como `src/lib/hand-test.ts`.
 
-**Base** (`supabase/esquema.sql`, mismas reglas que lo ya existente: RLS y
-funciones `security definer`, ver `docs/cuentas.md`):
+**Base** (`supabase/mesa.sql`, **aparte** de `esquema.sql`, que no se toca;
+mismas reglas que lo ya existente: RLS y funciones `security definer`, ver
+`docs/cuentas.md`):
 
 - `mesas`: los dos jugadores, el código para unirse, mejor de 3 o 5, el
   marcador, el estado (esperando, jugando, entre juegos, terminada), el
@@ -397,17 +398,52 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 4: base y sala
 
 - **Objetivo:** dos cuentas pueden encontrarse en una sala.
-- **Tareas:**
-  - las tablas `mesas`, `mesas_publico` y `mesas_privado`, con RLS y
-    funciones, probadas contra Postgres local como el resto del esquema
-    (`docs/cuentas.md`);
-  - `/mesa`: crear una sala (formato y mejor de 3 o 5) y compartir su código
-    o enlace; unirse; elegir una baraja, que tiene que cumplir en el formato
-    de la sala (`validateDeck`; la base guarda el formato y la mesa lo
-    revisa al entrar);
-  - todo lo que responde la base, validado con Zod (CLAUDE.md, seguridad #4).
-- **Terminado cuando:** dos cuentas entran a la misma sala y el rival **no**
-  puede leer la fila privada del otro (probado por SQL).
+- **Hecha (24-11-2026).**
+- **La base va en un archivo propio, `supabase/mesa.sql`** (decisión del
+  proyecto): no toca ninguna tabla, política ni función de las cuentas y la
+  Comunidad, y solo lee `perfiles` para mostrar el alias del rival. Se pega
+  en el SQL Editor **después** de `esquema.sql` y aguanta volver a correrse.
+  - Tablas `mesas` (jugadores, código, formato, mejor de 3 o 5, estado,
+    listos, marcador, ganador y la señal de vida de cada uno),
+    `mesas_publico` (la foto pública con su versión, para las sesiones 5 y
+    6) y `mesas_privado` (una fila por jugador con su baraja elegida, que
+    **solo su dueño lee**).
+  - A `anon` y `authenticated` se les quitan los permisos que Supabase da
+    por defecto a toda tabla nueva y se devuelve solo lo justo: las salas se
+    leen, la fila privada propia se lee, se crea y se cambia.
+  - Funciones: `crear_mesa`, `unirse_mesa`, `ver_mesa` (con el alias de los
+    dos), `mis_mesas`, `marcar_lista` (pide la baraja guardada; con los dos
+    listos la sala pasa a jugarse), `latido_mesa` y `salir_mesa` (el
+    anfitrión la borra; el invitado deja su lugar).
+  - Errores propios `MS001`…`MS006`, que el sitio traduce
+    (`MENSAJE_ERROR_SALA`).
+  - Tope de tres salas abiertas por persona; las abandonadas de más de un
+    día se barren al crear otra.
+- **`supabase/mesa.prueba.sql`** la prueba contra Postgres local con tres
+  cuentas: B entra con el código, C no; **B no lee ni escribe la fila
+  privada de A**; nadie cambia una sala a mano; tope de salas, salir y
+  cerrar. Pasa dos veces seguidas sobre una base nueva.
+- **El sitio:**
+  - `src/lib/mesa/sala.ts`, con su test: el código (seis caracteres sin
+    0, 1, I, L ni O) y la validación con Zod de todo lo que responde la
+    base, alias del rival incluido;
+  - `src/components/mesa/sala-api.ts`, que usa `api()` y `token()` de la
+    nube **sin cambiarlos**;
+  - `/mesa`: crear una sala (formato y serie), unirse con el código (o con
+    el enlace `/mesa/?c=CÓDIGO`, que lo trae escrito) y las salas abiertas;
+  - `/mesa/?s=<id>`: la sala, con «Copiar enlace», los dos jugadores, y la
+    baraja de cada uno, que **tiene que cumplir en el formato de la sala**
+    (`validateDeck`, con el índice de ese formato) y va a su fila privada.
+    Por ahora pregunta por la sala cada 3 s y da la señal de vida cada
+    20 s: el tiempo real llega en la sesión 5.
+- **`e2e/sala.spec.ts`** (en `pnpm run e2e:mesa`): dos navegadores se
+  encuentran en una sala, eligen baraja y quedan listos, y un tercero no
+  entra. Las funciones de la sala se imitan dentro de la prueba, sin tocar
+  `e2e/supabase-simulado.ts`.
+- **Para encenderla falta pegar `supabase/mesa.sql` en Supabase.** Mientras
+  `MESA_ACTIVA` esté apagada, nadie llega a esas tablas.
+- **Pasa a la sesión 8:** `/privacidad` y la ayuda dirán lo que se guarda de
+  las partidas cuando la mesa se encienda.
 
 ### Sesión 5: tiempo real
 
