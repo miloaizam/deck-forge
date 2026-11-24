@@ -52,7 +52,13 @@ function barajaLegal(nombre: string): Deck {
       vistas.add(a.identidad);
     }
     deck = setQuantity(deck, oroB.id, "principal", 1);
-    if (isLegal(validateDeck(deck, indice))) return deck;
+    if (!isLegal(validateDeck(deck, indice))) continue;
+    // Un Mazo de Soporte de dos cartas, para cambiar entre juegos (sesion 7).
+    for (const a of cartas.filter((c) => c.tipo === "Aliado" && c.raza === raza)) {
+      if (vistas.has(a.identidad)) continue;
+      const conSide = setQuantity(deck, a.id, "side", 2);
+      if (isLegal(validateDeck(conSide, indice))) return conSide;
+    }
   }
   throw new Error("no se pudo armar una baraja legal");
 }
@@ -67,8 +73,16 @@ interface FilaSala {
   jugador_b: string | null;
   listo_a: boolean;
   listo_b: boolean;
+  victorias_a: number;
+  victorias_b: number;
   ganador: string | null;
   motivo: string | null;
+  ronda: number;
+  empates: number;
+  declara: string | null;
+  declarado: string | null;
+  ultimo: string | null;
+  rendido: boolean;
   /** La ultima senal de vida de cada jugador, en ms (sesion 6). */
   senal: Record<string, number>;
 }
@@ -103,13 +117,35 @@ const vista = ({ senal, ...s }: FilaSala) => ({
   ...s,
   alias_a: null,
   alias_b: null,
-  victorias_a: 0,
-  victorias_b: 0,
   senal_a: fecha(senal[s.jugador_a]),
   senal_b: s.jugador_b ? fecha(senal[s.jugador_b]) : null,
   creada: null,
   ahora: new Date().toISOString(),
 });
+
+/** Lo que hace `cerrar_juego` en `mesa.sql`: suma y, si alguien llego, termina. */
+function cerrarJuego(base: Base, sala: FilaSala, ganador: string, rendido: boolean) {
+  if (ganador === "a") sala.victorias_a += 1;
+  if (ganador === "b") sala.victorias_b += 1;
+  if (ganador === "empate") sala.empates += 1;
+  Object.assign(sala, {
+    ultimo: ganador,
+    rendido,
+    declara: null,
+    declarado: null,
+    listo_a: false,
+    listo_b: false,
+    estado: "entre_juegos",
+  });
+  base.publico.set(sala.id, { version: 0, estado: {} });
+  const necesarias = Math.floor(sala.mejor_de / 2) + 1;
+  if (sala.victorias_a >= necesarias || sala.victorias_b >= necesarias) {
+    sala.estado = "terminada";
+    sala.ganador = sala.victorias_a >= necesarias ? sala.jugador_a : sala.jugador_b;
+    sala.motivo = rendido ? "rendicion" : "partidas";
+    base.privado = base.privado.filter((p) => p.mesa !== sala.id);
+  }
+}
 
 let siguiente = 0;
 
@@ -118,7 +154,7 @@ async function imitarMesa(page: Page, base: Base) {
     const req = route.request();
     const ruta = new URL(req.url()).pathname.replace("/rest/v1/", "");
     const esMesa =
-      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa|guardar_mesa_publico|reclamar_abandono)$/.test(
+      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa|guardar_mesa_publico|reclamar_abandono|declarar_resultado|responder_resultado|rendirse)$/.test(
         ruta,
       );
     if (!esMesa && !/^mesas_(privado|publico)/.test(ruta)) return route.fallback();
@@ -148,8 +184,16 @@ async function imitarMesa(page: Page, base: Base) {
           jugador_b: null,
           listo_a: false,
           listo_b: false,
+          victorias_a: 0,
+          victorias_b: 0,
           ganador: null,
           motivo: null,
+          ronda: 1,
+          empates: 0,
+          declara: null,
+          declarado: null,
+          ultimo: null,
+          rendido: false,
           senal: { [uid]: Date.now() },
         });
         return responder(route, { id, codigo });
@@ -176,7 +220,9 @@ async function imitarMesa(page: Page, base: Base) {
         return responder(route, undefined, 204);
       case "rpc/guardar_mesa_publico": {
         if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
-        if (sala.estado !== "jugando") return responder(route, false);
+        if (sala.estado !== "jugando" || Number(cuerpo.p_ronda) !== sala.ronda) {
+          return responder(route, false);
+        }
         const antes = base.publico.get(sala.id)?.version ?? 0;
         if (Number(cuerpo.p_version) <= antes) return responder(route, false);
         base.publico.set(sala.id, {
@@ -211,11 +257,61 @@ async function imitarMesa(page: Page, base: Base) {
       }
       case "rpc/marcar_lista": {
         if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
+        if (!["esperando", "entre_juegos"].includes(sala.estado)) {
+          return responder(route, { code: "MS005" }, 400);
+        }
         const tiene = base.privado.some((p) => p.mesa === sala.id && p.jugador === uid);
         if (cuerpo.p_lista && !tiene) return responder(route, { code: "MS006" }, 400);
         if (uid === sala.jugador_a) sala.listo_a = Boolean(cuerpo.p_lista);
         else sala.listo_b = Boolean(cuerpo.p_lista);
-        if (sala.listo_a && sala.listo_b && sala.jugador_b) sala.estado = "jugando";
+        if (sala.listo_a && sala.listo_b && sala.jugador_b) {
+          if (sala.estado === "entre_juegos") {
+            sala.ronda += 1;
+            base.publico.set(sala.id, { version: 0, estado: {} });
+          }
+          sala.estado = "jugando";
+          sala.declara = null;
+          sala.declarado = null;
+        }
+        return responder(route, undefined, 204);
+      }
+      case "rpc/declarar_resultado": {
+        if (!sala || !juega || !sala.jugador_b) {
+          return responder(route, { code: "MS004" }, 400);
+        }
+        if (sala.estado !== "jugando") return responder(route, { code: "MS008" }, 400);
+        if (sala.declara && sala.declara !== uid) {
+          return responder(route, { code: "MS009" }, 400);
+        }
+        sala.declara = uid;
+        sala.declarado = String(cuerpo.p_ganador);
+        return responder(route, undefined, 204);
+      }
+      case "rpc/responder_resultado": {
+        if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
+        if (sala.estado !== "jugando") return responder(route, { code: "MS008" }, 400);
+        if (!sala.declara || sala.declara === uid) {
+          return responder(route, { code: "MS010" }, 400);
+        }
+        if (cuerpo.p_acepta) cerrarJuego(base, sala, sala.declarado ?? "empate", false);
+        else {
+          Object.assign(sala, {
+            estado: "entre_juegos",
+            ultimo: "anulado",
+            rendido: false,
+            declara: null,
+            declarado: null,
+            listo_a: false,
+            listo_b: false,
+          });
+          base.publico.set(sala.id, { version: 0, estado: {} });
+        }
+        return responder(route, undefined, 204);
+      }
+      case "rpc/rendirse": {
+        if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
+        if (sala.estado !== "jugando") return responder(route, { code: "MS008" }, 400);
+        cerrarJuego(base, sala, uid === sala.jugador_a ? "b" : "a", true);
         return responder(route, undefined, 204);
       }
       case "mesas_privado": {
@@ -669,4 +765,123 @@ test("si el rival no vuelve en dos minutos, la serie es de quien siguio conectad
   await expect(
     b2.getByRole("heading", { name: "Perdiste la serie por abandono" }),
   ).toBeVisible();
+});
+
+/** Abre «Terminar juego» y elige como termino. */
+async function terminarJuego(
+  p: Page,
+  eleccion: "Gané" | "Perdí" | "Empate" | "Rendirme",
+) {
+  await p.getByRole("button", { name: "Terminar juego" }).click();
+  await p
+    .getByRole("dialog", { name: "Terminar el juego" })
+    .getByRole("button", { name: eleccion })
+    .click();
+}
+
+test("una serie al mejor de 3 de principio a fin: declarar, anular, side y rendirse", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(90_000);
+  const { a, b, base } = await empezarPartida(browser);
+  const sala = base.salas[0];
+  await expect(a.getByLabel("Marcador")).toHaveText("Juego 1 · Tú 0 – 0 Invitado");
+
+  // Juego 1: A declara que gano y B lo confirma.
+  await jugarADefensa(a, b, 1);
+  await terminarJuego(a, "Gané");
+  await expect(
+    a.getByText("Declaraste que ganaste. Esperando a que Invitado lo confirme."),
+  ).toBeVisible();
+  const pregunta = b
+    .getByRole("alert")
+    .filter({ hasText: "Anfitrión declara que ganó este juego. ¿Estás de acuerdo?" });
+  await expect(pregunta).toBeVisible({ timeout: 10_000 });
+  await pregunta.getByRole("button", { name: "Sí, de acuerdo" }).click();
+
+  // Entre juegos: el marcador y como termino, dicho a cada uno.
+  await expect(a.getByRole("heading", { name: "Tú 1 – 0 Invitado" })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(a.getByText("Ganaste el juego.")).toBeVisible();
+  await expect(b.getByRole("heading", { name: "Tú 0 – 1 Anfitrión" })).toBeVisible();
+  await expect(b.getByText("Anfitrión ganó el juego.")).toBeVisible();
+
+  // B cambia una carta con su side: una por otra.
+  await b.getByRole("button", { name: /^Sale del Castillo/ }).click();
+  const elegible = (p: Page) =>
+    p
+      .locator('[role="option"]:not([aria-disabled="true"])')
+      .filter({ visible: true, hasNotText: "Elige una carta" });
+  await elegible(b).first().click();
+  // La lista se va con una animacion: hasta que no se fue, sus opciones siguen ahi.
+  await expect(elegible(b)).toHaveCount(0);
+  await b.getByRole("button", { name: /^Entra del Soporte/ }).click();
+  const entra = elegible(b).first();
+  const entraNombre = ((await entra.textContent()) ?? "").replace(/×\d+$/, "").trim();
+  await entra.click();
+  await b.getByRole("button", { name: "Cambiar", exact: true }).click();
+  await expect(b.getByText(`Entran: 1× ${entraNombre}`)).toBeVisible();
+  await b.getByRole("button", { name: "Listo para el juego 2" }).click();
+  await expect(a.getByText("Invitado: listo")).toBeVisible({ timeout: 10_000 });
+  await a.getByRole("button", { name: "Listo para el juego 2" }).click();
+
+  // Juego 2: otra mesa, la baraja de B con su cambio, y su Soporte se cuenta.
+  await expect(a.getByLabel("Marcador")).toHaveText("Juego 2 · Tú 1 – 0 Invitado", {
+    timeout: 15_000,
+  });
+  await expect(zona(a, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas", {
+    timeout: 15_000,
+  });
+  await expect(zona(b, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas");
+  await expect(zona(a, "Mazo de Soporte de Invitado")).toHaveAttribute(
+    "aria-label",
+    "Mazo de Soporte de Invitado, 2 cartas",
+  );
+  await expect(zona(a, "Línea de Defensa")).toHaveAttribute(
+    "aria-label",
+    "Línea de Defensa, 0 cartas",
+  );
+  const deB = base.privado.find((p) => p.jugador === USUARIO_B)?.estado as {
+    baraja: Deck;
+    actual: Deck;
+  }; // lo escribio el sitio
+  expect(JSON.stringify(deB.actual.principal)).not.toEqual(
+    JSON.stringify(deB.baraja.principal),
+  );
+
+  // A declara que gano; B no esta de acuerdo: el juego se anula y se repite.
+  await terminarJuego(a, "Gané");
+  const otra = b.getByRole("alert").filter({ hasText: "¿Estás de acuerdo?" });
+  await otra.getByRole("button", { name: "No estoy de acuerdo" }).click();
+  await b.getByRole("button", { name: "Anular el juego" }).click();
+  await expect(
+    a.getByText(
+      "No hubo acuerdo sobre el resultado: el juego se anula y se juega de nuevo.",
+    ),
+  ).toBeVisible({ timeout: 10_000 });
+  await expect(a.getByRole("heading", { name: "Tú 1 – 0 Invitado" })).toBeVisible();
+  // El cambio del side sigue para el juego repetido.
+  await expect(b.getByText(`Entran: 1× ${entraNombre}`)).toBeVisible();
+  await a.getByRole("button", { name: "Listo para el juego 2" }).click();
+  await b.getByRole("button", { name: "Listo para el juego 2" }).click();
+
+  // El juego 2 de nuevo: B se rinde. Es el que decide: la serie es de A.
+  await expect(zona(b, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas", {
+    timeout: 15_000,
+  });
+  await terminarJuego(b, "Rendirme");
+  await expect(a.getByRole("heading", { name: "Ganaste la serie 2 – 0" })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(a.getByText("Invitado se rindió en el último juego.")).toBeVisible();
+  await expect(b.getByRole("heading", { name: "Perdiste la serie 0 – 2" })).toBeVisible();
+  await expect(b.getByText("Te rendiste en el último juego.")).toBeVisible();
+  expect(sala.estado).toBe("terminada");
+  expect(sala.motivo).toBe("rendicion");
+  expect(sala.ronda).toBe(3);
+  // Sin historial: la partida se borro.
+  expect(base.privado.filter((p) => p.mesa === sala.id)).toEqual([]);
 });

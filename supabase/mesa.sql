@@ -22,6 +22,9 @@
 --   MS005  la sala ya empezo: no se puede salir asi
 --   MS006  falta elegir la baraja
 --   MS007  todavia no pasan los dos minutos de gracia
+--   MS008  no se esta jugando un juego
+--   MS009  hay un resultado del rival esperando respuesta
+--   MS010  no hay un resultado del rival que responder
 -- =====================================================================
 
 create table if not exists public.mesas (
@@ -52,6 +55,23 @@ create table if not exists public.mesas (
 -- volver a pegar el archivo sobre una base que ya tiene la tabla la sume.
 alter table public.mesas add column if not exists motivo text
   check (motivo in ('abandono', 'rendicion', 'partidas'));
+
+-- La serie (sesion 7), tambien sumada aparte:
+--   ronda      cuantos juegos se han empezado, anulados incluidos: separa la
+--              foto y los mensajes de un juego de los del anterior;
+--   empates    los juegos empatados, que no suman al marcador;
+--   declara    quien declaro el resultado del juego en curso, y
+--   declarado  lo que declaro: el lado que gano ('a' o 'b') o 'empate';
+--   ultimo     como termino el ultimo juego ('a', 'b', 'empate' o 'anulado'),
+--   rendido    y si fue porque alguien se rindio.
+alter table public.mesas add column if not exists ronda smallint not null default 1;
+alter table public.mesas add column if not exists empates smallint not null default 0;
+alter table public.mesas add column if not exists declara uuid;
+alter table public.mesas add column if not exists declarado text
+  check (declarado in ('a', 'b', 'empate'));
+alter table public.mesas add column if not exists ultimo text
+  check (ultimo in ('a', 'b', 'empate', 'anulado'));
+alter table public.mesas add column if not exists rendido boolean not null default false;
 
 create index if not exists mesas_jugador_a on public.mesas (jugador_a);
 create index if not exists mesas_jugador_b on public.mesas (jugador_b);
@@ -149,6 +169,12 @@ as $$
     'senal_b', m.senal_b,
     'creada', m.creada,
     'motivo', m.motivo,
+    'ronda', m.ronda,
+    'empates', m.empates,
+    'declara', m.declara,
+    'declarado', m.declarado,
+    'ultimo', m.ultimo,
+    'rendido', m.rendido,
     -- La hora de la base: la cuenta regresiva no depende del reloj de cada uno.
     'ahora', now()
   )
@@ -259,9 +285,10 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------
--- Listo o no. Para estar listo hay que haber guardado la baraja en la fila
--- privada (que cumpla lo revisa el sitio: la base no tiene el catalogo).
--- Con los dos listos, la sala pasa a jugarse.
+-- Listo o no, antes del primer juego y entre juegos (sesion 7). Para estar
+-- listo hay que haber guardado la baraja en la fila privada (que cumpla lo
+-- revisa el sitio: la base no tiene el catalogo). Con los dos listos se
+-- juega; desde el segundo juego, con una ronda nueva y la foto en blanco.
 -- ---------------------------------------------------------------------
 create or replace function public.marcar_lista(p_mesa uuid, p_lista boolean)
 returns void
@@ -278,7 +305,7 @@ begin
   if not found or yo is null or yo not in (m.jugador_a, coalesce(m.jugador_b, m.jugador_a)) then
     raise exception 'no eres jugador' using errcode = 'MS004';
   end if;
-  if m.estado <> 'esperando' then
+  if m.estado not in ('esperando', 'entre_juegos') then
     raise exception 'ya empezo' using errcode = 'MS005';
   end if;
   if p_lista and not exists (
@@ -294,8 +321,16 @@ begin
     update public.mesas set listo_b = p_lista where id = p_mesa;
   end if;
 
-  update public.mesas set estado = 'jugando'
-  where id = p_mesa and listo_a and listo_b and jugador_b is not null;
+  update public.mesas
+  set estado = 'jugando',
+      ronda = case when estado = 'entre_juegos' then ronda + 1 else ronda end,
+      declara = null, declarado = null
+  where id = p_mesa and listo_a and listo_b and jugador_b is not null
+  returning * into m;
+  if found and m.ronda > 1 then
+    update public.mesas_publico set version = 0, estado = '{}'::jsonb, actualizada = now()
+    where mesa = p_mesa;
+  end if;
 end;
 $$;
 
@@ -315,8 +350,8 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- Salir mientras se espera: quien la creo la borra; el invitado deja su
--- lugar libre (y su fila privada). Una vez empezada se sale rindiendose
--- (sesion 7).
+-- lugar libre (y su fila privada). Una vez empezada, la serie termina
+-- jugando, rindiendose en cada juego o por abandono.
 -- ---------------------------------------------------------------------
 create or replace function public.salir_mesa(p_mesa uuid)
 returns void
@@ -388,8 +423,11 @@ end $$;
 -- la hacen retroceder. Lo privado de cada uno (su baraja y la semilla de su
 -- barajado) ya esta en su fila de mesas_privado.
 -- ---------------------------------------------------------------------
+-- La sesion 7 le sumo la ronda: se borra la version de tres argumentos.
+drop function if exists public.guardar_mesa_publico(uuid, bigint, jsonb);
 create or replace function public.guardar_mesa_publico(
   p_mesa uuid,
+  p_ronda int,
   p_version bigint,
   p_estado jsonb
 )
@@ -406,7 +444,8 @@ begin
   if not found or auth.uid() is null or auth.uid() not in (m.jugador_a, coalesce(m.jugador_b, m.jugador_a)) then
     raise exception 'no eres jugador' using errcode = 'MS004';
   end if;
-  if m.estado not in ('jugando', 'entre_juegos') then
+  -- Un guardado que llega tarde, de un juego que ya termino, no pisa nada.
+  if m.estado <> 'jugando' or m.ronda <> p_ronda then
     return false;
   end if;
   if octet_length(p_estado::text) > 524288 then
@@ -457,15 +496,159 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------
+-- La serie (sesion 7, GAME.md §2): cada juego termina cuando uno declara el
+-- resultado y el otro lo confirma, o cuando alguien se rinde. Si no hay
+-- acuerdo, el juego se anula y se repite sin sumar.
+--
+-- `cerrar_juego` no se expone: la llaman las funciones de abajo, que ya
+-- revisaron quien llama. Suma al marcador y, si alguien llego a las
+-- victorias que pide la serie, la termina y borra la partida (sin
+-- historial); si no, la sala queda entre juegos, con los dos sin listo.
+-- ---------------------------------------------------------------------
+create or replace function public.cerrar_juego(p_mesa uuid, p_ganador text, p_rendido boolean)
+returns void
+language plpgsql
+volatile
+set search_path = public
+as $$
+declare
+  m public.mesas;
+  necesarias int;
+begin
+  update public.mesas
+  set victorias_a = victorias_a + case when p_ganador = 'a' then 1 else 0 end,
+      victorias_b = victorias_b + case when p_ganador = 'b' then 1 else 0 end,
+      empates = empates + case when p_ganador = 'empate' then 1 else 0 end,
+      ultimo = p_ganador, rendido = p_rendido,
+      declara = null, declarado = null,
+      listo_a = false, listo_b = false,
+      estado = 'entre_juegos'
+  where id = p_mesa
+  returning * into m;
+
+  update public.mesas_publico set version = 0, estado = '{}'::jsonb, actualizada = now()
+  where mesa = p_mesa;
+
+  necesarias := m.mejor_de / 2 + 1;
+  if m.victorias_a >= necesarias or m.victorias_b >= necesarias then
+    update public.mesas
+    set estado = 'terminada',
+        ganador = case when m.victorias_a >= necesarias then m.jugador_a else m.jugador_b end,
+        motivo = case when p_rendido then 'rendicion' else 'partidas' end
+    where id = p_mesa;
+    delete from public.mesas_privado where mesa = p_mesa;
+  end if;
+end;
+$$;
+
+-- Declarar el resultado del juego en curso: el lado que gano o 'empate'.
+-- Quien declaro puede corregirse mientras el otro no responde.
+create or replace function public.declarar_resultado(p_mesa uuid, p_ganador text)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  yo uuid := auth.uid();
+  m public.mesas;
+begin
+  select * into m from public.mesas where id = p_mesa for update;
+  if not found or yo is null or m.jugador_b is null or yo not in (m.jugador_a, m.jugador_b) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if p_ganador not in ('a', 'b', 'empate') then
+    raise exception 'resultado invalido' using errcode = '22023';
+  end if;
+  if m.estado <> 'jugando' then
+    raise exception 'no se esta jugando' using errcode = 'MS008';
+  end if;
+  if m.declara is not null and m.declara <> yo then
+    raise exception 'responde primero' using errcode = 'MS009';
+  end if;
+  update public.mesas set declara = yo, declarado = p_ganador where id = p_mesa;
+end;
+$$;
+
+-- Responder al resultado que declaro el otro: de acuerdo, o se anula.
+create or replace function public.responder_resultado(p_mesa uuid, p_acepta boolean)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  yo uuid := auth.uid();
+  m public.mesas;
+begin
+  select * into m from public.mesas where id = p_mesa for update;
+  if not found or yo is null or m.jugador_b is null or yo not in (m.jugador_a, m.jugador_b) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if m.estado <> 'jugando' then
+    raise exception 'no se esta jugando' using errcode = 'MS008';
+  end if;
+  if m.declara is null or m.declara = yo then
+    raise exception 'nada que responder' using errcode = 'MS010';
+  end if;
+  if p_acepta then
+    perform public.cerrar_juego(p_mesa, m.declarado, false);
+  else
+    update public.mesas
+    set ultimo = 'anulado', rendido = false,
+        declara = null, declarado = null,
+        listo_a = false, listo_b = false,
+        estado = 'entre_juegos'
+    where id = p_mesa;
+    update public.mesas_publico set version = 0, estado = '{}'::jsonb, actualizada = now()
+    where mesa = p_mesa;
+  end if;
+end;
+$$;
+
+-- Rendirse: el juego en curso es del otro, en el acto y sin confirmar.
+create or replace function public.rendirse(p_mesa uuid)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  yo uuid := auth.uid();
+  m public.mesas;
+begin
+  select * into m from public.mesas where id = p_mesa for update;
+  if not found or yo is null or m.jugador_b is null or yo not in (m.jugador_a, m.jugador_b) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if m.estado <> 'jugando' then
+    raise exception 'no se esta jugando' using errcode = 'MS008';
+  end if;
+  perform public.cerrar_juego(p_mesa, case when yo = m.jugador_a then 'b' else 'a' end, true);
+end;
+$$;
+
+-- Nadie llama a cerrar_juego desde la API.
+revoke all on function public.cerrar_juego(uuid, text, boolean)
+  from public, anon, authenticated;
+
 revoke all on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
   public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
-  public.guardar_mesa_publico(uuid, bigint, jsonb), public.reclamar_abandono(uuid)
+  public.guardar_mesa_publico(uuid, int, bigint, jsonb), public.reclamar_abandono(uuid),
+  public.declarar_resultado(uuid, text), public.responder_resultado(uuid, boolean),
+  public.rendirse(uuid)
   from public, anon;
 grant execute on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
   public.marcar_lista(uuid, boolean), public.latido_mesa(uuid),
   public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
-  public.guardar_mesa_publico(uuid, bigint, jsonb), public.reclamar_abandono(uuid)
+  public.guardar_mesa_publico(uuid, int, bigint, jsonb), public.reclamar_abandono(uuid),
+  public.declarar_resultado(uuid, text), public.responder_resultado(uuid, boolean),
+  public.rendirse(uuid)
   to authenticated;

@@ -141,7 +141,7 @@ do $$ begin
   if (select count(*) from public.mesas_privado) <> 1 then raise exception 'A ve filas ajenas'; end if;
 end $$;
 
--- Empezada, no se sale con salir_mesa (se rinde, sesion 7).
+-- Empezada, no se sale con salir_mesa.
 do $$ begin
   perform salir_mesa(current_setting('prueba.sala')::uuid);
   raise exception 'A salio de una sala empezada';
@@ -179,17 +179,17 @@ end $$;
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'A', false);
 do $$ begin
-  if not guardar_mesa_publico(current_setting('prueba.sala')::uuid, 5, '{"v": 5}') then
+  if not guardar_mesa_publico(current_setting('prueba.sala')::uuid, 1, 5, '{"v": 5}') then
     raise exception 'A no pudo guardar la foto';
   end if;
-  if guardar_mesa_publico(current_setting('prueba.sala')::uuid, 3, '{"v": 3}') then
+  if guardar_mesa_publico(current_setting('prueba.sala')::uuid, 1, 3, '{"v": 3}') then
     raise exception 'la foto retrocedio de version';
   end if;
   if (select version from public.mesas_publico where mesa = current_setting('prueba.sala')::uuid) <> 5 then raise exception 'version mal guardada'; end if;
 end $$;
 select set_config('request.jwt.claim.sub', :'C', false);
 do $$ begin
-  perform guardar_mesa_publico(current_setting('prueba.sala')::uuid, 9, '{}');
+  perform guardar_mesa_publico(current_setting('prueba.sala')::uuid, 1, 9, '{}');
   raise exception 'C guardo la foto de una sala ajena';
 exception when sqlstate 'MS004' then null; end $$;
 
@@ -243,6 +243,179 @@ do $$ begin
   if (select senal_b from public.mesas where id = current_setting('prueba.sala')::uuid)
      > now() - interval '2 minutes' then
     raise exception 'el latido revivio una sala terminada';
+  end if;
+end $$;
+
+-- La serie (sesion 7): una sala nueva al mejor de 3 entre A y B.
+reset role;
+delete from public.mesas where estado = 'esperando';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select (r->>'id') as serie, (r->>'codigo') as codigo_s from (select crear_mesa('estandar', 3) as r) x \gset
+select set_config('prueba.serie', :'serie', false);
+insert into public.mesas_privado (mesa, jugador, estado) values (:'serie', :'A', '{"baraja": {}}');
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_s');
+insert into public.mesas_privado (mesa, jugador, estado) values (:'serie', :'B', '{"baraja": {}}');
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie', true);
+
+-- Nada que responder, y cerrar_juego no se llama desde la API.
+do $$ begin
+  perform responder_resultado(current_setting('prueba.serie')::uuid, true);
+  raise exception 'A respondio sin resultado declarado';
+exception when sqlstate 'MS010' then null; end $$;
+do $$ begin
+  perform cerrar_juego(current_setting('prueba.serie')::uuid, 'a', false);
+  raise exception 'A llamo a cerrar_juego';
+exception when insufficient_privilege then null; end $$;
+
+-- A declara que gano y se corrige a empate; no responde lo suyo.
+select declarar_resultado(:'serie', 'a');
+select declarar_resultado(:'serie', 'empate');
+do $$ begin
+  perform responder_resultado(current_setting('prueba.serie')::uuid, true);
+  raise exception 'A confirmo su propio resultado';
+exception when sqlstate 'MS010' then null; end $$;
+do $$ begin
+  perform declarar_resultado(current_setting('prueba.serie')::uuid, 'nadie');
+  raise exception 'se declaro un resultado invalido';
+exception when sqlstate '22023' then null; end $$;
+-- B no declara encima: primero responde.
+select set_config('request.jwt.claim.sub', :'B', false);
+do $$ begin
+  perform declarar_resultado(current_setting('prueba.serie')::uuid, 'b');
+  raise exception 'B declaro encima del resultado de A';
+exception when sqlstate 'MS009' then null; end $$;
+do $$ begin
+  if (select ver_mesa(current_setting('prueba.serie')::uuid) ->> 'declarado') <> 'empate' then
+    raise exception 'ver_mesa no trae lo declarado';
+  end if;
+end $$;
+select set_config('request.jwt.claim.sub', :'C', false);
+do $$ begin
+  perform declarar_resultado(current_setting('prueba.serie')::uuid, 'a');
+  raise exception 'C declaro en una sala ajena';
+exception when sqlstate 'MS004' then null; end $$;
+
+-- B confirma el empate: no suma, y la sala queda entre juegos.
+select set_config('request.jwt.claim.sub', :'B', false);
+select responder_resultado(:'serie', true);
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.serie')::uuid;
+  if m.estado <> 'entre_juegos' or m.empates <> 1 or m.victorias_a + m.victorias_b <> 0
+     or m.ultimo <> 'empate' or m.listo_a or m.listo_b or m.declara is not null then
+    raise exception 'el empate no quedo bien: %', row_to_json(m);
+  end if;
+  if guardar_mesa_publico(m.id, 1, 9, '{}') then
+    raise exception 'se guardo la foto entre juegos';
+  end if;
+  perform declarar_resultado(m.id, 'a');
+  raise exception 'se declaro entre juegos';
+exception when sqlstate 'MS008' then null; end $$;
+
+-- Listos otra vez: ronda 2, con la foto en blanco y la de la ronda 1 rechazada.
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie', true);
+do $$ begin
+  if (select estado || ' ' || ronda from public.mesas where id = current_setting('prueba.serie')::uuid)
+     <> 'jugando 2' then
+    raise exception 'no empezo la ronda 2';
+  end if;
+  if guardar_mesa_publico(current_setting('prueba.serie')::uuid, 1, 50, '{}') then
+    raise exception 'un guardado de la ronda 1 entro en la 2';
+  end if;
+  if not guardar_mesa_publico(current_setting('prueba.serie')::uuid, 2, 1, '{"v": 1}') then
+    raise exception 'la ronda 2 no guardo desde la version 1';
+  end if;
+end $$;
+
+-- A dice que gano, B no esta de acuerdo: el juego se anula, sin sumar.
+select declarar_resultado(:'serie', 'a');
+select set_config('request.jwt.claim.sub', :'B', false);
+select responder_resultado(:'serie', false);
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.serie')::uuid;
+  if m.estado <> 'entre_juegos' or m.ultimo <> 'anulado' or m.victorias_a <> 0 then
+    raise exception 'la anulacion no quedo bien: %', row_to_json(m);
+  end if;
+  if (select version from public.mesas_publico where mesa = m.id) <> 0 then
+    raise exception 'la foto del juego anulado quedo';
+  end if;
+end $$;
+
+-- Ronda 3: B se rinde. Gana A, en el acto.
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'B', false);
+select rendirse(:'serie');
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.serie')::uuid;
+  if m.estado <> 'entre_juegos' or m.victorias_a <> 1 or m.ultimo <> 'a' or not m.rendido then
+    raise exception 'la rendicion no quedo bien: %', row_to_json(m);
+  end if;
+end $$;
+
+-- Ronda 4: B declara que gano A y A confirma. Dos victorias: serie terminada.
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie', true);
+select set_config('request.jwt.claim.sub', :'B', false);
+select declarar_resultado(:'serie', 'a');
+select set_config('request.jwt.claim.sub', :'A', false);
+select responder_resultado(:'serie', true);
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.serie')::uuid;
+  if m.estado <> 'terminada' or m.ganador <> auth.uid() or m.motivo <> 'partidas'
+     or m.victorias_a <> 2 or m.ronda <> 4 then
+    raise exception 'la serie no termino bien: %', row_to_json(m);
+  end if;
+  perform rendirse(m.id);
+  raise exception 'alguien se rindio en una serie terminada';
+exception when sqlstate 'MS008' then null; end $$;
+reset role;
+do $$ begin
+  if (select count(*) from public.mesas_privado where mesa = current_setting('prueba.serie')::uuid) <> 0 then
+    raise exception 'quedaron filas privadas de la serie';
+  end if;
+end $$;
+
+-- Rendirse en el juego que decide: la serie termina por rendicion.
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select (r->>'id') as serie2, (r->>'codigo') as codigo_s2 from (select crear_mesa('vcr', 3) as r) x \gset
+insert into public.mesas_privado (mesa, jugador, estado) values (:'serie2', :'A', '{"baraja": {}}');
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_s2');
+insert into public.mesas_privado (mesa, jugador, estado) values (:'serie2', :'B', '{"baraja": {}}');
+select marcar_lista(:'serie2', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie2', true);
+select rendirse(:'serie2');
+select set_config('request.jwt.claim.sub', :'B', false);
+select marcar_lista(:'serie2', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'serie2', true);
+select rendirse(:'serie2');
+select set_config('prueba.serie2', :'serie2', false);
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.serie2')::uuid;
+  if m.estado <> 'terminada' or m.motivo <> 'rendicion' or m.victorias_b <> 2
+     or m.ganador = auth.uid() then
+    raise exception 'la serie por rendicion no quedo bien: %', row_to_json(m);
   end if;
 end $$;
 

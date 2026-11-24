@@ -95,14 +95,15 @@ export function mensajeDeSala(e: unknown): string {
 }
 
 /**
- * Lo privado de este jugador en la sala: la baraja con que entro y la
+ * Lo privado de este jugador en la sala: la baraja con que entro, la
  * semilla de su barajado, con la que se rearma la misma mitad al volver
- * (sesion 6). Solo el lo lee (RLS).
+ * (sesion 6), y la baraja con los cambios del side que lleva en la serie
+ * (sesion 7). Solo el lo lee (RLS).
  */
 export async function guardarPrivado(
   mesa: string,
   uid: string,
-  estado: { baraja: Deck; semilla: number },
+  estado: { baraja: Deck; semilla: number; actual?: Deck },
 ): Promise<void> {
   const t = await token();
   if (!t) throw new ErrorNube(401, "MS002", "Sin sesión.");
@@ -154,11 +155,13 @@ export async function leerMesaPublica(
 /** Guarda la foto publica; la base descarta una version que no sea mas nueva. */
 export async function guardarMesaPublica(
   mesa: string,
+  ronda: number,
   version: number,
   estado: unknown,
 ): Promise<void> {
   await rpc("guardar_mesa_publico", {
     p_mesa: mesa,
+    p_ronda: ronda,
     p_version: version,
     p_estado: estado,
   });
@@ -167,4 +170,22 @@ export async function guardarMesaPublica(
 /** Pasados los dos minutos de gracia, la serie para quien siguio conectado. */
 export async function reclamarAbandono(mesa: string): Promise<void> {
   await rpc("reclamar_abandono", { p_mesa: mesa });
+}
+
+/** Declara quien gano el juego en curso ("a", "b") o que fue empate. */
+export async function declararResultado(
+  mesa: string,
+  ganador: "a" | "b" | "empate",
+): Promise<void> {
+  await rpc("declarar_resultado", { p_mesa: mesa, p_ganador: ganador });
+}
+
+/** Responde al resultado que declaro el rival: de acuerdo, o se anula el juego. */
+export async function responderResultado(mesa: string, acepta: boolean): Promise<void> {
+  await rpc("responder_resultado", { p_mesa: mesa, p_acepta: acepta });
+}
+
+/** Rendirse: el juego en curso es del rival, en el acto. */
+export async function rendirse(mesa: string): Promise<void> {
+  await rpc("rendirse", { p_mesa: mesa });
 }

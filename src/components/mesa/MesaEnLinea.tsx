@@ -3,18 +3,25 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as z from "zod/mini";
-import { Hourglass, Monitor, Wifi, WifiOff } from "lucide-react";
+import { Flag, Hourglass, Monitor, Scale, Wifi, WifiOff } from "lucide-react";
 
+import { ConfirmDialog } from "../ConfirmDialog";
 import { token } from "../nube/nube";
 import { DeckListSkeleton } from "../Skeleton";
+import { toast } from "../toast";
+import { DialogoResultado, type Eleccion } from "./DialogoResultado";
 import {
+  declararResultado,
   guardarMesaPublica,
   guardarPrivado,
   leerMesaPublica,
   leerPrivado,
-  reclamarAbandono,
+  mensajeDeSala,
+  rendirse,
+  responderResultado,
 } from "./sala-api";
 import { TableroMesa } from "./TableroMesa";
+import { reloj, useAbandono } from "./use-abandono";
 import { useEscritorio } from "./use-escritorio";
 import { NOMBRE_FORMATO } from "@/lib/formatos";
 import type { Accion } from "@/lib/mesa/apply";
@@ -25,7 +32,8 @@ import {
   type Lado,
   type Mensaje,
 } from "@/lib/mesa/red";
-import { restanteDeGracia, type Sala } from "@/lib/mesa/sala";
+import type { Sala } from "@/lib/mesa/sala";
+import { numeroDeJuego, semillaDeRonda, type Resultado } from "@/lib/mesa/serie";
 import { newTable } from "@/lib/mesa/setup";
 import {
   accionLocal,
@@ -38,7 +46,14 @@ import {
 import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase-config";
 import { deckSchema, type Card, type Formato } from "@/lib/types";
 import type { MesaVista } from "@/lib/mesa/vista";
-import { AVISO_EN_LINEA, ENLACE, VACIO } from "@/lib/ui";
+import {
+  AVISO_EN_LINEA,
+  BOTON_PRIMARIO_COMPACTO,
+  BOTON_SECUNDARIO_COMPACTO,
+  ENLACE,
+  HOVER_AVISO,
+  VACIO,
+} from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /** El canal de Supabase Realtime, tal como lo usa esta vista. */
@@ -59,22 +74,27 @@ function azarDe(semilla: number): () => number {
   };
 }
 
-/** Lo privado de cada jugador en la sala: su baraja y la semilla de su barajado. */
+/**
+ * Lo privado de cada jugador en la sala: la baraja con que entro, la semilla
+ * de su barajado y, desde el segundo juego, la baraja con los cambios del
+ * side (sesion 7).
+ */
 const privadoSchema = z.object({
   baraja: deckSchema,
   semilla: z.optional(z.int().check(z.minimum(1), z.maximum(2 ** 31))),
+  actual: z.optional(deckSchema),
 });
+
+/** Lo que va por el canal lleva la ronda: un mensaje de otro juego no se usa. */
+const conRonda = (r: number, m: object) => ({ ...m, r });
+
+/** El aviso «algo cambio en la sala, pregunta», tras declarar o responder. */
+const AVISO_SALA = "sala";
 
 /** Cuanto se espera, quieta la mesa, para guardar la foto (sesion 6). */
 const GUARDAR_QUIETA_MS = 2000;
 /** Cada cuantas versiones se guarda igual, aunque no se quede quieta. */
 const GUARDAR_CADA = 10;
-
-/** Los minutos y segundos que quedan, «1:43». */
-function reloj(ms: number): string {
-  const s = Math.ceil(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
 
 type Fase =
   { fase: "preparando" } | { fase: "error"; mensaje: string } | { fase: "lista" };
@@ -92,6 +112,8 @@ interface MesaEnLineaProps {
   sala: Sala;
   /** Cuando llego esa consulta, en ms del reloj de este navegador. */
   recibida: number;
+  /** Vuelve a preguntar por la sala, tras declarar o responder un resultado. */
+  refrescar: () => void;
 }
 
 /**
@@ -127,7 +149,15 @@ function Conectada({
   cards,
   sala,
   recibida,
+  refrescar,
 }: MesaEnLineaProps) {
+  // La ronda no cambia mientras la mesa esta montada: un juego nuevo la monta
+  // de nuevo (SalaDetalle le da la ronda como `key`).
+  const [ronda] = useState(sala.ronda);
+  const refrescarRef = useRef(refrescar);
+  useEffect(() => {
+    refrescarRef.current = refrescar;
+  }, [refrescar]);
   const cartas = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   const [estado, setEstado] = useState<Fase>({ fase: "preparando" });
   const [red, setRed] = useState<Red | null>(null);
@@ -139,9 +169,9 @@ function Conectada({
   /** La ultima version guardada en la base, y el guardado en espera. */
   const guardadaV = useRef(0);
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [ahora, setAhora] = useState(() => Date.now());
-  const reclamando = useRef(false);
-  const [intento, setIntento] = useState(0);
+  const [terminando, setTerminando] = useState(false);
+  const [anulando, setAnulando] = useState(false);
+  const [ocupado, setOcupado] = useState(false);
 
   /**
    * Guarda la foto publica de la mesa: al quedar quieta, o enseguida cada
@@ -155,7 +185,7 @@ function Conectada({
         const actual = redRef.current;
         if (!actual?.publica || actual.v <= guardadaV.current) return;
         const v = actual.v;
-        guardarMesaPublica(mesa, v, actual.publica)
+        guardarMesaPublica(mesa, ronda, v, actual.publica)
           .then(() => {
             guardadaV.current = Math.max(guardadaV.current, v);
           })
@@ -165,7 +195,7 @@ function Conectada({
       if (r.v - guardadaV.current >= GUARDAR_CADA) guardar();
       else espera.current = setTimeout(guardar, GUARDAR_QUIETA_MS);
     },
-    [mesa],
+    [mesa, ronda],
   );
 
   /** Aplica un paso de la sincronia: guarda el estado y manda lo que toque. */
@@ -174,13 +204,17 @@ function Conectada({
       redRef.current = paso.red;
       setRed(paso.red);
       for (const m of paso.enviar) {
-        void canalRef.current?.send({ type: "broadcast", event: "m", payload: m });
+        void canalRef.current?.send({
+          type: "broadcast",
+          event: "m",
+          payload: conRonda(ronda, m),
+        });
       }
       if (paso.enviar.some((m) => m.t === "estado" && m.v === paso.red.v)) {
         programarGuardado(paso.red);
       }
     },
-    [programarGuardado],
+    [programarGuardado, ronda],
   );
 
   useEffect(() => {
@@ -198,14 +232,20 @@ function Conectada({
       // mitad, con las mismas cartas en los mismos uids, en cualquier pestana.
       const privado = privadoSchema.safeParse(await leerPrivado(mesa, uid));
       if (!privado.success) throw new Error("No se encontró tu baraja para esta sala.");
-      const { baraja } = privado.data;
+      const { baraja, actual } = privado.data;
       let semilla = privado.data.semilla;
       if (!semilla) {
         semilla = 1 + Math.floor(Math.random() * (2 ** 31 - 1));
-        await guardarPrivado(mesa, uid, { baraja, semilla });
+        await guardarPrivado(mesa, uid, {
+          baraja,
+          semilla,
+          ...(actual ? { actual } : {}),
+        });
       }
-      const miMitad = newTable([{ id: lado, deck: baraja }], azarDe(semilla));
-      azar.current = azarDe(semilla ^ 0x5bd1e995);
+      // Cada juego, con los cambios del side que lleve, y barajado distinto.
+      const deRonda = semillaDeRonda(semilla, ronda);
+      const miMitad = newTable([{ id: lado, deck: actual ?? baraja }], azarDe(deRonda));
+      azar.current = azarDe(deRonda ^ 0x5bd1e995);
 
       // La foto guardada, si ya se estaba jugando (se recargo, o se fueron
       // los dos): se arranca desde ella.
@@ -239,6 +279,12 @@ function Conectada({
       });
       canal = ch;
       ch.on("broadcast", { event: "m" }, ({ payload }) => {
+        if (typeof payload !== "object" || payload === null) return;
+        if (!("r" in payload) || payload.r !== ronda) return;
+        if ("t" in payload && payload.t === AVISO_SALA) {
+          refrescarRef.current();
+          return;
+        }
         const msg = leerMensaje(payload);
         const actual = redRef.current;
         if (!msg || !actual) return;
@@ -282,7 +328,7 @@ function Conectada({
       void canal?.unsubscribe();
       cliente?.disconnect();
     };
-  }, [mesa, uid, lado, avanzar]);
+  }, [mesa, uid, lado, avanzar, ronda]);
 
   const hacer = useCallback(
     (accion: Accion) => {
@@ -294,29 +340,59 @@ function Conectada({
 
   const rival: Lado = lado === "a" ? "b" : "a";
   const tablero = red ? mesaDe(red) : null;
-  const jugando = tablero !== null && rivalConectado === false;
+  const restante = useAbandono(
+    mesa,
+    sala,
+    rival,
+    recibida,
+    tablero !== null && rivalConectado === false,
+  );
 
-  // Con el rival desconectado, la cuenta regresiva avanza cada segundo.
-  useEffect(() => {
-    if (!jugando) return;
-    const t = setInterval(() => setAhora(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [jugando]);
+  /** Declarar, responder o rendirse: lo decide la base, y se avisa al rival. */
+  const enLaSala = useCallback(
+    async (fn: () => Promise<void>, despues?: string) => {
+      setOcupado(true);
+      try {
+        await fn();
+        void canalRef.current?.send({
+          type: "broadcast",
+          event: "m",
+          payload: conRonda(ronda, { t: AVISO_SALA, de: lado }),
+        });
+        refrescar();
+        if (despues) toast(despues, "info");
+      } catch (e) {
+        toast(mensajeDeSala(e), "warning");
+        refrescar();
+      } finally {
+        setOcupado(false);
+      }
+    },
+    [ronda, lado, refrescar],
+  );
 
-  const restante = jugando ? restanteDeGracia(sala, rival, recibida, ahora) : null;
+  const elegir = (e: Eleccion) => {
+    if (e === "rendirme") {
+      void enLaSala(() => rendirse(mesa));
+      return;
+    }
+    const ganador: Resultado = e === "empate" ? "empate" : e === "gane" ? lado : rival;
+    void enLaSala(
+      () => declararResultado(mesa, ganador),
+      `Resultado declarado. Falta que ${nombres[rival]} lo confirme.`,
+    );
+  };
 
-  // Se acabo el tiempo: la serie para quien siguio conectado. Lo decide la
-  // base con su hora; si todavia no, se vuelve a intentar en un rato.
-  useEffect(() => {
-    if (restante !== 0 || reclamando.current) return;
-    reclamando.current = true;
-    reclamarAbandono(mesa).catch(() => {
-      setTimeout(() => {
-        reclamando.current = false;
-        setIntento((n) => n + 1);
-      }, 5000);
-    });
-  }, [restante, mesa, intento]);
+  const rivalUid = rival === "a" ? sala.jugador_a : sala.jugador_b;
+  const declaroYo = sala.declara === uid;
+  const declaroRival = sala.declara !== null && sala.declara === rivalUid;
+  /** Lo declarado, dicho a quien lo lee. */
+  const loDeclarado = (quien: "yo" | "rival"): string => {
+    if (sala.declarado === "empate") return "empate";
+    const ganoYo = sala.declarado === lado;
+    if (quien === "yo") return ganoYo ? "que ganaste" : `que ganó ${nombres[rival]}`;
+    return ganoYo ? "que ganaste tú" : "que ganó";
+  };
 
   const conexion = (
     <p
@@ -341,12 +417,77 @@ function Conectada({
           · {NOMBRE_FORMATO[formato]} · {nombres[lado]} contra {nombres[rival]}
         </span>
       </h1>
+      <p className="text-ink text-[14px]" aria-label="Marcador">
+        <span className="text-muted">Juego {numeroDeJuego(sala)} ·</span>{" "}
+        <span className="font-bold tabular-nums">
+          Tú {lado === "a" ? sala.victorias_a : sala.victorias_b} –{" "}
+          {lado === "a" ? sala.victorias_b : sala.victorias_a} {nombres[rival]}
+        </span>
+      </p>
       {conexion}
+      <button
+        type="button"
+        onClick={() => setTerminando(true)}
+        disabled={ocupado || declaroRival || !tablero}
+        className={BOTON_SECUNDARIO_COMPACTO}
+      >
+        <Flag size={14} aria-hidden="true" />
+        Terminar juego
+      </button>
       <Link href="/mesa/" className={cn(ENLACE, "text-[14px]")}>
         Salir de la mesa
       </Link>
     </div>
   );
+
+  const declaracion = declaroYo ? (
+    <p
+      role="status"
+      className={cn(AVISO_EN_LINEA, "border-brand-500/50 text-ink items-center")}
+    >
+      <Scale size={16} aria-hidden="true" className="text-accent" />
+      <span className="mr-auto">
+        Declaraste {loDeclarado("yo")}. Esperando a que {nombres[rival]} lo confirme.
+      </span>
+      <button
+        type="button"
+        onClick={() => setTerminando(true)}
+        disabled={ocupado}
+        className={BOTON_SECUNDARIO_COMPACTO}
+      >
+        Cambiar
+      </button>
+    </p>
+  ) : declaroRival ? (
+    <div
+      role="alert"
+      className={cn(
+        AVISO_EN_LINEA,
+        "border-brand-500/50 text-ink flex-wrap items-center",
+      )}
+    >
+      <Scale size={16} aria-hidden="true" className="text-accent" />
+      <span className="mr-auto">
+        {nombres[rival]} declara {loDeclarado("rival")} este juego. ¿Estás de acuerdo?
+      </span>
+      <button
+        type="button"
+        onClick={() => void enLaSala(() => responderResultado(mesa, true))}
+        disabled={ocupado}
+        className={BOTON_PRIMARIO_COMPACTO}
+      >
+        Sí, de acuerdo
+      </button>
+      <button
+        type="button"
+        onClick={() => setAnulando(true)}
+        disabled={ocupado}
+        className={cn(BOTON_SECUNDARIO_COMPACTO, HOVER_AVISO)}
+      >
+        No estoy de acuerdo
+      </button>
+    </div>
+  ) : null;
 
   const cuenta =
     restante !== null ? (
@@ -386,15 +527,43 @@ function Conectada({
     );
   }
   return (
-    <TableroMesa
-      mesa={tablero}
-      yo={lado}
-      hacer={hacer}
-      cartas={cartas}
-      formato={formato}
-      cabecera={cabecera}
-      aviso={cuenta}
-      nombreJugador={(id) => (id === lado ? "Tú" : nombres[rival])}
-    />
+    <>
+      {terminando && (
+        <DialogoResultado
+          rival={nombres[rival]}
+          onElegir={elegir}
+          onCerrar={() => setTerminando(false)}
+        />
+      )}
+      <ConfirmDialog
+        open={anulando}
+        titulo="¿Anular el juego?"
+        mensaje={`Si no estás de acuerdo con ${nombres[rival]}, el juego se anula y se juega de nuevo, sin sumar al marcador.`}
+        confirmar="Anular el juego"
+        tono="aviso"
+        onCancel={() => setAnulando(false)}
+        onConfirm={() => {
+          setAnulando(false);
+          void enLaSala(() => responderResultado(mesa, false));
+        }}
+      />
+      <TableroMesa
+        mesa={tablero}
+        yo={lado}
+        hacer={hacer}
+        cartas={cartas}
+        formato={formato}
+        cabecera={cabecera}
+        aviso={
+          cuenta || declaracion ? (
+            <div className="flex flex-col gap-2">
+              {cuenta}
+              {declaracion}
+            </div>
+          ) : null
+        }
+        nombreJugador={(id) => (id === lado ? "Tú" : nombres[rival])}
+      />
+    </>
   );
 }

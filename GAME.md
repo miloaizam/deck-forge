@@ -552,16 +552,58 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 ### Sesión 7: la serie
 
 - **Objetivo:** jugar una serie completa.
-- **Tareas:**
-  - declarar y confirmar el resultado de cada juego, y rendirse; si no hay
-    acuerdo, el juego se anula y se repite sin sumar al marcador;
-  - el marcador y el fin de la serie;
-  - entre juegos, el cambio con el side (0 a 10, siempre 50 en el
-    Castillo), con su cuenta de 2 minutos si se quiere y el conteo que
-    puede pedir el rival;
-  - preparar el juego siguiente: barajar, oro inicial, mano nueva y sorteo.
-  - La baraja guardada no cambia.
-- **Terminado cuando:** dos cuentas juegan un mejor de 3 de principio a fin.
+- **Hecha (24-11-2026).**
+- **Terminar un juego** («Terminar juego», en la cabecera de la mesa,
+  `DialogoResultado.tsx`): **Gané, Perdí o Empate** declaran el resultado
+  (`declarar_resultado`, que guarda el lado ganador o `empate`), y quien
+  declaró puede corregirse mientras el otro no responde. El otro ve «Anfitrión
+  declara que ganó este juego. ¿Estás de acuerdo?» y responde
+  (`responder_resultado`): **de acuerdo** suma al marcador; **no** anula el
+  juego (con una confirmación ámbar), que se juega de nuevo sin sumar.
+  **Rendirse** (`rendirse`) da el juego al rival en el acto.
+- **Lo decide la base:** `cerrar_juego` (que no se llama desde la API) suma,
+  y si alguien llegó a las victorias de la serie (2 al mejor de 3, 3 al
+  mejor de 5) la termina con `motivo` `partidas` o, si el juego que decidía
+  terminó en rendición, `rendicion`, y borra la partida. Si no, la sala
+  queda **entre juegos**. Un empate no suma, pero cuenta como juego jugado
+  (columna `empates`); un anulado no cuenta.
+- **El marcador** va en la cabecera de la mesa («Juego 2 · Tú 1 – 0
+  Invitado») y entre juegos, en grande.
+- **Entre juegos** (`EntreJuegos.tsx`): cómo terminó el último, y el
+  **cambio con el Mazo de Soporte**, una carta por otra
+  (`cambiarConSide` de `src/lib/mesa/serie.ts`): siempre 50 en el
+  Castillo, sin tocar el oro inicial, y la baraja tiene que seguir
+  cumpliendo en el formato de la sala para marcarse listo. Los cambios se
+  guardan en la fila privada (`actual`, junto a `baraja` y `semilla`) y
+  **siguen para los juegos siguientes**, con un botón para volver a la
+  baraja guardada; **la baraja guardada no cambia**. «Contar 2 minutos»
+  muestra el tiempo de torneo solo a quien lo pide.
+- **El conteo del side** lo ve el rival en la mesa: la zona Mazo de Soporte
+  muestra siempre su cuenta, y el cambio es uno por uno.
+- **El juego siguiente:** con los dos listos, la base empieza una **ronda**
+  nueva (`ronda`, que cuenta también los anulados) y deja la foto en
+  blanco. Cada navegador arma su mitad con la baraja del side y una semilla
+  de esa ronda (`semillaDeRonda`): baraja nuevo, oro inicial en la Reserva y
+  mano de 8; el mulligan y el sorteo son los de siempre. La ronda va en cada
+  mensaje del canal y en cada guardado (`guardar_mesa_publico` ahora la
+  pide), así que nada del juego anterior se cuela en el siguiente.
+- **Entre juegos no hay canal**: si la señal del rival tiene más de 45 s,
+  corre la misma cuenta regresiva de 2 minutos y se reclama igual
+  (`use-abandono.ts`, compartido con la mesa).
+- **Hay que volver a pegar `supabase/mesa.sql` entero en el SQL Editor**
+  (seis columnas nuevas en `mesas`, cuatro funciones, y `guardar_mesa_publico`
+  cambia de argumentos). `mesa.prueba.sql` recorre dos series: empate,
+  juego anulado, rendición y victoria por partidas, y que un guardado de una
+  ronda no entre en la siguiente.
+- **`e2e/sala.spec.ts`:** una serie al mejor de 3 de principio a fin: A
+  declara que ganó y B confirma; B cambia una carta con su side; el juego 2
+  sale con la baraja cambiada y el Soporte contado; A declara, B no está de
+  acuerdo y el juego se anula; en la repetición B se rinde y A gana la serie
+  2 – 0. La partida queda borrada.
+- **De paso:** el selector de baraja de la sala (sesión 4) decía «Todos» en
+  su opción vacía; ahora dice «Elige una baraja».
+- **Pasa a la sesión 8:** probar en el navegador la cuenta regresiva entre
+  juegos (la lógica es la de la mesa, ya probada).
 
 ### Sesión 8: pulido y publicación
 

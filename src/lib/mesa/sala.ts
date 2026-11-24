@@ -62,6 +62,15 @@ export const salaSchema = z.object({
   motivo: z._default(z.nullable(z.enum(["abandono", "rendicion", "partidas"])), null),
   /** La hora de la base cuando respondio. */
   ahora: z._default(fecha, null),
+  /** La serie (sesion 7): cuantos juegos empezaron, anulados incluidos. */
+  ronda: z._default(z.int().check(z.minimum(1), z.maximum(1000)), 1),
+  empates: z._default(z.int().check(z.minimum(0), z.maximum(1000)), 0),
+  /** Quien declaro el resultado del juego en curso, y que declaro. */
+  declara: z._default(z.nullable(uuid), null),
+  declarado: z._default(z.nullable(z.enum(["a", "b", "empate"])), null),
+  /** Como termino el ultimo juego, y si fue por rendicion. */
+  ultimo: z._default(z.nullable(z.enum(["a", "b", "empate", "anulado"])), null),
+  rendido: z._default(z.boolean(), false),
 });
 
 export type Sala = z.infer<typeof salaSchema>;
@@ -108,6 +117,9 @@ export const MENSAJE_ERROR_SALA: Record<string, string> = {
   MS005: "La sala ya empezó.",
   MS006: "Elige una baraja antes de marcarte listo.",
   MS007: "Tu rival todavía puede volver: espera a que se acabe su tiempo.",
+  MS008: "Ese juego ya terminó.",
+  MS009: "Tu rival ya declaró un resultado: respóndele primero.",
+  MS010: "Tu rival cambió o retiró lo que había declarado.",
 };
 
 export const NOMBRE_ESTADO_SALA: Record<EstadoSala, string> = {

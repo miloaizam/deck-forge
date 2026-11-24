@@ -16,6 +16,7 @@ import {
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { EntreJuegos } from "./EntreJuegos";
 import { MesaEnLinea } from "./MesaEnLinea";
 import { useDecks } from "../decks/use-decks";
 import { DeckListSkeleton } from "../Skeleton";
@@ -106,8 +107,18 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
         sala.estado === "terminada" ? (
           <SalaTerminada sala={sala} uid={uid} />
         ) : // Con los dos listos, la sala es la mesa (sesion 5).
-        sala.estado === "jugando" && miLado(sala, uid) ? (
+        sala.estado === "entre_juegos" && miLado(sala, uid) ? (
+          <EntreJuegos
+            sala={sala}
+            uid={uid}
+            recibida={recibida}
+            deFormato={deFormato}
+            refrescar={refrescar}
+          />
+        ) : sala.estado === "jugando" && miLado(sala, uid) ? (
           <MesaEnLinea
+            // Cada juego monta la mesa de nuevo, con su ronda.
+            key={sala.ronda}
             mesa={sala.id}
             codigo={sala.codigo}
             lado={miLado(sala, uid) ?? "a"}
@@ -117,6 +128,7 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
             cards={deFormato(sala.formato)}
             sala={sala}
             recibida={recibida}
+            refrescar={() => void refrescar()}
           />
         ) : (
           <SalaAbierta
@@ -133,24 +145,37 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
 }
 
 /**
- * La serie termino (sesion 6: por abandono). La partida ya se borro de la
- * base; queda solo quien gano y por que.
+ * La serie termino: jugando, porque alguien se rindio en el juego que la
+ * decidia, o por abandono (sesiones 6 y 7). La partida ya se borro de la
+ * base; queda solo el marcador, quien gano y por que.
  */
 function SalaTerminada({ sala, uid }: { sala: Sala; uid: string }) {
   const lado = miLado(sala, uid);
   const gane = sala.ganador === uid;
   const rival = lado === "a" ? nombreEnSala(sala, "b") : nombreEnSala(sala, "a");
-  const titulo = gane
+  const mias = lado === "b" ? sala.victorias_b : sala.victorias_a;
+  const suyas = lado === "b" ? sala.victorias_a : sala.victorias_b;
+  const marcador = `${mias} – ${suyas}`;
+  let titulo = gane
     ? "Ganaste la serie"
     : sala.ganador
       ? "Perdiste la serie"
       : "Serie terminada";
-  const abandono = sala.motivo === "abandono";
-  const porque = abandono
-    ? gane
+  let porque: string | null = null;
+  if (sala.motivo === "abandono") {
+    titulo += gane ? `: ${rival} abandonó` : " por abandono";
+    porque = gane
       ? `${rival} se desconectó y no volvió en dos minutos.`
-      : "Te desconectaste y no volviste en dos minutos."
-    : null;
+      : "Te desconectaste y no volviste en dos minutos.";
+  } else if (sala.motivo === "partidas" || sala.motivo === "rendicion") {
+    titulo += ` ${marcador}`;
+    porque =
+      sala.motivo === "rendicion"
+        ? gane
+          ? `${rival} se rindió en el último juego.`
+          : "Te rendiste en el último juego."
+        : `Al mejor de ${sala.mejor_de}.`;
+  }
   return (
     <section
       aria-labelledby="sala-titulo"
@@ -161,9 +186,8 @@ function SalaTerminada({ sala, uid }: { sala: Sala; uid: string }) {
       ) : (
         <Flag size={40} aria-hidden="true" className="text-muted" />
       )}
-      <h1 id="sala-titulo" className="text-ink text-2xl font-bold">
+      <h1 id="sala-titulo" className="text-ink text-2xl font-bold tabular-nums">
         {titulo}
-        {abandono && (gane ? `: ${rival} abandonó` : " por abandono")}
       </h1>
       {porque && <p className="text-muted text-[15px]">{porque}</p>}
       <p className="text-muted text-[14px]">
@@ -350,6 +374,7 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
                   <Select
                     label="Baraja"
                     requerido
+                    placeholder="Elige una baraja"
                     value={elegida}
                     options={["", ...decks.map((d) => d.id)]}
                     onChange={setElegida}
