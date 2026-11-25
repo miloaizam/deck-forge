@@ -151,7 +151,11 @@ test("un turno en la mesa de practica, moviendo cartas", async ({ page }, info) 
   await page.getByRole("menuitem", { name: "Cementerio" }).click();
   await page.getByRole("button", { name: "Ver Cementerio, 1 carta" }).click();
   await expect(page.getByRole("heading", { name: "Cementerio (1)" })).toBeVisible();
-  await page.getByRole("button", { name: "Cerrar" }).filter({ visible: true }).click();
+  // El de su ventana: la de «Ver carta» puede seguir desvaneciendose.
+  await page
+    .getByRole("dialog", { name: "Cementerio (1)" })
+    .getByRole("button", { name: "Cerrar" })
+    .click();
 
   // Fin de turno: el oro vuelve a la Reserva, a mano, y se baraja el Castillo.
   await arrastrar(

@@ -464,6 +464,59 @@ do $$ begin
   end if;
 end $$;
 
+-- Abandonar la serie a proposito (25-11-2026).
+reset role;
+delete from public.mesas where estado <> 'terminada';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select (r->>'id') as deja, (r->>'codigo') as codigo_d from (select crear_mesa('estandar', 3) as r) x \gset
+select set_config('prueba.deja', :'deja', false);
+-- Esperando todavia, no: para eso esta salir_mesa.
+do $$ begin
+  perform abandonar_mesa(current_setting('prueba.deja')::uuid);
+  raise exception 'se abandono una sala que esperaba';
+exception when sqlstate 'MS004' then null; end $$;
+insert into public.mesas_privado (mesa, jugador, estado) values (:'deja', :'A', '{"baraja": {}}');
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_d');
+do $$ begin
+  perform abandonar_mesa(current_setting('prueba.deja')::uuid);
+  raise exception 'se abandono una sala que esperaba';
+exception when sqlstate 'MS005' then null; end $$;
+insert into public.mesas_privado (mesa, jugador, estado) values (:'deja', :'B', '{"baraja": {}}');
+select marcar_lista(:'deja', true);
+select set_config('request.jwt.claim.sub', :'A', false);
+select marcar_lista(:'deja', true);
+select set_config('request.jwt.claim.sub', :'C', false);
+do $$ begin
+  perform abandonar_mesa(current_setting('prueba.deja')::uuid);
+  raise exception 'C abandono una sala ajena';
+exception when sqlstate 'MS004' then null; end $$;
+-- B abandona a mitad de serie: gana A, motivo retiro, sin nada guardado.
+select set_config('request.jwt.claim.sub', :'B', false);
+select abandonar_mesa(:'deja');
+select set_config('request.jwt.claim.sub', :'A', false);
+do $$
+declare m public.mesas;
+begin
+  select * into m from public.mesas where id = current_setting('prueba.deja')::uuid;
+  if m.estado <> 'terminada' or m.motivo <> 'retiro' or m.ganador <> auth.uid() then
+    raise exception 'abandonar no quedo bien: %', row_to_json(m);
+  end if;
+  if (select estado from public.mesas_publico where mesa = m.id) <> '{}'::jsonb then
+    raise exception 'quedo la foto de la sala abandonada';
+  end if;
+  if exists (select 1 from json_array_elements(mis_mesas()) x where x->>'id' = m.id::text) then
+    raise exception 'mis_mesas sigue listando la sala abandonada';
+  end if;
+end $$;
+reset role;
+do $$ begin
+  if exists (select 1 from public.mesas_privado where mesa = current_setting('prueba.deja')::uuid) then
+    raise exception 'quedaron filas privadas de la sala abandonada';
+  end if;
+end $$;
+
 -- El canal privado de la sala (sesion 5), si la base tiene Realtime (o su
 -- imitacion: ver el comienzo de este archivo).
 reset role;

@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as z from "zod/mini";
-import { Flag, Hourglass, Monitor, Scale, Wifi, WifiOff } from "lucide-react";
+import {
+  Flag,
+  Hourglass,
+  LogOut,
+  Monitor,
+  RotateCw,
+  Scale,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { token } from "../nube/nube";
@@ -11,6 +20,7 @@ import { DeckListSkeleton } from "../Skeleton";
 import { toast } from "../toast";
 import { DialogoResultado, type Eleccion } from "./DialogoResultado";
 import {
+  abandonarSala,
   declararResultado,
   guardarMesaPublica,
   guardarPrivado,
@@ -52,6 +62,7 @@ import {
   BOTON_SECUNDARIO_COMPACTO,
   ENLACE,
   HOVER_AVISO,
+  HOVER_PELIGRO,
   VACIO,
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -96,8 +107,22 @@ const GUARDAR_QUIETA_MS = 2000;
 /** Cada cuantas versiones se guarda igual, aunque no se quede quieta. */
 const GUARDAR_CADA = 10;
 
+/**
+ * preparando: todavia sin canal; lista: en el canal; reconectando: se cayo el
+ * canal con la mesa ya en pantalla (se reintenta sin taparla); error: no se
+ * pudo, con un boton para reintentar.
+ */
 type Fase =
-  { fase: "preparando" } | { fase: "error"; mensaje: string } | { fase: "lista" };
+  | { fase: "preparando" }
+  | { fase: "error"; mensaje: string }
+  | { fase: "lista" }
+  | { fase: "reconectando" };
+
+/**
+ * Cuantas veces se intenta unirse al canal antes de mostrar el error, si
+ * todavia no hay mesa. Con la mesa en pantalla se reintenta sin limite.
+ */
+const INTENTOS = 3;
 
 interface MesaEnLineaProps {
   mesa: string;
@@ -171,6 +196,11 @@ function Conectada({
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [terminando, setTerminando] = useState(false);
   const [anulando, setAnulando] = useState(false);
+  const [abandonando, setAbandonando] = useState(false);
+  /** Cada intento de conexion rearma el canal entero (es la clave del efecto). */
+  const [intento, setIntento] = useState(0);
+  /** Los fallos seguidos antes de tener mesa: al tercero, se muestra el error. */
+  const fallos = useRef(0);
   const [ocupado, setOcupado] = useState(false);
 
   /**
@@ -220,6 +250,7 @@ function Conectada({
   useEffect(() => {
     let vivo = true;
     let canal: Canal | null = null;
+    let reintento: ReturnType<typeof setTimeout> | null = null;
     let cliente: { disconnect: () => unknown } | null = null;
 
     (async () => {
@@ -274,6 +305,15 @@ function Conectada({
         vsn: "1.0.0",
       });
       cliente = rc;
+      // El token, ANTES de unirse. `subscribe()` lo pide en paralelo y arma
+      // el mensaje de union sin esperarlo: si el websocket abre primero, la
+      // union sale sin token, Realtime la trata como anonima y la politica
+      // del canal privado la rechaza. Era el «No se pudo conectar a la
+      // mesa» que salia a veces (25-11-2026).
+      await rc.setAuth();
+      if (!vivo) return;
+      if (!rc.accessTokenValue) throw new Error("Inicia sesión para jugar.");
+
       const ch = rc.channel(`mesa:${mesa}`, {
         config: { private: true, broadcast: { self: false }, presence: { key: lado } },
       });
@@ -294,22 +334,34 @@ function Conectada({
         const estados = ch.presenceState();
         setRivalConectado(Object.keys(estados).some((k) => k !== lado));
       });
-      let primera = true;
+      let conectado = false;
       ch.subscribe((status) => {
         if (!vivo) return;
         if (status === "SUBSCRIBED") {
+          conectado = true;
+          fallos.current = 0;
           canalRef.current = ch;
           void ch.track({ lado });
           setEstado({ fase: "lista" });
-          if (primera) {
-            primera = false;
-            avanzar(iniciar(lado, miMitad, guardada));
-          } else if (redRef.current) {
-            // Volvio la conexion (Realtime reintenta solo): ponerse al dia.
-            avanzar(reconectar(redRef.current));
-          }
+          // Con la mesa ya armada (volvio la conexion, o un intento nuevo),
+          // ponerse al dia; si no, empezar.
+          if (redRef.current) avanzar(reconectar(redRef.current));
+          else avanzar(iniciar(lado, miMitad, guardada));
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          setEstado({ fase: "error", mensaje: "No se pudo conectar a la mesa." });
+          conectado = false;
+          canalRef.current = null;
+          if (redRef.current) {
+            // La mesa sigue en pantalla: se reintenta sin taparla.
+            setEstado({ fase: "reconectando" });
+          } else if (++fallos.current >= INTENTOS) {
+            setEstado({ fase: "error", mensaje: "No se pudo conectar a la mesa." });
+            return;
+          }
+          // Si Realtime no se repone solo en un rato, se rearma todo.
+          if (reintento) clearTimeout(reintento);
+          reintento = setTimeout(() => {
+            if (vivo && !conectado) setIntento((n) => n + 1);
+          }, 2000);
         }
       });
     })().catch((e: unknown) => {
@@ -324,11 +376,12 @@ function Conectada({
     return () => {
       vivo = false;
       if (espera.current) clearTimeout(espera.current);
+      if (reintento) clearTimeout(reintento);
       canalRef.current = null;
       void canal?.unsubscribe();
       cliente?.disconnect();
     };
-  }, [mesa, uid, lado, avanzar, ronda]);
+  }, [mesa, uid, lado, avanzar, ronda, intento]);
 
   const hacer = useCallback(
     (accion: Accion) => {
@@ -394,19 +447,22 @@ function Conectada({
     return ganoYo ? "que ganaste tú" : "que ganó";
   };
 
+  const enLinea = rivalConectado === true && estado.fase !== "reconectando";
   const conexion = (
     <p
       className={cn(
         "flex items-center gap-1.5 text-[13px]",
-        rivalConectado ? "text-success" : "text-warning",
+        enLinea ? "text-success" : "text-warning",
       )}
     >
-      {rivalConectado ? (
+      {enLinea ? (
         <Wifi size={14} aria-hidden="true" />
       ) : (
         <WifiOff size={14} aria-hidden="true" />
       )}
-      {nombres[rival]} {rivalConectado ? "está conectado" : "no está conectado"}
+      {estado.fase === "reconectando"
+        ? "Reconectando…"
+        : `${nombres[rival]} ${rivalConectado ? "está conectado" : "no está conectado"}`}
     </p>
   );
   const cabecera = (
@@ -434,8 +490,21 @@ function Conectada({
         <Flag size={14} aria-hidden="true" />
         Terminar juego
       </button>
-      <Link href="/mesa/" className={cn(ENLACE, "text-[14px]")}>
-        Salir de la mesa
+      <button
+        type="button"
+        onClick={() => setAbandonando(true)}
+        disabled={ocupado}
+        className={cn(BOTON_SECUNDARIO_COMPACTO, HOVER_PELIGRO)}
+      >
+        <LogOut size={14} aria-hidden="true" />
+        Abandonar la serie
+      </button>
+      <Link
+        href="/mesa/"
+        title="La sala queda abierta: si no vuelves en 2 minutos, la serie es de tu rival."
+        className={cn(ENLACE, "text-[14px]")}
+      >
+        Salir por ahora
       </Link>
     </div>
   );
@@ -505,13 +574,41 @@ function Conectada({
       </p>
     ) : null;
 
+  const dialogoAbandonar = (
+    <ConfirmDialog
+      open={abandonando}
+      titulo="¿Abandonar la serie?"
+      mensaje={`La serie es para ${nombres[rival]} y la sala se cierra para los dos.`}
+      confirmar="Abandonar la serie"
+      onCancel={() => setAbandonando(false)}
+      onConfirm={() => {
+        setAbandonando(false);
+        void enLaSala(() => abandonarSala(mesa));
+      }}
+    />
+  );
+
   if (estado.fase === "error") {
     return (
       <div className={VACIO}>
         <p className="text-ink">{estado.mensaje}</p>
-        <Link href="/mesa/" className={cn(ENLACE, "mt-2 inline-block")}>
-          Volver a la mesa
-        </Link>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              fallos.current = 0;
+              setEstado({ fase: "preparando" });
+              setIntento((n) => n + 1);
+            }}
+            className={BOTON_PRIMARIO_COMPACTO}
+          >
+            <RotateCw size={14} aria-hidden="true" />
+            Reintentar
+          </button>
+          <Link href="/mesa/" className={ENLACE}>
+            Volver a la mesa
+          </Link>
+        </div>
       </div>
     );
   }
@@ -520,9 +617,14 @@ function Conectada({
       <div className="flex flex-col gap-3">
         {cabecera}
         <p className={AVISO_EN_LINEA}>
-          Los dos están listos: la sala está en juego. Preparando la mesa
-          {rivalConectado ? "…" : `: esperando a que ${nombres[rival]} entre.`}
+          Los dos están listos: la sala está en juego.{" "}
+          {estado.fase === "lista"
+            ? rivalConectado
+              ? "Preparando la mesa…"
+              : `Preparando la mesa: esperando a que ${nombres[rival]} entre.`
+            : "Conectando a la mesa…"}
         </p>
+        {dialogoAbandonar}
       </div>
     );
   }
@@ -535,6 +637,7 @@ function Conectada({
           onCerrar={() => setTerminando(false)}
         />
       )}
+      {dialogoAbandonar}
       <ConfirmDialog
         open={anulando}
         titulo="¿Anular el juego?"

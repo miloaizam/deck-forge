@@ -649,3 +649,30 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 - **Documentación:** CLAUDE.md («La mesa de juego» en §9, la CSP, la
   auditoría, las rutas y la navbar) y `docs/cuentas.md` (las tablas, las
   funciones, cómo pegarlo, cómo moderar y cómo probarlo).
+
+### Arreglos tras encender (25-11-2026)
+
+- **«No se pudo conectar a la mesa», a veces y a los dos.** Era una carrera
+  dentro de `@supabase/realtime-js`: `subscribe()` pide el token de la
+  sesión en paralelo y arma el mensaje de unión sin esperarlo. Si el
+  websocket abría antes, la unión salía **sin token**, Realtime la trataba
+  como anónima y la política del canal privado la rechazaba.
+  - **El arreglo:** `await rc.setAuth()` antes de crear el canal.
+  - **Ahora la conexión se reintenta:** antes de tener mesa, hasta tres
+    veces y después «Reintentar»; con la mesa en pantalla, sin límite y sin
+    taparla («Reconectando…»).
+  - **Las pruebas lo vigilan:** la imitación de Realtime de
+    `e2e/sala.spec.ts` rechaza la unión sin token y cuenta las anónimas.
+    Sin el arreglo contaba 2; con él, 0. Otra prueba hace fallar las dos
+    primeras uniones y la mesa igual se conecta.
+- **«Salir de la mesa» no cerraba la sala.** Era solo un enlace: la sala
+  seguía abierta y contaba para el tope de tres. **Decisión del proyecto:
+  dos botones.**
+  - **«Salir por ahora»**: el enlace de siempre. La sala queda para
+    volver, con los 2 minutos de gracia.
+  - **«Abandonar la serie»**, en la mesa y entre juegos, con confirmación:
+    `abandonar_mesa` le da la serie al rival, cierra la sala con el motivo
+    nuevo `retiro` y borra la partida.
+- **Hay que volver a pegar `supabase/mesa.sql`** (la función nueva y la
+  restricción de `motivo`, que se reemplaza).
+

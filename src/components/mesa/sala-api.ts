@@ -189,3 +189,8 @@ export async function responderResultado(mesa: string, acepta: boolean): Promise
 export async function rendirse(mesa: string): Promise<void> {
   await rpc("rendirse", { p_mesa: mesa });
 }
+
+/** Abandonar la serie a proposito: es del rival en el acto y la sala se cierra. */
+export async function abandonarSala(mesa: string): Promise<void> {
+  await rpc("abandonar_mesa", { p_mesa: mesa });
+}

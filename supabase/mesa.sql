@@ -55,6 +55,11 @@ create table if not exists public.mesas (
 -- volver a pegar el archivo sobre una base que ya tiene la tabla la sume.
 alter table public.mesas add column if not exists motivo text
   check (motivo in ('abandono', 'rendicion', 'partidas'));
+-- 'retiro' (25-11-2026) es abandonar la serie a proposito; 'abandono', no
+-- volver en dos minutos. La restriccion nacio con la columna: se reemplaza.
+alter table public.mesas drop constraint if exists mesas_motivo_check;
+alter table public.mesas add constraint mesas_motivo_check
+  check (motivo in ('abandono', 'retiro', 'rendicion', 'partidas'));
 
 -- La serie (sesion 7), tambien sumada aparte:
 --   ronda      cuantos juegos se han empezado, anulados incluidos: separa la
@@ -637,6 +642,41 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------
+-- Abandonar la serie a proposito (25-11-2026): la serie es del otro en el
+-- acto y la sala se cierra para los dos, sin esperar los dos minutos. Como
+-- en el abandono, lo de la partida se borra (sin historial).
+-- ---------------------------------------------------------------------
+create or replace function public.abandonar_mesa(p_mesa uuid)
+returns void
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  yo uuid := auth.uid();
+  m public.mesas;
+begin
+  select * into m from public.mesas where id = p_mesa for update;
+  if not found or yo is null or m.jugador_b is null or yo not in (m.jugador_a, m.jugador_b) then
+    raise exception 'no eres jugador' using errcode = 'MS004';
+  end if;
+  if m.estado not in ('jugando', 'entre_juegos') then
+    raise exception 'no se esta jugando' using errcode = 'MS005';
+  end if;
+  update public.mesas
+  set estado = 'terminada',
+      ganador = case when yo = m.jugador_a then m.jugador_b else m.jugador_a end,
+      motivo = 'retiro',
+      declara = null, declarado = null
+  where id = p_mesa;
+  update public.mesas_publico set version = 0, estado = '{}'::jsonb, actualizada = now()
+  where mesa = p_mesa;
+  delete from public.mesas_privado where mesa = p_mesa;
+end;
+$$;
+
 -- Nadie llama a cerrar_juego desde la API.
 revoke all on function public.cerrar_juego(uuid, text, boolean)
   from public, anon, authenticated;
@@ -647,7 +687,7 @@ revoke all on function public.ver_mesa(uuid), public.mis_mesas(),
   public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
   public.guardar_mesa_publico(uuid, int, bigint, jsonb), public.reclamar_abandono(uuid),
   public.declarar_resultado(uuid, text), public.responder_resultado(uuid, boolean),
-  public.rendirse(uuid)
+  public.rendirse(uuid), public.abandonar_mesa(uuid)
   from public, anon;
 grant execute on function public.ver_mesa(uuid), public.mis_mesas(),
   public.crear_mesa(text, int), public.unirse_mesa(text),
@@ -655,5 +695,5 @@ grant execute on function public.ver_mesa(uuid), public.mis_mesas(),
   public.salir_mesa(uuid), public.es_canal_de_mi_mesa(text),
   public.guardar_mesa_publico(uuid, int, bigint, jsonb), public.reclamar_abandono(uuid),
   public.declarar_resultado(uuid, text), public.responder_resultado(uuid, boolean),
-  public.rendirse(uuid)
+  public.rendirse(uuid), public.abandonar_mesa(uuid)
   to authenticated;

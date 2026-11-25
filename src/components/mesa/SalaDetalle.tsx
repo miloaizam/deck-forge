@@ -167,6 +167,14 @@ function SalaTerminada({ sala, uid }: { sala: Sala; uid: string }) {
     porque = gane
       ? `${rival} se desconectó y no volvió en dos minutos.`
       : "Te desconectaste y no volviste en dos minutos.";
+  } else if (sala.motivo === "retiro") {
+    if (gane) {
+      titulo += `: ${rival} abandonó`;
+      porque = `${rival} dejó la serie.`;
+    } else {
+      titulo = "Abandonaste la serie";
+      porque = `La serie es para ${rival}.`;
+    }
   } else if (sala.motivo === "partidas" || sala.motivo === "rendicion") {
     titulo += ` ${marcador}`;
     porque =

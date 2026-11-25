@@ -160,7 +160,9 @@ borrar la cuenta borra las salas.
   - `guardar_mesa_publico` (la foto, que solo sube de versión);
   - `declarar_resultado`, `responder_resultado` y `rendirse` (cada juego);
   - `reclamar_abandono`, que la base solo acepta si el otro lleva más de 2
-    minutos sin señal.
+    minutos sin señal;
+  - `abandonar_mesa`, que deja la serie al otro en el acto (motivo
+    `retiro`).
 
   `cerrar_juego` suma al marcador y no se puede llamar desde la API.
 - **El canal de Realtime** `mesa:<id>` es privado. Las políticas sobre

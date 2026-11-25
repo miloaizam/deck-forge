@@ -59,7 +59,11 @@ export const salaSchema = z.object({
   senal_b: fecha,
   creada: fecha,
   /** Por que termino la serie (sesiones 6 y 7). */
-  motivo: z._default(z.nullable(z.enum(["abandono", "rendicion", "partidas"])), null),
+  // abandono: no volvio en dos minutos; retiro: abandono la serie a proposito.
+  motivo: z._default(
+    z.nullable(z.enum(["abandono", "retiro", "rendicion", "partidas"])),
+    null,
+  ),
   /** La hora de la base cuando respondio. */
   ahora: z._default(fecha, null),
   /** La serie (sesion 7): cuantos juegos empezaron, anulados incluidos. */

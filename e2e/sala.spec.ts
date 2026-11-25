@@ -156,7 +156,7 @@ async function imitarMesa(page: Page, base: Base) {
     const req = route.request();
     const ruta = new URL(req.url()).pathname.replace("/rest/v1/", "");
     const esMesa =
-      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa|guardar_mesa_publico|reclamar_abandono|declarar_resultado|responder_resultado|rendirse)$/.test(
+      /^rpc\/(crear_mesa|unirse_mesa|ver_mesa|mis_mesas|marcar_lista|latido_mesa|salir_mesa|guardar_mesa_publico|reclamar_abandono|declarar_resultado|responder_resultado|rendirse|abandonar_mesa)$/.test(
         ruta,
       );
     if (!esMesa && !/^mesas_(privado|publico)/.test(ruta)) return route.fallback();
@@ -215,7 +215,11 @@ async function imitarMesa(page: Page, base: Base) {
       case "rpc/mis_mesas":
         return responder(
           route,
-          base.salas.filter((s) => [s.jugador_a, s.jugador_b].includes(uid)).map(vista),
+          base.salas
+            .filter((s) => [s.jugador_a, s.jugador_b].includes(uid))
+            // Como `mis_mesas()`: las terminadas ya no estan abiertas.
+            .filter((s) => s.estado !== "terminada")
+            .map(vista),
         );
       case "rpc/latido_mesa":
         if (sala && juega && sala.estado !== "terminada") sala.senal[uid] = Date.now();
@@ -312,6 +316,24 @@ async function imitarMesa(page: Page, base: Base) {
         }
         return responder(route, undefined, 204);
       }
+      case "rpc/abandonar_mesa": {
+        if (!sala || !juega || !sala.jugador_b) {
+          return responder(route, { code: "MS004" }, 400);
+        }
+        if (!["jugando", "entre_juegos"].includes(sala.estado)) {
+          return responder(route, { code: "MS005" }, 400);
+        }
+        Object.assign(sala, {
+          estado: "terminada",
+          ganador: uid === sala.jugador_a ? sala.jugador_b : sala.jugador_a,
+          motivo: "retiro",
+          declara: null,
+          declarado: null,
+        });
+        base.publico.set(sala.id, { version: 0, estado: {} });
+        base.privado = base.privado.filter((p) => p.mesa !== sala.id);
+        return responder(route, undefined, 204);
+      }
       case "rpc/rendirse": {
         if (!sala || !juega) return responder(route, { code: "MS004" }, 400);
         if (sala.estado !== "jugando") return responder(route, { code: "MS008" }, 400);
@@ -363,10 +385,20 @@ interface TiempoReal {
   sockets: Set<Socket>;
   presentes: Map<string, Map<string, Socket>>; // tema -> (lado -> quien)
   broadcasts: unknown[];
+  /** Cuantas uniones al canal responden con error antes de aceptar una. */
+  fallarUniones: number;
+  /** Las uniones que llegaron sin token (anonimas): con el arreglo, ninguna. */
+  sinToken: number;
 }
 
 function tiempoReal(): TiempoReal {
-  return { sockets: new Set(), presentes: new Map(), broadcasts: [] };
+  return {
+    sockets: new Set(),
+    presentes: new Map(),
+    broadcasts: [],
+    fallarUniones: 0,
+    sinToken: 0,
+  };
 }
 
 function estadoDePresencia(rt: TiempoReal, tema: string) {
@@ -403,14 +435,30 @@ async function imitarTiempoReal(page: Page, uid: string, rt: TiempoReal, base: B
       const m = JSON.parse(String(crudo)) as {
         topic: string;
         event: string;
-        payload: { type?: string; event?: string; payload?: unknown };
+        payload: {
+          type?: string;
+          event?: string;
+          payload?: unknown;
+          access_token?: string;
+        };
         ref: string | null;
         join_ref?: string | null;
       }; // lo escribe realtime-js
       if (m.topic === "phoenix" || m.event === "access_token") return responder(m);
       if (m.event === "phx_join") {
         const sala = base.salas.find((x) => m.topic === `realtime:mesa:${x.id}`);
-        if (!sala || ![sala.jugador_a, sala.jugador_b].includes(uid)) {
+        // Sin token, Realtime trata la union como anonima y la politica del
+        // canal privado la rechaza: lo mismo aqui (la carrera del 25-11-2026).
+        const conToken = typeof m.payload.access_token === "string";
+        if (!conToken) rt.sinToken += 1;
+        const falla = rt.fallarUniones > 0;
+        if (falla) rt.fallarUniones -= 1;
+        if (
+          falla ||
+          !conToken ||
+          !sala ||
+          ![sala.jugador_a, sala.jugador_b].includes(uid)
+        ) {
           return yo.enviar({
             topic: m.topic,
             event: "phx_reply",
@@ -540,9 +588,11 @@ async function empezarPartida(
   browser: Browser,
   tema?: "dark" | "light",
   alAbrirLaSala?: (a: Page) => Promise<void>,
+  fallarUniones = 0,
 ) {
   const base = baseNueva();
   const rt = tiempoReal();
+  rt.fallarUniones = fallarUniones;
 
   // A crea la sala.
   const a = await jugador(browser, USUARIO_A, base, rt, tema);
@@ -712,6 +762,9 @@ test("dos cuentas se encuentran en una sala, eligen baraja y una tercera no entr
       }
     }
   }
+
+  // Ninguna union al canal salio sin el token de la sesion.
+  expect(rt.sinToken).toBe(0);
 
   // C no puede entrar: la sala esta completa.
   const c = await jugador(browser, USUARIO_C, base, rt);
@@ -995,6 +1048,10 @@ for (const tema of ["dark", "light"] as const) {
       timeout: 10_000,
     });
     await sinViolaciones(b, "entre juegos");
+    await b.getByRole("button", { name: "Abandonar la serie" }).click();
+    await expect(b.getByRole("dialog", { name: "¿Abandonar la serie?" })).toBeVisible();
+    await sinViolaciones(b, "abandonar la serie");
+    await b.getByRole("button", { name: "Cancelar" }).filter({ visible: true }).click();
 
     // Juego 2: B se rinde y A gana la serie.
     await b.getByRole("button", { name: "Listo para el juego 2" }).click();
@@ -1009,3 +1066,56 @@ for (const tema of ["dark", "light"] as const) {
     await sinViolaciones(a, "la serie terminada");
   });
 }
+
+test("se conecta a la mesa aunque las primeras uniones al canal fallen", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  // Las dos primeras uniones al canal fallan (una de cada jugador, o las
+  // dos del primero que llega): la mesa lo reintenta sola.
+  const { a, b } = await empezarPartida(browser, undefined, undefined, 2);
+  await expect(zona(a, "Mano de Invitado")).toHaveAttribute(
+    "aria-label",
+    "Mano de Invitado, 8 cartas",
+  );
+  await expect(a.getByText("No se pudo conectar a la mesa.")).toBeHidden();
+  await expect(b.getByText("No se pudo conectar a la mesa.")).toBeHidden();
+  await jugarADefensa(a, b, 1);
+});
+
+test("abandonar la serie se la da al rival y cierra la sala para los dos", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(60_000);
+  const { a, b, base, codigo } = await empezarPartida(browser);
+  const sala = base.salas[0];
+  await jugarADefensa(a, b, 1);
+
+  await a.getByRole("button", { name: "Abandonar la serie" }).click();
+  const confirmar = a.getByRole("dialog", { name: "¿Abandonar la serie?" });
+  await expect(confirmar).toContainText(
+    "La serie es para Invitado y la sala se cierra para los dos.",
+  );
+  await confirmar.getByRole("button", { name: "Abandonar la serie" }).click();
+
+  await expect(a.getByRole("heading", { name: "Abandonaste la serie" })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(
+    b.getByRole("heading", { name: "Ganaste la serie: Anfitrión abandonó" }),
+  ).toBeVisible({ timeout: 10_000 });
+  expect(sala.estado).toBe("terminada");
+  expect(sala.motivo).toBe("retiro");
+  expect(sala.ganador).toBe(USUARIO_B);
+  expect(base.privado.filter((p) => p.mesa === sala.id)).toEqual([]);
+
+  // Ya no esta entre las salas abiertas.
+  await a.goto("/mesa/");
+  await expect(a.getByRole("button", { name: "Crear sala" })).toBeVisible();
+  await a.waitForLoadState("networkidle");
+  await expect(a.getByText(codigo)).toHaveCount(0);
+});

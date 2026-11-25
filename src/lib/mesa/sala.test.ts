@@ -107,6 +107,10 @@ test("la sala trae por que termino y la hora de la base; sin ellos, null", () =>
     fila({ estado: "terminada", motivo: "abandono", ahora: "2026-11-24T00:05:00Z" }),
   )!;
   assert.equal(terminada.motivo, "abandono");
+  assert.equal(
+    leerSala(fila({ estado: "terminada", motivo: "retiro" }))?.motivo,
+    "retiro",
+  );
   assert.equal(leerSala(fila({ motivo: "otro" })), null);
 });
 
