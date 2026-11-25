@@ -55,7 +55,7 @@ const MESA_ARREGLO: Novedad = {
   tipo: "Arreglo",
   titulo: "La Mesa se conecta siempre, y se puede abandonar una serie",
   texto: [
-    "A veces, al empezar una partida, a los dos jugadores les salía «No se pudo conectar a la mesa». Ya no pasa, y si la conexión falla un momento, la mesa lo vuelve a intentar sola.",
+    "A veces, al empezar una partida, a los dos jugadores les salía «No se pudo conectar a la mesa», o cada uno veía al otro desconectado. Pasaba sobre todo al llegar a la Mesa desde la barra de arriba. Ya no pasa, y si la conexión falla un momento, la mesa lo vuelve a intentar sola.",
     "Para salir de una serie empezada hay ahora dos botones: «Salir por ahora», que deja la sala abierta para volver, y «Abandonar la serie», que se la da a tu rival y cierra la sala para los dos.",
   ],
 };

@@ -1986,6 +1986,15 @@ Todo el plan, las decisiones y lo hecho en cada sesión está en
   siempre; corren con `pnpm run e2e` y sus `@a11y`, con `pnpm run a11y`.
 - **Es para escritorio**: bajo 1024 px dice que es para escritorio y no
   carga.
+- **La CSP la fija el documento que se cargó, no la ruta que se ve.** El
+  `wss://` del tiempo real solo va en las páginas de `/mesa`, y navegar
+  con el router de Next (la navbar, la vuelta de Google) no cambia de
+  documento. Por eso una sala abierta en un documento cargado fuera de
+  `/mesa` se recarga sola (`src/components/mesa/documento-de-la-mesa.ts`).
+  Sin eso, el websocket quedaba bloqueado en silencio (25-11-2026).
+  `pnpm run preview` no aplica `_headers`: para probar algo que dependa de
+  la CSP, `e2e/csp.ts` (`conCspDeVerdad`) se la pone a cada documento con
+  las reglas de Cloudflare.
 
 ### Cuentas y Comunidad
 

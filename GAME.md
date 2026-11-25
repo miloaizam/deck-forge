@@ -665,6 +665,28 @@ Cada sesión termina con algo que funciona y se puede probar, y con
     `e2e/sala.spec.ts` rechaza la unión sin token y cuenta las anónimas.
     Sin el arreglo contaba 2; con él, 0. Otra prueba hace fallar las dos
     primeras uniones y la mesa igual se conecta.
+- **Y cada uno veía al otro desconectado, sin ningún error.** Era la CSP:
+  solo las páginas de `/mesa` permiten el `wss://` del tiempo real
+  (sesión 5), y la CSP la fija el documento que se **cargó**, no la ruta
+  que se ve. Al llegar por el enlace «Mesa» de la navbar, o volviendo de
+  Google a una sala, el router de Next cambia la URL sin cambiar de
+  documento: la página seguía con la CSP del catálogo y el navegador
+  bloqueaba el websocket en silencio. Quien abría el enlace de la sala
+  directo sí conectaba; por eso «funcionaba a veces».
+  - **El arreglo:** una sala abierta en un documento cargado fuera de
+    `/mesa` se recarga sola una vez (`documento-de-la-mesa.ts`,
+    `src/lib/mesa/documento.ts`, con su test). Se mantiene `wss://` solo
+    en `/mesa`.
+  - **Por qué las pruebas no lo vieron:** `pnpm run preview` no aplica
+    `_headers`. Ahora `e2e/csp.ts` le pone a cada documento la CSP que le
+    daría Cloudflare, con sus mismas reglas.
+  - **La prueba nueva** entra a la sala por la navbar con esa CSP y exige
+    que, al jugar, el documento sea de `/mesa` y su CSP traiga el
+    `wss://`. Con el código anterior fallaba (documento `/catalogo/`).
+    Como la imitación de Realtime reemplaza el WebSocket de la página y la
+    CSP no la ve, se comprobó además a mano con un websocket de verdad:
+    bloqueado por `connect-src` al llegar por la navbar, y permitido tras
+    la recarga.
 - **«Salir de la mesa» no cerraba la sala.** Era solo un enlace: la sala
   seguía abierta y contaba para el tope de tres. **Decisión del proyecto:
   dos botones.**

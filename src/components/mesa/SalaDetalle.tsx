@@ -16,6 +16,7 @@ import {
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { recargarSiHaceFalta } from "./documento-de-la-mesa";
 import { EntreJuegos } from "./EntreJuegos";
 import { MesaEnLinea } from "./MesaEnLinea";
 import { useDecks } from "../decks/use-decks";
@@ -73,6 +74,12 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
       setError(mensajeDeSala(e));
     }
   }, [id]);
+
+  // Una sala abierta desde otra pagina del sitio (la navbar, la vuelta de
+  // Google) hereda una CSP sin el wss:// del tiempo real: se recarga.
+  useEffect(() => {
+    recargarSiHaceFalta();
+  }, []);
 
   useEffect(() => {
     // La primera pregunta, tambien desde un temporizador: la sala es un

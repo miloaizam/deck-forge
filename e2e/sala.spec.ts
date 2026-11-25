@@ -8,6 +8,7 @@ import { buildCardIndex, isLegal, validateDeck } from "../src/lib/deck-rules";
 import { conErratas } from "../src/lib/erratas";
 import { cardSchema, type Deck } from "../src/lib/types";
 import { sinViolaciones } from "./axe";
+import { conCspDeVerdad, cspPara } from "./csp";
 import { mesaActiva } from "./mesa-activa";
 import { entrarSimulado, USUARIO_A, USUARIO_B } from "./supabase-simulado";
 
@@ -539,6 +540,7 @@ async function jugador(
   base: Base,
   rt: TiempoReal = tiempoReal(),
   tema?: "dark" | "light",
+  csp = false,
 ): Promise<Page> {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
@@ -561,6 +563,8 @@ async function jugador(
   );
   await imitarMesa(page, base);
   await imitarTiempoReal(page, uid, rt, base);
+  // Va al final: las rutas registradas despues se miran primero.
+  if (csp) await conCspDeVerdad(page);
   return page;
 }
 
@@ -1118,4 +1122,65 @@ test("abandonar la serie se la da al rival y cierra la sala para los dos", async
   await expect(a.getByRole("button", { name: "Crear sala" })).toBeVisible();
   await a.waitForLoadState("networkidle");
   await expect(a.getByText(codigo)).toHaveCount(0);
+});
+
+test("entrando desde la navbar, con la CSP de Cloudflare, los dos se conectan", async ({
+  browser,
+}, info) => {
+  test.skip(!MESA, "solo con la mesa encendida");
+  test.skip(info.project.name !== "escritorio", "una vez basta");
+  test.setTimeout(90_000);
+  const base = baseNueva();
+  const rt = tiempoReal();
+  const bloqueos: string[] = [];
+  const vigilar = (p: Page) =>
+    p.on("console", (m) => {
+      if (/Content Security Policy|Refused to connect/.test(m.text()))
+        bloqueos.push(m.text());
+    });
+
+  // Los dos entran al sitio por el catalogo y llegan a la mesa por la navbar:
+  // el router de Next cambia la URL sin cambiar de documento ni de CSP.
+  const a = await jugador(browser, USUARIO_A, base, rt, undefined, true);
+  vigilar(a);
+  await a.goto("/catalogo/");
+  await a.getByRole("link", { name: "Mesa", exact: true }).click();
+  await a.getByRole("button", { name: "Crear sala" }).click();
+  await a.waitForURL(/\/mesa\/\?s=/);
+  const titulo = await a.getByRole("heading", { level: 1 }).textContent();
+  const codigo = titulo?.match(/Sala\s*([A-Z0-9]{6})/)?.[1] ?? "";
+
+  const b = await jugador(browser, USUARIO_B, base, rt, undefined, true);
+  vigilar(b);
+  await b.goto("/catalogo/");
+  await b.getByRole("link", { name: "Mesa", exact: true }).click();
+  await b.getByRole("textbox", { name: "Código de la sala" }).fill(codigo);
+  await b.getByRole("button", { name: "Unirse" }).click();
+  await b.waitForURL(/\/mesa\/\?s=/);
+
+  await elegirBarajaYListo(a);
+  await elegirBarajaYListo(b, true);
+  await expect(zona(a, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas", {
+    timeout: 20_000,
+  });
+  await expect(zona(b, "Mano")).toHaveAttribute("aria-label", "Mano, 8 cartas");
+  await expect(a.getByText("Invitado está conectado")).toBeVisible();
+  await expect(b.getByText("Anfitrión está conectado")).toBeVisible();
+  await jugarADefensa(a, b, 1);
+  expect(bloqueos, bloqueos.join("\n")).toEqual([]);
+
+  // La imitacion de Realtime reemplaza el WebSocket de la pagina y la CSP no
+  // lo ve: lo que se comprueba es que, al jugar, el documento ya es uno de
+  // /mesa (la sala se recargo) y que su CSP deja pasar el wss://.
+  for (const p of [a, b]) {
+    const documento = await p.evaluate(
+      () =>
+        new URL(
+          (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)
+            .name,
+        ).pathname,
+    );
+    expect(documento).toBe("/mesa/");
+    expect(cspPara(documento)).toMatch(/connect-src[^;]* wss:\/\//);
+  }
 });
