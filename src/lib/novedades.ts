@@ -68,7 +68,7 @@ const MESA_SALAS_VACIAS: Novedad = {
   titulo: "Las salas vacías de la Mesa se cierran solas",
   texto: [
     "Una sala donde no queda nadie conectado por 15 minutos se cierra sola, y deja de aparecer en «Tus salas abiertas». Antes se quedaba ahí un día entero.",
-    "La Mesa usa ahora todo el ancho de la pantalla, como las demás páginas, y la práctica en solitario se abre con el botón «Solitario», arriba de las tarjetas.",
+    "La Mesa usa ahora todo el ancho de la pantalla, como las demás páginas, y la práctica en solitario se abre con el botón «Solitario», junto a «Crear sala».",
   ],
 };
 

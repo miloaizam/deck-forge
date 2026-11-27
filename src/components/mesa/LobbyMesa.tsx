@@ -89,15 +89,7 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
         </p>
       </div>
 
-      {/* Como Mis barajas: la fila del boton primario y, debajo, las tarjetas. */}
       <div className="flex flex-col gap-4">
-        <div>
-          <Link href="/mesa/practica/" className={BOTON_PRIMARIO}>
-            <User size={14} aria-hidden="true" />
-            Solitario
-          </Link>
-        </div>
-
         {error && (
           <p
             role="alert"
@@ -126,15 +118,22 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
               onChange={(v) => setMejorDe(v === "5" ? 5 : 3)}
               format={(v) => `Al mejor de ${v}`}
             />
-            <button
-              type="button"
-              onClick={crear}
-              disabled={ocupado}
-              className={cn(BOTON_PRIMARIO, "mt-auto")}
-            >
-              <Plus size={16} aria-hidden="true" />
-              Crear sala
-            </button>
+            {/* Crear sala y la practica en solitario, mitad y mitad. */}
+            <div className="mt-auto grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={crear}
+                disabled={ocupado}
+                className={BOTON_PRIMARIO}
+              >
+                <Plus size={16} aria-hidden="true" />
+                Crear sala
+              </button>
+              <Link href="/mesa/practica/" className={BOTON_PRIMARIO}>
+                <User size={16} aria-hidden="true" />
+                Solitario
+              </Link>
+            </div>
           </div>
 
           <form

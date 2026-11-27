@@ -724,7 +724,7 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 - **La Mesa usa el ancho de las demás páginas** y su cabecera (eyebrow,
   título grande y párrafo gris). El título de la entrada es «Salas de
   juego», para no repetir «Mesa» bajo la palabra morada.
-- **«Solitario»** es el botón primario de la página, en su propia fila sobre
-  las tarjetas, como «Armar una baraja» en Mis barajas; reemplaza
+- **«Solitario»** comparte la fila con «Crear sala», mitad y mitad, al pie
+  de la tarjeta «Crear una sala» (decisión del proyecto); reemplaza
   al enlace «O practica en solitario».
 - **Hay que volver a pegar `supabase/mesa.sql`.**
