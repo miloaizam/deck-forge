@@ -743,4 +743,12 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   `sala.ts`) y el medallón del VS. Entre juegos suma un punto por victoria
   que hace falta, y se quitó el subtítulo «Sala … · al mejor de …»; los dos
   paneles de abajo cierran a la misma altura.
+- **Sin fases en la mesa** (decisión del proyecto): se conversan entre los
+  jugadores. El marcador quedó en «Turno N» y «Pasar turno», al comienzo de
+  la fila de acciones. `turno.fase` y las acciones `fase` y `siguienteFase`
+  siguen en el modelo y en el esquema de red, para leer partidas guardadas
+  y a un rival con la pestaña de antes; solo dejaron de ofrecerse.
+- **El registro tiene alto fijo** (`h-80`, `xl:h-[30rem]`) y scrollea por
+  dentro, y **cada jugador va con su color**: amarillo el 1, celeste el 2
+  (tokens `jugador-1` y `jugador-2`, DESIGN.md), con una leyenda arriba.
 - **Hay que volver a pegar `supabase/mesa.sql`.**

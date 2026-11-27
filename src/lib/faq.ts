@@ -69,7 +69,7 @@ const MESA: FaqSection = {
       pregunta: "¿Cómo muevo las cartas?",
       respuesta: [
         "**Arrástralas** de una zona a otra, o toca una carta para abrir su **menú** (mandarla a otra zona, voltearla, ponerle contadores…). Cada zona tiene el suyo: el del **Castillo** roba, bota, mira, muestra, busca y baraja. Todo se puede hacer también con el **teclado**, desde los menús.",
-        "Arriba están **Mulligan**, **Agrupar**, **Lanzar moneda** y el marcador de **turno y fase**, y a un costado el **registro** con todo lo que pasó.",
+        "Arriba están el **turno**, **Pasar turno**, **Mulligan**, **Agrupar** y **Lanzar moneda**. Las fases no se marcan: se conversan entre los dos. A un costado va el **registro** con todo lo que pasó, cada jugador con su color: **amarillo** quien creó la sala y **celeste** quien entró.",
       ],
     },
     {

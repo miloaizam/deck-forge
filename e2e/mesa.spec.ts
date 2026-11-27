@@ -254,15 +254,20 @@ test("mirar, buscar, barajar desde el Cementerio, marcas, turno y registro", asy
   await expect(zona(page, "Línea de Defensa")).not.toContainText("+2");
   await expect(lineas.first()).toContainText("Limpió los modificadores de Fuerza.");
 
-  // Turno y fase.
-  const marcador = page.getByRole("navigation", { name: "Turno y fase" });
-  await marcador.getByRole("button", { name: "Siguiente fase" }).click();
-  await expect(marcador.getByRole("button", { name: "Vigilia" })).toHaveAttribute(
-    "aria-current",
-    "step",
-  );
+  // El turno: sin fases (se conversan), solo «Pasar turno».
+  const marcador = page.getByRole("navigation", { name: "Turno" });
+  await expect(marcador.getByRole("button", { name: "Siguiente fase" })).toHaveCount(0);
   await marcador.getByRole("button", { name: "Pasar turno" }).click();
   await expect(marcador).toContainText("Turno 2");
+
+  // El registro tiene alto fijo: con mas lineas no crece, scrollea por dentro.
+  const alto = (await registro.boundingBox())?.height ?? 0;
+  for (let i = 0; i < 12; i++) {
+    await page.getByRole("button", { name: "Lanzar moneda" }).click();
+  }
+  expect((await registro.boundingBox())?.height).toBe(alto);
+  const lista = registro.getByRole("list");
+  expect(await lista.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
 
   // La moneda, y una linea por accion, numeradas sin huecos.
   await page.getByRole("button", { name: "Lanzar moneda" }).click();
@@ -342,14 +347,12 @@ test("la mesa de practica se juega con el teclado, sin arrastrar", async ({
   await page.keyboard.press("Escape");
   await expect(page.getByRole("heading", { name: "Cementerio (1)" })).toBeHidden();
 
-  // Y la fase avanza desde el marcador de turno.
-  const fase = page
-    .getByRole("navigation", { name: "Turno y fase" })
-    .locator("[aria-current=step]");
-  const antes = await fase.textContent();
-  await tabHasta(page, /^Siguiente fase/);
+  // Y el turno pasa desde el marcador, con el teclado.
+  const marcador = page.getByRole("navigation", { name: "Turno" });
+  await expect(marcador).toContainText("Turno 1");
+  await tabHasta(page, /^Pasar turno/);
   await page.keyboard.press("Enter");
-  await expect(fase).not.toHaveText(antes ?? "");
+  await expect(marcador).toContainText("Turno 2");
 });
 
 for (const tema of ["dark", "light"] as const) {

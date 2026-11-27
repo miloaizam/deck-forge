@@ -768,13 +768,10 @@ export function TableroMesa({
     <div className="flex flex-col gap-3">
       {cabecera}
       {aviso}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <MarcadorTurno
-          turno={mesa.turno}
-          onFase={(fase) => hacer({ tipo: "fase", fase })}
-          onSiguiente={() => hacer({ tipo: "siguienteFase" })}
-          onPasar={() => hacer({ tipo: "pasarTurno" })}
-        />
+      {/* Una sola fila: el turno y «Pasar turno» primero, y despues las demas
+          acciones. Las fases se conversan, no se marcan. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <MarcadorTurno turno={mesa.turno} onPasar={() => hacer({ tipo: "pasarTurno" })} />
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -888,7 +885,7 @@ export function TableroMesa({
         </div>
       )}
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_17rem]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start">
         <div ref={marco} className="min-w-0" style={{ height: altoTotal * escala }}>
           <div
             ref={lienzo}
@@ -920,10 +917,13 @@ export function TableroMesa({
             )}
           </div>
         </div>
+        {/* Alto fijo: el registro scrollea por dentro y no crece con la
+            partida. Cada jugador con su color (jugadores[0] y [1]). */}
         <RegistroMesa
           registro={mesa.registro}
           texto={texto}
-          className="max-h-72 xl:max-h-none"
+          jugadores={mesa.jugadores.map((j) => ({ id: j.id, nombre: quien(j.id) }))}
+          className="h-80 xl:h-[30rem]"
         />
       </div>
 

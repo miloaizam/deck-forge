@@ -53,6 +53,14 @@
   --color-errata: #fcd34d;
   --color-errata-soft: rgb(252 211 77 / 0.14);
 
+  /* Quien hizo que en el registro de la mesa (27-11-2026): el jugador 1
+     (quien creo la sala) en amarillo y el 2 en celeste. Solo filete, punto
+     y numero: el texto de la linea sigue en `ink`. */
+  --color-jugador-1: #facc15;
+  --color-jugador-1-soft: rgb(250 204 21 / 0.1);
+  --color-jugador-2: #38bdf8;
+  --color-jugador-2-soft: rgb(56 189 248 / 0.1);
+
   /* Superficies claras (uso puntual: hojas de marca, impresion) --- */
   --color-light-bg: #f5f3fb;
   --color-light-line: #e3def2;
@@ -116,6 +124,11 @@
      sobre su propio fondo de marcador. */
   --color-errata: #8a5300;
   --color-errata-soft: #fdf3d0;
+  /* Amarillo y celeste oscuros: los del tema oscuro no se leen sobre blanco. */
+  --color-jugador-1: #a16207;
+  --color-jugador-1-soft: #fef9c3;
+  --color-jugador-2: #0369a1;
+  --color-jugador-2-soft: #e0f2fe;
 
   --color-halo: rgb(167 139 250 / 0.3);
 

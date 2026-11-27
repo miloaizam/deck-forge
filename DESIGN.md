@@ -132,6 +132,21 @@ pudo»: son de la misma familia, no dicen lo mismo.
 | `errata` | `#FCD34D` | `#8A5300` | el texto que cambió una errata (12:1 y 5,7:1) |
 | `errata-soft` | dorado al 14 % | `#FDF3D0` | su fondo de marcador |
 
+### Quién hizo qué en el registro de la mesa
+
+Cada línea del registro de la mesa (`RegistroMesa`) lleva el color de quien
+la hizo: un filete a la izquierda, un fondo suave y el número. El texto
+sigue en `ink`. El jugador 1 (quien creó la sala) va en **amarillo** y el 2
+en **celeste**, con una leyenda en la cabecera del registro (decisión del
+proyecto, 27-11-2026).
+
+| Token | Oscuro | Claro | Uso |
+|---|---|---|---|
+| `jugador-1` | `#FACC15` | `#A16207` | filete, punto y número del jugador 1 |
+| `jugador-1-soft` | amarillo al 10 % | `#FEF9C3` | fondo de sus líneas |
+| `jugador-2` | `#38BDF8` | `#0369A1` | filete, punto y número del jugador 2 |
+| `jugador-2-soft` | celeste al 10 % | `#E0F2FE` | fondo de sus líneas |
+
 ### Al pasar el cursor
 
 Todo lo que se puede pulsar y tiene contorno —botones, filtros, selectores,
