@@ -570,8 +570,10 @@ async function jugador(
 
 /** El segundo en marcarse listo no ve «Estás listo»: la sala empieza en el acto. */
 async function elegirBarajaYListo(page: Page, segundo = false) {
-  await page.getByRole("button", { name: /^Baraja/ }).click();
-  await page.getByRole("option", { name: "Para la sala" }).click();
+  // La baraja se elige con su tarjeta (TarjetaBaraja), como en la practica.
+  const tarjeta = page.getByRole("button", { name: "Para la sala" });
+  await tarjeta.click();
+  await expect(tarjeta).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Estoy listo" }).click();
   await expect(
     page.getByText(

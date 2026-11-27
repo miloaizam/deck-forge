@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Copy, Flag, Hourglass, LogOut, Trophy, Undo2 } from "lucide-react";
+import { Check, Flag, Hourglass, Link2, LogOut, Trophy, Undo2 } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { TarjetaBaraja } from "../decks/TarjetaBaraja";
+import { CabeceraSala } from "./CabeceraSala";
 import { recargarSiHaceFalta } from "./documento-de-la-mesa";
 import { EntreJuegos } from "./EntreJuegos";
 import { MesaEnLinea } from "./MesaEnLinea";
 import { useDecks } from "../decks/use-decks";
 import { DeckListSkeleton } from "../Skeleton";
-import { Select } from "../Select";
 import { toast } from "../toast";
 import {
   guardarBaraja,
@@ -22,13 +23,13 @@ import {
   salirDeSala,
   verSala,
 } from "./sala-api";
-import { deckTitle } from "@/lib/deck";
 import { indiceDe, isLegal, validateDeck } from "@/lib/deck-rules";
 import { NOMBRE_FORMATO } from "@/lib/formatos";
 import { miLado, NOMBRE_ESTADO_SALA, nombreEnSala, type Sala } from "@/lib/mesa/sala";
 import type { Card, Formato } from "@/lib/types";
 import {
   AVISO_EN_LINEA,
+  BOTON_ICONO,
   BOTON_PRIMARIO,
   BOTON_SECUNDARIO,
   ENLACE,
@@ -268,87 +269,112 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
     }
   }
 
+  // Un jugador por tarjeta, en fila: su nombre y como va.
   const jugador = (l: "a" | "b") => {
     const presente = l === "a" || sala.jugador_b !== null;
     const estaListo = l === "a" ? sala.listo_a : sala.listo_b;
     return (
-      <li className="border-line flex items-center justify-between gap-3 rounded-[10px] border px-4 py-3">
-        <span className="text-ink font-medium">
-          {presente ? nombreEnSala(sala, l) : "Esperando rival…"}
-          {l === lado && <span className="text-muted ml-1.5 text-[13px]">(tú)</span>}
-        </span>
-        {presente && (
-          <span className={cn(PASTILLA, estaListo ? "text-success" : "text-muted")}>
-            {estaListo ? (
-              <Check size={12} aria-hidden="true" />
-            ) : (
-              <Hourglass size={12} aria-hidden="true" />
-            )}
-            {estaListo ? "Listo" : "Eligiendo baraja"}
+      <li className={cn(PANEL, "flex flex-col gap-1.5")}>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+          <span className="text-ink font-medium">
+            {presente ? nombreEnSala(sala, l) : "Esperando rival…"}
+            {l === lado && <span className="text-muted ml-1.5 text-[13px]">(tú)</span>}
           </span>
+          {presente && (
+            <span className={cn(PASTILLA, estaListo ? "text-success" : "text-muted")}>
+              {estaListo ? (
+                <Check size={12} aria-hidden="true" />
+              ) : (
+                <Hourglass size={12} aria-hidden="true" />
+              )}
+              {estaListo ? "Listo" : "Eligiendo baraja"}
+            </span>
+          )}
+        </div>
+        {!presente && (
+          <p className="text-muted text-[14px]">
+            Comparte el código <strong className="text-ink">{sala.codigo}</strong> o el
+            enlace con tu rival.
+          </p>
         )}
       </li>
     );
   };
 
+  // Las barajas se eligen con las tarjetas de Mis barajas, validadas con el
+  // formato de la SALA: la pastilla dice si cumplen ahi.
+  const indiceSala = indiceDe(deFormato(sala.formato), sala.formato);
+  const listoConBaraja = listo ? (decks.find((d) => d.id === elegida) ?? null) : null;
+  const visibles = listo ? (listoConBaraja ? [listoConBaraja] : []) : decks;
+
   return (
-    <section aria-labelledby="sala-titulo" className="flex flex-col gap-6">
-      {/* La cabecera de las demas paginas, con la vuelta a la Mesa. */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Link href="/mesa/" className={cn(ENLACE, "text-[14px]")}>
-            ← Mesa
-          </Link>
-          <p className="eyebrow mt-3 mb-3">Mesa</p>
-          <h1 id="sala-titulo" className="text-3xl font-bold tracking-[-0.02em]">
-            Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span>
-          </h1>
-          <p className="text-muted mt-3 leading-relaxed">
-            {NOMBRE_FORMATO[sala.formato]} · al mejor de {sala.mejor_de} ·{" "}
-            {NOMBRE_ESTADO_SALA[sala.estado]}
+    <section aria-labelledby="sala-titulo" className="flex flex-col gap-10">
+      <CabeceraSala
+        titulo={`Sala ${sala.codigo}`}
+        formato={sala.formato}
+        subtitulo={
+          <p className="text-muted">
+            Al mejor de {sala.mejor_de} · {NOMBRE_ESTADO_SALA[sala.estado]}
           </p>
-        </div>
-        <button type="button" onClick={copiarEnlace} className={BOTON_SECUNDARIO}>
-          <Copy size={14} aria-hidden="true" />
-          Copiar enlace
-        </button>
+        }
+        acciones={
+          <>
+            <button
+              type="button"
+              onClick={copiarEnlace}
+              aria-label="Copiar enlace de la sala"
+              title="Copiar enlace de la sala"
+              className={BOTON_ICONO}
+            >
+              <Link2 size={16} aria-hidden="true" />
+            </button>
+            {esperando && lado && (
+              <button
+                type="button"
+                onClick={() => setSaliendo(true)}
+                disabled={ocupado}
+                className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO)}
+              >
+                <LogOut size={14} aria-hidden="true" />
+                {lado === "a" ? "Cerrar la sala" : "Salir de la sala"}
+              </button>
+            )}
+          </>
+        }
+      />
+
+      <div className="flex flex-col gap-4">
+        {error && (
+          <p
+            role="alert"
+            className={cn(AVISO_EN_LINEA, "border-warning/60 bg-warning-soft text-ink")}
+          >
+            {error}
+          </p>
+        )}
+
+        <ul aria-label="Jugadores" className="grid gap-3 sm:grid-cols-2">
+          {jugador("a")}
+          {jugador("b")}
+        </ul>
       </div>
 
-      {error && (
-        <p
-          role="alert"
-          className={cn(AVISO_EN_LINEA, "border-warning/60 bg-warning-soft text-ink")}
-        >
-          {error}
-        </p>
-      )}
-
-      {/* Desde lg, los jugadores y la baraja lado a lado. */}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <div className={PANEL}>
-          <h2 className="text-ink text-lg font-bold">Jugadores</h2>
-          <ul className="mt-3 flex flex-col gap-2">
-            {jugador("a")}
-            {jugador("b")}
-          </ul>
-          {esperando && sala.jugador_b === null && (
-            <p className="text-muted mt-3 text-[14px]">
-              Comparte el código{" "}
-              <strong className="text-ink font-mono">{sala.codigo}</strong> o el enlace
-              con tu rival.
-            </p>
-          )}
-        </div>
-
-        {esperando ? (
-          <div className={PANEL}>
-            <h2 className="text-ink text-lg font-bold">Tu baraja</h2>
-            {listo ? (
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-ink text-[14px]">
-                  Estás listo. Esperando a{" "}
-                  {lado === "a" ? "tu rival" : "quien creó la sala"}.
-                </p>
+      {esperando ? (
+        <div className="flex flex-col gap-4">
+          {/* Como Mis barajas: el titulo y, a su altura, el boton de la accion. */}
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-ink text-xl font-semibold tracking-[-0.01em]">
+                Tu baraja
+              </h2>
+              <p className="text-muted mt-1 text-[14px]">
+                {listo
+                  ? `Estás listo. Esperando a ${lado === "a" ? "tu rival" : "quien creó la sala"}.`
+                  : `Tiene que cumplir en ${NOMBRE_FORMATO[sala.formato]}. Tu rival no ve tu lista.`}
+              </p>
+            </div>
+            {decks.length > 0 &&
+              (listo ? (
                 <button
                   type="button"
                   onClick={() => hacer(() => marcarLista(sala.id, false))}
@@ -358,83 +384,56 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
                   <Undo2 size={14} aria-hidden="true" />
                   Cambiar de baraja
                 </button>
-              </div>
-            ) : (
-              <>
-                <p className="text-muted mt-1 text-[14px]">
-                  Tiene que cumplir en {NOMBRE_FORMATO[sala.formato]}. Tu rival no ve tu
-                  lista.
-                </p>
-                {decks.length === 0 ? (
-                  <p className="text-muted mt-3 text-[14px]">
-                    No tienes barajas guardadas.{" "}
-                    <Link href="/constructor/" className={ENLACE}>
-                      Armar una
-                    </Link>
-                  </p>
-                ) : (
-                  <div className="mt-3 flex flex-wrap items-end gap-3">
-                    <Select
-                      label="Baraja"
-                      requerido
-                      placeholder="Elige una baraja"
-                      value={elegida}
-                      options={["", ...decks.map((d) => d.id)]}
-                      onChange={setElegida}
-                      format={(v) =>
-                        v === ""
-                          ? "Elige una baraja"
-                          : deckTitle(decks.find((d) => d.id === v) ?? decks[0])
-                      }
-                      deshabilitada={(v) =>
-                        v === "" ? "Elige una" : (motivos.get(v) ?? null)
-                      }
-                      className="min-w-64 flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        baraja &&
-                        hacer(async () => {
-                          await guardarBaraja(sala.id, uid, baraja);
-                          await marcarLista(sala.id, true);
-                        }, "Listo para jugar.")
-                      }
-                      disabled={ocupado || !baraja || motivos.get(baraja.id) !== null}
-                      className={BOTON_PRIMARIO}
-                    >
-                      <Check size={16} aria-hidden="true" />
-                      Estoy listo
-                    </button>
-                  </div>
-                )}
-                {decks.length > 0 && legales.length === 0 && (
-                  <p className="text-muted mt-3 text-[13px]">
-                    Ninguna de tus barajas cumple en {NOMBRE_FORMATO[sala.formato]}.
-                  </p>
-                )}
-              </>
-            )}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    baraja &&
+                    hacer(async () => {
+                      await guardarBaraja(sala.id, uid, baraja);
+                      await marcarLista(sala.id, true);
+                    }, "Listo para jugar.")
+                  }
+                  disabled={ocupado || !baraja || motivos.get(baraja.id) !== null}
+                  className={BOTON_PRIMARIO}
+                >
+                  <Check size={16} aria-hidden="true" />
+                  Estoy listo
+                </button>
+              ))}
           </div>
-        ) : (
-          <p className={cn(AVISO_EN_LINEA)}>
-            Los dos están listos: la sala está en juego.
-          </p>
-        )}
-      </div>
 
-      {esperando && lado && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setSaliendo(true)}
-            disabled={ocupado}
-            className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO)}
-          >
-            <LogOut size={14} aria-hidden="true" />
-            {lado === "a" ? "Cerrar la sala" : "Salir de la sala"}
-          </button>
+          {decks.length === 0 ? (
+            <div className={VACIO}>
+              <p className="text-ink">No tienes barajas guardadas.</p>
+              <Link href="/constructor/" className={cn(ENLACE, "mt-2 inline-block")}>
+                Armar una baraja
+              </Link>
+            </div>
+          ) : (
+            <>
+              {!listo && legales.length === 0 && (
+                <p className={AVISO_EN_LINEA}>
+                  Ninguna de tus barajas cumple en {NOMBRE_FORMATO[sala.formato]}.
+                </p>
+              )}
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {visibles.map((d) => (
+                  <TarjetaBaraja
+                    key={d.id}
+                    deck={d}
+                    index={indiceSala}
+                    elegida={d.id === elegida}
+                    noDisponible={listo ? null : (motivos.get(d.id) ?? null)}
+                    onElegir={() => !listo && setElegida(d.id)}
+                  />
+                ))}
+              </ul>
+            </>
+          )}
         </div>
+      ) : (
+        <p className={AVISO_EN_LINEA}>Los dos están listos: la sala está en juego.</p>
       )}
 
       <ConfirmDialog

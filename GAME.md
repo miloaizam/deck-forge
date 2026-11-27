@@ -727,4 +727,12 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 - **«Solitario»** comparte la fila con «Crear sala», mitad y mitad, al pie
   de la tarjeta «Crear una sala» (decisión del proyecto); reemplaza
   al enlace «O practica en solitario».
+- **La sala y entre juegos tienen la cabecera del detalle de una baraja**
+  (`CabeceraSala.tsx`): el eyebrow «Mesa» es el enlace de vuelta, el título
+  lleva la pastilla del formato y las acciones van a su altura (copiar
+  enlace y cerrar o salir; entre juegos, «Salir por ahora» y «Abandonar la
+  serie»). Los jugadores son dos tarjetas y **la baraja se elige con las
+  tarjetas de Mis barajas** (`TarjetaBaraja`, con `elegida` y
+  `noDisponible` para las que no cumplen en el formato de la sala), como en
+  la práctica; antes era un desplegable.
 - **Hay que volver a pegar `supabase/mesa.sql`.**

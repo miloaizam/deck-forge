@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import * as z from "zod/mini";
-import { ArrowLeftRight, Check, Hourglass, LogOut, Timer, Undo2 } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Check,
+  DoorOpen,
+  Hourglass,
+  LogOut,
+  Timer,
+  Undo2,
+} from "lucide-react";
 
 import { ConfirmDialog } from "../ConfirmDialog";
+import { CabeceraSala } from "./CabeceraSala";
 import { toast } from "../toast";
 import { Select } from "../Select";
 import {
@@ -18,7 +27,6 @@ import {
 import { reloj, useAbandono } from "./use-abandono";
 import { copiesOf, totalCards } from "@/lib/deck";
 import { indiceDe, isLegal, validateDeck } from "@/lib/deck-rules";
-import { NOMBRE_FORMATO } from "@/lib/formatos";
 import type { Lado } from "@/lib/mesa/red";
 import {
   GRACIA_MS,
@@ -40,7 +48,6 @@ import {
   BOTON_PRIMARIO,
   BOTON_SECUNDARIO,
   BOTON_SECUNDARIO_COMPACTO,
-  ENLACE,
   HOVER_PELIGRO,
   PASTILLA,
 } from "@/lib/ui";
@@ -290,51 +297,49 @@ export function EntreJuegos({
 
   return (
     <section aria-labelledby="sala-titulo" className="flex flex-col gap-6">
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link
-            href="/mesa/"
-            title="La sala queda abierta: si no vuelves en 2 minutos, la serie es de tu rival."
-            className={cn(ENLACE, "text-[14px]")}
-          >
-            ← Salir por ahora
-          </Link>
-          <button
-            type="button"
-            onClick={() => setAbandonando(true)}
-            disabled={ocupado}
-            className={cn(BOTON_SECUNDARIO_COMPACTO, HOVER_PELIGRO)}
-          >
-            <LogOut size={14} aria-hidden="true" />
-            Abandonar la serie
-          </button>
-        </div>
-        <ConfirmDialog
-          open={abandonando}
-          titulo="¿Abandonar la serie?"
-          mensaje={`La serie es para ${nombreEnSala(sala, rival)} y la sala se cierra para los dos.`}
-          confirmar="Abandonar la serie"
-          onCancel={() => setAbandonando(false)}
-          onConfirm={() => {
-            setAbandonando(false);
-            void hacer(() => abandonarSala(sala.id));
-          }}
-        />
-        {/* La cabecera de las demas paginas: el marcador es el titulo. */}
-        <p className="eyebrow mt-3 mb-3">Mesa</p>
-        <h1
-          id="sala-titulo"
-          className="text-3xl font-bold tracking-[-0.02em] tabular-nums"
-        >
-          Tú {mias} – {suyas} {nombreEnSala(sala, rival)}
-        </h1>
-        <p className="text-ink mt-3 leading-relaxed">{textoDelUltimo(sala, lado)}</p>
-        <p className="text-muted mt-1 text-[14px]">
-          Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span> ·{" "}
-          {NOMBRE_FORMATO[sala.formato]} · al mejor de {sala.mejor_de}: gana quien llegue
-          a {necesarias}
+      {/* La cabecera de la sala (CabeceraSala): el marcador es el titulo. */}
+      <CabeceraSala
+        titulo={`Tú ${mias} – ${suyas} ${nombreEnSala(sala, rival)}`}
+        formato={sala.formato}
+        subtitulo={<p className="text-ink">{textoDelUltimo(sala, lado)}</p>}
+        acciones={
+          <>
+            <Link
+              href="/mesa/"
+              title="La sala queda abierta: si no vuelves en 2 minutos, la serie es de tu rival."
+              className={BOTON_SECUNDARIO}
+            >
+              <DoorOpen size={14} aria-hidden="true" />
+              Salir por ahora
+            </Link>
+            <button
+              type="button"
+              onClick={() => setAbandonando(true)}
+              disabled={ocupado}
+              className={cn(BOTON_SECUNDARIO, HOVER_PELIGRO)}
+            >
+              <LogOut size={14} aria-hidden="true" />
+              Abandonar la serie
+            </button>
+          </>
+        }
+      >
+        <p className="text-muted mt-1">
+          Sala {sala.codigo} · al mejor de {sala.mejor_de}: gana quien llegue a{" "}
+          {necesarias}
         </p>
-      </div>
+      </CabeceraSala>
+      <ConfirmDialog
+        open={abandonando}
+        titulo="¿Abandonar la serie?"
+        mensaje={`La serie es para ${nombreEnSala(sala, rival)} y la sala se cierra para los dos.`}
+        confirmar="Abandonar la serie"
+        onCancel={() => setAbandonando(false)}
+        onConfirm={() => {
+          setAbandonando(false);
+          void hacer(() => abandonarSala(sala.id));
+        }}
+      />
 
       {restante !== null && (
         <p

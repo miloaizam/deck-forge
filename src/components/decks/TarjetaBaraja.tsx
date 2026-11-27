@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { EyeOff, Globe } from "lucide-react";
+import { Check, EyeOff, Globe } from "lucide-react";
 
 import { marcarCargada } from "../CardTile";
 import { EstadoPastilla, estadoDeBaraja } from "./DeckIssues";
@@ -49,6 +49,10 @@ type TarjetaBarajaProps = Destino & {
   publico?: Publico;
   /** La fila de botones del pie (Mis barajas); sin ella, solo se elige. */
   acciones?: ReactNode;
+  /** Con `onElegir`: la baraja elegida (la sala de la mesa). */
+  elegida?: boolean;
+  /** Con `onElegir`: por que no se puede elegir (no cumple en la sala). */
+  noDisponible?: string | null;
 };
 
 // Toda la tarjeta responde al clic: un solo enlace o boton, con su ::after
@@ -58,7 +62,7 @@ const ESTIRADO =
 
 /**
  * La tarjeta de una baraja: la de Mis barajas y la de elegir baraja en la
- * mesa de practica, para que se vean igual en las dos.
+ * mesa (la practica y la sala), para que se vean igual en todas.
  */
 export function TarjetaBaraja({
   deck,
@@ -67,6 +71,9 @@ export function TarjetaBaraja({
   acciones,
   href,
   onElegir,
+  // Sin valor, el boton no es de alternar (la practica elige y entra).
+  elegida,
+  noDisponible = null,
 }: TarjetaBarajaProps) {
   const res = resolveDeck(deck, index);
   const stats = deckStats(res);
@@ -85,7 +92,15 @@ export function TarjetaBaraja({
       // del titulo se estira sobre la tarjeta entera (su ::after), y los
       // botones van por encima con z-10. `@container`: lo de adentro se
       // acomoda al ancho de la tarjeta, no al de la pantalla.
-      className="aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group @container relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2"
+      className={cn(
+        "aparece border-line bg-panel rounded-panel ease-out-soft hover:outline-brand-500 group @container relative flex cursor-pointer gap-3 border p-3.5 transition duration-200 focus-within:-translate-y-0.5 hover:-translate-y-0.5 hover:outline-2 hover:outline-offset-2",
+        // La elegida lleva fijo el anillo del cursor; la que no se puede
+        // elegir se atenua y no se levanta.
+        elegida && "outline-brand-500 outline-2 outline-offset-2",
+        noDisponible &&
+          "cursor-not-allowed opacity-60 hover:translate-y-0 hover:outline-0",
+      )}
+      title={noDisponible ?? undefined}
     >
       {/* La portada va a la izquierda de todo lo demas. Solo una baraja vacia
           queda sin foto: un hueco vacio diria menos que la tarjeta sin ella. */}
@@ -120,7 +135,13 @@ export function TarjetaBaraja({
                 {deckTitle(deck)}
               </Link>
             ) : (
-              <button type="button" onClick={onElegir} className={ESTIRADO}>
+              <button
+                type="button"
+                onClick={onElegir}
+                aria-pressed={elegida}
+                disabled={noDisponible !== null}
+                className={cn(ESTIRADO, noDisponible && "group-hover:text-ink")}
+              >
                 {deckTitle(deck)}
               </button>
             )}
@@ -141,6 +162,12 @@ export function TarjetaBaraja({
 
           {/* Icono y texto: el color no puede ser el unico indicador. */}
           <div className="flex shrink-0 flex-wrap gap-1.5 @xs:flex-col @xs:items-end">
+            {elegida && (
+              <span className={cn(PASTILLA, "bg-accent-soft text-accent")}>
+                <Check size={12} aria-hidden="true" />
+                Elegida
+              </span>
+            )}
             <EstadoPastilla estado={estado} />
             {publico?.publica &&
               (publico.oculta ? (
