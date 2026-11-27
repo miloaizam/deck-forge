@@ -5,15 +5,16 @@ import { useMemo, useState } from "react";
 import { Monitor } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
+import { TarjetaBaraja } from "../decks/TarjetaBaraja";
 import { useDecks, useHydrated } from "../decks/use-decks";
 import { RequiereCuenta } from "../nube/RequiereCuenta";
 import { DeckListSkeleton } from "../Skeleton";
 import { MesaPractica } from "./MesaPractica";
 import { useEscritorio } from "./use-escritorio";
-import { deckTitle, totalCards } from "@/lib/deck";
-import { NOMBRE_FORMATO } from "@/lib/formatos";
-import type { Card, Deck } from "@/lib/types";
-import { BOTON_SECUNDARIO, ENLACE, VACIO } from "@/lib/ui";
+import { totalCards } from "@/lib/deck";
+import { indiceDe } from "@/lib/deck-rules";
+import type { Card, Deck, Formato } from "@/lib/types";
+import { ENLACE, VACIO } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,13 +25,19 @@ export function MesaPracticaView() {
   return (
     <RequiereCuenta para="practicar con tus barajas" esqueleto={<DeckListSkeleton />}>
       <ConCatalogo esqueleto={<DeckListSkeleton />}>
-        {(cards) => <Practica cards={cards} />}
+        {(cards, deFormato) => <Practica cards={cards} deFormato={deFormato} />}
       </ConCatalogo>
     </RequiereCuenta>
   );
 }
 
-function Practica({ cards }: { cards: Card[] }) {
+interface PracticaProps {
+  cards: Card[];
+  /** Las cartas con las erratas de un formato: cada baraja, con las del suyo. */
+  deFormato: (f: Formato) => Card[];
+}
+
+function Practica({ cards, deFormato }: PracticaProps) {
   const escritorio = useEscritorio();
   const decks = useDecks();
   const cargado = useHydrated();
@@ -83,23 +90,15 @@ function Practica({ cards }: { cards: Card[] }) {
           </Link>
         </div>
       ) : (
-        <ul className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        // Las tarjetas de Mis barajas, sin sus botones: aqui solo se elige.
+        <ul className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {conCartas.map((d) => (
-            <li key={d.id}>
-              <button
-                type="button"
-                onClick={() => setElegida(d)}
-                className={cn(
-                  BOTON_SECUNDARIO,
-                  "h-full w-full justify-between gap-3 py-3",
-                )}
-              >
-                <span className="text-ink truncate font-medium">{deckTitle(d)}</span>
-                <span className="text-muted shrink-0 text-[13px] tabular-nums">
-                  {NOMBRE_FORMATO[d.formato]} · {totalCards(d.principal)} cartas
-                </span>
-              </button>
-            </li>
+            <TarjetaBaraja
+              key={d.id}
+              deck={d}
+              index={indiceDe(deFormato(d.formato), d.formato)}
+              onElegir={() => setElegida(d)}
+            />
           ))}
         </ul>
       )}
