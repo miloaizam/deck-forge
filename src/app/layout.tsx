@@ -66,6 +66,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <p className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6">
             Proyecto sin fines de lucro hecho por un fan y jugador de Mitos y Leyendas. El
             arte y los nombres de las cartas son propiedad de su editor.{" "}
+            {/* Novedades vive aqui y no en la navbar (27-11-2026). */}
+            <Link href="/novedades" className={ENLACE}>
+              Novedades
+            </Link>
+            {" · "}
             <Link href="/privacidad" className={ENLACE}>
               Políticas de privacidad
             </Link>

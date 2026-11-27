@@ -275,7 +275,7 @@ test("a 360 px el menu, los filtros y la hoja caben en la pantalla", async ({
 
   await page.goto("/catalogo/");
   await page.getByRole("button", { name: "Abrir el menú" }).click();
-  await expect(page.getByRole("link", { name: "Novedades" }).last()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Documentos" }).last()).toBeVisible();
   expect(await sobra()).toBeLessThanOrEqual(1);
   await page.getByRole("button", { name: "Cerrar el menú" }).click();
 

@@ -6,12 +6,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   FileText,
-  Hammer,
   Layers,
   Library,
   LibraryBig,
   Menu,
-  Sparkles,
   Swords,
   Users,
   X,
@@ -33,43 +31,51 @@ interface NavLink {
   Icon: LucideIcon;
   /** Lo personal: sin cuenta no se muestra (`useConCuenta`). */
   privado?: boolean;
+  /** Otras rutas que son parte de la seccion y la marcan activa. */
+  tambien?: string[];
 }
 
 /**
  * La Comunidad solo existe con las cuentas encendidas (`supabase-config.ts`),
  * y la Mesa, con la mesa encendida (`mesa/activa.ts`); pide cuenta.
+ *
+ * Seis enlaces como mucho (decision del proyecto, 27-11-2026). El Constructor
+ * no va: se entra desde Mis barajas («Armar una baraja», «Editar») y es parte
+ * de esa seccion. Novedades va al pie de pagina (layout raiz).
  */
 const LINKS: NavLink[] = [
   { href: "/catalogo", label: "Catálogo", Icon: LibraryBig },
-  { href: "/constructor", label: "Constructor", Icon: Hammer, privado: true },
-  { href: "/barajas", label: "Mis barajas", Icon: Layers, privado: true },
+  {
+    href: "/barajas",
+    label: "Mis barajas",
+    Icon: Layers,
+    privado: true,
+    tambien: ["/constructor"],
+  },
   { href: "/coleccion", label: "Colección", Icon: Library, privado: true },
   ...(NUBE_ACTIVA ? [{ href: "/comunidad", label: "Comunidad", Icon: Users }] : []),
   ...(MESA_ACTIVA ? [{ href: "/mesa", label: "Mesa", Icon: Swords, privado: true }] : []),
   { href: "/documentos", label: "Documentos", Icon: FileText },
-  { href: "/novedades", label: "Novedades", Icon: Sparkles },
 ];
 
-/** `/catalogo` tambien queda activo dentro de `/catalogo/bushido`. */
-function isActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
+/**
+ * `/catalogo` tambien queda activo dentro de `/catalogo/bushido`, y Mis
+ * barajas dentro del constructor (`tambien`).
+ */
+function isActive(pathname: string, href: string, tambien: string[] = []): boolean {
+  return [href, ...tambien].some((h) => pathname === h || pathname.startsWith(`${h}/`));
 }
 
 /**
- * Con la Mesa son ocho enlaces y no caben a 1024 px junto a la ayuda, el tema
- * y la cuenta (medido el 24-11-2026: la cuenta se salia 25 px de la
- * pantalla). Encendida, se pliegan detras del menu hasta `xl` y van sin icono
- * hasta `2xl`. Apagada, todo queda como siempre: plegados bajo `lg` y sin
- * icono entre `lg` y `xl`.
+ * Los seis enlaces caben a 1024 px junto a la ayuda, el tema y la cuenta; con
+ * sus iconos sobraban solo 14 px (medido el 27-11-2026), asi que entre `lg` y
+ * `xl` van sin icono. Bajo `lg` se pliegan detras del menu. Sin cuentas ni
+ * mesa son menos y caben igual.
  */
-const DESPLEGADA = MESA_ACTIVA ? "xl:flex" : "lg:flex";
-const PLEGADA = MESA_ACTIVA ? "xl:hidden" : "lg:hidden";
-const ICONO_ANGOSTA = MESA_ACTIVA
-  ? "hidden 2xl:block"
-  : NUBE_ACTIVA
-    ? "hidden xl:block"
-    : undefined;
-const HOLGURA = MESA_ACTIVA ? "px-2 2xl:px-3" : "px-2 xl:px-3";
+const DESPLEGADA = "lg:flex";
+const PLEGADA = "lg:hidden";
+const ICONO_ANGOSTA = "hidden xl:block";
+const HOLGURA = "px-2 xl:px-3";
 
 const LINK = `inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-chip ${HOLGURA} text-sm transition-colors focus-visible:outline-brand-500`;
 
@@ -135,23 +141,21 @@ export function Navbar() {
         {/* Los cinco enlaces no caben junto al logotipo en un telefono, asi
             que ahi se pliegan detras del boton de menu. */}
         <div className={cn("hidden items-center gap-1", DESPLEGADA)}>
-          {links.map(({ href, label, Icon }) => (
+          {links.map(({ href, label, Icon, tambien }) => (
             <Link
               key={href}
               href={href}
               transitionTypes={TRANSICION}
-              aria-current={isActive(pathname, href) ? "page" : undefined}
+              aria-current={isActive(pathname, href, tambien) ? "page" : undefined}
               className={cn(
                 LINK,
                 // La pagina actual va subrayada en violeta, ademas de en
                 // `ink`: el color solo no basta para distinguirla.
-                isActive(pathname, href)
+                isActive(pathname, href, tambien)
                   ? "text-ink decoration-brand-500 underline decoration-2 underline-offset-[6px]"
                   : "text-muted hover:text-ink",
               )}
             >
-              {/* Con siete enlaces y la cuenta no caben los iconos entre lg y
-                  xl: ahi van solo los nombres. */}
               <Icon
                 size={15}
                 aria-hidden="true"
@@ -202,16 +206,16 @@ export function Navbar() {
       >
         <div className="overflow-hidden">
           <ul className="border-line bg-bg mx-auto flex max-w-[1480px] flex-col border-t px-4 py-2">
-            {links.map(({ href, label, Icon }) => (
+            {links.map(({ href, label, Icon, tambien }) => (
               <li key={href}>
                 <Link
                   href={href}
                   transitionTypes={TRANSICION}
                   onClick={() => setOpen(false)}
-                  aria-current={isActive(pathname, href) ? "page" : undefined}
+                  aria-current={isActive(pathname, href, tambien) ? "page" : undefined}
                   className={cn(
                     "rounded-chip focus-visible:outline-brand-500 flex h-12 items-center gap-2.5 px-3 text-[15px] transition-colors",
-                    isActive(pathname, href)
+                    isActive(pathname, href, tambien)
                       ? "text-accent bg-accent-soft"
                       : "text-muted hover:text-ink",
                   )}

@@ -584,14 +584,17 @@ No es opcional. Una baraja mal etiquetado es una baraja que alguien no puede arm
 - Sin signos de exclamación ni emojis en la UI.
 - **La cabecera de cada página** (decisión del proyecto, 27-11-2026): el
   **eyebrow** (morado) dice **literalmente el nombre del enlace de la
-  navbar** que lleva a esa vista —«Catálogo», «Constructor», «Mis barajas»,
-  «Colección», «Comunidad», «Mesa», «Documentos», «Novedades», «Tu cuenta»—,
+  navbar** que lleva a esa vista —«Catálogo», «Mis barajas», «Colección»,
+  «Comunidad», «Mesa», «Documentos», «Tu cuenta»—,
   también en sus subpáginas (una edición dice «Catálogo», una sala «Mesa», un
   documento «Documentos»). El **título** (`h1`, en blanco) dice **otra cosa**
   y no repite esa palabra: «Todas las cartas», «Arma tu baraja», «Tus barajas
   guardadas», «Tus cartas», «Barajas públicas», «Salas de juego», «Reglas del
-  formato». Lo que no está en la navbar (la portada, los errores, Políticas de
-  privacidad, una baraja de un enlace compartido) usa su propio nombre.
+  formato». El **Constructor** no está en la navbar y es parte de Mis
+  barajas: su eyebrow dice «Mis barajas». **Novedades** y **Políticas de
+  privacidad** dicen el nombre de su enlace del pie. Lo demás que no está en
+  la navbar (la portada, los errores, una baraja de un enlace compartido)
+  usa su propio nombre.
 - **Que no suene a máquina** (revisión del 22-10-2026). Lo que delataba los
   textos escritos con IA, y cómo se arregló:
   - Explicar de más con dos puntos: «Gratis y sin instalar nada: crea tu

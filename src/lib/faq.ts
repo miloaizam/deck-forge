@@ -166,7 +166,7 @@ export const FAQ: FaqSection[] = [
       {
         pregunta: "¿Cómo armo una baraja?",
         respuesta: [
-          "Entra a **Constructor** y agrega cartas con el botón **+** de cada una. El panel **«La baraja»** (en el teléfono, la barra de abajo) lleva la cuenta, muestra la **curva de coste** y te dice qué falta para que la baraja sea legal.",
+          "En **Mis barajas**, con **«Armar una baraja»**, entras al **Constructor**. Agrega cartas con el botón **+** de cada una. El panel **«La baraja»** (en el teléfono, la barra de abajo) lleva la cuenta, muestra la **curva de coste** y te dice qué falta para que la baraja sea legal.",
         ],
       },
       {
@@ -456,13 +456,12 @@ export const FAQ: FaqSection[] = [
         pregunta: "¿Qué hay en cada sección?",
         respuesta: [
           MESA_ACTIVA
-            ? "**Constructor**, **Mis barajas**, **Colección** y **Mesa** aparecen en la barra de arriba cuando inicias sesión."
-            : "**Constructor**, **Mis barajas** y **Colección** aparecen en la barra de arriba cuando inicias sesión.",
+            ? "**Mis barajas**, **Colección** y **Mesa** aparecen en la barra de arriba cuando inicias sesión. **Novedades** está al pie de cada página."
+            : "**Mis barajas** y **Colección** aparecen en la barra de arriba cuando inicias sesión. **Novedades** está al pie de cada página.",
         ],
         lista: [
           "**Catálogo:** todas las cartas del formato, con buscador y filtros.",
-          "**Constructor:** donde armas y editas una baraja.",
-          "**Mis barajas:** las barajas que guardaste.",
+          "**Mis barajas:** las barajas que guardaste. Desde ahí armas una nueva o editas una guardada, en el **Constructor**.",
           "**Colección:** las cartas que tienes y las que te faltan.",
           "**Comunidad:** las barajas que otros jugadores publicaron.",
           ...(MESA_ACTIVA
@@ -471,7 +470,7 @@ export const FAQ: FaqSection[] = [
               ]
             : []),
           "**Documentos:** el **Documento Actualizado de Reglas**, la **Fe de Erratas** y la **Banlist** de cada formato (Estándar, VCR e Infantería). Se pueden leer en el sitio, abrir en PDF o descargar, y el catálogo y el constructor ya aplican la Fe de Erratas y las Banlists.",
-          "**Novedades:** lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
+          "**Novedades**, al pie de cada página: lo que ha cambiado en el sitio, de lo más nuevo a lo más antiguo.",
         ],
       },
       {

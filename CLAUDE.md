@@ -1136,13 +1136,16 @@ regenerarla. Dos límites a saber:
   compartió antes del cambio puede seguir saliendo sin imagen hasta que
   caduque.
 
-La navbar es una fila plana de enlaces (sin desplegable): Catálogo,
-Constructor, Mis barajas, Colección, Comunidad, Mesa, Documentos y
-Novedades. **Con la mesa encendida son ocho y no caben a 1024 px** (la
-cuenta se salía de la pantalla): se pliegan detrás del menú hasta `xl` y van
-sin icono hasta `2xl` (`DESPLEGADA`, `PLEGADA` e `ICONO_ANGOSTA` en
-`Navbar.tsx`). Lo de abajo describe la navbar sin la mesa. **Sin
-cuenta no se muestran Constructor, Mis barajas ni Colección** (`privado` en
+La navbar es una fila plana de enlaces (sin desplegable), **seis como
+mucho** (decisión del proyecto, 27-11-2026): Catálogo, Mis barajas,
+Colección, Comunidad, Mesa y Documentos. Eran ocho y con la mesa no cabían a
+1024 px, así que salieron dos: **el Constructor**, al que se entra desde Mis
+barajas («Armar una baraja», «Editar») y que marca activa a Mis barajas
+(`tambien` en `LINKS`), y **Novedades**, que va al pie de página junto a
+Políticas de privacidad (layout raíz). Con seis caben desde `lg`, sin icono
+hasta `xl` (con icono sobraban solo 14 px a 1024; `DESPLEGADA`, `PLEGADA` e
+`ICONO_ANGOSTA` en `Navbar.tsx`). **Sin
+cuenta no se muestran Mis barajas, Colección ni Mesa** (`privado` en
 `LINKS`, `useConCuenta()` de `nube/use-con-cuenta.ts`, el mismo criterio que
 `RequiereCuenta`: con una sesión guardada se muestran de una, sin esperar a
 `auth-js`); sus rutas siguen existiendo y piden entrar. Bajo `lg` se pliegan detrás de
@@ -1151,9 +1154,8 @@ siempre a la vista y también en el teléfono, la **cuenta** (solo con las
 cuentas encendidas), la **ayuda** (un signo de pregunta) y el botón de tema.
 La página actual va en `ink` y **subrayada en violeta** (`decoration-brand-500`,
 2 px, separada 6 px); el menú del teléfono la marca con su fondo violeta.
-Encendidas, se suma **Comunidad** tras Colección, y entre `lg` y `xl` los
-enlaces van sin icono para que quepan los siete. La portada no tiene navbar, así que tampoco
-ayuda.
+Comunidad sale solo con las cuentas encendidas y Mesa, con la mesa
+encendida. La portada no tiene navbar, así que tampoco ayuda.
 
 **La colección** (`/coleccion`, 05-10-2026) son dos listas del usuario: las
 cartas que **tiene**, con sus copias, y las que **le faltan**, que son las que

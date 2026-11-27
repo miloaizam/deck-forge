@@ -73,6 +73,16 @@ const MESA_SALAS_VACIAS: Novedad = {
 };
 
 export const NOVEDADES: Novedad[] = [
+  {
+    fecha: "2026-11-27",
+    version: "7.2.0",
+    tipo: "Mejora",
+    titulo: "La barra de arriba, más corta",
+    texto: [
+      "La barra de arriba tiene ahora seis secciones y se ve entera desde pantallas más chicas. El Constructor se abre desde Mis barajas, con «Armar una baraja» o «Editar», y Novedades está al pie de cada página.",
+      "Cada página dice arriba, en violeta, la sección de la barra a la que pertenece.",
+    ],
+  },
   ...(MESA_ACTIVA ? [MESA_SALAS_VACIAS, MESA_ARREGLO, MESA] : []),
   {
     fecha: "2026-11-19",
