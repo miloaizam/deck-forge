@@ -246,8 +246,13 @@ function DeckDetail({ deFormato }: DeckDetailViewProps) {
                 <Link href="/comunidad" className="hover:text-ink">
                   Comunidad
                 </Link>
-              ) : (
+              ) : compartido ? (
+                // Un enlace compartido no es ninguna pagina de la navbar.
                 "Baraja"
+              ) : (
+                <Link href="/barajas" className="hover:text-ink">
+                  Mis barajas
+                </Link>
               )}
             </p>
 

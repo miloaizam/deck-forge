@@ -31,7 +31,7 @@ export function DocumentHeader({
         <ChevronLeft size={14} aria-hidden="true" />
         Documentos
       </Link>
-      <p className="eyebrow mt-4 mb-3">Documento oficial</p>
+      <p className="eyebrow mt-4 mb-3">Documentos</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">{titulo}</h1>
       <p className="text-muted mt-3 leading-relaxed">{bajada}</p>
       <p className="text-muted mt-2 text-[13px] leading-relaxed">{origen}</p>

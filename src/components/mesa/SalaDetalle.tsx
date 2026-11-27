@@ -299,7 +299,7 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
           <Link href="/mesa/" className={cn(ENLACE, "text-[14px]")}>
             ← Mesa
           </Link>
-          <p className="eyebrow mt-3 mb-3">Sala</p>
+          <p className="eyebrow mt-3 mb-3">Mesa</p>
           <h1 id="sala-titulo" className="text-3xl font-bold tracking-[-0.02em]">
             Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span>
           </h1>

@@ -321,7 +321,7 @@ export function EntreJuegos({
           }}
         />
         {/* La cabecera de las demas paginas: el marcador es el titulo. */}
-        <p className="eyebrow mt-3 mb-3">Entre juegos</p>
+        <p className="eyebrow mt-3 mb-3">Mesa</p>
         <h1
           id="sala-titulo"
           className="text-3xl font-bold tracking-[-0.02em] tabular-nums"

@@ -20,8 +20,8 @@ export default function DocumentosPage() {
 
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
-      <p className="eyebrow mb-3">Reglas</p>
-      <h1 className="text-3xl font-bold tracking-[-0.02em]">Documentos</h1>
+      <p className="eyebrow mb-3">Documentos</p>
+      <h1 className="text-3xl font-bold tracking-[-0.02em]">Reglas del formato</h1>
       <p className="text-muted mt-3 leading-relaxed">
         Los documentos oficiales del formato, puedes leerlos aquí mismo o descargarlos en
         formato PDF. El DAR y la Fe de Erratas valen para los tres formatos de juego; la

@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 export default function CuentaPage() {
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
-      <p className="eyebrow mb-3">Cuenta</p>
-      <h1 className="text-3xl font-bold tracking-[-0.02em]">Tu cuenta</h1>
+      <p className="eyebrow mb-3">Tu cuenta</p>
+      <h1 className="text-3xl font-bold tracking-[-0.02em]">Perfil y sincronización</h1>
       <p className="text-muted mt-3 leading-relaxed">
         Tu alias, tus datos y la sincronización de tus barajas y tu colección.
       </p>

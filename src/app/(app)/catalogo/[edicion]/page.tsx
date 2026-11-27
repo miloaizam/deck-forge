@@ -30,7 +30,7 @@ export default async function EdicionPage({ params }: PageProps<"/catalogo/[edic
 
   return (
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
-      <p className="eyebrow mb-3">Edición</p>
+      <p className="eyebrow mb-3">Catálogo</p>
       <h1 className="text-3xl font-bold tracking-[-0.02em]">{ed.titulo}</h1>
       <p className="text-muted mt-3 leading-relaxed">
         {ed.titulo} tiene {total} cartas. Busca por nombre o texto de habilidad, o utiliza

@@ -68,7 +68,7 @@ function Practica({ cards }: { cards: Card[] }) {
       {/* La cabecera de las demas paginas (Mis barajas, la Comunidad…). */}
       <p className="eyebrow mb-3">Mesa</p>
       <h1 id="mesa-titulo" className="text-3xl font-bold tracking-[-0.02em]">
-        Mesa de práctica
+        Práctica en solitario
       </h1>
       <p className="text-muted mt-3 leading-relaxed">
         Elige una de tus barajas para probarla en la mesa. Nada se juega solo: mueves las

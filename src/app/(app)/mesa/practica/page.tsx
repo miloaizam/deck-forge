@@ -22,7 +22,7 @@ export default function MesaPracticaPage() {
         <MesaPracticaView />
       ) : (
         <div className={VACIO}>
-          <h1 className="text-ink text-lg font-bold">Mesa de práctica</h1>
+          <h1 className="text-ink text-lg font-bold">Práctica en solitario</h1>
           <p className="text-muted mt-2 text-[14px]">Todavía no está disponible.</p>
         </div>
       )}

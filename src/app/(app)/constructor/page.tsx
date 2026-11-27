@@ -21,8 +21,8 @@ export default async function ConstructorPage() {
   return (
     // pb-24 bajo lg para que la barra fija de la baraja no tape la ultima fila.
     <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 pt-10 pb-24 sm:px-6 lg:pb-10">
-      <p className="eyebrow mb-3">Barajas</p>
-      <h1 className="text-3xl font-bold tracking-[-0.02em]">Constructor</h1>
+      <p className="eyebrow mb-3">Constructor</p>
+      <h1 className="text-3xl font-bold tracking-[-0.02em]">Arma tu baraja</h1>
       <p className="text-muted mt-3 leading-relaxed">
         Arma tu baraja del formato Escuelas Elementales. Al guardarla queda en Mis
         barajas.

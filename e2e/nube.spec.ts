@@ -656,7 +656,9 @@ test.describe("con la nube encendida", () => {
       ["deckforge-sesion", sesion(USUARIO_B)],
     );
     await page.goto("/barajas/");
-    await expect(page.getByRole("heading", { name: "Mis barajas" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Tus barajas guardadas" }),
+    ).toBeVisible();
     // Hasta que la cuenta B termina su primera vuelta.
     await expect
       .poll(() => page.evaluate(() => localStorage.getItem("deckforge-nube") ?? ""))
