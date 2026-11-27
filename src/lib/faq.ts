@@ -103,7 +103,7 @@ const MESA: FaqSection = {
     {
       pregunta: "¿Puedo practicar solo?",
       respuesta: [
-        "Sí: en **Mesa**, con el botón **«Solitario»**, sobre «Crear una sala». Eliges una de tus barajas y la juegas sin rival, con la misma mesa.",
+        "Sí: en **Mesa**, con el botón **«Solitario»**, arriba de las tarjetas. Eliges una de tus barajas y la juegas sin rival, con la misma mesa.",
       ],
     },
   ],

@@ -89,24 +89,26 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
         </p>
       </div>
 
-      {error && (
-        <p
-          role="alert"
-          className={cn(AVISO_EN_LINEA, "border-warning/60 bg-warning-soft text-ink")}
-        >
-          {error}
-        </p>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* La practica en solitario, sobre «Crear una sala»; la tarjeta se
-            estira para que su pie quede a la altura de las otras dos. */}
-        <div className="flex flex-col gap-4">
-          <Link href="/mesa/practica/" className={cn(BOTON_SECUNDARIO, "w-full")}>
-            <User size={16} aria-hidden="true" />
+      {/* Como Mis barajas: la fila del boton primario y, debajo, las tarjetas. */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <Link href="/mesa/practica/" className={BOTON_PRIMARIO}>
+            <User size={14} aria-hidden="true" />
             Solitario
           </Link>
-          <div className={cn(PANEL, "flex-1")}>
+        </div>
+
+        {error && (
+          <p
+            role="alert"
+            className={cn(AVISO_EN_LINEA, "border-warning/60 bg-warning-soft text-ink")}
+          >
+            {error}
+          </p>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className={PANEL}>
             <h2 className="text-ink text-lg font-bold">Crear una sala</h2>
             <Select
               label="Formato"
@@ -134,70 +136,70 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
               Crear sala
             </button>
           </div>
-        </div>
 
-        <form
-          className={PANEL}
-          onSubmit={(e) => {
-            e.preventDefault();
-            void unirse();
-          }}
-        >
-          <h2 className="text-ink text-lg font-bold">Unirse con un código</h2>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-muted text-[13px]">Código de la sala</span>
-            <input
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              maxLength={12}
-              autoComplete="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              placeholder="ABC234"
-              className={cn(TEXT_FIELD, "font-mono text-lg tracking-[0.2em] uppercase")}
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={ocupado}
-            className={cn(BOTON_SECUNDARIO, "mt-auto")}
+          <form
+            className={PANEL}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void unirse();
+            }}
           >
-            <LogIn size={16} aria-hidden="true" />
-            Unirse
-          </button>
-        </form>
+            <h2 className="text-ink text-lg font-bold">Unirse con un código</h2>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-muted text-[13px]">Código de la sala</span>
+              <input
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                maxLength={12}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                placeholder="ABC234"
+                className={cn(TEXT_FIELD, "font-mono text-lg tracking-[0.2em] uppercase")}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={ocupado}
+              className={cn(BOTON_SECUNDARIO, "mt-auto")}
+            >
+              <LogIn size={16} aria-hidden="true" />
+              Unirse
+            </button>
+          </form>
 
-        {/* Tercera columna desde lg; en md, a todo el ancho bajo las dos. */}
-        <div className={cn(PANEL, "md:col-span-2 lg:col-span-1")}>
-          <h2 className="text-ink text-lg font-bold">Tus salas abiertas</h2>
-          {salas === null ? (
-            <p className="text-muted text-[14px]">Cargando…</p>
-          ) : salas.length === 0 ? (
-            <p className="text-muted text-[14px]">No tienes salas abiertas.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {salas.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    href={`/mesa/?s=${s.id}`}
-                    className={cn(
-                      BOTON_SECUNDARIO,
-                      "h-auto w-full flex-wrap justify-between gap-y-1 py-3",
-                    )}
-                  >
-                    <span className="text-ink flex items-center gap-2 font-mono tracking-[0.15em]">
-                      <DoorOpen size={16} aria-hidden="true" className="text-accent" />
-                      {s.codigo}
-                    </span>
-                    <span className="text-muted text-[13px]">
-                      {NOMBRE_FORMATO[s.formato]} · al mejor de {s.mejor_de} ·{" "}
-                      {NOMBRE_ESTADO_SALA[s.estado]}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          {/* Tercera columna desde lg; en md, a todo el ancho bajo las dos. */}
+          <div className={cn(PANEL, "md:col-span-2 lg:col-span-1")}>
+            <h2 className="text-ink text-lg font-bold">Tus salas abiertas</h2>
+            {salas === null ? (
+              <p className="text-muted text-[14px]">Cargando…</p>
+            ) : salas.length === 0 ? (
+              <p className="text-muted text-[14px]">No tienes salas abiertas.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {salas.map((s) => (
+                  <li key={s.id}>
+                    <Link
+                      href={`/mesa/?s=${s.id}`}
+                      className={cn(
+                        BOTON_SECUNDARIO,
+                        "h-auto w-full flex-wrap justify-between gap-y-1 py-3",
+                      )}
+                    >
+                      <span className="text-ink flex items-center gap-2 font-mono tracking-[0.15em]">
+                        <DoorOpen size={16} aria-hidden="true" className="text-accent" />
+                        {s.codigo}
+                      </span>
+                      <span className="text-muted text-[13px]">
+                        {NOMBRE_FORMATO[s.formato]} · al mejor de {s.mejor_de} ·{" "}
+                        {NOMBRE_ESTADO_SALA[s.estado]}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </section>
