@@ -82,8 +82,8 @@ export default function PrivacidadPage() {
                   Si juegas en la <strong className="text-ink">Mesa</strong>, mientras
                   dura la serie: la baraja con que entraste (con tus cambios del side), la
                   semilla con que se barajó y lo que se ve sobre la mesa, para volver a
-                  ella si se corta. Al terminar la serie se borra todo, y una sala que
-                  nadie terminó se borra al día siguiente.
+                  ella si se corta. Al terminar la serie se borra todo, y una sala donde
+                  no queda nadie conectado se borra a los 15 minutos.
                 </li>
               )}
             </ul>

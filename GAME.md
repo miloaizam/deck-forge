@@ -422,7 +422,8 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   - Errores propios `MS001`…`MS006`, que el sitio traduce
     (`MENSAJE_ERROR_SALA`).
   - Tope de tres salas abiertas por persona; las abandonadas de más de un
-    día se barren al crear otra.
+    día se barren al crear otra. Desde el 27-11-2026, las que pasan **15
+    minutos sin nadie conectado** (ver «Ajustes del 27-11-2026»).
 - **`supabase/mesa.prueba.sql`** la prueba contra Postgres local con tres
   cuentas: B entra con el código, C no; **B no lee ni escribe la fila
   privada de A**; nadie cambia una sala a mano; tope de salas, salir y
@@ -698,3 +699,31 @@ Cada sesión termina con algo que funciona y se puede probar, y con
 - **Hay que volver a pegar `supabase/mesa.sql`** (la función nueva y la
   restricción de `motivo`, que se reemplaza).
 
+### Ajustes del 27-11-2026
+
+- **Las salas sin nadie se cierran solas a los 15 minutos** (decisión del
+  proyecto: 15 y no 30 ni 60). Antes duraban un día y solo se barrían al
+  crear otra, así que las muertas seguían en «Tus salas abiertas» y
+  ocupaban el tope de tres.
+  - **Qué es «sin nadie»:** las dos señales de la sala (`senal_a`,
+    `senal_b`) con más de 15 minutos. Mientras alguien tiene la sala
+    abierta, `SalaDetalle` da un latido cada 20 s en todas sus etapas; con
+    la pestaña en segundo plano Chrome lo espacia a uno por minuto, muy por
+    debajo de 15.
+  - **Quién barre:** `barrer_mesas()`, que no se llama desde la API. Corre
+    al principio de `mis_mesas` (que pasa a ser `volatile`; el sitio ya la
+    llamaba por POST), de `crear_mesa` y de `unirse_mesa`. Sin `pg_cron`: una
+    sala muerta que nadie mira no se ve en ninguna parte.
+  - Las **terminadas** siguen durando un día desde que se crearon, para que
+    la pantalla de cierre se lea con calma.
+  - No cambian los 2 minutos para reclamar un abandono: quien se queda
+    mantiene viva la sala con su propio latido.
+  - `mesa.prueba.sql` lo cubre: esperando y en juego sin nadie se borran;
+    con uno adentro, o con señales de hace 10 minutos, se quedan. Contra el
+    `mesa.sql` anterior falla.
+- **La Mesa usa el ancho de las demás páginas** y su cabecera (eyebrow,
+  título grande y párrafo gris). El título de la entrada es «Salas de
+  juego», para no repetir «Mesa» bajo la palabra morada.
+- **«Solitario»** es un botón sobre la tarjeta «Crear una sala»; reemplaza
+  al enlace «O practica en solitario».
+- **Hay que volver a pegar `supabase/mesa.sql`.**

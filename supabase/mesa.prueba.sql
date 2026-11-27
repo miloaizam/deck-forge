@@ -464,6 +464,64 @@ do $$ begin
   end if;
 end $$;
 
+-- Salas sin nadie (27-11-2026): sin terminar y con las dos senales de mas de
+-- 15 minutos, abrir la Mesa (mis_mesas) las borra. Una con alguien adentro,
+-- o con senales de hace 10 minutos, se queda.
+reset role;
+delete from public.mesas;
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+select (r->>'id') as espera, (r->>'codigo') as codigo_e from (select crear_mesa('estandar', 3) as r) x \gset
+select (r->>'id') as sola, (r->>'codigo') as codigo_so from (select crear_mesa('vcr', 3) as r) x \gset
+insert into public.mesas_privado (mesa, jugador, estado) values (:'sola', :'A', '{"baraja": {}}');
+select (r->>'id') as media, (r->>'codigo') as codigo_m from (select crear_mesa('infanteria', 5) as r) x \gset
+select set_config('request.jwt.claim.sub', :'B', false);
+select unirse_mesa(:'codigo_so');
+select unirse_mesa(:'codigo_m');
+select (r->>'id') as reciente, (r->>'codigo') as codigo_r from (select crear_mesa('estandar', 5) as r) x \gset
+reset role;
+select set_config('prueba.espera', :'espera', false);
+select set_config('prueba.sola', :'sola', false);
+select set_config('prueba.media', :'media', false);
+select set_config('prueba.reciente', :'reciente', false);
+update public.mesas set senal_a = now() - interval '16 minutes' where id = :'espera';
+update public.mesas set estado = 'jugando',
+  senal_a = now() - interval '16 minutes', senal_b = now() - interval '17 minutes'
+where id = :'sola';
+-- Uno se fue hace 16 minutos y el otro sigue: se queda.
+update public.mesas set estado = 'entre_juegos',
+  senal_a = now() - interval '16 minutes', senal_b = now()
+where id = :'media';
+update public.mesas set senal_a = now() - interval '10 minutes' where id = :'reciente';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'C', false);
+select mis_mesas();
+reset role;
+do $$ begin
+  if exists (select 1 from public.mesas where id = current_setting('prueba.espera')::uuid) then
+    raise exception 'la sala esperando sin nadie no se borro';
+  end if;
+  if exists (select 1 from public.mesas where id = current_setting('prueba.sola')::uuid)
+     or exists (select 1 from public.mesas_privado where mesa = current_setting('prueba.sola')::uuid)
+     or exists (select 1 from public.mesas_publico where mesa = current_setting('prueba.sola')::uuid) then
+    raise exception 'la sala en juego sin nadie no se borro entera';
+  end if;
+  if not exists (select 1 from public.mesas where id = current_setting('prueba.media')::uuid) then
+    raise exception 'se borro una sala con un jugador adentro';
+  end if;
+  if not exists (select 1 from public.mesas where id = current_setting('prueba.reciente')::uuid) then
+    raise exception 'se borro una sala con senales de hace 10 minutos';
+  end if;
+end $$;
+-- Y desde la API no se llama.
+set role authenticated;
+do $$ begin
+  perform public.barrer_mesas();
+  raise exception 'barrer_mesas se pudo llamar desde la API';
+exception when insufficient_privilege then null;
+end $$;
+reset role;
+
 -- Abandonar la serie a proposito (25-11-2026).
 reset role;
 delete from public.mesas where estado <> 'terminada';

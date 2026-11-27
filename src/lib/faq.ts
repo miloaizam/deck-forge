@@ -97,12 +97,13 @@ const MESA: FaqSection = {
       respuesta: [
         "Antes de empezar, con **«Cerrar la sala»** si la creaste tú, o **«Salir de la sala»** si entraste con el código.",
         "Con la serie empezada hay dos formas. **«Salir por ahora»** te devuelve a Mesa y deja la sala abierta en **«Tus salas abiertas»**, para volver; si no vuelves en **2 minutos**, la serie es para tu rival. **«Abandonar la serie»** se la da en el acto y cierra la sala para los dos.",
+        "Una sala donde no queda **nadie conectado** por **15 minutos** se cierra sola, con lo que se estaba jugando: deja de aparecer en «Tus salas abiertas» y su código ya no sirve.",
       ],
     },
     {
       pregunta: "¿Puedo practicar solo?",
       respuesta: [
-        "Sí: en **Mesa**, con **«O practica en solitario»**. Eliges una de tus barajas y la juegas sin rival, con la misma mesa.",
+        "Sí: en **Mesa**, con el botón **«Solitario»**, sobre «Crear una sala». Eliges una de tus barajas y la juegas sin rival, con la misma mesa.",
       ],
     },
   ],

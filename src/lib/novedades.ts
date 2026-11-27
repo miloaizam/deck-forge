@@ -60,8 +60,20 @@ const MESA_ARREGLO: Novedad = {
   ],
 };
 
+/** Las salas vacias se cierran solas y la practica tiene su boton. */
+const MESA_SALAS_VACIAS: Novedad = {
+  fecha: "2026-11-27",
+  version: "7.1.0",
+  tipo: "Mejora",
+  titulo: "Las salas vacías de la Mesa se cierran solas",
+  texto: [
+    "Una sala donde no queda nadie conectado por 15 minutos se cierra sola, y deja de aparecer en «Tus salas abiertas». Antes se quedaba ahí un día entero.",
+    "La Mesa usa ahora todo el ancho de la pantalla, como las demás páginas, y la práctica en solitario se abre con el botón «Solitario», sobre «Crear una sala».",
+  ],
+};
+
 export const NOVEDADES: Novedad[] = [
-  ...(MESA_ACTIVA ? [MESA_ARREGLO, MESA] : []),
+  ...(MESA_ACTIVA ? [MESA_SALAS_VACIAS, MESA_ARREGLO, MESA] : []),
   {
     fecha: "2026-11-19",
     version: "6.8.0",

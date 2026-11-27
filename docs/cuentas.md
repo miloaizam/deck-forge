@@ -112,9 +112,12 @@ viven mientras dura una serie:
   baraja con que entró, sus cambios del side y la semilla de su barajado.
 
 Al terminar la serie, la foto se vacía y las filas privadas se borran. Una
-sala que nadie terminó se borra al crear otra cualquiera: las que esperan o
-ya terminaron, a las 24 h de creadas; las que se estaban jugando, cuando las
-dos señales tienen más de un día. Las tres tablas cuelgan de `auth.users`:
+sala sin terminar se borra cuando sus **dos señales tienen más de 15
+minutos** (27-11-2026): mientras alguien la tiene abierta, el sitio da un
+latido cada 20 s, así que eso es una sala sin nadie. Las terminadas, a las
+24 h de creadas. Lo hace `barrer_mesas()`, que no se llama desde la API: corre
+al abrir la Mesa (`mis_mesas`), al crear una sala y al unirse a una. No hay
+`pg_cron`; una sala muerta que nadie mira no se ve en ninguna parte. Las tres tablas cuelgan de `auth.users`:
 borrar la cuenta borra las salas.
 
 ### Las reglas de la base (`supabase/esquema.sql`)

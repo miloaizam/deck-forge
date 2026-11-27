@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { DoorOpen, LogIn, Plus } from "lucide-react";
+import { DoorOpen, LogIn, Plus, User } from "lucide-react";
 
 import { Select } from "../Select";
 import { crearSala, mensajeDeSala, misSalas, unirseASala } from "./sala-api";
@@ -17,13 +17,7 @@ import {
   type Sala,
 } from "@/lib/mesa/sala";
 import { FORMATOS, type Formato } from "@/lib/types";
-import {
-  AVISO_EN_LINEA,
-  BOTON_PRIMARIO,
-  BOTON_SECUNDARIO,
-  ENLACE,
-  TEXT_FIELD,
-} from "@/lib/ui";
+import { AVISO_EN_LINEA, BOTON_PRIMARIO, BOTON_SECUNDARIO, TEXT_FIELD } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
 const PANEL = "border-line bg-panel rounded-panel flex flex-col gap-4 border p-5 sm:p-6";
@@ -86,19 +80,13 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
       <div>
         <p className="eyebrow mb-3">Mesa</p>
         <h1 id="mesa-titulo" className="text-3xl font-bold tracking-[-0.02em]">
-          Mesa
+          Salas de juego
         </h1>
         <p className="text-muted mt-3 leading-relaxed">
           Prueba tus barajas contra otra cuenta. Crea una sala y comparte su código, o
           únete a la de alguien más. Nada se juega solo: cada uno mueve sus cartas y los
           efectos se conversan.
         </p>
-        <Link
-          href="/mesa/practica/"
-          className={cn(ENLACE, "mt-2 inline-block text-[14px]")}
-        >
-          O practica en solitario
-        </Link>
       </div>
 
       {error && (
@@ -111,33 +99,41 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className={PANEL}>
-          <h2 className="text-ink text-lg font-bold">Crear una sala</h2>
-          <Select
-            label="Formato"
-            requerido
-            value={formato}
-            options={[...FORMATOS]}
-            onChange={(v) => esFormato(v) && setFormato(v)}
-            format={(v) => (esFormato(v) ? NOMBRE_FORMATO[v] : v)}
-          />
-          <Select
-            label="Serie"
-            requerido
-            value={String(mejorDe)}
-            options={MEJOR_DE.map(String)}
-            onChange={(v) => setMejorDe(v === "5" ? 5 : 3)}
-            format={(v) => `Al mejor de ${v}`}
-          />
-          <button
-            type="button"
-            onClick={crear}
-            disabled={ocupado}
-            className={cn(BOTON_PRIMARIO, "mt-auto")}
-          >
-            <Plus size={16} aria-hidden="true" />
-            Crear sala
-          </button>
+        {/* La practica en solitario, sobre «Crear una sala»; la tarjeta se
+            estira para que su pie quede a la altura de las otras dos. */}
+        <div className="flex flex-col gap-4">
+          <Link href="/mesa/practica/" className={cn(BOTON_SECUNDARIO, "w-full")}>
+            <User size={16} aria-hidden="true" />
+            Solitario
+          </Link>
+          <div className={cn(PANEL, "flex-1")}>
+            <h2 className="text-ink text-lg font-bold">Crear una sala</h2>
+            <Select
+              label="Formato"
+              requerido
+              value={formato}
+              options={[...FORMATOS]}
+              onChange={(v) => esFormato(v) && setFormato(v)}
+              format={(v) => (esFormato(v) ? NOMBRE_FORMATO[v] : v)}
+            />
+            <Select
+              label="Serie"
+              requerido
+              value={String(mejorDe)}
+              options={MEJOR_DE.map(String)}
+              onChange={(v) => setMejorDe(v === "5" ? 5 : 3)}
+              format={(v) => `Al mejor de ${v}`}
+            />
+            <button
+              type="button"
+              onClick={crear}
+              disabled={ocupado}
+              className={cn(BOTON_PRIMARIO, "mt-auto")}
+            >
+              <Plus size={16} aria-hidden="true" />
+              Crear sala
+            </button>
+          </div>
         </div>
 
         <form

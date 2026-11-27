@@ -189,24 +189,51 @@ as $$
   where m.id = p_mesa and auth.uid() in (m.jugador_a, m.jugador_b);
 $$;
 
--- Las salas abiertas de quien pregunta, la mas nueva primero.
-create or replace function public.mis_mesas()
-returns json
+-- ---------------------------------------------------------------------
+-- Barrer las salas sin nadie (27-11-2026). Mientras alguien tiene la sala
+-- abierta, el sitio da un latido cada 20 s; una sala sin terminar cuyas dos
+-- senales tienen mas de 15 minutos se quedo sin jugadores y se borra, con su
+-- foto y sus filas privadas (on delete cascade; sin historial, GAME.md §2).
+-- Las terminadas duran un dia desde que se crearon, para leer el cierre.
+-- No hay pg_cron: corre al abrir la Mesa (mis_mesas), al crear y al unirse.
+-- Nadie la llama desde la API.
+-- ---------------------------------------------------------------------
+create or replace function public.barrer_mesas()
+returns void
 language sql
-stable
+volatile
 security definer
 set search_path = public
 as $$
-  select coalesce(json_agg(public.ver_mesa(m.id) order by m.creada desc), '[]'::json)
-  from public.mesas m
-  where auth.uid() in (m.jugador_a, m.jugador_b) and m.estado <> 'terminada';
+  delete from public.mesas
+  where (estado <> 'terminada'
+         and greatest(senal_a, coalesce(senal_b, senal_a)) < now() - interval '15 minutes')
+     or (estado = 'terminada' and creada < now() - interval '1 day');
+$$;
+
+-- Las salas abiertas de quien pregunta, la mas nueva primero. Antes barre
+-- las que se quedaron sin nadie: una sala muerta no se lista.
+-- Escribe, asi que es volatile: el sitio la llama por POST.
+create or replace function public.mis_mesas()
+returns json
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+begin
+  perform public.barrer_mesas();
+  return (
+    select coalesce(json_agg(public.ver_mesa(m.id) order by m.creada desc), '[]'::json)
+    from public.mesas m
+    where auth.uid() in (m.jugador_a, m.jugador_b) and m.estado <> 'terminada'
+  );
+end;
 $$;
 
 -- ---------------------------------------------------------------------
--- Crear una sala: devuelve su id y su codigo. Antes barre las salas
--- abandonadas (esperando o terminadas hace mas de un dia, y las que se
--- estaban jugando y nadie dio senales en un dia: sin historial, GAME.md §2)
--- y topa en tres salas abiertas por persona.
+-- Crear una sala: devuelve su id y su codigo. Antes barre las salas sin
+-- nadie (barrer_mesas) y topa en tres salas abiertas por persona.
 -- ---------------------------------------------------------------------
 create or replace function public.crear_mesa(p_formato text, p_mejor_de int)
 returns json
@@ -228,13 +255,7 @@ begin
     raise exception 'sala invalida' using errcode = '22023';
   end if;
 
-  delete from public.mesas
-  where (estado = 'esperando' or estado = 'terminada')
-    and creada < now() - interval '1 day';
-  -- Su foto y sus filas privadas se van con ella (on delete cascade).
-  delete from public.mesas
-  where estado in ('jugando', 'entre_juegos')
-    and greatest(senal_a, coalesce(senal_b, senal_a)) < now() - interval '1 day';
+  perform public.barrer_mesas();
 
   if (select count(*) from public.mesas
       where yo in (jugador_a, jugador_b) and estado <> 'terminada') >= 3 then
@@ -260,6 +281,7 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- Unirse con el codigo. Volver a entrar a una sala propia devuelve su id.
+-- Antes barre: el codigo de una sala sin nadie ya no sirve.
 -- ---------------------------------------------------------------------
 create or replace function public.unirse_mesa(p_codigo text)
 returns uuid
@@ -275,6 +297,7 @@ begin
   if yo is null then
     raise exception 'sin sesion' using errcode = 'MS002';
   end if;
+  perform public.barrer_mesas();
   select * into m from public.mesas where codigo = upper(trim(p_codigo)) for update;
   if not found then
     raise exception 'no disponible' using errcode = 'MS001';
@@ -677,8 +700,8 @@ begin
 end;
 $$;
 
--- Nadie llama a cerrar_juego desde la API.
-revoke all on function public.cerrar_juego(uuid, text, boolean)
+-- Nadie llama a cerrar_juego ni a barrer_mesas desde la API.
+revoke all on function public.cerrar_juego(uuid, text, boolean), public.barrer_mesas()
   from public, anon, authenticated;
 
 revoke all on function public.ver_mesa(uuid), public.mis_mesas(),
