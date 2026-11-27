@@ -930,7 +930,10 @@ test("una serie al mejor de 3 de principio a fin: declarar, anular, side y rendi
   await b.getByRole("button", { name: "Cambiar", exact: true }).click();
   await expect(b.getByText(`Entran: 1× ${entraNombre}`)).toBeVisible();
   await b.getByRole("button", { name: "Listo para el juego 2" }).click();
-  await expect(a.getByText("Invitado: listo")).toBeVisible({ timeout: 10_000 });
+  // Como va el rival lo dice la banda de los jugadores (Enfrentamiento).
+  await expect(
+    a.getByRole("region", { name: "Jugadores" }).getByText("Listo para el juego 2"),
+  ).toBeVisible({ timeout: 10_000 });
   await a.getByRole("button", { name: "Listo para el juego 2" }).click();
 
   // Juego 2: otra mesa, la baraja de B con su cambio, y su Soporte se cuenta.

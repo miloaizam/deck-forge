@@ -1,5 +1,6 @@
 import * as z from "zod/mini";
 
+import { esRutaAvatar } from "../avatar";
 import { FORMATOS, type Formato } from "../types";
 
 /**
@@ -36,6 +37,15 @@ const alias = z.pipe(
   z.transform((t: string | null) => (t ? t.replace(CONTROLES, "").slice(0, 20) : null)),
 );
 
+/** La ruta de una foto de perfil (`ruta_avatar`); la que no pasa, sin foto. */
+const avatar = z._default(
+  z.pipe(
+    z.nullable(z.string().check(z.maxLength(80))),
+    z.transform((r: string | null) => (esRutaAvatar(r) ? r : null)),
+  ),
+  null,
+);
+
 const uuid = z.string().check(z.uuid());
 const fecha = z.nullable(z.string().check(z.maxLength(40)));
 const victorias = z.int().check(z.minimum(0), z.maximum(5));
@@ -50,6 +60,8 @@ export const salaSchema = z.object({
   jugador_b: z.nullable(uuid),
   alias_a: alias,
   alias_b: alias,
+  avatar_a: avatar,
+  avatar_b: avatar,
   listo_a: z.boolean(),
   listo_b: z.boolean(),
   victorias_a: victorias,
@@ -137,6 +149,13 @@ export function esFormato(v: string): v is Formato {
   return (FORMATOS as readonly string[]).includes(v);
 }
 
+/**
+ * Hasta cuanto despues de su ultima senal un jugador cuenta como en la sala:
+ * el sitio da un latido cada 20 s (`LATIDO_MS`), y una pestana en segundo
+ * plano puede atrasarlo un poco.
+ */
+export const EN_LA_SALA_MS = 45_000;
+
 /** El tiempo de gracia de quien se desconecta (GAME.md §2). El mismo que `mesa.sql`. */
 export const GRACIA_MS = 120_000;
 
@@ -163,4 +182,22 @@ export function restanteDeGracia(
   if (senal === null || base === null) return null;
   const ahoraEnLaBase = base + Math.max(0, ahoraLocal - recibida);
   return Math.max(0, GRACIA_MS - (ahoraEnLaBase - senal));
+}
+
+/**
+ * Si el jugador `lado` tiene la sala abierta: su ultima senal tiene menos de
+ * `EN_LA_SALA_MS`, contada con la hora de la base como `restanteDeGracia`.
+ * Sin senal o sin hora de la base, no se sabe y se dice que no.
+ */
+export function enLaSala(
+  sala: Sala,
+  lado: "a" | "b",
+  recibida: number,
+  ahoraLocal: number,
+): boolean {
+  const senal = msDe(lado === "a" ? sala.senal_a : sala.senal_b);
+  const base = msDe(sala.ahora);
+  if (senal === null || base === null) return false;
+  const ahoraEnLaBase = base + Math.max(0, ahoraLocal - recibida);
+  return ahoraEnLaBase - senal < EN_LA_SALA_MS;
 }

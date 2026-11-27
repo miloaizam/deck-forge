@@ -165,6 +165,10 @@ as $$
     'jugador_b', m.jugador_b,
     'alias_a', pa.alias,
     'alias_b', pb.alias,
+    -- La foto de perfil (27-11-2026), como en la Comunidad: null sin foto o
+    -- si la moderacion la oculto.
+    'avatar_a', public.ruta_avatar(pa.user_id, pa.avatar, pa.avatar_oculto),
+    'avatar_b', public.ruta_avatar(pb.user_id, pb.avatar, pb.avatar_oculto),
     'listo_a', m.listo_a,
     'listo_b', m.listo_b,
     'victorias_a', m.victorias_a,

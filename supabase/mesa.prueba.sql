@@ -513,6 +513,28 @@ do $$ begin
     raise exception 'se borro una sala con senales de hace 10 minutos';
   end if;
 end $$;
+-- La foto de cada jugador (27-11-2026): ver_mesa la trae con su version, y
+-- una oculta por moderacion sale null.
+update public.perfiles set avatar = 1700000000000, avatar_oculto = false where user_id = :'A';
+update public.perfiles set avatar = 1700000000001, avatar_oculto = true where user_id = :'B';
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'A', false);
+do $$
+declare
+  v jsonb := public.ver_mesa(current_setting('prueba.media')::uuid)::jsonb;
+begin
+  if not (v ?& array['avatar_a', 'avatar_b']) then
+    raise exception 'ver_mesa no trae las fotos';
+  end if;
+  if v->>'avatar_a' is distinct from '00000000-0000-4000-8000-00000000000a?v=1700000000000' then
+    raise exception 'la foto de A no es la ruta con su version: %', v->>'avatar_a';
+  end if;
+  if v->>'avatar_b' is not null then
+    raise exception 'la foto oculta de B se ve';
+  end if;
+end $$;
+reset role;
+
 -- Y desde la API no se llama.
 set role authenticated;
 do $$ begin

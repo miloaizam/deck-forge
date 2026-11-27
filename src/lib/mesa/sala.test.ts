@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   CODIGO_SALA,
+  enLaSala,
   GRACIA_MS,
   restanteDeGracia,
   leerMisSalas,
@@ -130,4 +131,34 @@ test("la gracia se cuenta con la hora de la base, no con el reloj del navegador"
   assert.equal(GRACIA_MS, 120_000);
   // Sin senal o sin hora de la base, no hay cuenta.
   assert.equal(restanteDeGracia(leerSala(fila({ jugador_b: B }))!, "b", 0, 0), null);
+});
+
+test("en la sala: una senal de menos de 45 s, contada con la hora de la base", () => {
+  const sala = leerSala(
+    fila({
+      jugador_b: B,
+      senal_a: "2026-11-24T00:00:30Z",
+      senal_b: "2026-11-24T00:00:00Z",
+      ahora: "2026-11-24T00:01:00Z",
+    }),
+  )!;
+  const recibida = Date.parse("2026-11-24T05:00:00Z");
+  // A dio senal hace 30 s; B, hace 60.
+  assert.equal(enLaSala(sala, "a", recibida, recibida), true);
+  assert.equal(enLaSala(sala, "b", recibida, recibida), false);
+  // Pasan 20 s en este navegador: A ya lleva 50.
+  assert.equal(enLaSala(sala, "a", recibida, recibida + 20_000), false);
+  // Sin hora de la base no se sabe.
+  assert.equal(enLaSala(leerSala(fila({ jugador_b: B }))!, "a", 0, 0), false);
+});
+
+test("la foto de cada jugador: una ruta valida o nada", () => {
+  const conFoto = leerSala(fila({ avatar_a: `${A}?v=1700000000000`, avatar_b: null }))!;
+  assert.equal(conFoto.avatar_a, `${A}?v=1700000000000`);
+  assert.equal(conFoto.avatar_b, null);
+  // Sin las claves (una base sin pegar el cambio), sin foto.
+  assert.equal(leerSala(fila())!.avatar_a, null);
+  // Una ruta rara no llega a un <img>: queda sin foto, la sala igual se lee.
+  const rara = leerSala(fila({ avatar_a: "https://otro.host/x.png" }));
+  assert.equal(rara?.avatar_a, null);
 });

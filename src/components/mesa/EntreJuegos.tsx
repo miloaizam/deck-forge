@@ -15,6 +15,7 @@ import {
 
 import { ConfirmDialog } from "../ConfirmDialog";
 import { CabeceraSala } from "./CabeceraSala";
+import { Enfrentamiento } from "./Enfrentamiento";
 import { toast } from "../toast";
 import { Select } from "../Select";
 import {
@@ -40,7 +41,6 @@ import {
   cambiosConSide,
   numeroDeJuego,
   textoDelUltimo,
-  victoriasParaGanar,
 } from "@/lib/mesa/serie";
 import { deckSchema, type Card, type Deck, type Formato } from "@/lib/types";
 import {
@@ -49,7 +49,6 @@ import {
   BOTON_SECUNDARIO,
   BOTON_SECUNDARIO_COMPACTO,
   HOVER_PELIGRO,
-  PASTILLA,
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +95,6 @@ export function EntreJuegos({
   const lado: Lado = miLado(sala, uid) ?? "a";
   const rival: Lado = lado === "a" ? "b" : "a";
   const listo = lado === "a" ? sala.listo_a : sala.listo_b;
-  const rivalListo = lado === "a" ? sala.listo_b : sala.listo_a;
   const [privado, setPrivado] = useState<Privado | null | "error">(null);
   const [sale, setSale] = useState("");
   const [entra, setEntra] = useState("");
@@ -166,7 +164,6 @@ export function EntreJuegos({
     }
   }
 
-  const necesarias = victoriasParaGanar(sala.mejor_de);
   const mias = lado === "a" ? sala.victorias_a : sala.victorias_b;
   const suyas = lado === "a" ? sala.victorias_b : sala.victorias_a;
   const juego = numeroDeJuego(sala);
@@ -296,7 +293,7 @@ export function EntreJuegos({
   }
 
   return (
-    <section aria-labelledby="sala-titulo" className="flex flex-col gap-6">
+    <section aria-labelledby="sala-titulo" className="flex flex-col gap-10">
       {/* La cabecera de la sala (CabeceraSala): el marcador es el titulo. */}
       <CabeceraSala
         titulo={`Tú ${mias} – ${suyas} ${nombreEnSala(sala, rival)}`}
@@ -323,12 +320,7 @@ export function EntreJuegos({
             </button>
           </>
         }
-      >
-        <p className="text-muted mt-1">
-          Sala {sala.codigo} · al mejor de {sala.mejor_de}: gana quien llegue a{" "}
-          {necesarias}
-        </p>
-      </CabeceraSala>
+      />
       <ConfirmDialog
         open={abandonando}
         titulo="¿Abandonar la serie?"
@@ -341,23 +333,35 @@ export function EntreJuegos({
         }}
       />
 
-      {restante !== null && (
-        <p
-          role="status"
-          className={cn(
-            AVISO_EN_LINEA,
-            "border-warning/60 bg-warning-soft text-ink items-center",
-          )}
-        >
-          <Hourglass size={16} aria-hidden="true" className="text-warning" />
-          {restante > 0
-            ? `${nombreEnSala(sala, rival)} se desconectó. Si no vuelve en ${reloj(restante)}, la serie es tuya.`
-            : `${nombreEnSala(sala, rival)} no volvió: la serie es tuya.`}
-        </p>
-      )}
+      {/* Los dos frente a frente, con el avance de la serie, y la cuenta
+          regresiva si el rival se fue: el mismo espaciado que la sala. */}
+      <div className="flex flex-col gap-4">
+        <Enfrentamiento
+          sala={sala}
+          uid={uid}
+          recibida={recibida}
+          modo={{ tipo: "entre", juego }}
+        />
 
-      {/* Desde lg, el side (2/3) junto al panel de listo (1/3). */}
-      <div className="grid items-start gap-4 lg:grid-cols-3">
+        {restante !== null && (
+          <p
+            role="status"
+            className={cn(
+              AVISO_EN_LINEA,
+              "border-warning/60 bg-warning-soft text-ink items-center",
+            )}
+          >
+            <Hourglass size={16} aria-hidden="true" className="text-warning" />
+            {restante > 0
+              ? `${nombreEnSala(sala, rival)} se desconectó. Si no vuelve en ${reloj(restante)}, la serie es tuya.`
+              : `${nombreEnSala(sala, rival)} no volvió: la serie es tuya.`}
+          </p>
+        )}
+      </div>
+
+      {/* Desde lg, el side (2/3) junto al panel de listo (1/3), a la misma
+          altura: el boton de listo cierra contra el pie del panel. */}
+      <div className="grid items-stretch gap-4 lg:grid-cols-3">
         {/* Por encima de lo que venga despues: sus desplegables caen sobre ello. */}
         <div className={cn(PANEL, "relative z-10 lg:col-span-2")}>
           <h2 className="text-ink text-lg font-bold">Cambios con el Mazo de Soporte</h2>
@@ -367,21 +371,11 @@ export function EntreJuegos({
         <div className={cn(PANEL, "flex flex-col gap-4")}>
           <h2 className="text-ink text-lg font-bold">Juego {juego}</h2>
           <div className="text-[14px]">
-            <p className="text-ink">
+            {/* Como va el rival lo dice la banda de arriba. */}
+            <p className="text-muted">
               {listo
                 ? `Listo para el juego ${juego}. Esperando a ${nombreEnSala(sala, rival)}.`
                 : `Cuando termines los cambios, márcate listo para el juego ${juego}.`}
-            </p>
-            <p className="mt-1">
-              <span className={cn(PASTILLA, rivalListo ? "text-success" : "text-muted")}>
-                {rivalListo ? (
-                  <Check size={12} aria-hidden="true" />
-                ) : (
-                  <Hourglass size={12} aria-hidden="true" />
-                )}
-                {nombreEnSala(sala, rival)}:{" "}
-                {rivalListo ? "listo" : "haciendo sus cambios"}
-              </span>
             </p>
             {problema && !listo && <p className="text-danger mt-2">{problema}</p>}
           </div>
@@ -390,7 +384,7 @@ export function EntreJuegos({
               type="button"
               onClick={() => hacer(() => marcarLista(sala.id, false))}
               disabled={ocupado}
-              className={BOTON_SECUNDARIO}
+              className={cn(BOTON_SECUNDARIO, "mt-auto")}
             >
               <Undo2 size={14} aria-hidden="true" />
               Hacer más cambios
@@ -407,7 +401,7 @@ export function EntreJuegos({
                 })
               }
               disabled={ocupado || !privado || privado === "error" || problema !== null}
-              className={BOTON_PRIMARIO}
+              className={cn(BOTON_PRIMARIO, "mt-auto")}
             >
               <Check size={16} aria-hidden="true" />
               Listo para el juego {juego}

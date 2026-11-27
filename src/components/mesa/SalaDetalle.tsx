@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Flag, Hourglass, Link2, LogOut, Trophy, Undo2 } from "lucide-react";
+import { Check, Flag, Link2, LogOut, Trophy, Undo2 } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
@@ -11,6 +11,7 @@ import { TarjetaBaraja } from "../decks/TarjetaBaraja";
 import { CabeceraSala } from "./CabeceraSala";
 import { recargarSiHaceFalta } from "./documento-de-la-mesa";
 import { EntreJuegos } from "./EntreJuegos";
+import { Enfrentamiento } from "./Enfrentamiento";
 import { MesaEnLinea } from "./MesaEnLinea";
 import { useDecks } from "../decks/use-decks";
 import { DeckListSkeleton } from "../Skeleton";
@@ -34,7 +35,6 @@ import {
   BOTON_SECUNDARIO,
   ENLACE,
   HOVER_PELIGRO,
-  PASTILLA,
   VACIO,
 } from "@/lib/ui";
 import { cn } from "@/lib/utils";
@@ -43,8 +43,6 @@ import { cn } from "@/lib/utils";
 const CADA_MS = 3000;
 /** Cada cuanto se da la senal de vida (GAME.md §2: dos minutos de gracia). */
 const LATIDO_MS = 20_000;
-
-const PANEL = "border-line bg-panel rounded-panel border p-5 sm:p-6";
 
 /**
  * Una sala: su codigo para compartir, los dos jugadores, y la baraja con que
@@ -133,6 +131,7 @@ export function SalaDetalle({ id, uid }: { id: string; uid: string }) {
           <SalaAbierta
             sala={sala}
             uid={uid}
+            recibida={recibida}
             error={error}
             deFormato={deFormato}
             refrescar={refrescar}
@@ -211,12 +210,21 @@ function SalaTerminada({ sala, uid }: { sala: Sala; uid: string }) {
 interface SalaAbiertaProps {
   sala: Sala;
   uid: string;
+  /** Cuando llego la ultima respuesta, en el reloj de este navegador. */
+  recibida: number;
   error: string | null;
   deFormato: (f: Formato) => Card[];
   refrescar: () => Promise<void>;
 }
 
-function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProps) {
+function SalaAbierta({
+  sala,
+  uid,
+  recibida,
+  error,
+  deFormato,
+  refrescar,
+}: SalaAbiertaProps) {
   const router = useRouter();
   const decks = useDecks();
   const [elegida, setElegida] = useState("");
@@ -269,38 +277,6 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
     }
   }
 
-  // Un jugador por tarjeta, en fila: su nombre y como va.
-  const jugador = (l: "a" | "b") => {
-    const presente = l === "a" || sala.jugador_b !== null;
-    const estaListo = l === "a" ? sala.listo_a : sala.listo_b;
-    return (
-      <li className={cn(PANEL, "flex flex-col gap-1.5")}>
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
-          <span className="text-ink font-medium">
-            {presente ? nombreEnSala(sala, l) : "Esperando rival…"}
-            {l === lado && <span className="text-muted ml-1.5 text-[13px]">(tú)</span>}
-          </span>
-          {presente && (
-            <span className={cn(PASTILLA, estaListo ? "text-success" : "text-muted")}>
-              {estaListo ? (
-                <Check size={12} aria-hidden="true" />
-              ) : (
-                <Hourglass size={12} aria-hidden="true" />
-              )}
-              {estaListo ? "Listo" : "Eligiendo baraja"}
-            </span>
-          )}
-        </div>
-        {!presente && (
-          <p className="text-muted text-[14px]">
-            Comparte el código <strong className="text-ink">{sala.codigo}</strong> o el
-            enlace con tu rival.
-          </p>
-        )}
-      </li>
-    );
-  };
-
   // Las barajas se eligen con las tarjetas de Mis barajas, validadas con el
   // formato de la SALA: la pastilla dice si cumplen ahi.
   const indiceSala = indiceDe(deFormato(sala.formato), sala.formato);
@@ -314,7 +290,11 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
         formato={sala.formato}
         subtitulo={
           <p className="text-muted">
-            Al mejor de {sala.mejor_de} · {NOMBRE_ESTADO_SALA[sala.estado]}
+            {sala.jugador_b === null
+              ? "Esperando rival"
+              : esperando
+                ? "Eligiendo barajas"
+                : NOMBRE_ESTADO_SALA[sala.estado]}
           </p>
         }
         acciones={
@@ -353,10 +333,12 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
           </p>
         )}
 
-        <ul aria-label="Jugadores" className="grid gap-3 sm:grid-cols-2">
-          {jugador("a")}
-          {jugador("b")}
-        </ul>
+        <Enfrentamiento
+          sala={sala}
+          uid={uid}
+          recibida={recibida}
+          modo={{ tipo: "sala" }}
+        />
       </div>
 
       {esperando ? (

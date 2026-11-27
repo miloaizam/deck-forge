@@ -735,4 +735,12 @@ Cada sesión termina con algo que funciona y se puede probar, y con
   tarjetas de Mis barajas** (`TarjetaBaraja`, con `elegida` y
   `noDisponible` para las que no cumplen en el formato de la sala), como en
   la práctica; antes era un desplegable.
+- **Los dos jugadores, frente a frente** (`Enfrentamiento.tsx`), en la sala
+  y entre juegos: la foto de perfil de cada uno (`ver_mesa` trae
+  `avatar_a` y `avatar_b` con `ruta_avatar`, la de la Comunidad; una foto
+  oculta por moderación sale `null`), su nombre, cómo va, si tiene la sala
+  abierta («En la sala» con una señal de menos de 45 s, `enLaSala` de
+  `sala.ts`) y el medallón del VS. Entre juegos suma un punto por victoria
+  que hace falta, y se quitó el subtítulo «Sala … · al mejor de …»; los dos
+  paneles de abajo cierran a la misma altura.
 - **Hay que volver a pegar `supabase/mesa.sql`.**
