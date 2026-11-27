@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Monitor, Swords } from "lucide-react";
+import { Monitor } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { useDecks, useHydrated } from "../decks/use-decks";
@@ -64,34 +64,35 @@ function Practica({ cards }: { cards: Card[] }) {
   const conCartas = decks.filter((d) => totalCards(d.principal) > 0);
 
   return (
-    <section aria-labelledby="mesa-titulo" className="mx-auto max-w-2xl">
-      <h1
-        id="mesa-titulo"
-        className="text-ink flex items-center gap-2 text-2xl font-bold"
-      >
-        <Swords size={22} aria-hidden="true" className="text-accent" />
+    <section aria-labelledby="mesa-titulo">
+      {/* La cabecera de las demas paginas (Mis barajas, la Comunidad…). */}
+      <p className="eyebrow mb-3">Mesa</p>
+      <h1 id="mesa-titulo" className="text-3xl font-bold tracking-[-0.02em]">
         Mesa de práctica
       </h1>
-      <p className="text-muted mt-2 text-[15px]">
+      <p className="text-muted mt-3 leading-relaxed">
         Elige una de tus barajas para probarla en la mesa. Nada se juega solo: mueves las
         cartas tú, como en la vida real.
       </p>
 
       {conCartas.length === 0 ? (
-        <div className={cn(VACIO, "mt-6")}>
+        <div className={cn(VACIO, "mt-10")}>
           <p className="text-ink">No tienes barajas con cartas.</p>
           <Link href="/constructor/" className={cn(ENLACE, "mt-2 inline-block")}>
             Armar una baraja
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 flex flex-col gap-2">
+        <ul className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {conCartas.map((d) => (
             <li key={d.id}>
               <button
                 type="button"
                 onClick={() => setElegida(d)}
-                className={cn(BOTON_SECUNDARIO, "h-auto w-full justify-between py-3")}
+                className={cn(
+                  BOTON_SECUNDARIO,
+                  "h-full w-full justify-between gap-3 py-3",
+                )}
               >
                 <span className="text-ink truncate font-medium">{deckTitle(d)}</span>
                 <span className="text-muted shrink-0 text-[13px] tabular-nums">

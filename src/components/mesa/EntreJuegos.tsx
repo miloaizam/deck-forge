@@ -289,10 +289,7 @@ export function EntreJuegos({
   }
 
   return (
-    <section
-      aria-labelledby="sala-titulo"
-      className="mx-auto flex max-w-3xl flex-col gap-5"
-    >
+    <section aria-labelledby="sala-titulo" className="flex flex-col gap-6">
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -323,15 +320,20 @@ export function EntreJuegos({
             void hacer(() => abandonarSala(sala.id));
           }}
         />
+        {/* La cabecera de las demas paginas: el marcador es el titulo. */}
+        <p className="eyebrow mt-3 mb-3">Entre juegos</p>
+        <h1
+          id="sala-titulo"
+          className="text-3xl font-bold tracking-[-0.02em] tabular-nums"
+        >
+          Tú {mias} – {suyas} {nombreEnSala(sala, rival)}
+        </h1>
+        <p className="text-ink mt-3 leading-relaxed">{textoDelUltimo(sala, lado)}</p>
         <p className="text-muted mt-1 text-[14px]">
           Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span> ·{" "}
           {NOMBRE_FORMATO[sala.formato]} · al mejor de {sala.mejor_de}: gana quien llegue
           a {necesarias}
         </p>
-        <h1 id="sala-titulo" className="text-ink mt-1 text-2xl font-bold tabular-nums">
-          Tú {mias} – {suyas} {nombreEnSala(sala, rival)}
-        </h1>
-        <p className="text-ink mt-2 text-[15px]">{textoDelUltimo(sala, lado)}</p>
       </div>
 
       {restante !== null && (
@@ -349,59 +351,64 @@ export function EntreJuegos({
         </p>
       )}
 
-      {/* Por encima del panel de abajo: sus desplegables caen sobre el. */}
-      <div className={cn(PANEL, "relative z-10")}>
-        <h2 className="text-ink text-lg font-bold">Cambios con el Mazo de Soporte</h2>
-        {side}
-      </div>
-
-      <div className={cn(PANEL, "flex flex-wrap items-center justify-between gap-3")}>
-        <div className="text-[14px]">
-          <p className="text-ink">
-            {listo
-              ? `Listo para el juego ${juego}. Esperando a ${nombreEnSala(sala, rival)}.`
-              : `Cuando termines los cambios, márcate listo para el juego ${juego}.`}
-          </p>
-          <p className="mt-1">
-            <span className={cn(PASTILLA, rivalListo ? "text-success" : "text-muted")}>
-              {rivalListo ? (
-                <Check size={12} aria-hidden="true" />
-              ) : (
-                <Hourglass size={12} aria-hidden="true" />
-              )}
-              {nombreEnSala(sala, rival)}: {rivalListo ? "listo" : "haciendo sus cambios"}
-            </span>
-          </p>
-          {problema && !listo && <p className="text-danger mt-2">{problema}</p>}
+      {/* Desde lg, el side (2/3) junto al panel de listo (1/3). */}
+      <div className="grid items-start gap-4 lg:grid-cols-3">
+        {/* Por encima de lo que venga despues: sus desplegables caen sobre ello. */}
+        <div className={cn(PANEL, "relative z-10 lg:col-span-2")}>
+          <h2 className="text-ink text-lg font-bold">Cambios con el Mazo de Soporte</h2>
+          {side}
         </div>
-        {listo ? (
-          <button
-            type="button"
-            onClick={() => hacer(() => marcarLista(sala.id, false))}
-            disabled={ocupado}
-            className={BOTON_SECUNDARIO}
-          >
-            <Undo2 size={14} aria-hidden="true" />
-            Hacer más cambios
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() =>
-              privado &&
-              privado !== "error" &&
-              hacer(async () => {
-                await guardarPrivado(sala.id, uid, privado);
-                await marcarLista(sala.id, true);
-              })
-            }
-            disabled={ocupado || !privado || privado === "error" || problema !== null}
-            className={BOTON_PRIMARIO}
-          >
-            <Check size={16} aria-hidden="true" />
-            Listo para el juego {juego}
-          </button>
-        )}
+
+        <div className={cn(PANEL, "flex flex-col gap-4")}>
+          <h2 className="text-ink text-lg font-bold">Juego {juego}</h2>
+          <div className="text-[14px]">
+            <p className="text-ink">
+              {listo
+                ? `Listo para el juego ${juego}. Esperando a ${nombreEnSala(sala, rival)}.`
+                : `Cuando termines los cambios, márcate listo para el juego ${juego}.`}
+            </p>
+            <p className="mt-1">
+              <span className={cn(PASTILLA, rivalListo ? "text-success" : "text-muted")}>
+                {rivalListo ? (
+                  <Check size={12} aria-hidden="true" />
+                ) : (
+                  <Hourglass size={12} aria-hidden="true" />
+                )}
+                {nombreEnSala(sala, rival)}:{" "}
+                {rivalListo ? "listo" : "haciendo sus cambios"}
+              </span>
+            </p>
+            {problema && !listo && <p className="text-danger mt-2">{problema}</p>}
+          </div>
+          {listo ? (
+            <button
+              type="button"
+              onClick={() => hacer(() => marcarLista(sala.id, false))}
+              disabled={ocupado}
+              className={BOTON_SECUNDARIO}
+            >
+              <Undo2 size={14} aria-hidden="true" />
+              Hacer más cambios
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() =>
+                privado &&
+                privado !== "error" &&
+                hacer(async () => {
+                  await guardarPrivado(sala.id, uid, privado);
+                  await marcarLista(sala.id, true);
+                })
+              }
+              disabled={ocupado || !privado || privado === "error" || problema !== null}
+              className={BOTON_PRIMARIO}
+            >
+              <Check size={16} aria-hidden="true" />
+              Listo para el juego {juego}
+            </button>
+          )}
+        </div>
       </div>
     </section>
   );

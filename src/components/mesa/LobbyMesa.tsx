@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { DoorOpen, LogIn, Plus, Swords } from "lucide-react";
+import { DoorOpen, LogIn, Plus } from "lucide-react";
 
 import { Select } from "../Select";
 import { crearSala, mensajeDeSala, misSalas, unirseASala } from "./sala-api";
@@ -81,19 +81,14 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
   }
 
   return (
-    <section
-      aria-labelledby="mesa-titulo"
-      className="mx-auto flex max-w-3xl flex-col gap-6"
-    >
+    <section aria-labelledby="mesa-titulo" className="flex flex-col gap-10">
+      {/* La cabecera de las demas paginas (Mis barajas, la Comunidad…). */}
       <div>
-        <h1
-          id="mesa-titulo"
-          className="text-ink flex items-center gap-2 text-2xl font-bold"
-        >
-          <Swords size={22} aria-hidden="true" className="text-accent" />
+        <p className="eyebrow mb-3">Mesa</p>
+        <h1 id="mesa-titulo" className="text-3xl font-bold tracking-[-0.02em]">
           Mesa
         </h1>
-        <p className="text-muted mt-2 text-[15px]">
+        <p className="text-muted mt-3 leading-relaxed">
           Prueba tus barajas contra otra cuenta. Crea una sala y comparte su código, o
           únete a la de alguien más. Nada se juega solo: cada uno mueve sus cartas y los
           efectos se conversan.
@@ -115,7 +110,7 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
         </p>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div className={PANEL}>
           <h2 className="text-ink text-lg font-bold">Crear una sala</h2>
           <Select
@@ -175,32 +170,40 @@ export function LobbyMesa({ codigoInicial }: { codigoInicial: string | null }) {
             Unirse
           </button>
         </form>
-      </div>
 
-      {salas && salas.length > 0 && (
-        <div>
+        {/* Tercera columna desde lg; en md, a todo el ancho bajo las dos. */}
+        <div className={cn(PANEL, "md:col-span-2 lg:col-span-1")}>
           <h2 className="text-ink text-lg font-bold">Tus salas abiertas</h2>
-          <ul className="mt-3 flex flex-col gap-2">
-            {salas.map((s) => (
-              <li key={s.id}>
-                <Link
-                  href={`/mesa/?s=${s.id}`}
-                  className={cn(BOTON_SECUNDARIO, "h-auto w-full justify-between py-3")}
-                >
-                  <span className="text-ink flex items-center gap-2 font-mono tracking-[0.15em]">
-                    <DoorOpen size={16} aria-hidden="true" className="text-accent" />
-                    {s.codigo}
-                  </span>
-                  <span className="text-muted text-[13px]">
-                    {NOMBRE_FORMATO[s.formato]} · al mejor de {s.mejor_de} ·{" "}
-                    {NOMBRE_ESTADO_SALA[s.estado]}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {salas === null ? (
+            <p className="text-muted text-[14px]">Cargando…</p>
+          ) : salas.length === 0 ? (
+            <p className="text-muted text-[14px]">No tienes salas abiertas.</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {salas.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href={`/mesa/?s=${s.id}`}
+                    className={cn(
+                      BOTON_SECUNDARIO,
+                      "h-auto w-full flex-wrap justify-between gap-y-1 py-3",
+                    )}
+                  >
+                    <span className="text-ink flex items-center gap-2 font-mono tracking-[0.15em]">
+                      <DoorOpen size={16} aria-hidden="true" className="text-accent" />
+                      {s.codigo}
+                    </span>
+                    <span className="text-muted text-[13px]">
+                      {NOMBRE_FORMATO[s.formato]} · al mejor de {s.mejor_de} ·{" "}
+                      {NOMBRE_ESTADO_SALA[s.estado]}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }

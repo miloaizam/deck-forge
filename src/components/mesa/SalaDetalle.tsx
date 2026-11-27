@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Check,
-  Copy,
-  DoorOpen,
-  Flag,
-  Hourglass,
-  LogOut,
-  Trophy,
-  Undo2,
-} from "lucide-react";
+import { Check, Copy, Flag, Hourglass, LogOut, Trophy, Undo2 } from "lucide-react";
 
 import { ConCatalogo } from "../ConCatalogo";
 import { ConfirmDialog } from "../ConfirmDialog";
@@ -301,23 +292,18 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
   };
 
   return (
-    <section
-      aria-labelledby="sala-titulo"
-      className="mx-auto flex max-w-3xl flex-col gap-5"
-    >
+    <section aria-labelledby="sala-titulo" className="flex flex-col gap-6">
+      {/* La cabecera de las demas paginas, con la vuelta a la Mesa. */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Link href="/mesa/" className={cn(ENLACE, "text-[14px]")}>
             ← Mesa
           </Link>
-          <h1
-            id="sala-titulo"
-            className="text-ink mt-1 flex items-center gap-2 text-2xl font-bold"
-          >
-            <DoorOpen size={22} aria-hidden="true" className="text-accent" />
+          <p className="eyebrow mt-3 mb-3">Sala</p>
+          <h1 id="sala-titulo" className="text-3xl font-bold tracking-[-0.02em]">
             Sala <span className="font-mono tracking-[0.15em]">{sala.codigo}</span>
           </h1>
-          <p className="text-muted mt-1 text-[14px]">
+          <p className="text-muted mt-3 leading-relaxed">
             {NOMBRE_FORMATO[sala.formato]} · al mejor de {sala.mejor_de} ·{" "}
             {NOMBRE_ESTADO_SALA[sala.estado]}
           </p>
@@ -337,100 +323,105 @@ function SalaAbierta({ sala, uid, error, deFormato, refrescar }: SalaAbiertaProp
         </p>
       )}
 
-      <div className={PANEL}>
-        <h2 className="text-ink text-lg font-bold">Jugadores</h2>
-        <ul className="mt-3 flex flex-col gap-2">
-          {jugador("a")}
-          {jugador("b")}
-        </ul>
-        {esperando && sala.jugador_b === null && (
-          <p className="text-muted mt-3 text-[14px]">
-            Comparte el código{" "}
-            <strong className="text-ink font-mono">{sala.codigo}</strong> o el enlace con
-            tu rival.
+      {/* Desde lg, los jugadores y la baraja lado a lado. */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className={PANEL}>
+          <h2 className="text-ink text-lg font-bold">Jugadores</h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {jugador("a")}
+            {jugador("b")}
+          </ul>
+          {esperando && sala.jugador_b === null && (
+            <p className="text-muted mt-3 text-[14px]">
+              Comparte el código{" "}
+              <strong className="text-ink font-mono">{sala.codigo}</strong> o el enlace
+              con tu rival.
+            </p>
+          )}
+        </div>
+
+        {esperando ? (
+          <div className={PANEL}>
+            <h2 className="text-ink text-lg font-bold">Tu baraja</h2>
+            {listo ? (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-ink text-[14px]">
+                  Estás listo. Esperando a{" "}
+                  {lado === "a" ? "tu rival" : "quien creó la sala"}.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => hacer(() => marcarLista(sala.id, false))}
+                  disabled={ocupado}
+                  className={BOTON_SECUNDARIO}
+                >
+                  <Undo2 size={14} aria-hidden="true" />
+                  Cambiar de baraja
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="text-muted mt-1 text-[14px]">
+                  Tiene que cumplir en {NOMBRE_FORMATO[sala.formato]}. Tu rival no ve tu
+                  lista.
+                </p>
+                {decks.length === 0 ? (
+                  <p className="text-muted mt-3 text-[14px]">
+                    No tienes barajas guardadas.{" "}
+                    <Link href="/constructor/" className={ENLACE}>
+                      Armar una
+                    </Link>
+                  </p>
+                ) : (
+                  <div className="mt-3 flex flex-wrap items-end gap-3">
+                    <Select
+                      label="Baraja"
+                      requerido
+                      placeholder="Elige una baraja"
+                      value={elegida}
+                      options={["", ...decks.map((d) => d.id)]}
+                      onChange={setElegida}
+                      format={(v) =>
+                        v === ""
+                          ? "Elige una baraja"
+                          : deckTitle(decks.find((d) => d.id === v) ?? decks[0])
+                      }
+                      deshabilitada={(v) =>
+                        v === "" ? "Elige una" : (motivos.get(v) ?? null)
+                      }
+                      className="min-w-64 flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        baraja &&
+                        hacer(async () => {
+                          await guardarBaraja(sala.id, uid, baraja);
+                          await marcarLista(sala.id, true);
+                        }, "Listo para jugar.")
+                      }
+                      disabled={ocupado || !baraja || motivos.get(baraja.id) !== null}
+                      className={BOTON_PRIMARIO}
+                    >
+                      <Check size={16} aria-hidden="true" />
+                      Estoy listo
+                    </button>
+                  </div>
+                )}
+                {decks.length > 0 && legales.length === 0 && (
+                  <p className="text-muted mt-3 text-[13px]">
+                    Ninguna de tus barajas cumple en {NOMBRE_FORMATO[sala.formato]}.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        ) : (
+          <p className={cn(AVISO_EN_LINEA)}>
+            Los dos están listos: la sala está en juego.
           </p>
         )}
       </div>
-
-      {esperando ? (
-        <div className={PANEL}>
-          <h2 className="text-ink text-lg font-bold">Tu baraja</h2>
-          {listo ? (
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-ink text-[14px]">
-                Estás listo. Esperando a{" "}
-                {lado === "a" ? "tu rival" : "quien creó la sala"}.
-              </p>
-              <button
-                type="button"
-                onClick={() => hacer(() => marcarLista(sala.id, false))}
-                disabled={ocupado}
-                className={BOTON_SECUNDARIO}
-              >
-                <Undo2 size={14} aria-hidden="true" />
-                Cambiar de baraja
-              </button>
-            </div>
-          ) : (
-            <>
-              <p className="text-muted mt-1 text-[14px]">
-                Tiene que cumplir en {NOMBRE_FORMATO[sala.formato]}. Tu rival no ve tu
-                lista.
-              </p>
-              {decks.length === 0 ? (
-                <p className="text-muted mt-3 text-[14px]">
-                  No tienes barajas guardadas.{" "}
-                  <Link href="/constructor/" className={ENLACE}>
-                    Armar una
-                  </Link>
-                </p>
-              ) : (
-                <div className="mt-3 flex flex-wrap items-end gap-3">
-                  <Select
-                    label="Baraja"
-                    requerido
-                    placeholder="Elige una baraja"
-                    value={elegida}
-                    options={["", ...decks.map((d) => d.id)]}
-                    onChange={setElegida}
-                    format={(v) =>
-                      v === ""
-                        ? "Elige una baraja"
-                        : deckTitle(decks.find((d) => d.id === v) ?? decks[0])
-                    }
-                    deshabilitada={(v) =>
-                      v === "" ? "Elige una" : (motivos.get(v) ?? null)
-                    }
-                    className="min-w-64 flex-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      baraja &&
-                      hacer(async () => {
-                        await guardarBaraja(sala.id, uid, baraja);
-                        await marcarLista(sala.id, true);
-                      }, "Listo para jugar.")
-                    }
-                    disabled={ocupado || !baraja || motivos.get(baraja.id) !== null}
-                    className={BOTON_PRIMARIO}
-                  >
-                    <Check size={16} aria-hidden="true" />
-                    Estoy listo
-                  </button>
-                </div>
-              )}
-              {decks.length > 0 && legales.length === 0 && (
-                <p className="text-muted mt-3 text-[13px]">
-                  Ninguna de tus barajas cumple en {NOMBRE_FORMATO[sala.formato]}.
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        <p className={cn(AVISO_EN_LINEA)}>Los dos están listos: la sala está en juego.</p>
-      )}
 
       {esperando && lado && (
         <div>

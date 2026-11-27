@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  */
 export default function MesaPracticaPage() {
   return (
-    <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-6 sm:px-6">
+    <main className="mx-auto w-full max-w-[1480px] flex-1 px-4 py-10 sm:px-6">
       {MESA_ACTIVA ? (
         <MesaPracticaView />
       ) : (
